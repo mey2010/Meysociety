@@ -100,7 +100,9 @@
   const finaleIdx = cfg.scenes.findIndex((s) => s.constellation);
   const villasIdx = cfg.scenes.findIndex((s) => s.mask);
 
+  let lastProgress = 0;
   function render(progress) {
+    lastProgress = progress;
     const units = progress * total;
     const { cam, light, seg } = stateAt(units);
     world && world.setCamera(cam);
@@ -121,6 +123,7 @@
     });
     railFill.style.transform = `scaleY(${progress.toFixed(4)})`;
     counter.innerHTML = `<b>${pad(current.number)}</b> / ${pad(cfg.totalScenes)}`;
+    if (!document.body.classList.contains('on-light')) emitSection(current.id);
 
     // Máscara piscina → mar: el vídeo real de la villa se abre en arco.
     const vh = holdOf(villasIdx);
@@ -175,8 +178,32 @@
   document.querySelectorAll('[data-email]').forEach((a) => { a.href = `mailto:${cfg.email}`; a.textContent = cfg.email; });
 
   // El mapa queda tapado por la sección clara: cabecera en modo claro.
-  new IntersectionObserver(([e]) => document.body.classList.toggle('on-light', e.isIntersecting), { rootMargin: '0px 0px -92% 0px' })
-    .observe(document.getElementById('concierge'));
+  new IntersectionObserver(([e]) => {
+    document.body.classList.toggle('on-light', e.isIntersecting);
+    if (e.isIntersecting) emitSection('contact');
+    else render(lastProgress);
+  }, { rootMargin: '0px 0px -92% 0px' }).observe(document.getElementById('concierge'));
+
+  // --- API para el menú (React): sección activa y navegación ---
+  let lastSection = null;
+  function emitSection(id) {
+    if (id === lastSection) return;
+    lastSection = id;
+    window.dispatchEvent(new CustomEvent('journey:section', { detail: id }));
+  }
+  window.ConciergeJourney = {
+    current: () => lastSection,
+    goTo(id) {
+      const behavior = reducedMotion ? 'auto' : 'smooth';
+      if (id === 'contact') { document.getElementById('concierge').scrollIntoView({ behavior }); return; }
+      const i = cfg.scenes.findIndex((s) => s.id === id);
+      if (i < 0) return;
+      const h = holdOf(i);
+      const units = h.start + h.len * 0.3;
+      const top = track.offsetTop + (units / total) * (track.offsetHeight - innerHeight);
+      window.scrollTo({ top, behavior });
+    },
+  };
 
   // --- Arranque ---
   let world = null;

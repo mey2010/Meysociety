@@ -140,6 +140,11 @@ main { position: relative; z-index: 10; }
   padding: calc(16px + env(safe-area-inset-top)) var(--gutter) 16px;
 }
 .topbar .btn { justify-self: end; }
+.nav-slot { justify-self: center; }
+#counter { display: none; }
+/* Menú de cristal líquido: tipografía de la marca */
+.site-nav.nimbus-nav { font-family: var(--sans); }
+.site-nav .nimbus-item { font-size: 12px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; }
 .logo {
   font: 500 22px/1 var(--serif); letter-spacing: .02em; color: var(--ivory); text-decoration: none;
   display: inline-block; padding: 11px 0; justify-self: start; white-space: nowrap;
@@ -152,7 +157,7 @@ main { position: relative; z-index: 10; }
 .sticky { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; }
 
 .panel {
-  position: absolute; left: var(--gutter); top: 50%; width: min(580px, calc(100vw - 2 * var(--gutter)));
+  position: absolute; left: var(--gutter); top: calc(50% + 36px); width: min(580px, calc(100vw - 2 * var(--gutter)));
   transform: translateY(-46%); opacity: 0; visibility: hidden;
   transition: opacity .6s ease, transform .9s var(--ease-out), visibility 0s .6s;
 }
@@ -248,7 +253,8 @@ fieldset { border: 0; padding: 0; margin: 0 0 24px; }
 legend { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted-ink); margin-bottom: 12px; }
 legend .req { letter-spacing: .04em; text-transform: none; }
 .chips { display: flex; flex-wrap: wrap; gap: 10px; }
-.chip input { position: absolute; opacity: 0; }
+.chip { position: relative; }
+.chip input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; }
 .chip span {
   display: inline-flex; align-items: center; min-height: 44px; padding: 10px 16px; font-size: 14px;
   border: 1px solid var(--limestone); background: #fff; transition: background .2s, border-color .2s, color .2s;
@@ -293,8 +299,12 @@ body.on-light #credits, body.on-light #status, body.on-light #counter { opacity:
 @media (max-width: 860px) {
   .topbar { grid-template-columns: 1fr auto; }
   .topbar .btn { display: none; }
-  #counter { justify-self: end; }
-  .panel { top: auto; bottom: calc(76px + env(safe-area-inset-bottom)); transform: translateY(8%); }
+  #counter { display: block; justify-self: end; }
+  /* En móvil el menú flota abajo, centrado, como una barra de app */
+  .nav-slot { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 45; }
+  .wa-float { width: 54px; height: 54px; padding: 0; justify-content: center; border-radius: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); }
+  .wa-float span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .panel { top: auto; bottom: calc(88px + env(safe-area-inset-bottom)); transform: translateY(8%); }
   .panel.on { transform: none; }
   .vignette { background: linear-gradient(0deg, rgba(28,28,30,.85) 0%, rgba(28,28,30,.25) 55%, transparent 80%); }
   .rail-wrap { display: none; }
@@ -302,8 +312,12 @@ body.on-light #credits, body.on-light #status, body.on-light #counter { opacity:
   .card-body { padding: 10px; }
   .card ul { display: none; }
   .grid { grid-template-columns: 1fr 1fr; }
-  #credits { max-width: 52vw; }
-  #status { left: var(--gutter); right: auto; top: 70px; font-size: 10px; max-width: 70vw; text-align: left; }
+  /* atribución del mapa: esquina inferior izquierda, a la izquierda del menú flotante */
+  #credits { max-width: 78px; font-size: 9px; bottom: calc(16px + env(safe-area-inset-bottom)); }
+  #credits img { max-height: 12px; }
+  /* backdrop-filter haría de contenedor del menú fijo (lo subiría a la cabecera): fondo sólido */
+  body.on-light .topbar { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--ivory); }
+  #status { left: var(--gutter); right: auto; top: calc(96px + env(safe-area-inset-top)); font-size: 10px; max-width: 70vw; text-align: left; }
   #villa-mask { clip-path: inset(calc(30% - var(--reveal) * 18%) 20% 70% 20% round 30vmin 30vmin 0 0); }
   #constellation { right: auto; left: 50%; top: 13%; width: min(92vw, 46vh); transform: translateX(-50%); }
   .scroll-hint { display: none; }

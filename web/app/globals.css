@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tokens shadcn mapeados a la paleta de Concierge Ibiza (HSL sin hsl(), formato shadcn). */
+@layer base {
+  :root {
+    --background: 40 44% 94%;       /* ivory #F6F1E7 */
+    --foreground: 240 3% 11%;       /* charcoal #1C1C1E */
+    --primary: 206 73% 21%;         /* deep #0E3A5B */
+    --primary-foreground: 40 44% 94%;
+    --secondary: 38 31% 85%;        /* limestone #D9CDB8 */
+    --secondary-foreground: 240 3% 11%;
+    --accent: 35 40% 64%;           /* sand #C8A97E */
+    --accent-foreground: 240 3% 11%;
+    --muted: 38 31% 85%;
+    --muted-foreground: 35 9% 32%;
+    --border: 38 31% 85%;
+    --input: 38 31% 85%;
+    --ring: 206 73% 21%;
+    --radius: 0rem;
+  }
+}
