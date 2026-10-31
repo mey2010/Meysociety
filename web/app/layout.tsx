@@ -1,30 +1,42 @@
 import type { Metadata, Viewport } from "next"
+import { Cormorant_Garamond, Inter } from "next/font/google"
+import { Providers } from "@/components/providers"
 import "./globals.css"
-import "./concierge.css"
+import "./styles/capsule.css"
+import "./styles/journey.css"
+import "./styles/sections.css"
+import "./styles/client.css"
+
+const serif = Cormorant_Garamond({ subsets: ["latin"], weight: ["300", "400", "500"], style: ["normal", "italic"], variable: "--font-serif", display: "swap" })
+const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" })
 
 export const metadata: Metadata = {
   title: "Concierge Ibiza — Private Concierge",
   description: "Private villas, yacht charter, jet skis, luxury cars, fine dining and VIP nightlife in Ibiza. One dedicated concierge.",
+  openGraph: {
+    title: "Concierge Ibiza — Ibiza, without limits",
+    description: "Private stays. Extraordinary experiences. One dedicated concierge.",
+    type: "website",
+  },
 }
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#1C1C1E",
+  themeColor: "#0B1520",
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${serif.variable} ${sans.variable}`} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.120.0/Build/Cesium/Widgets/widgets.css" />
+        {/* las entradas [data-reveal] solo se ocultan si hay JavaScript */}
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   )
 }

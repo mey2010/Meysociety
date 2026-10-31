@@ -21,3 +21,168 @@
     --radius: 0rem;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Marca                                                               */
+/* ------------------------------------------------------------------ */
+:root {
+  --deep: #0E3A5B;
+  --deep-2: #0A2C46;
+  --sea: #1D5878;
+  --night: #0B1520;
+  --ivory: #F6F1E7;
+  --ivory-2: #EFE7D8;
+  --limestone: #D9CDB8;
+  --sand: #C8A97E;
+  --sand-ink: #7E5F36;   /* 4.9:1 sobre ivory */
+  --charcoal: #1C1C1E;
+  --ink-soft: #4E473D;
+  --on-dark-soft: rgba(246, 241, 231, .78);
+
+  --serif: var(--font-serif), 'Cormorant Garamond', Georgia, serif;
+  --sans: var(--font-sans), 'Inter', system-ui, sans-serif;
+
+  --gutter: clamp(16px, 4vw, 56px);
+  --section: clamp(96px, 14vw, 200px);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --ease-io: cubic-bezier(.65, 0, .35, 1);
+
+  /* escala tipográfica: muy grande / grande / texto / pequeño */
+  --t-display: clamp(52px, 9vw, 148px);
+  --t-h2: clamp(40px, 5.6vw, 88px);
+  --t-h3: clamp(26px, 2.4vw, 36px);
+  --t-lead: clamp(18px, 1.5vw, 22px);
+  --t-body: 17px;
+  --t-small: 14px;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+body {
+  margin: 0;
+  background: var(--charcoal);
+  color: var(--ivory);
+  font: 400 var(--t-body)/1.55 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+}
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+a, button, label { cursor: pointer; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--sand); outline-offset: 3px; }
+::selection { background: var(--sand); color: var(--charcoal); }
+
+.skip {
+  position: fixed; left: var(--gutter); top: -80px; z-index: 200;
+  background: var(--ivory); color: var(--charcoal); padding: 12px 16px; text-decoration: none;
+}
+.skip:focus { top: 12px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Tipografía */
+.display, .h2, .h3 { font-family: var(--serif); font-weight: 400; margin: 0; text-wrap: balance; }
+.display { font-size: var(--t-display); font-weight: 300; line-height: .92; letter-spacing: -.025em; }
+.h2 { font-size: var(--t-h2); line-height: .98; letter-spacing: -.02em; }
+.h3 { font-size: var(--t-h3); line-height: 1.1; letter-spacing: -.01em; }
+.lead { font-size: var(--t-lead); line-height: 1.5; margin: 0; max-width: 46ch; }
+.small { font-size: var(--t-small); line-height: 1.5; }
+
+.wrap { width: 100%; padding-inline: var(--gutter); }
+
+/* ------------------------------------------------------------------ */
+/* Botones                                                             */
+/* ------------------------------------------------------------------ */
+.btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 52px; padding: 0 26px; border: 0; border-radius: 999px; text-decoration: none; white-space: nowrap;
+  font: 500 15px/1 var(--sans); letter-spacing: -.005em;
+  background: var(--deep); color: var(--ivory);
+  transition: transform .5s var(--ease-out), background-color .25s, color .25s;
+}
+.btn:hover { background: var(--charcoal); }
+.btn:active { transform: scale(.97); transition-duration: .12s; }
+.btn.ivory { background: var(--ivory); color: var(--charcoal); }
+.btn.ivory:hover { background: #fff; }
+.btn.small { min-height: 44px; padding: 0 18px; font-size: 14px; }
+.btn svg { flex: none; }
+
+/* ------------------------------------------------------------------ */
+/* Cristal líquido                                                     */
+/* La refracción (--lg = url(#filtro)) solo existe en Chromium; en el    */
+/* resto queda un cristal esmerilado con el mismo brillo especular.     */
+/* ------------------------------------------------------------------ */
+.lg {
+  --lg-tint: rgba(255, 255, 255, .10);
+  --lg-rim: rgba(255, 255, 255, .55);
+  --mx: 50%; --my: 0%;
+  position: relative; isolation: isolate; overflow: hidden;
+  background: var(--lg-tint);
+  -webkit-backdrop-filter: blur(14px) saturate(1.7) brightness(1.06);
+  backdrop-filter: var(--lg, ) blur(var(--lg-blur, 14px)) saturate(1.7) brightness(1.06);
+  box-shadow:
+    inset 0 1px 0 var(--lg-rim),
+    inset 0 -1px 0 rgba(255, 255, 255, .10),
+    inset 0 0 0 1px rgba(255, 255, 255, .14),
+    inset 0 0 22px rgba(255, 255, 255, .06),
+    0 18px 40px -18px rgba(0, 0, 0, .45);
+}
+.lg[data-refract="on"] { --lg-blur: 2px; }
+/* brillo especular que sigue al puntero */
+.lg::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(120px 80px at var(--mx) var(--my), rgba(255, 255, 255, .38), transparent 70%);
+  opacity: var(--lg-shine, .55); transition: opacity .4s;
+}
+/* reflejo superior fijo, como el canto de una lente */
+.lg::after {
+  content: ""; position: absolute; inset: 1px 10% auto; height: 46%; z-index: -1; pointer-events: none;
+  border-radius: 999px 999px 40% 40%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0));
+}
+.lg-light { --lg-tint: rgba(255, 255, 255, .55); --lg-rim: rgba(255, 255, 255, .9); color: var(--charcoal); }
+.lg-dark { --lg-tint: rgba(12, 22, 34, .32); --lg-rim: rgba(255, 255, 255, .32); }
+
+.lg-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 52px; padding: 0 26px; border: 0; border-radius: 999px;
+  color: var(--ivory); text-decoration: none; white-space: nowrap;
+  font: 500 15px/1 var(--sans); letter-spacing: -.005em;
+  transition: transform .6s cubic-bezier(.3, 1.5, .5, 1), box-shadow .3s;
+}
+.lg-btn:hover { --lg-shine: .9; transform: translateY(-1px) scale(1.015); }
+.lg-btn:active { transform: scale(.965); transition-duration: .15s; }
+.lg-btn.small { min-height: 44px; padding: 0 18px; font-size: 14px; }
+.lg-btn.lg-light { color: var(--charcoal); }
+.lg-btn .lg-label { position: relative; display: inline-flex; align-items: center; gap: 10px; }
+.lg-btn.solid { --lg-tint: rgba(246, 241, 231, .86); --lg-rim: #fff; color: var(--charcoal); }
+
+/* ------------------------------------------------------------------ */
+/* Entradas al hacer scroll (data-reveal); sin JS el contenido se ve    */
+/* ------------------------------------------------------------------ */
+.js [data-reveal] { opacity: 0; transform: translateY(24px); transition: opacity .9s var(--ease-out), transform 1.1s var(--ease-out); transition-delay: calc(var(--d, 0) * 80ms); }
+.js [data-reveal].in { opacity: 1; transform: none; }
+
+/* Imagen con fallback: si no carga, queda un campo de color con su pie */
+.media { position: relative; overflow: hidden; background: var(--tone, var(--sea)); }
+.media img { width: 100%; height: 100%; object-fit: cover; }
+.media .media-fallback {
+  position: absolute; inset: 0; display: grid; align-content: end; padding: 18px;
+  font-size: 13px; line-height: 1.35; color: rgba(246, 241, 231, .82);
+  background:
+    radial-gradient(120% 80% at 20% 0%, rgba(255, 255, 255, .16), transparent 60%),
+    var(--tone, var(--sea));
+}
+/* semicírculo perfecto arriba: los radios enormes se escalan a la mitad del ancho */
+.arch { border-radius: 9999px 9999px 0 0; }
+/* miniaturas: sin pie en el fallback */
+.sv-thumb .media-fallback span, .bd-svc-img .media-fallback span, .card-media .media-fallback span { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; transition-delay: 0s !important; scroll-behavior: auto !important; }
+  .js [data-reveal] { opacity: 1; transform: none; }
+}
