@@ -4,6 +4,7 @@ Recorrido por la Ibiza real guiado por el scroll:
 
 - **Mapa:** CesiumJS + Google Photorealistic 3D Tiles.
 - **Cámara:** GSAP ScrollTrigger.
+- **3D propio:** three.js r187, cargado desde jsDelivr mediante un import map en `index.html`. Úsalo desde cualquier `<script type="module">` con `import * as THREE from 'three'` y `import { OrbitControls } from 'three/addons/controls/OrbitControls.js'`.
 - **Contenido:** capa comercial en HTML, formulario concierge multiservicio y WhatsApp.
 
 Storyboard y validación geográfica: [`../docs/fase-1-storyboard.md`](../docs/fase-1-storyboard.md).
