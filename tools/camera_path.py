@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Analiza el vuelo de cámara del recorrido (web/public/js/config.js).
+"""Analiza el vuelo de cámara del recorrido (web/lib/content.ts).
 
-Reproduce la misma interpolación que la web (stateAt en app.js + lerpCamera en
-world.js), la muestrea en miles de puntos por pantalla de scroll con Numba y
+Reproduce la misma interpolación que la web (stateAt en lib/journey/run.ts +
+lerpCamera en lib/journey/world.ts), la muestrea en miles de puntos por pantalla de scroll con Numba y
 avisa de los tramos donde la cámara se mueve demasiado rápido por pantalla.
 
 Uso:
@@ -11,7 +11,7 @@ Uso:
     python3 tools/camera_path.py --samples 20000  # más resolución
     python3 tools/camera_path.py --max-km 30 --max-heading 120 --max-pitch 60
 
-Requiere Node.js para leer config.js tal cual lo carga el navegador.
+Requiere Node.js >= 22.18 para leer content.ts tal cual lo usa la web.
 Sale con código 1 si algún tramo supera un umbral (útil en CI).
 """
 import argparse
@@ -25,22 +25,22 @@ import numpy as np
 from numba import njit
 
 ROOT = Path(__file__).resolve().parent.parent
-CONFIG = ROOT / "web" / "public" / "js" / "config.js"
+CONFIG = ROOT / "web" / "lib" / "content.ts"
 
 
 def load_scenes(path):
+    # content.ts se carga con el soporte de TypeScript de Node (>= 22.18)
     js = (
-        "const fs=require('fs');const window={};"
-        f"eval(fs.readFileSync({json.dumps(str(path))},'utf8'));"
-        "process.stdout.write(JSON.stringify(window.CONCIERGE_CONFIG.scenes));"
+        f"import({json.dumps(path.resolve().as_uri())})"
+        ".then(m=>process.stdout.write(JSON.stringify(m.SCENES)))"
     )
-    out = subprocess.run(["node", "-e", js], check=True, capture_output=True, text=True)
+    out = subprocess.run(["node", "--no-warnings", "-e", js], check=True, capture_output=True, text=True)
     return json.loads(out.stdout)
 
 
 @njit(cache=True)
 def _ease(t):
-    # smootherstep, igual que app.js
+    # smootherstep, igual que lib/journey/run.ts
     return t * t * t * (t * (t * 6.0 - 15.0) + 10.0)
 
 

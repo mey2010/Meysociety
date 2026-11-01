@@ -1,7 +1,7 @@
 # MEY-
 
-- `web/` — web de Concierge Ibiza (Next.js + TypeScript + Tailwind + shadcn). Ver `web/README.md`.
-- `docs/` — storyboard y validación geográfica.
+- `web/` — web de Mey Society (Next.js + TypeScript + Tailwind + shadcn). Ver `web/README.md`.
+- `docs/` — storyboard, validación geográfica y estrategia legal de paquetes.
 - `open-generative-ai/` — estudio de generación de imagen y vídeo con IA (fork de [Anil-matcha/Open-Generative-AI](https://github.com/Anil-matcha/Open-Generative-AI), MIT). Ver `open-generative-ai/README.md`.
 - `tools/` — utilidades de desarrollo en Python (`camera_path.py`: analiza el vuelo de cámara con Numba).
 - `.claude/skills/` — skills de Claude Code del proyecto.
