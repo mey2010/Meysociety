@@ -31,6 +31,28 @@ npm run build
 Sin `?key=` se ve una vista previa con fotografía de satélite. En producción, pon la key en
 `public/js/config.js` (`googleMapsApiKey`) y restríngela a tu dominio.
 
+## three.js
+
+`three` (r187) está instalado como dependencia para escenas 3D propias en componentes de cliente:
+
+```tsx
+"use client"
+import * as THREE from "three"
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
+```
+
+## Analizar el vuelo de cámara
+
+`../tools/camera_path.py` reproduce la interpolación de `public/js/app.js` + `world.js` y muestra, por cada
+tramo `travel`, los picos por pantalla de scroll (km, zoom, giro, pitch). Úsalo al cambiar keyframes:
+
+```bash
+pip install -r ../tools/requirements.txt
+python3 ../tools/camera_path.py
+```
+
+Si un tramo sale marcado con `!`, sube su `travel` o acerca los keyframes.
+
 ## Publicar en Vercel
 
 Importa el repositorio y pon **Root Directory: `web`**. Vercel detecta Next.js solo.
