@@ -42,6 +42,10 @@ export function Journey() {
       {/* Capa geográfica (real) */}
       <div id="stage" aria-hidden="true">
         <div id="cesium" />
+        {/* intro: cielo, nubes 3D y ventanilla del avión, ligados al primer tramo de scroll */}
+        <div id="sky-haze" />
+        <div id="sky" />
+        <div id="porthole"><span className="porthole-glass" /></div>
         <div id="grade" />
         <div id="night" />
         <div className="vignette" />

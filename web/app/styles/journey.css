@@ -17,7 +17,7 @@ body.ready #intro { opacity: 0; visibility: hidden; pointer-events: none; }
 /* Escenario 3D                                                         */
 /* ------------------------------------------------------------------ */
 #stage {
-  --light: 0; --night: 0;
+  --light: 0; --night: 0; --intro: 0;
   position: fixed; inset: 0; z-index: 0; overflow: hidden;
   background: radial-gradient(120% 90% at 70% 35%, #1b5578 0%, var(--deep) 42%, #06192a 100%);
 }
@@ -25,6 +25,38 @@ body.ready #intro { opacity: 0; visibility: hidden; pointer-events: none; }
 body.has-3d #cesium { opacity: 1; }
 #cesium .cesium-widget-credits, #cesium .cesium-viewer-bottom, #cesium .cesium-viewer-toolbar { display: none !important; }
 #cesium .cesium-widget, #cesium canvas { width: 100%; height: 100%; }
+
+/* intro: cielo + nubes 3D (lib/journey/sky.ts) + ventanilla del avión, guiados por --intro (0 → 1) */
+#sky-haze {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, #9dbdd6 0%, #d3e0ea 52%, #eef2f4 100%);
+  opacity: clamp(0, calc(1 - (var(--intro) - .3) * 2.2), 1);
+}
+#sky { position: absolute; inset: 0; pointer-events: none; }
+/* en escritorio la ventanilla vive a la derecha y deja el titular limpio */
+@media (min-width: 900px) { #stage { --porthole-x: 69%; } }
+/* el minimapa aparece cuando la ventanilla ya se ha abierto */
+#minimap { filter: opacity(clamp(0, calc((var(--intro) - .7) * 4), 1)); }
+#sky canvas { display: block; width: 100%; height: 100%; }
+#porthole {
+  position: absolute; left: var(--porthole-x, 50%); top: 50%; pointer-events: none;
+  width: min(40vw, 40vh); aspect-ratio: .72; border-radius: 48% / 38%;
+  transform: translate(-50%, -50%) scale(calc(1 + var(--intro) * var(--intro) * 9));
+  opacity: clamp(0, calc(1 - (var(--intro) - .5) * 3), 1);
+  box-shadow:
+    0 0 0 14px #1a232c,
+    0 0 0 16px rgba(255, 255, 255, .06),
+    0 0 0 70vmax #0e151c,
+    inset 0 0 36px 10px rgba(6, 10, 14, .55);
+  will-change: transform, opacity;
+}
+.porthole-glass {
+  position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(128deg, rgba(255, 255, 255, .16) 0%, transparent 38%, transparent 70%, rgba(255, 255, 255, .05) 100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  #porthole { transform: translate(-50%, -50%); }
+}
 
 /* etalonaje por scroll sobre todo el escenario: mediodía (0) → hora dorada (1) → noche */
 #grade {

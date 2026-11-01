@@ -92,7 +92,7 @@ export const SCENES: Scene[] = [
     verified: true, // vista cenital de las Pitiusas
     camera: { lon: 1.42, lat: 38.86, height: 115000, heading: 0, pitch: -89 },
     travel: 0,
-    hold: 1.1,
+    hold: 1.6, // incluye la intro de nubes
     light: 0,
     title: "IBIZA, WITHOUT LIMITS.",
     body: "Private stays. Extraordinary experiences. One dedicated concierge.",

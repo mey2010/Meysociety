@@ -8,6 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { SCENES, type Camera } from "@/lib/content"
 import { project } from "@/lib/geo"
 import { createWorld, lerpCamera, loadCesium, type World } from "@/lib/journey/world"
+import { createSky, type Sky } from "@/lib/journey/sky"
 
 declare global {
   interface Window {
@@ -68,6 +69,9 @@ export function startJourney(): () => void {
   const finaleIdx = SCENES.findIndex((s) => s.constellation)
 
   let world: World | null = null
+  let sky: Sky | null = null
+  // intro de nubes: ocupa el hold de la primera escena
+  const introLen = holdOf(0).len
   let lastProgress = 0
   let lastSection: string | null = null
   let journeyVisible = true
@@ -83,6 +87,9 @@ export function startJourney(): () => void {
     const units = progress * total
     const { cam, light, seg } = stateAt(units)
     world?.setCamera(cam)
+    const intro = clamp01(units / introLen)
+    stage?.style.setProperty("--intro", intro.toFixed(4))
+    sky?.setProgress(intro)
     world?.setLight(light)
     stage?.style.setProperty("--light", Math.min(1, light).toFixed(3))
     stage?.style.setProperty("--night", clamp01(light - 1).toFixed(3))
@@ -166,6 +173,17 @@ export function startJourney(): () => void {
     liftIntro()
   }
 
+  const skyHost = $<HTMLElement>("#sky")
+  if (hasWebGL && !reduced && skyHost) {
+    createSky(skyHost, { lowPower })
+      .then((s) => {
+        if (cancelled) return s.destroy()
+        sky = s
+        s.setProgress(clamp01((lastProgress * total) / introLen))
+      })
+      .catch((err) => console.warn(err))
+  }
+
   if (!hasWebGL || params.get("map") === "off") {
     editorial("")
   } else {
@@ -196,6 +214,8 @@ export function startJourney(): () => void {
     tween.kill()
     world?.destroy()
     world = null
+    sky?.destroy()
+    sky = null
     delete window.ConciergeJourney
     document.body.classList.remove("has-3d", "no-3d", "finale", "journey-started")
   }
