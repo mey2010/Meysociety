@@ -32,3 +32,15 @@ Sin `?key=` se carga una vista previa con OpenStreetMap. La geografía es real, 
 - Fotos y vídeo reales de las villas: `.card-media` y `#villa-mask .villa-media`.
 - Zona real de las villas: sustituye el keyframe provisional sobre Cala d'Hort.
 - Escenas 03–08, que se añadirán una a una según la metodología.
+
+## Analizar el vuelo de cámara (`tools/camera_path.py`)
+
+Script de Python que reproduce la interpolación de la web (`stateAt` + `lerpCamera`), la muestrea con [Numba](https://numba.pydata.org/) y muestra, por cada tramo `travel`, los picos de velocidad por pantalla de scroll: km sobre el suelo, factor de zoom, giro y pitch.
+
+```bash
+pip install -r tools/requirements.txt
+python3 tools/camera_path.py            # umbrales por defecto (amplios)
+python3 tools/camera_path.py --max-heading 90 --max-pitch 45   # más estricto
+```
+
+Úsalo al cambiar keyframes en `js/config.js`: si un tramo sale marcado con `!`, sube su `travel` o acerca los keyframes. Sale con código 1 si algún tramo supera un umbral. Necesita Node.js para leer `config.js`.
