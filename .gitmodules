@@ -1,0 +1,9 @@
+[submodule "open-generative-ai/packages/Vibe-Workflow"]
+	path = open-generative-ai/packages/Vibe-Workflow
+	url = https://github.com/SamurAIGPT/Vibe-Workflow.git
+[submodule "open-generative-ai/packages/Open-Poe-AI"]
+	path = open-generative-ai/packages/Open-Poe-AI
+	url = https://github.com/Anil-matcha/Open-Poe-AI.git
+[submodule "open-generative-ai/packages/Open-AI-Design-Agent"]
+	path = open-generative-ai/packages/Open-AI-Design-Agent
+	url = https://github.com/Anil-matcha/Open-AI-Design-Agent

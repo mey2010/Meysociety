@@ -1,6 +1,10 @@
 # Concierge Ibiza — Fase 1: validación geográfica, storyboard y trayectorias de cámara
 
-Estado: **borrador para aprobación**. No se ha desarrollado código todavía, siguiendo la metodología del brief (punto 9).
+Estado: **escenas 01 → 08 implementadas** en `web/` (cámaras en `web/lib/content.ts`). Siguen como
+provisionales (`verified: false`, con el aviso «Location pending validation»): **02 villas**,
+**04 motos de agua** y **05 coches**, hasta tener la zona real de las villas, la zona autorizada
+del operador y la ruta que usáis con clientes. La estrategia legal de paquetes está en
+[`estrategia-legal-paquetes.md`](estrategia-legal-paquetes.md).
 Todo lo marcado como ⚠️ **PENDIENTE** requiere validación tuya o de una fuente oficial antes de mostrarse como real.
 
 ---
