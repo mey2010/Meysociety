@@ -9,6 +9,7 @@ import * as React from "react"
 import { CHAPTERS, FINALE_CAMERA, INTRO_CAMERA } from "@/lib/data"
 import { createWorld, type Camera } from "@/lib/cesium"
 import { createSky } from "@/lib/sky"
+import { createCoin, type Coin } from "@/lib/coin"
 import { startStage, type Anchor } from "@/lib/stage"
 
 const CAMERAS: Record<string, { camera: Camera; light: number; dim: number }> = {
@@ -57,7 +58,25 @@ export function Stage() {
     } else {
       document.documentElement.dataset.world = "none"
     }
-    return () => { cancelled = true; ctl.destroy() }
+
+    // el logo 3D en el centro del anillo; responde a la columna de servicios de la intro
+    let coin: Coin | null = null
+    const onFocus = (e: Event) => coin?.focus((e as CustomEvent<number>).detail)
+    const onScroll = () => coin?.setVisible(scrollY < hero.offsetHeight * 0.75)
+    if (webgl) {
+      createCoin(stage.querySelector<HTMLElement>(".ring-coin")!, { reduced, lowPower })
+        .then((c) => { if (cancelled) return c.destroy(); coin = c; onScroll() })
+        .catch((e) => console.warn(e))
+      addEventListener("coin:focus", onFocus)
+      addEventListener("scroll", onScroll, { passive: true })
+    }
+    return () => {
+      cancelled = true
+      removeEventListener("coin:focus", onFocus)
+      removeEventListener("scroll", onScroll)
+      coin?.destroy()
+      ctl.destroy()
+    }
   }, [])
 
   return (
@@ -66,7 +85,7 @@ export function Stage() {
       <div className="stage-grade" />
       <div className="stage-haze" />
       <div className="stage-sky" />
-      <div className="stage-ring"><span className="ring-holo" /><span className="ring-chrome" /></div>
+      <div className="stage-ring"><span className="ring-holo" /><span className="ring-chrome" /><div className="ring-coin" /></div>
       <div className="stage-scrim" />
     </div>
   )
