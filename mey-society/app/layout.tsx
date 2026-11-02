@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next"
-import { Cormorant, Montserrat } from "next/font/google"
+import { IBM_Plex_Mono, Syncopate } from "next/font/google"
 import "./globals.css"
 
-const display = Cormorant({ subsets: ["latin"], weight: ["300", "400", "500"], variable: "--font-display", display: "swap" })
-const text = Montserrat({ subsets: ["latin"], weight: ["300", "400", "500", "600"], variable: "--font-text", display: "swap" })
+const display = Syncopate({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-display", display: "swap" })
+const text = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-text", display: "swap" })
 
 export const metadata: Metadata = {
   title: "Mey Society · Private concierge in Ibiza",
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: { title: "Mey Society · Private concierge in Ibiza", images: ["/brand/logo.png"] },
 }
 
-export const viewport: Viewport = { themeColor: "#06051A", viewportFit: "cover" }
+export const viewport: Viewport = { themeColor: "#04030F", viewportFit: "cover" }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
