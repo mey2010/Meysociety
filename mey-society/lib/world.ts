@@ -129,6 +129,35 @@ export async function createWorld(canvas: HTMLCanvasElement, services: Service[]
   const particles = new THREE.Points(pGeo, pMat)
   scene.add(particles)
 
+  /* ---------- Fondo de la portada: constelación de puntos unidos por hilos de luz ---------- */
+  const NET = opts.lowPower ? 150 : 240
+  const nodes: [number, number, number][] = []
+  for (let i = 0; i < NET; i++) {
+    // repartidos en una cáscara alrededor del logo
+    const th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1), rad = 4 + Math.random() * 7
+    nodes.push([Math.sin(ph) * Math.cos(th) * rad * 1.3, Math.cos(ph) * rad, Math.sin(ph) * Math.sin(th) * rad - 3])
+  }
+  const lp: number[] = [], lc: number[] = []
+  const netCol = [new THREE.Color("#2342B5"), new THREE.Color("#53AECC"), new THREE.Color("#7A30C4")]
+  for (let i = 0; i < NET; i++) for (let j = i + 1; j < NET; j++) {
+    const a = nodes[i], b = nodes[j]
+    const d = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
+    if (d > 2.3) continue
+    const c = netCol[(i + j) % 3], k = 1 - d / 2.3
+    lp.push(...a, ...b)
+    lc.push(c.r * k, c.g * k, c.b * k, c.r * k, c.g * k, c.b * k)
+  }
+  const netGeo = new THREE.BufferGeometry()
+  netGeo.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3))
+  netGeo.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3))
+  const netMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false })
+  const net = new THREE.LineSegments(netGeo, netMat)
+  const dotGeo = new THREE.BufferGeometry()
+  dotGeo.setAttribute("position", new THREE.Float32BufferAttribute(nodes.flat(), 3))
+  const dotMat = new THREE.PointsMaterial({ color: "#5FC6E4", size: 0.07, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false })
+  net.add(new THREE.Points(dotGeo, dotMat))
+  scene.add(net)
+
   /* ---------- 2. La moneda del logo ---------- */
   const face = new THREE.MeshPhysicalMaterial({ map: logoTex, metalness: 0.35, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.08, transparent: true })
   const rimMat = new THREE.ShaderMaterial({
@@ -236,6 +265,15 @@ export async function createWorld(canvas: HTMLCanvasElement, services: Service[]
     pMat.uniforms.uForm.value = opts.reduced ? 1 : smooth(0.2, 2.6, t) * (1 - smooth(0.04, SEG.coin[0] + 0.02, p))
     pMat.uniforms.uFade.value = 1 - smooth(SEG.coin[0], SEG.coin[0] + 0.06, p) + smooth(SEG.end[0] + 0.03, 1, p)
     particles.position.z = p > SEG.end[0] ? zAt(p) - 9 : 0
+    // en la portada el logo queda en la mitad de arriba; el texto vive abajo
+    particles.position.y = p > SEG.end[0] ? 0 : landscape ? 0.9 : 2.1
+    particles.position.x = p > SEG.end[0] || !landscape ? 0 : 2.4
+    net.position.y = landscape ? 0.6 : 1.4
+    const netFade = 1 - smooth(0.03, SEG.coin[0], p)
+    netMat.opacity = 0.9 * netFade
+    dotMat.opacity = 0.9 * netFade
+    net.visible = netFade > 0.01
+    net.rotation.set(opts.reduced ? 0 : Math.sin(t * 0.07) * 0.15, opts.reduced ? 0 : t * 0.025, 0)
 
     const coinIn = smooth(SEG.logo[1] - 0.04, SEG.coin[0] + 0.04, p) * (1 - smooth(SEG.coin[1], SEG.tunnel[0] + 0.02, p))
     rimMat.uniforms.uFade.value = coinIn
