@@ -7,7 +7,7 @@
  */
 import * as React from "react"
 import Lenis from "lenis"
-import { ArrowRight, ArrowUpRight, X } from "lucide-react"
+import { ArrowRight, ArrowUpRight, Menu, X } from "lucide-react"
 import { BRAND, SERVICES, contactHref, type Service } from "@/lib/data"
 import { SEG, createWorld, type World } from "@/lib/world"
 
@@ -25,6 +25,7 @@ export function Experience() {
   const [open, setOpen] = React.useState<Service | null>(null)
   const [ask, setAsk] = React.useState("")
   const [ready, setReady] = React.useState(false)
+  const [menu, setMenu] = React.useState(false)
 
   React.useEffect(() => {
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -54,6 +55,7 @@ export function Experience() {
       const p = progress()
       worldRef.current?.setProgress(p)
       show("intro", 1 - clamp01((p - 0.05) / 0.03))
+      show("ask", clamp01((p - 0.07) / 0.03))
       show("hero", band(p, SEG.coin[0] + 0.01, SEG.coin[1] + 0.005))
       show("list", band(p, SEG.tunnel[0] + 0.01, SEG.tunnel[1]))
       show("end", clamp01((p - SEG.end[0] - 0.02) / 0.03))
@@ -111,23 +113,38 @@ export function Experience() {
         <a href="#top" className="pill-brand" onClick={(e) => { e.preventDefault(); goTo(0) }} aria-label={`${BRAND.name}, back to the start`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/logo.png" alt="" width={28} height={28} />
+          <span>Mey Society</span>
         </a>
         <nav className="pill" aria-label="Main">
           <a href="#services" onClick={(e) => { e.preventDefault(); goTo(SEG.tunnel[0] + 0.02) }}>Services</a>
           <span className="pill-line" aria-hidden="true" />
           <a href="#contact" onClick={(e) => { e.preventDefault(); goTo(1) }}>Contact</a>
         </nav>
+        <button type="button" className="menu-btn" aria-expanded={menu} aria-controls="menu-sheet" aria-label="Menu" onClick={() => setMenu((m) => !m)}>
+          {menu ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
+        </button>
+        <nav id="menu-sheet" className="menu-sheet" hidden={!menu} aria-label="Menu">
+          <a href="#services" onClick={(e) => { e.preventDefault(); setMenu(false); goTo(SEG.tunnel[0] + 0.02) }}>Services</a>
+          <a href="#contact" onClick={(e) => { e.preventDefault(); setMenu(false); goTo(1) }}>Contact</a>
+          <a href={contactHref("Hello Mey Society, I would like to plan a stay in Ibiza.")}>Plan your stay</a>
+        </nav>
       </header>
 
       <div ref={trackRef} className="track" id="top">
         <div className="hud">
-          <section ref={reg("intro")} className="layer intro" aria-label="Mey Society">
-            <p className="intro-name">Mey Society</p>
-            <p className="intro-hint">Scroll to enter</p>
+          <section ref={reg("intro")} className="layer intro" aria-labelledby="h1">
+            <div className="intro-block">
+              <h1 id="h1" className="intro-title">Ibiza, privately arranged</h1>
+              <p className="intro-copy">Villas, yachts, cars and every guest list on the island, arranged in one conversation.</p>
+              <a className="btn-light" href={contactHref("Hello Mey Society, I would like to plan a stay in Ibiza.")}>
+                Plan your stay <ArrowRight size={16} aria-hidden="true" />
+              </a>
+              <button type="button" className="btn-dark" onClick={() => goTo(SEG.tunnel[0] + 0.02)}>Browse services</button>
+            </div>
           </section>
 
-          <section ref={reg("hero")} className="layer hero" aria-labelledby="h1">
-            <h1 id="h1" className="display">Ibiza, privately arranged</h1>
+          <section ref={reg("hero")} className="layer hero" aria-labelledby="hero-title">
+            <h2 id="hero-title" className="display">One conversation for the whole island</h2>
             <div className="mono hero-copy">
               <p>Private concierge in Ibiza, from the moment you land.</p>
               <p>A villa in Cala Molí, yachts, jet skis, cars, beach clubs and every guest list on the island, arranged in one conversation.</p>
@@ -165,7 +182,7 @@ export function Experience() {
         </div>
       </div>
 
-      <form className="ask" onSubmit={(e) => { e.preventDefault(); if (ask.trim()) location.href = contactHref(`Hello Mey Society, ${ask.trim()}`) }}>
+      <form ref={reg("ask")} className="ask" onSubmit={(e) => { e.preventDefault(); if (ask.trim()) location.href = contactHref(`Hello Mey Society, ${ask.trim()}`) }}>
         <label htmlFor="ask-input" className="sr-only">Tell us what you need</label>
         <input id="ask-input" className="mono" type="text" placeholder="Tell us what you need…" value={ask} onChange={(e) => setAsk(e.target.value)} autoComplete="off" />
         <button type="submit" aria-label="Send" disabled={!ask.trim()}><ArrowRight size={16} aria-hidden="true" /></button>
