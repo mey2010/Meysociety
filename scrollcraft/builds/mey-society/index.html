@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mey Society · Concierge privado en Ibiza</title>
+<meta name="description" content="Barcos, villas, coches, mesas VIP y chef a domicilio en Ibiza. Un solo mensaje y nosotros lo organizamos todo.">
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="scrollcraft.css">
+<style>
+  @font-face { font-family: "Instrument Sans"; src: url(fonts/instrument-sans-latin-wght-normal.woff2) format("woff2"); font-weight: 400 700; font-display: swap; }
+  @font-face { font-family: "Geist"; src: url(fonts/geist-latin-wght-normal.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
+
+  :root {
+    --sc-canvas: #070b14; --sc-surface: #0f1726;
+    --sc-ink: #102028;    --sc-ink-soft: #35505b;
+    --sc-accent: #0b6774; --sc-accent-ink: #f3f7f8;
+    --sc-font-display: "Instrument Sans", system-ui, sans-serif;
+    --sc-font-text: "Geist", system-ui, sans-serif;
+    /* sky, written by the page script */
+    --sky-top: #8fc6d9; --sky-bot: #e9f2f1; --stars: 0;
+  }
+  html { background: #070b14; }
+  body { background: transparent; color: var(--sc-ink); font-family: var(--sc-font-text); }
+
+  /* The ground roles. Restate color with the token (taste.md: inherited computed values). */
+  .is-day   { --sc-ink: #0f1f27; --sc-ink-soft: #1d3a44; --sc-accent: #0b6774; --sc-accent-ink: #f3f7f8; color: var(--sc-ink); }
+  .is-night { --sc-ink: #eef3f4; --sc-ink-soft: #c3d3d9; --sc-accent: #5fd4df; --sc-accent-ink: #061015; color: var(--sc-ink); }
+
+  /* ---------- the sky: one continuous layer under every scene ---------- */
+  .sky { position: fixed; inset: 0; z-index: -2; background: linear-gradient(to bottom, var(--sky-top), var(--sky-bot)); }
+  .stars { position: fixed; inset: 0; z-index: -2; opacity: var(--stars); pointer-events: none;
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, #fff 60%, transparent), radial-gradient(1px 1px at 27% 8%, #dfe9ff 60%, transparent),
+      radial-gradient(1.4px 1.4px at 44% 22%, #fff 60%, transparent), radial-gradient(1px 1px at 63% 12%, #fff 60%, transparent),
+      radial-gradient(1px 1px at 78% 26%, #cfe0ff 60%, transparent), radial-gradient(1.4px 1.4px at 88% 9%, #fff 60%, transparent),
+      radial-gradient(1px 1px at 8% 40%, #fff 60%, transparent), radial-gradient(1px 1px at 35% 36%, #fff 60%, transparent),
+      radial-gradient(1px 1px at 56% 44%, #e7efff 60%, transparent), radial-gradient(1px 1px at 92% 38%, #fff 60%, transparent),
+      radial-gradient(1px 1px at 20% 58%, #fff 60%, transparent), radial-gradient(1px 1px at 71% 54%, #fff 60%, transparent); }
+  .sun, .moon { position: fixed; left: 0; top: 0; z-index: -1; border-radius: 50%; pointer-events: none; will-change: transform; }
+  .sun { width: 9rem; height: 9rem; background: radial-gradient(circle, var(--sun, #fff6da) 0 42%, color-mix(in oklab, var(--sun, #fff6da) 35%, transparent) 43%, transparent 70%); }
+  .moon { width: 3.2rem; height: 3.2rem; background: radial-gradient(circle at 38% 40%, #f5f1e6 0 55%, #d9d3c4 70%, transparent 72%); box-shadow: 0 0 2.4rem 0.4rem rgb(220 230 255 / 0.12); opacity: 0; }
+
+  /* ---------- bar ---------- */
+  .bar { position: fixed; inset: 0 0 auto 0; z-index: 50; display: flex; align-items: center; gap: var(--sc-5);
+    padding: var(--sc-4) var(--sc-gutter); transition: color 500ms var(--sc-ease-out); }
+  .bar::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: linear-gradient(to bottom, color-mix(in oklab, var(--sky-top) 70%, transparent), transparent); }
+  .bar__mark { display: flex; align-items: center; gap: var(--sc-3); color: inherit; text-decoration: none; font-family: var(--sc-font-display); font-weight: 600; letter-spacing: var(--sc-track-snug); }
+  .bar__mark img { width: 2.25rem; height: 2.25rem; border-radius: 50%; }
+  .clock { margin-left: auto; display: flex; align-items: center; gap: var(--sc-4); font-size: var(--sc-t-sm); }
+  .clock__now { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 3.2em; }
+  .clock ol { display: flex; gap: var(--sc-1); list-style: none; margin: 0; padding: 0; }
+  .clock a { display: block; padding: var(--sc-2) var(--sc-3); border-radius: 99px; color: inherit; opacity: 0.62; text-decoration: none; font-variant-numeric: tabular-nums; transition: opacity 200ms, background-color 200ms; }
+  .clock a:hover, .clock a[aria-current="true"] { opacity: 1; background: color-mix(in oklab, currentColor 10%, transparent); }
+  .cta { display: inline-flex; align-items: center; gap: var(--sc-2); min-height: 2.9rem; padding: 0 var(--sc-5); border-radius: 99px;
+    background: var(--sc-accent); color: var(--sc-accent-ink); font-weight: 600; text-decoration: none; border: 0; font: inherit; font-weight: 600; cursor: pointer;
+    box-shadow: 0 0.5rem 1.4rem -0.6rem color-mix(in oklab, var(--sc-accent) 70%, #000); transition: background-color 200ms; }
+  .cta:hover { background: color-mix(in oklab, var(--sc-accent) 86%, white); }
+  :focus-visible { outline: 2px solid var(--sc-accent); outline-offset: 3px; }
+
+  /* ---------- 1 · hero, layered noon ---------- */
+  .hero .sc-stage { display: grid; }
+  .plane { position: absolute; left: 50%; max-width: none; pointer-events: none; }
+  .plane--vedra { bottom: 31%; width: 44rem; margin-left: -6rem; }
+  .plane--sea { bottom: 0; left: 0; width: 100%; height: 36%;
+    background: linear-gradient(to bottom, #4ea7b9 0%, #2b8aa0 30%, #186e86 100%); }
+  .plane--sea::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 1px; background: rgb(255 255 255 / 0.55); }
+  .plane--boat { bottom: 26%; width: 9rem; margin-left: 9rem; }
+  .plane--rocks { bottom: -2.5rem; width: 140rem; margin-left: -70rem; }
+  .hero__copy { position: relative; z-index: 3; align-self: start; padding: calc(var(--sc-9) + var(--sc-6)) var(--sc-gutter) 0; max-width: 48rem; }
+  .hero__eyebrow { display: flex; align-items: center; gap: var(--sc-3); font-size: var(--sc-t-sm); color: var(--sc-ink-soft); margin: 0 0 var(--sc-5); }
+  .hero h1 { margin: 0 0 var(--sc-5); }
+  .hero__actions { display: flex; flex-wrap: wrap; gap: var(--sc-4); align-items: center; margin-top: var(--sc-6); }
+  .link { color: inherit; text-underline-offset: 0.3em; text-decoration-thickness: 1px; }
+  .floor { position: absolute; inset: auto 0 0 0; height: 14rem; z-index: 4; pointer-events: none;
+    background: linear-gradient(to bottom, transparent, color-mix(in oklab, #10303a 60%, transparent)); }
+
+  /* ---------- 2 · relief ---------- */
+  .relief .sc-stage { display: grid; place-items: center start; padding: 0 var(--sc-gutter); }
+  .relief__lines { position: relative; width: min(100%, 60rem); height: 12rem; }
+  .relief__lines p { position: absolute; inset: 0 auto auto 0; margin: 0; font-family: var(--sc-font-display); font-size: var(--sc-t-3xl);
+    line-height: var(--sc-leading-tight); letter-spacing: var(--sc-track-tight); font-weight: 500; text-wrap: balance; }
+  .relief__lines p:last-child { font-weight: 650; }
+
+  /* ---------- 3 · sea and home, golden ---------- */
+  .golden { padding-block: var(--sc-10) var(--sc-9); }
+  .pair { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--sc-7) var(--sc-6); align-items: end; }
+  .pair__text { grid-column: 1 / span 5; }
+  .pair__fig  { grid-column: 7 / span 6; margin: 0; }
+  .pair--flip .pair__text { grid-column: 8 / span 5; grid-row: 1; }
+  .pair--flip .pair__fig  { grid-column: 1 / span 6; grid-row: 1; }
+  .pair + .pair { margin-top: var(--sc-10); }
+  .art { aspect-ratio: 4 / 3; border-radius: 1.25rem; overflow: hidden; position: relative;
+    box-shadow: 0 2rem 3rem -1.5rem rgb(80 40 10 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.4); }
+  .art svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .kicker { font-size: var(--sc-t-sm); color: var(--sc-ink-soft); margin: 0 0 var(--sc-3); }
+  .list { list-style: none; margin: var(--sc-5) 0 0; padding: 0; display: grid; gap: var(--sc-2); color: var(--sc-ink-soft); }
+  .list li::before { content: ""; display: inline-block; width: 0.4rem; height: 0.4rem; border-radius: 50%; background: var(--sc-accent); margin-right: var(--sc-3); vertical-align: 0.15em; }
+
+  /* ---------- 4 · range, dusk ---------- */
+  /* Dusk rises over the golden scene as its own ground, so the light ink of this
+     act never sits on the orange sky while both scenes share the screen. */
+  .range { background: linear-gradient(to bottom, rgb(44 58 98 / 0) 0, rgb(58 64 104 / 0.9) 22vh, #2f3557 60vh, #1d2440 70%, rgb(29 36 64 / 0) 100%); }
+  .rail { display: flex; gap: var(--sc-5); align-items: stretch; height: 100%; padding: calc(var(--sc-9) + var(--sc-4)) var(--sc-gutter) var(--sc-8); width: max-content; }
+  .rail > * { width: clamp(17rem, 27vw, 25rem); flex: none; }
+  .rail__lead { display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: var(--sc-6); }
+  .rail__note { display: flex; align-items: flex-end; padding-bottom: var(--sc-6); color: var(--sc-ink-soft); font-size: var(--sc-t-lg); line-height: 1.4; }
+  .cat { display: flex; flex-direction: column; justify-content: flex-end; gap: var(--sc-3); padding: var(--sc-6); border-radius: 1.25rem;
+    background: color-mix(in oklab, #0b1322 55%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 1.5rem 3rem -1.5rem rgb(0 0 0 / 0.5); }
+  .cat h3 { margin: 0; font-family: var(--sc-font-display); font-size: var(--sc-t-2xl); letter-spacing: var(--sc-track-tight); font-weight: 600; }
+  .cat p { margin: 0 0 var(--sc-4); color: var(--sc-ink-soft); }
+  .cat ul { list-style: none; margin: 0; padding: var(--sc-4) 0 0; border-top: 1px solid var(--sc-hairline); display: grid; gap: var(--sc-2); }
+  .cat li b { font-weight: 600; }
+  .cat li span { display: block; color: var(--sc-ink-soft); font-size: var(--sc-t-sm); }
+  @media (prefers-reduced-motion: no-preference) {
+    .rail > .cat { opacity: calc(0.55 + 0.45 * clamp(0, (var(--sc-p, 0) * 6 - var(--i)) , 1)); }
+  }
+
+  /* ---------- 5 · authored silence ---------- */
+  .hush { height: 70vh; display: grid; place-items: end start; padding: 0 var(--sc-gutter) var(--sc-8); }
+  .hush p { margin: 0; color: var(--sc-ink-soft); font-size: var(--sc-t-sm); font-variant-numeric: tabular-nums; }
+
+  /* ---------- 6 · PEAK: the island lights up ---------- */
+  .isle .sc-stage { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: var(--sc-6); padding: var(--sc-9) var(--sc-gutter) var(--sc-6); }
+  .isle__copy { position: relative; min-height: 15rem; }
+  .isle__copy > div { position: absolute; inset: 0 0 auto 0; }
+  .isle__copy h2 { margin: 0 0 var(--sc-4); }
+  .isle__map { position: relative; width: 100%; aspect-ratio: 1000 / 800; }
+  .isle__map::before { content: ""; position: absolute; inset: 10% 15%; border-radius: 50%; background: radial-gradient(closest-side, rgb(255 190 110 / 0.16), transparent); opacity: var(--sc-p, 0); pointer-events: none; }
+  .isle__map svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .land { fill: color-mix(in oklab, #1d2a45 calc(var(--sc-p, 0) * 100%), #0b1322); stroke: color-mix(in oklab, #5fd4df 25%, transparent); stroke-width: 1.2; }
+  .light { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: var(--sc-2);
+    background: none; border: 0; padding: var(--sc-2); color: var(--sc-ink); font: inherit; font-size: var(--sc-t-xs); cursor: pointer;
+    --on: clamp(0, (var(--sc-p, 0) - var(--at)) * 14, 1); opacity: calc(0.18 + 0.82 * var(--on)); }
+  .light__dot { position: relative; flex: none; width: 0.7rem; height: 0.7rem; border-radius: 50%; background: #ffd89a;
+    box-shadow: 0 0 calc(1.4rem * var(--on)) calc(0.35rem * var(--on)) rgb(255 200 120 / 0.55); transform: scale(calc(0.5 + 0.5 * var(--on))); }
+  .light__dot::after { content: ""; position: absolute; inset: -0.45rem; border-radius: 50%; border: 1.5px solid var(--sc-accent); opacity: 0; transform: scale(0.6); transition: opacity 220ms var(--sc-ease-out), transform 220ms var(--sc-ease-out); }
+  .light[aria-pressed="true"] .light__dot::after { opacity: 1; transform: scale(1); }
+  .light[aria-pressed="true"] .light__dot { background: var(--sc-accent); }
+  .light__label { white-space: nowrap; padding: 0.15rem 0.5rem; border-radius: 99px; background: rgb(7 11 20 / 0.6); opacity: var(--on); }
+  .light__label small { color: var(--sc-ink-soft); font-size: inherit; }
+  .light--left { flex-direction: row-reverse; }
+  .light--left { transform: translate(calc(-100% + 0.95rem), -50%); }
+  .light:not(.light--left) { transform: translate(-0.95rem, -50%); }
+  .isle__count { margin-top: var(--sc-5); color: var(--sc-ink-soft); font-size: var(--sc-t-sm); min-height: 1.5em; }
+
+  /* ---------- 7 · how ---------- */
+  .how { padding-block: var(--sc-7) var(--sc-9); }
+  .steps { list-style: none; margin: var(--sc-7) 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sc-6); }
+  .steps li { border-top: 1px solid var(--sc-hairline-strong); padding-top: var(--sc-5); }
+  .steps h3 { margin: 0 0 var(--sc-2); font-family: var(--sc-font-display); font-size: var(--sc-t-xl); letter-spacing: var(--sc-track-snug); font-weight: 600; }
+  .steps p { margin: 0; color: var(--sc-ink-soft); }
+  .steps i { font-style: normal; display: block; color: var(--sc-ink-soft); font-size: var(--sc-t-sm); margin-bottom: var(--sc-3); font-variant-numeric: tabular-nums; }
+
+  /* ---------- 8 · close ---------- */
+  .close .sc-stage { display: grid; grid-template-rows: 1fr auto; padding: var(--sc-9) var(--sc-gutter) var(--sc-5); }
+  .close__inner { align-self: center; display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: var(--sc-8); align-items: center; }
+  .chips { display: flex; flex-wrap: wrap; gap: var(--sc-2); margin: var(--sc-5) 0 0; padding: 0; list-style: none; }
+  .chip { min-height: 2.6rem; padding: 0 var(--sc-4); border-radius: 99px; border: 1px solid var(--sc-hairline-strong); background: transparent; color: inherit; font: inherit; font-size: var(--sc-t-sm); cursor: pointer; transition: background-color 180ms, border-color 180ms, color 180ms; }
+  .chip:hover { border-color: var(--sc-ink-soft); }
+  .chip[aria-pressed="true"] { background: var(--sc-accent); border-color: var(--sc-accent); color: var(--sc-accent-ink); }
+  .note { border-radius: 1.25rem; padding: var(--sc-6); background: color-mix(in oklab, #101b2c 80%, transparent);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 2rem 3rem -1.5rem rgb(0 0 0 / 0.6); }
+  .note__label { margin: 0 0 var(--sc-3); font-size: var(--sc-t-xs); color: var(--sc-ink-soft); }
+  .note__msg { margin: 0 0 var(--sc-6); font-size: var(--sc-t-lg); line-height: 1.45; min-height: 5.8em; white-space: pre-line; }
+  .note__alt { margin: var(--sc-4) 0 0; font-size: var(--sc-t-sm); color: var(--sc-ink-soft); }
+  .foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--sc-3); padding-top: var(--sc-5); border-top: 1px solid var(--sc-hairline); font-size: var(--sc-t-xs); color: var(--sc-ink-soft); }
+
+  /* ---------- phone ---------- */
+  @media (max-width: 860px) {
+    .clock ol { display: none; }
+    .sun { width: 5.5rem; height: 5.5rem; }
+    .bar__mark span { display: none; }
+    .hero .sc-display--xl { font-size: var(--sc-t-2xl); }
+    .hero__copy { padding-top: calc(var(--sc-9) + var(--sc-2)); }
+    .plane--vedra { width: 26rem; margin-left: -4rem; bottom: 33%; }
+    .plane--boat { width: 6rem; margin-left: 2rem; }
+    .plane--rocks { width: 90rem; margin-left: -45rem; }
+    .relief__lines p { font-size: var(--sc-t-2xl); }
+    .pair, .pair--flip { grid-template-columns: 1fr; }
+    .pair__text, .pair__fig, .pair--flip .pair__text, .pair--flip .pair__fig { grid-column: 1; grid-row: auto; }
+    .isle .sc-stage { grid-template-columns: 1fr; grid-template-rows: auto 1fr; align-content: start; padding-top: calc(var(--sc-9) - var(--sc-3)); gap: var(--sc-3); }
+    .isle__copy { min-height: 9.5rem; }
+    .isle__copy .sc-display--lg { font-size: var(--sc-t-xl); }
+    .isle__copy .sc-body { font-size: var(--sc-t-sm); }
+    .light__label { display: none; }
+    .light[aria-pressed="true"] .light__label, .light:focus-visible .light__label { display: inline; }
+    .steps { grid-template-columns: 1fr; }
+    .close__inner { grid-template-columns: 1fr; gap: var(--sc-5); }
+    .close .sc-display--lg { font-size: var(--sc-t-2xl); }
+    .note { padding: var(--sc-5); }
+    .note__msg { min-height: 0; font-size: var(--sc-t-base); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .light { --on: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sky" aria-hidden="true"></div>
+<div class="stars" aria-hidden="true"></div>
+<div class="sun" aria-hidden="true"></div>
+<div class="moon" aria-hidden="true"></div>
+<span data-sc-progress></span>
+
+<header class="bar is-day" id="bar">
+  <a class="bar__mark" href="#top"><img src="assets/logo.png" alt="" width="36" height="36"><span>Mey Society</span></a>
+  <nav class="clock" aria-label="Horas del día">
+    <span class="clock__now" id="now" aria-hidden="true">12:00</span>
+    <ol>
+      <li><a href="#top">12:00</a></li>
+      <li><a href="#mar">18:00</a></li>
+      <li><a href="#todo">20:30</a></li>
+      <li><a href="#isla">23:00</a></li>
+      <li><a href="#escribenos">00:00</a></li>
+    </ol>
+  </nav>
+  <a class="cta" href="#escribenos">Escríbenos</a>
+</header>
+
+<main id="top">
+
+  <!-- 1 · 12:00 · calm. Layered: Es Vedrà far, sea mid, the boat between, rocks in front. -->
+  <section class="hero is-day" data-sc-act="pin" data-sc-span="1.7">
+    <div class="sc-stage" data-sc-stage>
+      <svg class="plane plane--vedra" data-sc-parallax="-1.3" viewBox="0 0 700 160" aria-hidden="true">
+        <path d="M0 160 L0 150 C80 148 140 146 200 140 C230 120 250 70 285 40 C305 22 322 18 338 30 C360 50 372 92 392 118 C420 132 470 140 560 146 C620 150 660 152 700 152 L700 160 Z" fill="#6f98a6" opacity="0.75"/>
+      </svg>
+      <div class="plane plane--sea" data-sc-parallax="-0.5" aria-hidden="true"></div>
+      <svg class="plane plane--boat" data-sc-parallax="-0.3" viewBox="0 0 120 40" aria-hidden="true">
+        <path d="M6 26 L114 26 L102 36 L18 36 Z" fill="#f7f6f1"/><path d="M40 26 L48 14 L82 14 L88 26 Z" fill="#e9ece9"/><path d="M52 15 L58 9 L74 9 L78 15 Z" fill="#cfd8da"/>
+        <path d="M0 37 C30 34 60 38 120 36" stroke="#fff" stroke-opacity="0.5" fill="none"/>
+      </svg>
+      <div class="hero__copy sc-copy" data-sc-cue="0 0.82 0">
+        <p class="hero__eyebrow"><img src="assets/logo.png" alt="" width="28" height="28" style="border-radius:50%">Concierge privado · Ibiza</p>
+        <h1 class="sc-display sc-display--xl" data-sc-kinetic="lines">Un solo mensaje. Toda Ibiza resuelta.</h1>
+        <p class="sc-body">Barcos, villas, coches, mesas en los mejores clubs y un chef en tu casa. Nos escribes lo que imaginas y nosotros lo organizamos.</p>
+        <div class="hero__actions">
+          <a class="cta" href="#escribenos">Escríbenos</a>
+          <a class="link" href="#isla">Ver la isla de noche</a>
+        </div>
+      </div>
+      <svg class="plane plane--rocks" data-sc-parallax="0.9" viewBox="0 0 2240 220" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 220 L0 120 C120 90 210 60 300 74 C360 84 380 120 440 128 C560 140 640 96 760 104 C880 112 900 160 1000 168 C1060 172 1080 178 1120 180 C1160 178 1180 172 1240 168 C1340 160 1360 112 1480 104 C1600 96 1680 140 1800 128 C1860 120 1880 84 1940 74 C2030 60 2120 90 2240 120 L2240 220 Z" fill="#26343a"/>
+        <path d="M0 220 L0 160 C140 140 220 120 320 130 C420 140 520 170 640 176 C760 182 900 196 1120 200 C1340 196 1480 182 1600 176 C1720 170 1820 140 1920 130 C2020 120 2100 140 2240 160 L2240 220 Z" fill="#1a2429"/>
+      </svg>
+      <div class="floor" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <!-- 2 · 15:00 · relief. The frame holds, the lines cross. -->
+  <section class="relief is-day" data-sc-act="pin" data-sc-span="2">
+    <div class="sc-stage" data-sc-stage>
+      <div class="relief__lines">
+        <p data-sc-cue="0 0.3 0.06">Sin webs. Sin formularios.</p>
+        <p data-sc-cue="0.26 0.58">Nos cuentas fechas, personas y lo que te apetece.</p>
+        <p data-sc-cue="0.54 0.86">Lo dejamos listo antes de que aterrices.</p>
+        <p data-sc-cue="0.82">Y seguimos contigo toda la estancia.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · 18:00 · desire. Golden hour, the sea and the house open with wipes. -->
+  <section class="golden sc-section is-day" id="mar">
+    <div class="sc-wrap">
+      <div class="pair">
+        <div class="pair__text sc-stack" data-sc-in data-sc-stagger="70">
+          <p class="kicker">Mar</p>
+          <h2 class="sc-display sc-display--lg">El Mediterráneo, a tu manera.</h2>
+          <p class="sc-body">Calas escondidas, Formentera al mediodía y el atardecer desde cubierta.</p>
+          <ul class="list"><li>Barcos y yates, con o sin patrón</li><li>Motos de agua con rutas guiadas</li><li>Comida a bordo</li></ul>
+        </div>
+        <figure class="pair__fig" data-sc-reveal="left" data-sc-reveal-at="0.12 0.5">
+          <div class="art" role="img" aria-label="Un barco blanco fondeado en una cala de agua turquesa al atardecer">
+            <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <defs><linearGradient id="g-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3c98e"/><stop offset=".42" stop-color="#e7a76a"/><stop offset=".43" stop-color="#2f9fb0"/><stop offset="1" stop-color="#0f5f70"/></linearGradient></defs>
+              <rect width="400" height="300" fill="url(#g-sea)"/>
+              <circle cx="300" cy="118" r="26" fill="#fff1d2" opacity=".9"/>
+              <path d="M0 128 L400 128" stroke="#ffe7c2" stroke-opacity=".6"/>
+              <path d="M0 140 C60 120 90 100 130 104 C160 108 170 128 200 130 L200 300 L0 300 Z" fill="#7a5a3e" opacity=".55"/>
+              <g transform="translate(205 168)"><path d="M0 18 L120 18 L106 30 L14 30 Z" fill="#fbfaf6"/><path d="M34 18 L44 6 L84 6 L92 18 Z" fill="#eef0ee"/><path d="M0 34 C40 30 80 34 130 32" stroke="#fff" stroke-opacity=".6" fill="none"/></g>
+              <path d="M140 230 C200 222 260 236 330 228 M100 262 C180 254 240 268 360 258" stroke="#bff3f5" stroke-opacity=".35" fill="none" stroke-width="2"/>
+            </svg>
+          </div>
+        </figure>
+      </div>
+
+      <div class="pair pair--flip">
+        <div class="pair__text sc-stack" data-sc-in data-sc-stagger="70">
+          <p class="kicker">Estancia</p>
+          <h2 class="sc-display sc-display--lg">Una casa que te espera.</h2>
+          <p class="sc-body">Villas privadas preparadas antes de tu llegada y un chef que cocina para ti, en casa o a bordo.</p>
+          <ul class="list"><li>Villas con vistas al mar</li><li>Chef a domicilio, producto local</li><li>Todo listo a tu llegada</li></ul>
+        </div>
+        <figure class="pair__fig" data-sc-reveal="right" data-sc-reveal-at="0.12 0.5">
+          <div class="art" role="img" aria-label="Una villa blanca con ventanas iluminadas y una piscina al caer la tarde">
+            <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <defs><linearGradient id="g-villa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9925f"/><stop offset=".6" stop-color="#f4c58d"/></linearGradient></defs>
+              <rect width="400" height="300" fill="url(#g-villa)"/>
+              <path d="M0 200 C80 180 140 186 200 176 C260 166 330 172 400 160 L400 300 L0 300 Z" fill="#8a6a4a" opacity=".5"/>
+              <rect x="70" y="120" width="250" height="100" fill="#f6efe4"/><rect x="150" y="90" width="120" height="34" fill="#efe6d8"/>
+              <rect x="90" y="150" width="40" height="46" fill="#ffcf7a"/><rect x="146" y="150" width="70" height="46" fill="#ffd994"/><rect x="232" y="150" width="40" height="46" fill="#ffcf7a"/><rect x="176" y="98" width="36" height="20" fill="#ffd994"/>
+              <rect x="40" y="226" width="320" height="30" fill="#3fb3c2"/><path d="M60 240 C120 234 180 246 240 238 C280 234 320 242 340 238" stroke="#d9fbfd" stroke-opacity=".6" fill="none"/>
+              <rect x="0" y="256" width="400" height="44" fill="#d8c3a2"/>
+              <path d="M335 230 L338 150 M338 150 C320 140 312 150 304 156 M338 150 C352 136 364 142 372 148 M338 150 C334 132 342 124 350 120" stroke="#3d4a33" stroke-width="3" fill="none"/>
+            </svg>
+          </div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · 20:30 · abundance. Everything on offer travels sideways at dusk. -->
+  <section class="range is-night" id="todo" data-sc-act="pan" data-sc-span="2.8">
+    <div class="sc-stage" data-sc-stage>
+      <div class="rail" data-sc-pan="0.04">
+        <div class="rail__lead sc-stack">
+          <h2 class="sc-display sc-display--lg">Todo, con un solo contacto.</h2>
+          <p class="sc-body">Nueve servicios, una conversación. Pide uno o pídelos todos.</p>
+        </div>
+        <article class="cat" style="--i:0"><h3>Mar</h3><p>Calas, Formentera y atardeceres.</p>
+          <ul><li><b>Barcos y yates</b><span>Por días o semanas, con tripulación</span></li><li><b>Motos de agua</b><span>Rutas guiadas para todos los niveles</span></li></ul></article>
+        <article class="cat" style="--i:1"><h3>Estancia</h3><p>Una casa preparada para ti.</p>
+          <ul><li><b>Villas</b><span>Casas privadas con vistas</span></li><li><b>Chef a domicilio</b><span>En tu villa o en tu barco</span></li></ul></article>
+        <article class="cat" style="--i:2"><h3>Tierra</h3><p>Moverse sin pensar.</p>
+          <ul><li><b>Coches</b><span>Deportivos, descapotables y SUV</span></li><li><b>Transfers</b><span>Aeropuerto, puerto y noches de club</span></li></ul></article>
+        <article class="cat" style="--i:3"><h3>Noche</h3><p>La noche, sin colas.</p>
+          <ul><li><b>Mesas VIP</b><span>Reservados con servicio de botella</span></li><li><b>Entradas VIP</b><span>Acceso preferente</span></li><li><b>Guest lists</b><span>Clubs y beach clubs, cada noche</span></li></ul></article>
+        <p class="rail__note">Antes de llegar y mientras estás aquí. Siempre a un mensaje.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · 22:30 · anticipation. AUTHORED SILENCE: ground only while the moon rises. -->
+  <section class="hush is-night" aria-hidden="true"><p>22:30</p></section>
+
+  <!-- 6 · 23:00 · PEAK. The island lights up; each light is a service you can tap. -->
+  <section class="isle is-night" id="isla" data-sc-act="pin" data-sc-span="3.4">
+    <div class="sc-stage" data-sc-stage>
+      <div class="isle__copy">
+        <div data-sc-cue="0 0.42 0.05">
+          <h2 class="sc-display sc-display--lg">Cuando cae la noche, la isla se enciende.</h2>
+          <p class="sc-body">Cada luz es algo que organizamos por ti.</p>
+        </div>
+        <div data-sc-cue="0.46">
+          <h2 class="sc-display sc-display--lg">¿Qué quieres encender tú?</h2>
+          <p class="sc-body">Toca las luces que te apetezcan. Tu mensaje se escribe solo.</p>
+          <p class="isle__count" id="isle-count" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="isle__map">
+        <svg viewBox="0 0 1000 800" aria-hidden="true">
+          <path class="land" d="M300 262 C362 204 470 172 560 152 C640 136 702 124 760 160 C804 190 792 242 772 282 C750 330 742 382 702 430 C672 470 642 520 602 540 C562 560 522 546 482 560 C442 574 402 560 372 530 C332 490 292 470 262 430 C232 390 222 340 252 302 Z"/>
+          <path class="land" d="M598 652 C640 632 690 642 722 662 C762 686 792 700 782 716 C762 722 730 702 700 696 C660 690 622 690 598 676 Z"/>
+          <circle class="land" cx="214" cy="522" r="9"/>
+        </svg>
+        <!-- positions are % of the map box; --at is the act progress where each light comes on -->
+        <button class="light light--left" type="button" style="left:24.6%;top:47%;--at:.08" data-svc="boats" aria-pressed="false"><span class="light__dot"></span><span class="light__label">Barco al atardecer <small>Cala Comte</small></span></button>
+        <button class="light" type="button" style="left:29.5%;top:41%;--at:.13" data-svc="guestlist" aria-pressed="false"><span class="light__dot"></span><span class="light__label">Guest list <small>Sant Antoni</small></span></button>
+        <button class="light light--left" type="button" style="left:21.4%;top:65.2%;--at:.18" data-svc="jetski" aria-pressed="false"><span class="light__dot"></span><span class="light__label">Moto de agua <small>Es Vedrà</small></span></button>
+        <button class="light" type="button" style="left:38%;top:59%;--at:.23" data-svc="villas" aria-pressed="false"><span class="light__dot"></span><span class="light__label">Villa con vistas <small>Sant Josep</small></span></button>
+        <button class="light" type="button" style="left:62%;top:26%;--at:.28" data-svc="cars" aria-pressed="false"><span class="light__dot"></span><span class="light__label">Coche en la puerta <small>Sant Joan</small></span></button>
+        <button class="light" type="button" style="left:73.6%;top:48.6%;--at:.33" data-svc="chefs" aria-pressed="false"><span class="light__dot"></span><span class="light__label">Chef en tu villa <small>Santa Eulària</small></span></button>
+        <button class="light light--left" type="button" style="left:53.6%;top:70%;--at:.38" data-svc="transfers" aria-pressed="false"><span class="light__dot"></span><span class="light__label">Transfer privado <small>Aeropuerto</small></span></button>
+        <button class="light" type="button" style="left:66%;top:62%;--at:.43" data-svc="boats" aria-pressed="false"><span class="light__dot"></span><span class="light__label">Yate <small>Marina Botafoch</small></span></button>
+        <button class="light" type="button" style="left:63%;top:65.6%;--at:.48" data-svc="tables" aria-pressed="false"><span class="light__dot"></span><span class="light__label">Mesa VIP <small>Eivissa</small></span></button>
+        <button class="light" type="button" style="left:59.6%;top:69.4%;--at:.53" data-svc="vip" aria-pressed="false"><span class="light__dot"></span><span class="light__label">Entradas VIP <small>Platja d'en Bossa</small></span></button>
+        <button class="light" type="button" style="left:70%;top:85%;--at:.58" data-svc="boats" aria-pressed="false"><span class="light__dot"></span><span class="light__label">Día en barco <small>Formentera</small></span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · 23:30 · clarity. Administrative, so it flows and stays short. -->
+  <section class="how sc-section is-night">
+    <div class="sc-wrap" data-sc-in data-sc-stagger="70">
+      <h2 class="sc-display sc-display--md">Tres pasos. Cero preocupaciones.</h2>
+      <ol class="steps">
+        <li><i>23:31</i><h3>Cuéntanos</h3><p>Fechas, personas y lo que te apetece. Un mensaje basta.</p></li>
+        <li><i>23:40</i><h3>Lo organizamos</h3><p>Te enviamos opciones claras, con todo confirmado.</p></li>
+        <li><i>Al llegar</i><h3>Disfruta</h3><p>Todo te está esperando. Y seguimos a un mensaje.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 8 · 00:00 · resolve. The message they built, held on screen. -->
+  <section class="close is-night" id="escribenos" data-sc-act="pin" data-sc-span="1.2">
+    <div class="sc-stage" data-sc-stage>
+      <div class="close__inner">
+        <div data-sc-cue="0.02">
+          <h2 class="sc-display sc-display--lg">Tu Ibiza empieza con un mensaje.</h2>
+          <p class="sc-body">Elige lo que te interesa y te respondemos personalmente. Sin bots, sin esperas.</p>
+          <ul class="chips" id="chips" aria-label="Servicios"></ul>
+        </div>
+        <div class="note" data-sc-cue="0.02" data-sc-rise="0">
+          <p class="note__label">Tu mensaje</p>
+          <p class="note__msg" id="msg" aria-live="polite"></p>
+          <a class="cta" id="send" href="#" data-sc-magnet="0.24">Escríbenos</a>
+          <p class="note__alt">O directamente a <a class="link" href="mailto:meysociety@protonmail.com">meysociety@protonmail.com</a></p>
+        </div>
+      </div>
+      <footer class="foot"><span>Mey Society · Concierge privado en Ibiza</span><span>Ibiza, Illes Balears</span></footer>
+    </div>
+  </section>
+
+</main>
+
+<script src="scrollcraft.js"></script>
+<script>
+ScrollCraft.mount(document.body);
+
+/* ---------------- the plan: shared by the island lights and the close ---------------- */
+(() => {
+  const BRAND = { email: "meysociety@protonmail.com", whatsapp: "" }; // whatsapp: international digits, no "+"
+  const NAMES = { boats: "Barcos y yates", jetski: "Motos de agua", villas: "Villas", chefs: "Chef a domicilio", cars: "Coches",
+                  transfers: "Transfers", tables: "Mesas VIP", vip: "Entradas VIP", guestlist: "Guest lists" };
+  const plan = new Set();
+  const chips = document.getElementById("chips");
+  const msg = document.getElementById("msg"), send = document.getElementById("send"), count = document.getElementById("isle-count");
+
+  for (const [id, name] of Object.entries(NAMES)) {
+    const li = document.createElement("li");
+    li.innerHTML = `<button class="chip" type="button" data-svc="${id}" aria-pressed="false">${name}</button>`;
+    chips.append(li);
+  }
+  const text = () => plan.size
+    ? "Hola Mey Society, estoy organizando mi estancia en Ibiza y me interesa:\n" + [...plan].map(s => "· " + NAMES[s]).join("\n")
+    : "Hola Mey Society, estoy organizando mi estancia en Ibiza. ¿Me ayudáis?";
+  function render() {
+    document.querySelectorAll("[data-svc]").forEach(b => b.setAttribute("aria-pressed", plan.has(b.dataset.svc)));
+    const t = text();
+    msg.textContent = t;
+    const body = encodeURIComponent(t);
+    send.href = BRAND.whatsapp ? `https://wa.me/${BRAND.whatsapp}?text=${body}` : `mailto:${BRAND.email}?subject=Mey%20Society&body=${body}`;
+    count.textContent = plan.size ? `${plan.size} ${plan.size === 1 ? "servicio" : "servicios"} en tu mensaje` : "";
+  }
+  document.addEventListener("click", e => {
+    const b = e.target.closest("button[data-svc]"); if (!b) return;
+    const s = b.dataset.svc; plan.has(s) ? plan.delete(s) : plan.add(s); render();
+  });
+  render();
+})();
+
+/* ---------------- the sky: one clock for the whole page ---------------- */
+(() => {
+  const root = document.documentElement, bar = document.getElementById("bar"), now = document.getElementById("now");
+  const sun = document.querySelector(".sun"), moon = document.querySelector(".moon");
+  const links = [...document.querySelectorAll(".clock a")];
+  // Sky stops are pinned to the scenes, not to raw page percent, so the light
+  // matches the ink of whatever section is on screen.
+  //  anchor (selector, offset in viewports)   top        bottom     sun
+  const STOPS = [["#top", 0,          "#8fc6d9", "#e9f2f1", "#fff6da"],
+                 [".relief", 1,       "#86bcd3", "#f1ead8", "#fff0c8"],
+                 ["#mar", 0.2,        "#e2a774", "#f7d9a9", "#ffd08a"],
+                 ["#mar", 1.6,        "#d98d62", "#f1c38f", "#ff9a52"],
+                 ["#todo", 2,         "#1a2340", "#2a2c48", "#ff7a3a"],
+                 [".hush", 0,         "#0e1730", "#2a2c48", "#ff7a3a"],
+                 ["#isla", 0,         "#070b14", "#0d1526", "#ff7a3a"]];
+  let K = [];
+  const measure = () => {
+    const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    K = STOPS.map(([sel, off, a, b, c]) => {
+      const el = document.querySelector(sel);
+      const y = el.getBoundingClientRect().top + scrollY + off * innerHeight;
+      return [Math.min(1, Math.max(0, y / max)), a, b, c];
+    });
+    K.push([1, K.at(-1)[1], K.at(-1)[2], K.at(-1)[3]]);
+    last = -1;
+  };
+  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const mix = (a, b, f) => "#" + hex(a).map((v, i) => Math.round(v + (hex(b)[i] - v) * f).toString(16).padStart(2, "0")).join("");
+  const at = (t, col) => { if (t <= K[0][0]) return K[0][col]; for (let i = 1; i < K.length; i++) if (t <= K[i][0]) { const f = (t - K[i-1][0]) / Math.max(1e-6, K[i][0] - K[i-1][0]); return mix(K[i-1][col], K[i][col], f); } return K.at(-1)[col]; };
+  const ids = ["top", "mar", "todo", "isla", "escribenos"].map(id => document.getElementById(id));
+  let last = -1;
+  measure(); addEventListener("resize", measure); addEventListener("load", measure);
+  let docH = 0;
+  function frame() {
+    if (document.documentElement.scrollHeight !== docH) { docH = document.documentElement.scrollHeight; measure(); }
+    const max = document.documentElement.scrollHeight - innerHeight;
+    const t = Math.min(1, Math.max(0, scrollY / Math.max(1, max)));
+    if (t !== last) {
+      last = t;
+      root.style.setProperty("--sky-top", at(t, 1));
+      root.style.setProperty("--sky-bot", at(t, 2));
+      root.style.setProperty("--sun", at(t, 3));
+      const tDusk = K[4][0], tHush = K[5][0], tNight = K[6][0];
+      root.style.setProperty("--stars", Math.min(1, Math.max(0, (t - tDusk) / Math.max(1e-6, tNight - tDusk))).toFixed(3));
+      // sun: an arc from upper right that sets on the left as dusk arrives
+      const s = Math.min(1, t / Math.max(1e-6, tDusk + 0.04)), vw = innerWidth, vh = innerHeight;
+      const narrow = vw < 860;
+      sun.style.transform = `translate(${vw * ((narrow ? 0.72 : 0.7) - 0.5 * s)}px, ${vh * ((narrow ? 0.5 : 0.1) + (narrow ? 0.6 : 0.95) * s * s)}px)`;
+      sun.style.opacity = s >= 1 ? 0 : 1;
+      const m = Math.min(1, Math.max(0, (t - tDusk) / Math.max(1e-6, tHush - tDusk + 0.04)));
+      moon.style.opacity = m;
+      moon.style.transform = `translate(${vw * 0.8}px, ${vh * (0.32 - 0.18 * m)}px)`;
+      // the clock: 12:00 → 00:00
+      const mins = Math.round(720 * t), h = (12 + Math.floor(mins / 60)) % 24, mm = mins % 60;
+      now.textContent = `${String(h).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+      const night = ids[2].getBoundingClientRect().top < 64; bar.classList.toggle("is-day", !night); bar.classList.toggle("is-night", night);
+      let cur = 0; ids.forEach((el, i) => { if (el && el.getBoundingClientRect().top < innerHeight * 0.5) cur = i; });
+      links.forEach((a, i) => a.setAttribute("aria-current", i === cur));
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
