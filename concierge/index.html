@@ -10,6 +10,8 @@
 </head>
 <body>
 
+<canvas class="drape" id="drape" aria-hidden="true"></canvas>
+
 <!-- ============ STAGGERED MENU (React Bits, ported to vanilla JS + GSAP) ============ -->
 <div class="staggered-menu-wrapper fixed-wrapper" id="sm" data-position="right" style="--sm-accent:#ab50db">
   <div class="sm-prelayers" aria-hidden="true">
@@ -25,13 +27,14 @@
   </header>
   <aside id="staggered-menu-panel" class="staggered-menu-panel" aria-hidden="true">
     <div class="sm-panel-inner">
-      <ul class="sm-panel-list" role="list" data-numbering>
-        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#top" data-index="1"><span class="sm-panel-itemLabel">Mapa</span></a></li>
-        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#servicios" data-index="2"><span class="sm-panel-itemLabel">Servicios</span></a></li>
-        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#paquetes" data-index="3"><span class="sm-panel-itemLabel">Paquetes</span></a></li>
-        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#faq" data-index="4"><span class="sm-panel-itemLabel">Preguntas</span></a></li>
-        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#contacto" data-index="5"><span class="sm-panel-itemLabel">Contacto</span></a></li>
-        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#area-cliente" data-index="6" data-login><span class="sm-panel-itemLabel">Área cliente</span></a></li>
+      <ul class="sm-panel-list" role="list">
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#top"><span class="sm-panel-itemLabel">Inicio</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#mapa"><span class="sm-panel-itemLabel">Mapa</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#servicios"><span class="sm-panel-itemLabel">Servicios</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#paquetes"><span class="sm-panel-itemLabel">Paquetes</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#faq"><span class="sm-panel-itemLabel">Preguntas</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#contacto"><span class="sm-panel-itemLabel">Contacto</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#area-cliente" data-login><span class="sm-panel-itemLabel">Área cliente</span></a></li>
       </ul>
       <div class="sm-socials" aria-label="Contacto directo">
         <h3 class="sm-socials-title">Contacto</h3>
@@ -44,13 +47,24 @@
   </aside>
 </div>
 
-<main id="top">
+<main>
+
+  <!-- ============ INTRO: the name first, lit like a sign ============ -->
+  <section class="intro" id="top" aria-label="Mey Society">
+    <h1 class="signal" id="signal" aria-label="Mey Society">MΞY SOCIΞTY.</h1>
+    <p class="intro__line" id="introLine">El contacto de tu contacto en Ibiza.</p>
+    <p class="intro__sub" id="introSub">Tú dinos qué quieres vivir. Nosotros abrimos las puertas.</p>
+    <div class="intro__cta" id="introCta">
+      <a class="btn btn--primary btn--lg" href="#contacto">Escríbenos</a>
+      <a class="btn btn--glass btn--lg" href="#mapa">Ver la isla</a>
+    </div>
+  </section>
 
   <!-- ============ HERO: the island, point by point ============ -->
   <section class="hero" id="mapa" aria-label="Mapa de Ibiza">
     <div class="hero__copy">
       <p class="eyebrow eyebrow--light">Private concierge · Ibiza</p>
-      <h1 class="display">Ibiza,<br><em>without limits.</em></h1>
+      <h2 class="display">Ibiza,<br><em>without limits.</em></h2>
       <p class="lede">Private stays. Extraordinary experiences. One dedicated concierge.</p>
       <p class="hero__hint">Toca cualquier punto del mapa para ver el club, el beach club o la playa.</p>
       <div class="filters" role="group" aria-label="Mostrar en el mapa">
@@ -89,19 +103,96 @@
     </div>
   </section>
 
-  <!-- ============ SERVICES: the stage follows the pointer ============ -->
-  <section class="sec sec--light" id="servicios">
+  <!-- ============ SERVICES: cards stack and fade as you scroll ============ -->
+  <section class="sec sec--drape" id="servicios">
     <div class="wrap">
       <header class="sec__head">
-        <p class="eyebrow">Servicios</p>
+        <p class="eyebrow eyebrow--light">Servicios</p>
         <h2 class="display display--md">Toda la isla, <em>en una conversación.</em></h2>
-        <p class="lede lede--dark">Mueve el cursor sobre la isla: el mapa y las tarjetas te siguen. Cada servicio está anclado a un lugar real de Ibiza.</p>
+        <p class="lede">Ocho servicios, un solo contacto. Baja y descúbrelos uno a uno.</p>
       </header>
-    </div>
-    <div class="stage" id="stage">
-      <div class="stage__layer stage__layer--map" data-depth="0.15"><svg id="stageMap" aria-hidden="true"></svg></div>
-      <div class="stage__layer" data-depth="0.5" id="stageCards"></div>
-      <div class="stage__glow" aria-hidden="true"></div>
+      <div class="stack" id="stack">
+        <article class="stack__card" data-svc="villas">
+          <div class="stack__media"><img src="data/photos/cala-jondal.jpg" alt="Vista aérea: Es Cubells · Cala Jondal" loading="lazy"></div>
+          <div class="stack__body">
+            <p class="stack__place">Es Cubells · Cala Jondal</p>
+            <h3>Villas privadas</h3>
+            <p>Casas con licencia turística, piscina y vistas al mar, preparadas antes de que aterrices.</p>
+            <ul><li>Número de registro turístico en cada ficha</li><li>Limpieza, chef y compra a tu llegada</li><li>Disponibilidad confirmada en 24 h</li></ul>
+            <a class="btn btn--primary" href="#contacto" data-svc="villas">Consultar villas privadas</a>
+          </div>
+        </article>
+        <article class="stack__card" data-svc="yates">
+          <div class="stack__media"><img src="data/photos/marina-botafoch.jpg" alt="Vista aérea: Marina Botafoch" loading="lazy"></div>
+          <div class="stack__body">
+            <p class="stack__place">Marina Botafoch</p>
+            <h3>Yates y barcos</h3>
+            <p>Salidas desde el puerto de Eivissa hacia calas y Formentera, con patrón y tripulación.</p>
+            <ul><li>Operadores de chárter autorizados</li><li>Día completo, medio día o atardecer</li><li>Comida a bordo</li></ul>
+            <a class="btn btn--primary" href="#contacto" data-svc="yates">Consultar yates y barcos</a>
+          </div>
+        </article>
+        <article class="stack__card" data-svc="motos">
+          <div class="stack__media"><img src="data/photos/cala-bassa.jpg" alt="Vista aérea: Costa oeste" loading="lazy"></div>
+          <div class="stack__body">
+            <p class="stack__place">Costa oeste</p>
+            <h3>Motos de agua</h3>
+            <p>Rutas guiadas con operadores autorizados, siempre en zonas balizadas para ello.</p>
+            <ul><li>Para todos los niveles</li><li>Monitor y material incluidos</li><li>Punto de salida confirmado al reservar</li></ul>
+            <a class="btn btn--primary" href="#contacto" data-svc="motos">Consultar motos de agua</a>
+          </div>
+        </article>
+        <article class="stack__card" data-svc="coches">
+          <div class="stack__media"><img src="data/photos/cala-d-hort.jpg" alt="Vista aérea: Toda la isla" loading="lazy"></div>
+          <div class="stack__body">
+            <p class="stack__place">Toda la isla</p>
+            <h3>Coches</h3>
+            <p>Descapotables, SUV y deportivos entregados donde estés.</p>
+            <ul><li>Entrega en tu villa</li><li>Por días o por semanas</li><li>Seguro incluido</li></ul>
+            <a class="btn btn--primary" href="#contacto" data-svc="coches">Consultar coches</a>
+          </div>
+        </article>
+        <article class="stack__card" data-svc="transfers">
+          <div class="stack__media"><img src="data/photos/aeropuerto.jpg" alt="Vista aérea: Aeropuerto y puerto" loading="lazy"></div>
+          <div class="stack__body">
+            <p class="stack__place">Aeropuerto y puerto</p>
+            <h3>Transfers</h3>
+            <p>Chófer privado con licencia para llegadas, salidas y noches de club.</p>
+            <ul><li>Recogida con tu nombre</li><li>Vehículos de alta gama</li><li>Disponible 24 h</li></ul>
+            <a class="btn btn--primary" href="#contacto" data-svc="transfers">Consultar transfers</a>
+          </div>
+        </article>
+        <article class="stack__card" data-svc="dining">
+          <div class="stack__media"><img src="data/photos/dalt-vila.jpg" alt="Vista aérea: Dalt Vila" loading="lazy"></div>
+          <div class="stack__body">
+            <p class="stack__place">Dalt Vila</p>
+            <h3>Fine dining</h3>
+            <p>Las mesas que merecen la pena al atardecer, y un chef privado en tu villa o a bordo.</p>
+            <ul><li>Reservas en restaurantes de la isla</li><li>Chef a domicilio con producto local</li><li>Menús para celebraciones</li></ul>
+            <a class="btn btn--primary" href="#contacto" data-svc="dining">Consultar fine dining</a>
+          </div>
+        </article>
+        <article class="stack__card" data-svc="beach">
+          <div class="stack__media"><img src="data/photos/sa-trinxa.jpg" alt="Vista aérea: Ses Salines · Cala Jondal" loading="lazy"></div>
+          <div class="stack__body">
+            <p class="stack__place">Ses Salines · Cala Jondal</p>
+            <h3>Beach clubs</h3>
+            <p>Hamacas y camas reservadas en los beach clubs que elijas, sin esperas.</p>
+            <ul><li>Mejor ubicación disponible</li><li>Comida y bebida a pie de playa</li><li>De día y al atardecer</li></ul>
+            <a class="btn btn--primary" href="#contacto" data-svc="beach">Consultar beach clubs</a>
+          </div>
+        </article>
+        <article class="stack__card" data-svc="noche">
+          <div class="stack__media"><img src="data/photos/hi-ibiza.jpg" alt="Vista aérea: Platja d'en Bossa · Sant Rafel" loading="lazy"></div>
+          <div class="stack__body">
+            <p class="stack__place">Platja d'en Bossa · Sant Rafel</p>
+            <h3>Clubs y VIP</h3>
+            <p>Mesas, entradas y guest lists gestionadas directamente con cada club.</p>
+            <ul><li>Mesas con servicio de botella</li><li>Guest lists cada noche</li><li>Solo mayores de 18 años</li></ul>
+            <a class="btn btn--primary" href="#contacto" data-svc="noche">Consultar clubs y vip</a>
+          </div>
+        </article>
+      </div>
     </div>
   </section>
 

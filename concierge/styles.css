@@ -1,5 +1,7 @@
 @font-face { font-family: "Instrument Serif"; src: url(fonts/instrument-serif-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: "Instrument Serif"; src: url(fonts/instrument-serif-latin-400-italic.woff2) format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Noto Serif Display"; src: url(fonts/noto-serif-display-latin-wght-normal.woff2) format("woff2"); font-weight: 100 900; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC; }
+@font-face { font-family: "Noto Serif Display"; src: url(fonts/noto-serif-display-greek-wght-normal.woff2) format("woff2"); font-weight: 100 900; font-display: swap; unicode-range: U+0370-03FF; }
 @font-face { font-family: "Geist"; src: url(fonts/geist-latin-wght-normal.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
 
 /* Brand palette, sampled from the Mey Society logo. */
@@ -24,7 +26,7 @@
 }
 * { box-sizing: border-box; }
 html { background: var(--midnight); }
-body { margin: 0; font-family: var(--sans); color: var(--on-dark); background: var(--midnight); -webkit-font-smoothing: antialiased; overflow-x: clip; }
+body { margin: 0; font-family: var(--sans); color: var(--on-dark); background: transparent; -webkit-font-smoothing: antialiased; overflow-x: clip; }
 img { max-width: 100%; }
 a { color: inherit; }
 :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 6px; }
@@ -335,3 +337,51 @@ input:focus, textarea:focus { outline: none; border-color: var(--cyan); backgrou
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
 }
+
+
+/* ---------------- background: a glowing drape of dots (canvas) ---------------- */
+.drape { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; pointer-events: none; }
+.hero { background: radial-gradient(60% 50% at 80% 45%, rgb(30 36 187 / .22), transparent 70%); }
+.sec--night { background: linear-gradient(180deg, rgb(41 36 103 / .55), rgb(13 10 56 / .85)); }
+.sec--drape { background: linear-gradient(180deg, rgb(13 10 56 / .15), rgb(13 10 56 / .55)); color: var(--on-dark); }
+
+/* ---------------- intro: the name first, lit like a neon sign ---------------- */
+.intro { position: relative; min-height: 100svh; display: grid; place-content: center; justify-items: center; text-align: center; gap: 22px;
+  padding: 120px var(--gutter) 80px; }
+.signal { margin: 0; font: 400 clamp(52px, 11.5vw, 190px)/1 "Noto Serif Display", var(--serif); letter-spacing: .05em; white-space: nowrap; color: rgb(120 199 228 / .1); }
+.signal .ch { display: inline-block; transition: color 60ms linear, text-shadow 60ms linear; }
+.signal .ch.on { color: #f7f8ff;
+  text-shadow: 0 0 4px #fff, 0 0 12px rgb(120 199 228 / .95), 0 0 28px rgb(120 199 228 / .7), 0 0 52px rgb(30 36 187 / .9), 0 0 90px rgb(171 80 219 / .65); }
+.signal .ch.dim { color: rgb(200 230 245 / .55); text-shadow: 0 0 8px rgb(120 199 228 / .35); }
+.signal .sp { display: inline-block; width: .35em; }
+.intro__line { margin: 0; font: italic 400 clamp(22px, 2.6vw, 38px)/1.2 var(--serif); color: var(--chrome); opacity: 0; transform: translateY(10px); }
+.intro__sub { margin: 0; max-width: 46ch; font-size: clamp(15px, 1.2vw, 18px); line-height: 1.55; color: var(--on-dark-soft); opacity: 0; transform: translateY(10px); }
+.intro__cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 10px; opacity: 0; transform: translateY(10px); }
+.intro.is-lit .intro__line, .intro.is-lit .intro__sub, .intro.is-lit .intro__cta { opacity: 1; transform: none; transition: opacity 900ms var(--ease), transform 900ms var(--ease); }
+.intro.is-lit .intro__sub { transition-delay: 180ms; } .intro.is-lit .intro__cta { transition-delay: 360ms; }
+@media (max-width: 600px) { .signal { font-size: 12.4vw; letter-spacing: .03em; } }
+
+/* ---------------- services: cards that stack and fade as you scroll ---------------- */
+.stack { position: relative; display: grid; gap: 0; padding-bottom: 10vh; }
+.stack__card { --i: 0; position: sticky; top: calc(14vh + var(--i) * 14px); margin-bottom: 22vh; display: grid; grid-template-columns: 1.05fr 1fr; min-height: min(68vh, 560px);
+  border-radius: 34px; overflow: hidden; transform-origin: 50% 0; will-change: transform, opacity;
+  background: linear-gradient(150deg, rgb(41 36 103 / .96), rgb(13 10 56 / .97) 60%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .35), inset 0 0 0 1px rgb(120 199 228 / .25), 0 40px 80px -30px rgb(0 0 0 / .8); }
+.stack__card:last-child { margin-bottom: 0; }
+.stack__card:nth-child(even) { background: linear-gradient(150deg, rgb(30 36 187 / .96), rgb(41 36 103 / .97) 60%); }
+.stack__media { position: relative; overflow: hidden; }
+.stack__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.stack__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 60%, rgb(13 10 56 / .55)); }
+.stack__body { display: grid; align-content: center; gap: 14px; padding: clamp(26px, 4vw, 56px); }
+.stack__place { margin: 0; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--cyan); }
+.stack__body h3 { margin: 0; font: 400 clamp(40px, 4.6vw, 68px)/1 var(--serif); color: #fff; }
+.stack__body > p:not(.stack__place) { margin: 0; color: var(--on-dark-soft); line-height: 1.6; max-width: 40ch; }
+.stack__body ul { list-style: none; margin: 4px 0 10px; padding: 14px 0 0; border-top: 1px solid rgb(217 220 239 / .18); display: grid; gap: 8px; font-size: 14.5px; }
+.stack__body li::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--violet); box-shadow: 0 0 10px var(--violet); margin-right: 10px; vertical-align: 2px; }
+.stack__body .btn { justify-self: start; }
+@media (max-width: 900px) {
+  .stack__card { grid-template-columns: 1fr; grid-template-rows: 38% 1fr; min-height: 76svh; top: calc(10svh + var(--i) * 10px); margin-bottom: 14vh; }
+  .stack__body { padding: 22px; gap: 10px; }
+  .stack__body ul { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .stack__card { position: relative; top: auto; margin-bottom: 24px; } }

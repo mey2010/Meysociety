@@ -213,42 +213,116 @@ document.getElementById("popBook").addEventListener("click", () => {
 });
 
 /* =====================================================================
-   SERVICES STAGE — map and cards follow the pointer at different depths
+   SIGNAL TYPE — the name flickers on like a neon sign, then idles
    ===================================================================== */
-const SERVICES = [
-  { id: "motos", name: "Motos de agua", line: "Rutas guiadas autorizadas", place: "bassa", photo: "cala-bassa", col: 0, row: 0 },
-  { id: "coches", name: "Coches", line: "Entregados en tu villa", place: "hort", photo: "cala-d-hort", col: 0, row: 1 },
-  { id: "transfers", name: "Transfers", line: "Chófer privado con licencia", place: "airport", photo: "aeropuerto", col: 0, row: 2 },
-  { id: "villas", name: "Villas", line: "Con licencia y vistas al mar", place: "cubells", photo: "cala-jondal", col: 0, row: 3 },
-  { id: "yates", name: "Yates", line: "Con patrón y tripulación", place: "botafoch", photo: "marina-botafoch", col: 1, row: 0 },
-  { id: "dining", name: "Fine dining", line: "Mesas y chef privado", place: "eivissa", photo: "dalt-vila", col: 1, row: 1 },
-  { id: "noche", name: "Clubs y VIP", line: "Mesas, entradas y listas", place: "bossa", photo: "hi-ibiza", col: 1, row: 2 },
-  { id: "beach", name: "Beach clubs", line: "Hamacas y camas reservadas", place: "salines", photo: "sa-trinxa", col: 1, row: 3 },
-];
 {
-  const stage = document.getElementById("stage"), stageMap = document.getElementById("stageMap"), cards = document.getElementById("stageCards");
-  stageMap.setAttribute("viewBox", `0 0 ${MAP.w} ${MAP.h}`); stageMap.innerHTML = `<path d="${MAP.coast.join("")}"/>`;
-  const box = document.createElement("div"); box.className = "stage__box"; cards.append(box);
-  const lines = document.createElementNS(NS, "svg"); lines.setAttribute("viewBox", "0 0 100 100"); lines.setAttribute("preserveAspectRatio", "none"); lines.setAttribute("class", "stage__lines"); box.append(lines);
-  const COLX = [-24, 124], ROWY = [11, 37, 63, 89];
-  for (const s of SERVICES) {
-    const [mx, my] = toSVG(PLACES[s.place].ll), x = mx / MAP.w * 100, y = my / MAP.h * 100, cx = COLX[s.col], cy = ROWY[s.row];
-    const a = document.createElement("a"); a.className = "svc"; a.href = "#contacto"; a.style.left = cx + "%"; a.style.top = cy + "%";
-    a.innerHTML = `<div class="svc__card"><div class="svc__img"><img src="data/photos/${s.photo}.jpg" alt="" loading="lazy"><small>${PLACES[s.place].name}</small></div><h3>${s.name}</h3><p>${s.line}</p></div>`;
-    a.addEventListener("click", e => { e.preventDefault(); select(s.id, true); document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" }); });
-    box.append(a);
-    const ex = s.col ? cx - 16 : cx + 16;
-    lines.insertAdjacentHTML("beforeend", `<path d="M${ex},${cy} C${(ex + x) / 2},${cy} ${(ex + x) / 2},${y} ${x},${y}"/><circle cx="${x}" cy="${y}" r=".7"/>`);
+  const h = document.getElementById("signal"), intro = h.closest(".intro"), text = h.textContent;
+  h.innerHTML = [...text].map(c => c === " " ? '<span class="sp"> </span>' : `<span class="ch" aria-hidden="true">${c}</span>`).join("");
+  const chars = [...h.querySelectorAll(".ch")];
+  const lit = () => intro.classList.add("is-lit");
+  if (REDUCED) { chars.forEach(c => c.classList.add("on")); lit(); }
+  else {
+    // each letter strikes on at its own moment, stutters 2-4 times, then holds
+    let done = 0;
+    chars.forEach((c, i) => {
+      const start = 250 + Math.random() * 1100 + (i === chars.length - 1 ? 500 : 0); let t = start;
+      const flips = 2 + Math.floor(Math.random() * 3);
+      for (let k = 0; k < flips; k++) {
+        setTimeout(() => { c.classList.add("on"); c.classList.remove("dim"); }, t); t += 40 + Math.random() * 90;
+        setTimeout(() => { c.classList.remove("on"); c.classList.add("dim"); }, t); t += 50 + Math.random() * 140;
+      }
+      setTimeout(() => { c.classList.add("on"); c.classList.remove("dim"); if (++done === chars.length) lit(); }, t);
+    });
+    // a tube that hiccups now and then
+    (function idle() {
+      setTimeout(() => {
+        if (!document.hidden && intro.getBoundingClientRect().bottom > 0) {
+          const c = chars[Math.floor(Math.random() * chars.length)];
+          c.classList.remove("on"); c.classList.add("dim");
+          setTimeout(() => { c.classList.add("on"); c.classList.remove("dim"); }, 70);
+          setTimeout(() => { c.classList.remove("on"); }, 140);
+          setTimeout(() => { c.classList.add("on"); c.classList.remove("dim"); }, 210);
+        }
+        idle();
+      }, 2600 + Math.random() * 3600);
+    })();
   }
-  const layers = [...stage.querySelectorAll(".stage__layer")]; let tx = 0, ty = 0, x = 0, y = 0, live = false;
-  stage.addEventListener("pointermove", e => { const r = stage.getBoundingClientRect(); tx = (e.clientX - r.left) / r.width - .5; ty = (e.clientY - r.top) / r.height - .5; stage.style.setProperty("--gx", (tx + .5) * 100 + "%"); stage.style.setProperty("--gy", (ty + .5) * 100 + "%"); });
-  stage.addEventListener("pointerleave", () => { tx = ty = 0; });
-  new IntersectionObserver(([e]) => { live = e.isIntersecting; }).observe(stage);
-  (function loop() {
-    if (live && FINE && !REDUCED) { x += (tx - x) * .09; y += (ty - y) * .09;
-      for (const l of layers) { const d = +l.dataset.depth; l.style.transform = `translate3d(${(-x * 90 * d).toFixed(2)}px, ${(-y * 70 * d).toFixed(2)}px, 0) rotateX(${(y * 4 * d).toFixed(2)}deg) rotateY(${(-x * 6 * d).toFixed(2)}deg)`; } }
-    requestAnimationFrame(loop);
-  })();
+}
+
+/* =====================================================================
+   SPECTRAL DRAPE — a sheet of glowing dots folding in 3D (page background)
+   ===================================================================== */
+{
+  const cv = document.getElementById("drape"), cx = cv.getContext("2d");
+  const small = matchMedia("(max-width: 900px)").matches;
+  const COLS = small ? 56 : 96, ROWS = small ? 34 : 54;
+  const dpr = Math.min(devicePixelRatio || 1, 1.5);
+  let W = 0, H = 0;
+  function size() { W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  size(); addEventListener("resize", size);
+  // pre-rendered glow sprites in the brand colours
+  const sprite = col => { const c = document.createElement("canvas"); c.width = c.height = 32; const g = c.getContext("2d"); const r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+    r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(.18, col); r.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = r; g.fillRect(0, 0, 32, 32); return c; };
+  const SPR = [sprite("rgba(120,199,228,.9)"), sprite("rgba(81,92,159,.85)"), sprite("rgba(30,36,187,.9)"), sprite("rgba(171,80,219,.9)")];
+  let mx = 0, my = 0, tmx = 0, tmy = 0, t0 = performance.now();
+  addEventListener("pointermove", e => { tmx = e.clientX / innerWidth - .5; tmy = e.clientY / innerHeight - .5; }, { passive: true });
+  function draw(now) {
+    const t = (now - t0) / 1000, sc = scrollY / Math.max(1, innerHeight);
+    mx += (tmx - mx) * .04; my += (tmy - my) * .04;
+    cx.clearRect(0, 0, W, H); cx.globalCompositeOperation = "lighter";
+    const ry = .5 + mx * .5 + Math.sin(t * .07) * .25, rx = 1.05 + my * .25, cy = Math.cos(ry), sy = Math.sin(ry), cxr = Math.cos(rx), sxr = Math.sin(rx);
+    const F = Math.min(W, H) * 1.25, scale = Math.max(W, H) * .62;
+    for (let j = 0; j < ROWS; j++) {
+      const v = j / (ROWS - 1) * 2 - 1;
+      for (let i = 0; i < COLS; i++) {
+        const u = i / (COLS - 1) * 2 - 1;
+        // the fold: three travelling waves plus a slow scroll-driven twist
+        const z = Math.sin(u * 2.3 + t * .55 + sc * .6) * .32 + Math.sin(v * 3.1 - t * .7) * .22 + Math.sin((u + v) * 1.6 + t * .35) * .18 + Math.cos(u * v * 3 + sc * .4) * .1;
+        const x = u * 1.5, y = v;
+        // rotate (y-axis then x-axis) and project
+        const x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+        const y2 = y * cxr - z1 * sxr, z2 = y * sxr + z1 * cxr + 3.2;
+        const px = W / 2 + x1 * scale / z2 * 1.6, py = H * .52 + y2 * scale / z2 * 1.6;
+        if (px < -20 || px > W + 20 || py < -20 || py > H + 20) continue;
+        const depth = clamp((4.4 - z2) / 2.4), s = (1.6 + depth * 5.5) * (F / 1000);
+        const k = clamp((z + .7) / 1.4); const spr = SPR[Math.min(3, Math.floor(k * 4))];
+        cx.globalAlpha = .12 + depth * .5;
+        cx.drawImage(spr, px - s, py - s, s * 2, s * 2);
+      }
+    }
+    cx.globalAlpha = 1; cx.globalCompositeOperation = "source-over";
+  }
+  if (REDUCED) draw(performance.now());
+  else (function loop(now) { if (!document.hidden) draw(now); requestAnimationFrame(loop); })(performance.now());
+}
+
+/* =====================================================================
+   SCROLL STACK — each service card sticks, the next slides over it,
+   and the ones underneath shrink and fade away
+   ===================================================================== */
+{
+  const cards = [...document.querySelectorAll(".stack__card")];
+  cards.forEach((c, i) => c.style.setProperty("--i", i));
+  document.querySelectorAll(".stack__card [data-svc]").forEach(b => b.addEventListener("click", () => select(b.dataset.svc, true)));
+  if (!REDUCED) {
+    let ticking = false;
+    function update() {
+      ticking = false;
+      const vh = innerHeight;
+      const cover = cards.map((c, i) => { // how far card i has slid into its stuck position (0..1)
+        const r = c.getBoundingClientRect(), stuckAt = parseFloat(getComputedStyle(c).top) || 0;
+        return clamp((vh - r.top) / Math.max(1, vh - stuckAt));
+      });
+      cards.forEach((c, i) => {
+        let k = 0; for (let j = i + 1; j < cards.length; j++) k += cover[j];
+        const s = 1 - Math.min(k, 4) * .05, o = 1 - clamp(k * .55 - .1, 0, .95);
+        c.style.transform = `scale(${s.toFixed(4)})`; c.style.opacity = o.toFixed(3);
+        c.style.filter = k > .05 ? `brightness(${(1 - Math.min(k, 2) * .18).toFixed(3)})` : "";
+      });
+    }
+    addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    addEventListener("resize", update); update();
+  }
 }
 
 // glass highlight follows the pointer on primary buttons
