@@ -15,9 +15,19 @@ const A = toXZ(BB.lon0, BB.lat1), B = toXZ(BB.lon1, BB.lat0); // world extent of
 const LIMIT = { x0: toXZ(1.2, 0).x, x1: toXZ(1.63, 0).x, z0: toXZ(0, 39.12).z, z1: toXZ(0, 38.64).z };
 const ISLE = { cx: .6, cz: -1, ax: 24, az: 31 };              // ellipse around both islands; the sea fades out beyond it
 const PAGE = new THREE.Color("#f3f4fa");                       // the page behind the map (haze colour)
+const PAGE_NOW = new THREE.Color(document.documentElement.dataset.theme === "dark" ? "#0b0930" : "#f3f4fa");
 
-async function loadHeights(url) {
-  const bmp = await createImageBitmap(await (await fetch(url)).blob(), { colorSpaceConversion: "none", premultiplyAlpha: "none" });
+// fetch with progress, so the loader can show a real percentage
+async function fetchBlob(url, onBytes) {
+  const r = await fetch(url); const total = +r.headers.get("content-length") || 0;
+  if (!r.body || !total) { const b = await r.blob(); onBytes?.(1); return b; }
+  const reader = r.body.getReader(), parts = []; let got = 0;
+  for (;;) { const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length; onBytes?.(Math.min(1, got / total)); }
+  return new Blob(parts, { type: r.headers.get("content-type") || "" });
+}
+const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+async function loadHeights(url, onBytes) {
+  const bmp = await createImageBitmap(await fetchBlob(url, onBytes), { colorSpaceConversion: "none", premultiplyAlpha: "none" });
   const w = bmp.width, h = bmp.height, c = document.createElement("canvas"); c.width = w; c.height = h;
   const cx = c.getContext("2d", { willReadFrequently: true }); cx.drawImage(bmp, 0, 0);
   const d = cx.getImageData(0, 0, w, h).data, a = new Float32Array(w * h);
@@ -51,7 +61,8 @@ function normalTexture(H, scale) {
   t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.needsUpdate = true; return t;
 }
 
-export async function initMap3D(el, { venues, onPick, onList, onEmpty }) {
+export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgress }) {
+  const prog = { h: 0, o: 0, build: 0 }, report = () => onProgress?.(Math.round(prog.h * 30 + prog.o * 45 + prog.build * 25));
   const small = matchMedia("(max-width: 900px)").matches, reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance", premultipliedAlpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.75 : 2)); renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -59,7 +70,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty }) {
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   el.prepend(renderer.domElement); renderer.domElement.className = "map3d__gl";
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(36, 1, .05, 420);
-  scene.fog = new THREE.Fog(PAGE, 80, 210);
+  scene.fog = new THREE.Fog(PAGE_NOW.clone(), 80, 210);
   scene.add(new THREE.HemisphereLight("#dcecff", "#6a5236", 1.15));
   // golden-hour sun from the west-south-west: long shadows carve the relief
   const sun = new THREE.DirectionalLight("#ffe2b8", 3.4); sun.position.set(-36, 22, 14); sun.target.position.set(0, 0, 0);
@@ -67,14 +78,19 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty }) {
   Object.assign(sun.shadow.camera, { left: -34, right: 34, top: 34, bottom: -34, near: 1, far: 120 }); sun.shadow.bias = -.0004; sun.shadow.normalBias = .02;
   scene.add(sun, sun.target);
 
-  const [H, M] = await Promise.all([loadHeights("data/height_mdt25.png"), loadGray("data/mask1024.png")]);
+  const orthoUrl = !small && renderer.capabilities.maxTextureSize >= 8192 ? "data/ortho_xl.jpg" : renderer.capabilities.maxTextureSize >= 4096 ? "data/ortho_hi.jpg" : "data/ortho_lo.jpg";
+  const orthoBlob = fetchBlob(orthoUrl, f => { prog.o = f; report(); });     // downloads in parallel with the relief
+  const [H, M] = await Promise.all([loadHeights("data/height_mdt25.png", f => { prog.h = f; report(); }), loadGray("data/mask1024.png")]);
   const hAt = (x, z) => { const [u, v] = uvOf(x, z); return bilinear(H.a, H.w, H.h, u, v, -30); };
   const maskAt = (x, z) => { const [u, v] = uvOf(x, z); return bilinear(M.g, M.w, M.h, u, v, 0); };
   const groundY = (x, z) => { const m = hAt(x, z); return m > .4 ? m * EXAG / 1000 : 0; };
   const maxTex = renderer.capabilities.maxTextureSize;
-  const ortho = await new THREE.TextureLoader().loadAsync(!small && maxTex >= 8192 ? "data/ortho_xl.jpg" : maxTex >= 4096 ? "data/ortho_hi.jpg" : "data/ortho_lo.jpg");
+  const orthoObjUrl = URL.createObjectURL(await orthoBlob);
+  const ortho = await new THREE.TextureLoader().loadAsync(orthoObjUrl); URL.revokeObjectURL(orthoObjUrl);
+  prog.build = .25; report(); await nextFrame();
   ortho.colorSpace = THREE.SRGBColorSpace; ortho.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
-  const nrm = normalTexture(H, small ? .6 : 1);
+  const nrm = normalTexture(H, small ? .45 : .62);
+  prog.build = .6; report(); await nextFrame();
   const maskTex = new THREE.CanvasTexture(M.canvas); maskTex.colorSpace = THREE.NoColorSpace;
   const isleU = { uIsle: { value: new THREE.Vector4(ISLE.cx, ISLE.cz, ISLE.ax, ISLE.az) } };
 
@@ -105,10 +121,65 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty }) {
     };
     const mesh = new THREE.Mesh(g, mat); mesh.castShadow = mesh.receiveShadow = true; scene.add(mesh);
   }
+  // ---- detail tiles: ~2.7 m/px aerial photo, loaded only around the focus when zoomed in ----
+  const detail = { index: null, live: new Map(), last: 0, max: small ? 14 : 28 };
+  fetch("data/tiles/index.json").then(r => r.ok ? r.json() : null).then(j => { detail.index = j; }).catch(() => {});
+  const tileMat = tex => {
+    const m = new THREE.MeshStandardMaterial({ map: tex, roughness: .93, metalness: 0, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
+    m.onBeforeCompile = sh => {
+      sh.uniforms.uNrm = { value: nrm }; sh.uniforms.uMaskT = { value: maskTex }; sh.uniforms.uA2 = { value: new THREE.Vector4(A.x, A.z, B.x - A.x, B.z - A.z) };
+      sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWp;")
+        .replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.)).xyz;");
+      sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uNrm, uMaskT; uniform vec4 uA2; varying vec3 vWp;")
+        .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>
+          vec2 wuv = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w);
+          if (vWp.y < -.005 && texture2D(uMaskT, wuv).r < .06) discard;`)
+        .replace("#include <map_fragment>", `#include <map_fragment>
+          { vec3 c = diffuseColor.rgb; float l = dot(c, vec3(.299, .587, .114)); c = mix(vec3(l), c, 1.1); c = (c - .5) * 1.04 + .5; diffuseColor.rgb = clamp(c, 0., 1.); }`)
+        .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
+          { vec3 wn = texture2D(uNrm, wuv).xyz * 2. - 1.; normal = normalize(mat3(viewMatrix) * wn); }`);
+    };
+    return m;
+  };
+  function tileMesh(i, j, tex) {
+    const ix = detail.index, a = ix.lon0 + ix.sx * i, b = a + ix.sx, top = ix.lat1 - ix.sy * j, bot = top - ix.sy;
+    const p0 = toXZ(a, top), p1 = toXZ(b, bot), N = small ? 40 : 64;
+    const g = new THREE.PlaneGeometry(p1.x - p0.x, p1.z - p0.z, N, N).rotateX(-Math.PI / 2); g.translate((p0.x + p1.x) / 2, 0, (p0.z + p1.z) / 2);
+    const pos = g.attributes.position;
+    for (let k = 0; k < pos.count; k++) { const x = pos.getX(k), z = pos.getZ(k), m = hAt(x, z); pos.setY(k, m > .4 ? m * EXAG / 1000 + .001 : -.025); }  // flat under the water: no walls at the shoreline
+    const mesh = new THREE.Mesh(g, tileMat(tex)); mesh.receiveShadow = true; mesh.renderOrder = 0; return mesh;
+  }
+  function updateDetail(now) {
+    if (!detail.index || now - detail.last < 250) return; detail.last = now;
+    const tgt = controls.target, dist = camera.position.distanceTo(tgt), show = dist < 17;
+    detail.live.forEach(t => { if (t.mesh) t.mesh.visible = show; });
+    if (!show) return;
+    const ix = detail.index, R = Math.max(2.6, dist * 1.35), want = [];
+    for (const [i, j] of ix.tiles) {
+      const c = toXZ(ix.lon0 + ix.sx * (i + .5), ix.lat1 - ix.sy * (j + .5)), d = Math.hypot(c.x - tgt.x, c.z - tgt.z);
+      if (d < R) want.push({ key: i + "_" + j, i, j, d });
+    }
+    want.sort((x, y) => x.d - y.d);
+    for (const w of want.slice(0, detail.max)) {
+      if (detail.live.has(w.key)) { detail.live.get(w.key).used = now; continue; }
+      const entry = { used: now, mesh: null, tex: null }; detail.live.set(w.key, entry);
+      new THREE.TextureLoader().load(`data/tiles/${w.key}.jpg`, tex => {
+        if (!detail.live.has(w.key)) { tex.dispose(); return; }
+        tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
+        entry.tex = tex; entry.mesh = tileMesh(w.i, w.j, tex); scene.add(entry.mesh);
+      }, undefined, () => {});
+    }
+    // keep memory bounded: drop the tiles used longest ago
+    if (detail.live.size > detail.max * 1.6) {
+      [...detail.live.entries()].sort((x, y) => x[1].used - y[1].used).slice(0, detail.live.size - detail.max).forEach(([k, t]) => {
+        if (t.mesh) { scene.remove(t.mesh); t.mesh.geometry.dispose(); t.mesh.material.dispose(); } t.tex?.dispose(); detail.live.delete(k);
+      });
+    }
+  }
   // ---- the sea: sky reflections, sun glints, see-through shallows, feathered into the page ----
   const seaU = {
     uTime: { value: 0 }, uMask: { value: maskTex }, uA: { value: new THREE.Vector2(A.x, A.z) }, uB: { value: new THREE.Vector2(B.x, B.z) },
-    uSun: { value: sun.position.clone().normalize() }, uFogColor: { value: PAGE }, uFogNear: { value: 80 }, uFogFar: { value: 210 }, uIsle: isleU.uIsle,
+    uSun: { value: sun.position.clone().normalize() }, uFogColor: { value: PAGE_NOW }, uFogNear: { value: 80 }, uFogFar: { value: 210 }, uIsle: isleU.uIsle,
   };
   {
     const sea = new THREE.Mesh(new THREE.CircleGeometry(60, 160).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
@@ -273,13 +344,15 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty }) {
     if (!tgt.equals(before)) { off.copy(tgt).sub(before); camera.position.add(off); }
     const floor = Math.max(0, groundY(camera.position.x, camera.position.z)) + .3;
     if (camera.position.y < floor) camera.position.y = floor;
-    renderer.render(scene, camera); project();
+    updateDetail(now); renderer.render(scene, camera); project();
   })(performance.now());
 
+  prog.build = 1; report();
   const flyDist = () => flight ? flight.toP.distanceTo(flight.toT) : camera.position.distanceTo(controls.target);
   const flyTarget = () => flight ? flight.toT.clone() : controls.target.clone();
   return {
     screenOf: v => screen.get(v),
+    setTheme(dark) { PAGE_NOW.set(dark ? "#0b0930" : "#f3f4fa"); scene.fog.color.copy(PAGE_NOW); },
     setFilter(type, on) { pins.forEach(p => { if (p.v.type === type) p.on = on; }); },
     setActive(v) { pins.forEach(p => p.btn.classList.toggle("is-active", p.v === v)); },
     flyToArea([lo0, lo1, la0, la1]) { const a = toXZ(lo0, la1), b = toXZ(lo1, la0); fly(new THREE.Vector3((a.x + b.x) / 2, 0, (a.z + b.z) / 2), Math.max(7, Math.hypot(b.x - a.x, b.z - a.z) * 1.1)); },

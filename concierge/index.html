@@ -7,6 +7,7 @@
 <meta name="description" content="Private concierge en Ibiza: villas, yates, motos de agua, coches, transfers, restaurantes, beach clubs y noche. Un solo contacto.">
 <link rel="icon" href="assets/logo.png">
 <link rel="stylesheet" href="styles.css">
+<script src="theme.js"></script>
 </head>
 <body>
 
@@ -51,6 +52,9 @@
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#contacto"><span class="sm-panel-itemLabel">Contacto</span></a></li>
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#area-cliente" data-login><span class="sm-panel-itemLabel">Área cliente</span></a></li>
       </ul>
+      <button class="theme-toggle" type="button" id="themeToggle" role="switch" aria-checked="false">
+        <span class="theme-toggle__ico" aria-hidden="true"></span><span class="theme-toggle__label">Modo oscuro</span><span class="switch__track" aria-hidden="true"></span>
+      </button>
       <div class="sm-socials" aria-label="Contacto directo">
         <h3 class="sm-socials-title">Contacto</h3>
         <ul class="sm-socials-list" role="list">
@@ -86,7 +90,7 @@
       </header>
       <div class="stack" id="stack">
         <article class="stack__card" data-svc="villas">
-          <div class="stack__media"><img src="data/photos/cala-jondal.jpg" alt="Vista aérea: Es Cubells · Cala Jondal" loading="lazy"></div>
+          <div class="stack__media"><img src="data/services/villa-privada.jpg" alt="Villa privada con piscina iluminada de noche" loading="lazy" style="object-position: 40% 62%"></div>
           <div class="stack__body">
             <p class="stack__place">Es Cubells · Cala Jondal</p>
             <h3>Villas privadas</h3>
@@ -96,7 +100,7 @@
           </div>
         </article>
         <article class="stack__card" data-svc="yates">
-          <div class="stack__media"><img src="data/photos/marina-botafoch.jpg" alt="Vista aérea: Marina Botafoch" loading="lazy"></div>
+          <div class="stack__media"><img src="data/services/yates.jpg" alt="Yate fondeado frente a Es Vedrà" loading="lazy"></div>
           <div class="stack__body">
             <p class="stack__place">Marina Botafoch</p>
             <h3>Yates y barcos</h3>

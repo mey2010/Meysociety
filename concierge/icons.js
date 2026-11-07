@@ -16,3 +16,7 @@ Object.assign(ICONS, {
   pencil: S('<path d="M15.2 5.2l3.6 3.6"/><path d="M4 20l1-4.6L16.6 3.8a2 2 0 0 1 2.8 0l.8.8a2 2 0 0 1 0 2.8L8.6 19 4 20Z"/>'),
   plus: S('<path d="M12 5v14M5 12h14"/>'),
 });
+Object.assign(ICONS, {
+  sun: S('<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>'),
+  moon: S('<path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z"/>'),
+});

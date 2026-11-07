@@ -69,12 +69,13 @@ const SM = (() => {
   let onLight = false;
   function checkGround() {
     const el = document.elementsFromPoint(innerWidth / 2, 44).find(n => n.matches?.("section"));
-    const light = !!el && !el.classList.contains("sec--night");
+    const light = !!el && !el.classList.contains("sec--night") && document.documentElement.dataset.theme !== "dark";
     if (light === onLight) return; onLight = light; root.classList.toggle("sm-on-light", light);
     if (!open) gsap.to(btn, { color: light ? "#0d0a38" : "#ffffff", duration: .3, overwrite: "auto" });
   }
   const band = () => root.classList.toggle("sm-scrolled", scrollY > 40);
   addEventListener("scroll", () => { checkGround(); band(); }, { passive: true }); checkGround(); band();
+  document.addEventListener("themechange", () => { onLight = null; checkGround(); });
   document.addEventListener("mousedown", e => { if (open && !panel.contains(e.target) && !btn.contains(e.target)) set(false); });
   addEventListener("keydown", e => { if (e.key === "Escape") set(false); });
   panel.addEventListener("click", e => {
@@ -110,12 +111,30 @@ const counts = { club: 0, beachclub: 0, beach: 0 }; VENUES.forEach(v => counts[v
 document.querySelectorAll("[data-count]").forEach(b => b.textContent = counts[b.dataset.count]);
 const wheelHint = () => { mapEl.dataset.wheelHint = t(/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘ + rueda para acercar" : "Ctrl + rueda para acercar"); mapEl.dataset.touchHint = t("Usa dos dedos para mover el mapa"); };
 wheelHint(); document.addEventListener("langchange", wheelHint);
-const map3d = await initMap3D(mapEl, {
-  venues: VENUES, mapJson: MAP,
-  onPick: (v) => { closeList(); openPop(v); },
-  onList: (list, anchor) => openList(list, anchor),
-  onEmpty: () => { closePop(); closeList(); },
-});
+// The 3D island loads in the background, only once the visitor heads towards it (or the page is idle),
+// so the rest of the page is ready at once. Calls made before it exists are queued.
+let map3dReal = null; const mapQueue = [];
+const map3d = new Proxy({}, { get: (_, k) => (...a) => map3dReal ? map3dReal[k](...a) : (k === "screenOf" ? undefined : void mapQueue.push([k, a])) });
+const loader = document.createElement("div"); loader.className = "map3d__loader"; loader.setAttribute("role", "progressbar"); loader.setAttribute("aria-valuemin", "0"); loader.setAttribute("aria-valuemax", "100");
+loader.innerHTML = `<div class="coin" aria-hidden="true">${Array.from({ length: 10 }, (_, i) => `<span class="coin__edge" style="--z:${i}"></span>`).join("")}<img class="coin__face coin__face--front" src="assets/logo.png" alt=""><img class="coin__face coin__face--back" src="assets/logo.png" alt=""></div><div class="map3d__pct"><b>0</b>%</div>`;
+mapEl.append(loader);
+let mapStarted = false;
+function startMap() {
+  if (mapStarted) return; mapStarted = true;
+  const pct = loader.querySelector("b");
+  initMap3D(mapEl, {
+    venues: VENUES, mapJson: MAP,
+    onPick: (v) => { closeList(); openPop(v); },
+    onList: (list, anchor) => openList(list, anchor),
+    onEmpty: () => { closePop(); closeList(); },
+    onProgress: p => { pct.textContent = p; loader.setAttribute("aria-valuenow", p); },
+  }).then(m => {
+    map3dReal = m; mapQueue.splice(0).forEach(([k, a]) => m[k](...a));
+    pct.textContent = 100; loader.classList.add("is-done"); setTimeout(() => loader.remove(), 700);
+  }).catch(err => { console.error(err); loader.classList.add("is-error"); });
+}
+new IntersectionObserver((es, io) => { if (es.some(e => e.isIntersecting)) { io.disconnect(); startMap(); } }, { rootMargin: "900px 0px" }).observe(mapEl);
+(window.requestIdleCallback || (f => setTimeout(f, 2500)))(() => setTimeout(startMap, 1500), { timeout: 4000 });
 document.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
   const on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", on); map3d.setFilter(b.dataset.kind, on);
   if (!on && active && active.type === b.dataset.kind) closePop();
@@ -224,7 +243,9 @@ document.getElementById("popBook").addEventListener("click", () => {
   const sprite = col => { const c = document.createElement("canvas"); c.width = c.height = 32; const g = c.getContext("2d"); const r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
     r.addColorStop(0, col); r.addColorStop(.45, col); r.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = r; g.fillRect(0, 0, 32, 32); return c; };
   // the six colours sampled from the logo, dark to light along the fold
-  const SPR = ["#0d0a38", "#292467", "#1e24bb", "#515c9f", "#78c7e4", "#ab50db"].map(sprite);
+  const SPR_LIGHT = ["#0d0a38", "#292467", "#1e24bb", "#515c9f", "#78c7e4", "#ab50db"].map(sprite), SPR_DARK = ["#c9cce8", "#9fa6ff", "#5a63ff", "#8f96d6", "#78c7e4", "#ab50db"].map(sprite);
+  let SPR = document.documentElement.dataset.theme === "dark" ? SPR_DARK : SPR_LIGHT;
+  document.addEventListener("themechange", e => { SPR = e.detail === "dark" ? SPR_DARK : SPR_LIGHT; if (REDUCED) draw(performance.now()); });
   const MAG = ["#6a2f85", "#9242b3", "#ab50db", "#c856e6", "#c856e6"].map(sprite); // the logo's magenta/pink, light to bright
   let mx = 0, my = 0, tmx = 0, tmy = 0, t0 = performance.now();
   addEventListener("pointermove", e => { tmx = e.clientX / innerWidth - .5; tmy = e.clientY / innerHeight - .5; }, { passive: true });
@@ -1024,3 +1045,17 @@ openDash = function (rec) {
   if (!fromAdmin) { const st = nGet(rec.code), unseen = st.on ? (rec.changes || []).filter(c => c.rev > st.seen).length : 0;
     if (unseen) setTimeout(() => toast(`<b>${unseen === 1 ? t("Tienes 1 cambio nuevo en tu itinerario") : `${t("Cambios nuevos en tu itinerario")}: ${unseen}`}</b>`), 600); }
 };
+
+
+/* ---------------- light / dark theme switch (menu, above Contacto) ---------------- */
+{
+  const btn = document.getElementById("themeToggle"), ico = btn.querySelector(".theme-toggle__ico");
+  const paint = () => { const dark = document.documentElement.dataset.theme === "dark"; btn.setAttribute("aria-checked", dark); ico.innerHTML = dark ? ICONS.moon : ICONS.sun; };
+  const apply = theme => {
+    document.documentElement.dataset.theme = theme; try { localStorage.setItem("mey-theme", theme); } catch {}
+    paint(); map3d.setTheme(theme === "dark");
+    document.dispatchEvent(new CustomEvent("themechange", { detail: theme }));
+  };
+  btn.addEventListener("click", () => apply(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
+  paint(); if (document.documentElement.dataset.theme === "dark") map3d.setTheme(true);
+}
