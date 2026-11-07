@@ -16,7 +16,10 @@ const D = {
   "Próximo": ["Next", "Prossimo", "À venir", "Als Nächstes"],
   "Pendiente": ["Pending", "In attesa", "En attente", "Ausstehend"],
   "Elige un lugar": ["Choose a place", "Scegli un luogo", "Choisissez un lieu", "Wähle einen Ort"],
-  "Arrastra para girar la isla, pellizca o usa la rueda para acercar, y toca cualquier punto para ver el club, el beach club o la playa.": ["Drag to turn the island, pinch or scroll to zoom, and tap any point to see the club, beach club or beach.", "Trascina per ruotare l'isola, pizzica o usa la rotellina per avvicinarti e tocca un punto per vedere il club, il beach club o la spiaggia.", "Faites glisser pour tourner l'île, pincez ou utilisez la molette pour zoomer, et touchez un point pour voir le club, le beach club ou la plage.", "Ziehe, um die Insel zu drehen, zoome per Pinch oder Mausrad und tippe auf einen Punkt für Club, Beach Club oder Strand."],
+  "Arrastra para girar la isla, pellizca o usa Ctrl + rueda para acercar, y toca cualquier punto para ver el club, el beach club o la playa.": ["Drag to turn the island, pinch or use Ctrl + scroll to zoom, and tap any point to see the club, beach club or beach.", "Trascina per ruotare l'isola, pizzica o usa Ctrl + rotellina per avvicinarti e tocca un punto per vedere il club, il beach club o la spiaggia.", "Faites glisser pour tourner l'île, pincez ou utilisez Ctrl + molette pour zoomer, et touchez un point pour voir le club, le beach club ou la plage.", "Ziehe, um die Insel zu drehen, zoome per Pinch oder Strg + Mausrad und tippe auf einen Punkt für Club, Beach Club oder Strand."],
+  "Ctrl + rueda para acercar": ["Ctrl + scroll to zoom", "Ctrl + rotellina per ingrandire", "Ctrl + molette pour zoomer", "Strg + Mausrad zum Zoomen"],
+  "⌘ + rueda para acercar": ["⌘ + scroll to zoom", "⌘ + rotellina per ingrandire", "⌘ + molette pour zoomer", "⌘ + Mausrad zum Zoomen"],
+  "Ortofoto y relieve © IGN · PNOA": ["Orthophoto & relief © IGN · PNOA", "Ortofoto e rilievo © IGN · PNOA", "Orthophoto et relief © IGN · PNOA", "Orthofoto & Relief © IGN · PNOA"],
   "Menú": ["Menu", "Menu", "Menu", "Menü"],
   "Cerrar": ["Close", "Chiudi", "Fermer", "Schließen"],
   "Home": ["Home", "Home", "Accueil", "Start"],
@@ -97,7 +100,7 @@ const D = {
   "Reservas en restaurantes de la isla": ["Bookings at the island's restaurants", "Prenotazioni nei ristoranti dell'isola", "Réservations dans les restaurants de l'île", "Reservierungen in den Restaurants der Insel"],
   "Chef a domicilio con producto local": ["Private chef with local produce", "Chef a domicilio con prodotti locali", "Chef à domicile avec produits locaux", "Privatkoch mit lokalen Produkten"],
   "Menús para celebraciones": ["Menus for celebrations", "Menù per celebrazioni", "Menus pour les célébrations", "Menüs für Feiern"],
-  "Consultar fine dining": ["Ask about dining", "Chiedi dei ristoranti", "Demander une table", "Restaurants anfragen"],
+  "Consultar alta cocina": ["Ask about dining", "Chiedi dei ristoranti", "Demander une table", "Restaurants anfragen"],
   "Hamacas y camas reservadas en los beach clubs que elijas, sin esperas.": ["Sunbeds and daybeds reserved at the beach clubs you choose, no waiting.", "Lettini e daybed riservati nei beach club che scegli, senza attese.", "Transats et daybeds réservés dans les beach clubs de votre choix, sans attente.", "Liegen und Daybeds in den Beach Clubs deiner Wahl reserviert, ohne Warten."],
   "Mejor ubicación disponible": ["Best available spot", "La migliore posizione disponibile", "Meilleur emplacement disponible", "Bester verfügbarer Platz"],
   "Comida y bebida a pie de playa": ["Food and drinks on the sand", "Cibo e drink in spiaggia", "Repas et boissons les pieds dans le sable", "Essen und Getränke direkt am Strand"],
@@ -207,6 +210,125 @@ const D = {
   "Check-out": ["Check-out", "Check-out", "Départ", "Check-out"],
   "Transfer al aeropuerto": ["Airport transfer", "Transfer in aeroporto", "Transfert à l'aéroport", "Flughafentransfer"],
   "Aeropuerto": ["Airport", "Aeroporto", "Aéroport", "Flughafen"],
+  "Itinerario privado": ["Private itinerary", "Itinerario privato", "Itinéraire privé", "Privater Reiseplan"],
+  "Notas": ["Notes", "Note", "Notes", "Notizen"],
+  "Descargar PDF": ["Download PDF", "Scarica PDF", "Télécharger le PDF", "PDF herunterladen"],
+  "Horarios orientativos. Tu concierge confirma cada servicio y te avisa de cualquier cambio.": ["Times are indicative. Your concierge confirms every service and tells you about any change.", "Orari indicativi. Il tuo concierge conferma ogni servizio e ti avvisa di ogni cambiamento.", "Horaires indicatifs. Votre concierge confirme chaque service et vous prévient de tout changement.", "Zeiten sind Richtwerte. Dein Concierge bestätigt jeden Service und informiert dich über Änderungen."],
+  "No se pudo generar el PDF. Inténtalo de nuevo.": ["The PDF could not be created. Please try again.", "Impossibile creare il PDF. Riprova.", "Impossible de créer le PDF. Réessayez.", "Das PDF konnte nicht erstellt werden. Bitte erneut versuchen."],
+  "Reviews": ["Reviews", "Recensioni", "Avis", "Bewertungen"],
+  "Lo que viven": ["What our", "Quello che vivono", "Ce que vivent", "Was unsere"],
+  "nuestros clientes.": ["clients experience.", "i nostri clienti.", "nos clients.", "Gäste erleben."],
+  "Fotos y vídeos de estancias reales, compartidos por quienes ya han vivido Ibiza con nosotros. Arrastra el carrusel o toca una imagen para verla en grande.": ["Photos and videos from real stays, shared by those who have already lived Ibiza with us. Drag the carousel or tap an image to see it full size.", "Foto e video di soggiorni reali, condivisi da chi ha già vissuto Ibiza con noi. Trascina il carosello o tocca un'immagine per vederla in grande.", "Photos et vidéos de vrais séjours, partagées par ceux qui ont déjà vécu Ibiza avec nous. Faites glisser le carrousel ou touchez une image pour l'agrandir.", "Fotos und Videos echter Aufenthalte, geteilt von Gästen, die Ibiza schon mit uns erlebt haben. Ziehe das Karussell oder tippe ein Bild an, um es groß zu sehen."],
+  "Contenido de ejemplo: este espacio se completa con las fotos y vídeos que compartan tus clientes.": ["Sample content: this space is filled with the photos and videos your clients share.", "Contenuto di esempio: questo spazio si riempie con le foto e i video condivisi dai clienti.", "Contenu d'exemple : cet espace se remplit avec les photos et vidéos partagées par vos clients.", "Beispielinhalt: Dieser Bereich wird mit den Fotos und Videos deiner Gäste gefüllt."],
+  "Foto de ejemplo": ["Sample photo", "Foto di esempio", "Photo d'exemple", "Beispielfoto"],
+  "Vídeo de ejemplo": ["Sample video", "Video di esempio", "Vidéo d'exemple", "Beispielvideo"],
+  "Atardecer a bordo": ["Sunset on board", "Tramonto a bordo", "Coucher de soleil à bord", "Sonnenuntergang an Bord"],
+  "Día de yate": ["Yacht day", "Giornata in yacht", "Journée en yacht", "Yachttag"],
+  "Cena en la villa": ["Dinner at the villa", "Cena in villa", "Dîner à la villa", "Abendessen in der Villa"],
+  "Mañana en la villa": ["Morning at the villa", "Mattina in villa", "Matin à la villa", "Morgen in der Villa"],
+  "Ruta en lancha": ["Speedboat trip", "Giro in motoscafo", "Balade en vedette", "Motorboottour"],
+  "Chef privado": ["Private chef", "Chef privato", "Chef privé", "Privatkoch"],
+  "Velero al atardecer": ["Sailing at sunset", "Veliero al tramonto", "Voilier au coucher du soleil", "Segeln bei Sonnenuntergang"],
+  "Fondeo en Es Vedrà": ["Anchored off Es Vedrà", "Ancorati davanti a Es Vedrà", "Mouillage face à Es Vedrà", "Ankern vor Es Vedrà"],
+  "Todos": ["All", "Tutti", "Tous", "Alle"],
+  "Hasta": ["Up to", "Fino a", "Jusqu'à", "Bis zu"],
+  "Me interesa": ["I'm interested in", "Mi interessa", "Je suis intéressé par", "Ich interessiere mich für"],
+  "Ver la flota": ["See the fleet", "Vedi la flotta", "Voir la flotte", "Flotte ansehen"],
+  "Barcos y yates · Ibiza": ["Boats & yachts · Ibiza", "Barche e yacht · Ibiza", "Bateaux et yachts · Ibiza", "Boote & Yachten · Ibiza"],
+  "Nuestra flota": ["Our fleet", "La nostra flotta", "Notre flotte", "Unsere Flotte"],
+  "Pedir disponibilidad": ["Check availability", "Chiedi disponibilità", "Demander la disponibilité", "Verfügbarkeit anfragen"],
+  "Imágenes ilustrativas. La flota disponible depende de la fecha y se confirma con cada operador de chárter autorizado.": ["Illustrative images. The available fleet depends on the date and is confirmed with each licensed charter operator.", "Immagini illustrative. La flotta disponibile dipende dalla data e viene confermata con ogni operatore di charter autorizzato.", "Images d'illustration. La flotte disponible dépend de la date et est confirmée avec chaque loueur agréé.", "Beispielbilder. Die verfügbare Flotte hängt vom Datum ab und wird mit jedem lizenzierten Charteranbieter bestätigt."],
+  "Lancha sin licencia": ["No-licence boat", "Barca senza patente", "Bateau sans permis", "Boot ohne Führerschein"],
+  "Lancha abierta": ["Open speedboat", "Motoscafo open", "Vedette open", "Offenes Motorboot"],
+  "Crucero de día": ["Day cruiser", "Day cruiser", "Croiseur de jour", "Day Cruiser"],
+  "Catamarán a vela": ["Sailing catamaran", "Catamarano a vela", "Catamaran à voile", "Segelkatamaran"],
+  "Goleta clásica": ["Classic schooner", "Goletta classica", "Goélette classique", "Klassischer Schoner"],
+  "Yate deportivo": ["Sport yacht", "Yacht sportivo", "Yacht sportif", "Sportyacht"],
+  "Superyate": ["Superyacht", "Superyacht", "Superyacht", "Superyacht"],
+  "15 CV · sin titulación": ["15 hp · no licence", "15 CV · senza patente", "15 ch · sans permis", "15 PS · ohne Schein"],
+  "Solárium de proa": ["Bow sun pad", "Prendisole a prua", "Bain de soleil avant", "Liegefläche am Bug"],
+  "Patrón incluido": ["Skipper included", "Skipper incluso", "Skipper inclus", "Skipper inklusive"],
+  "Tripulación incluida": ["Crew included", "Equipaggio incluso", "Équipage inclus", "Crew inklusive"],
+  "Patrón y marinero": ["Skipper and deckhand", "Skipper e marinaio", "Skipper et matelot", "Skipper und Matrose"],
+  "Tripulación de 4": ["Crew of 4", "Equipaggio di 4", "Équipage de 4", "4 Crewmitglieder"],
+  "Mesas VIP": ["VIP tables", "Tavoli VIP", "Tables VIP", "VIP-Tische"],
+  "Guestlist": ["Guest list", "Guest list", "Guest-list", "Gästeliste"],
+  "Concierge privado": ["Private concierge", "Concierge privato", "Concierge privé", "Privater Concierge"],
+  "sin límites.": ["without limits.", "senza limiti.", "sans limites.", "ohne Grenzen."],
+  "Estancias privadas. Experiencias extraordinarias. Un concierge dedicado.": ["Private stays. Extraordinary experiences. One dedicated concierge.", "Soggiorni privati. Esperienze straordinarie. Un concierge dedicato.", "Séjours privés. Expériences extraordinaires. Un concierge dédié.", "Private Aufenthalte. Außergewöhnliche Erlebnisse. Ein persönlicher Concierge."],
+  "Tu experiencia en Ibiza": ["Your Ibiza experience", "La tua esperienza a Ibiza", "Votre expérience à Ibiza", "Dein Ibiza-Erlebnis"],
+  "empieza aquí.": ["starts here.", "inizia qui.", "commence ici.", "beginnt hier."],
+  "¿Es tu primera vez en la isla?": ["Is this your first time on the island?", "È la tua prima volta sull'isola?", "Est-ce votre première fois sur l'île ?", "Bist du zum ersten Mal auf der Insel?"],
+  "Sí": ["Yes", "Sì", "Oui", "Ja"],
+  "No": ["No", "No", "Non", "Nein"],
+  "¿Tenéis reservado el alojamiento?": ["Have you already booked your accommodation?", "Avete già prenotato l'alloggio?", "Avez-vous déjà réservé votre hébergement ?", "Habt ihr eure Unterkunft schon gebucht?"],
+  "Todavía no, buscamos villa": ["Not yet, we're looking for a villa", "Non ancora, cerchiamo una villa", "Pas encore, nous cherchons une villa", "Noch nicht, wir suchen eine Villa"],
+  "(puedes elegir varias)": ["(choose as many as you like)", "(puoi sceglierne più di una)", "(plusieurs choix possibles)", "(Mehrfachauswahl möglich)"],
+  "Barco": ["Boat", "Barca", "Bateau", "Boot"],
+  "Moto de agua": ["Jet ski", "Moto d'acqua", "Jet-ski", "Jetski"],
+  "Coche": ["Car", "Auto", "Voiture", "Auto"],
+  "Moto": ["Motorbike", "Moto", "Moto", "Motorrad"],
+  "Villa": ["Villa", "Villa", "Villa", "Villa"],
+  "Transfer": ["Transfer", "Transfer", "Transfert", "Transfer"],
+  "Selecciona los clubs que te interesan": ["Select the clubs you're interested in", "Seleziona i club che ti interessano", "Sélectionnez les clubs qui vous intéressent", "Wähle die Clubs, die dich interessieren"],
+  "(uno o más)": ["(one or more)", "(uno o più)", "(un ou plusieurs)", "(einer oder mehrere)"],
+  "Pedir presupuesto": ["Request a quote", "Richiedi un preventivo", "Demander un devis", "Angebot anfordern"],
+  "Admin": ["Admin", "Admin", "Admin", "Admin"],
+  "Usuario": ["Username", "Utente", "Utilisateur", "Benutzername"],
+  "Contraseña": ["Password", "Password", "Mot de passe", "Passwort"],
+  "Entrar como admin": ["Sign in as admin", "Accedi come admin", "Se connecter en admin", "Als Admin anmelden"],
+  "← Registro": ["← Register", "← Registro", "← Registre", "← Register"],
+  "Registro de itinerarios": ["Itinerary register", "Registro degli itinerari", "Registre des itinéraires", "Reiseplan-Register"],
+  "Nuevo itinerario": ["New itinerary", "Nuovo itinerario", "Nouvel itinéraire", "Neuer Reiseplan"],
+  "Exportar copia": ["Export a copy", "Esporta una copia", "Exporter une copie", "Kopie exportieren"],
+  "Próximos": ["Upcoming", "In arrivo", "À venir", "Bevorstehend"],
+  "Finalizados": ["Finished", "Conclusi", "Terminés", "Abgeschlossen"],
+  "Buscar": ["Search", "Cerca", "Rechercher", "Suchen"],
+  "Paquete": ["Package", "Pacchetto", "Formule", "Paket"],
+  "Código": ["Code", "Codice", "Code", "Code"],
+  "Guardar itinerario": ["Save itinerary", "Salva itinerario", "Enregistrer l'itinéraire", "Reiseplan speichern"],
+  "Cancelar": ["Cancel", "Annulla", "Annuler", "Abbrechen"],
+  "Los itinerarios se guardan en este navegador. Para que tus clientes los vean desde su móvil hace falta conectar una base de datos; el panel ya está preparado para ello.": ["Itineraries are saved in this browser. For your clients to see them on their phones a database needs to be connected; the panel is already prepared for it.", "Gli itinerari vengono salvati in questo browser. Perché i clienti li vedano dal cellulare serve collegare un database; il pannello è già predisposto.", "Les itinéraires sont enregistrés dans ce navigateur. Pour que vos clients les voient sur leur mobile, il faut connecter une base de données ; le panneau est déjà prêt.", "Reisepläne werden in diesem Browser gespeichert. Damit deine Gäste sie am Handy sehen, muss eine Datenbank angebunden werden; das Panel ist bereits darauf vorbereitet."],
+  "Alta cocina": ["Fine dining", "Alta cucina", "Haute cuisine", "Feine Küche"],
+  "Aeropuerto de Ibiza": ["Ibiza Airport", "Aeroporto di Ibiza", "Aéroport d'Ibiza", "Flughafen Ibiza"],
+  "Navegación principal": ["Main navigation", "Navigazione principale", "Navigation principale", "Hauptnavigation"],
+  "Mey Society, inicio": ["Mey Society, home", "Mey Society, home", "Mey Society, accueil", "Mey Society, Startseite"],
+  "Idioma": ["Language", "Lingua", "Langue", "Sprache"],
+  "Abrir menú": ["Open menu", "Apri menu", "Ouvrir le menu", "Menü öffnen"],
+  "Contacto directo": ["Direct contact", "Contatto diretto", "Contact direct", "Direktkontakt"],
+  "Mapa de Ibiza": ["Map of Ibiza", "Mappa di Ibiza", "Carte d'Ibiza", "Karte von Ibiza"],
+  "Mostrar en el mapa": ["Show on the map", "Mostra sulla mappa", "Afficher sur la carte", "Auf der Karte zeigen"],
+  "Mapa 3D de Ibiza y Formentera con clubs, beach clubs y playas": ["3D map of Ibiza and Formentera with clubs, beach clubs and beaches", "Mappa 3D di Ibiza e Formentera con club, beach club e spiagge", "Carte 3D d'Ibiza et Formentera avec clubs, beach clubs et plages", "3D-Karte von Ibiza und Formentera mit Clubs, Beach Clubs und Stränden"],
+  "Zoom": ["Zoom", "Zoom", "Zoom", "Zoom"],
+  "Acercar": ["Zoom in", "Ingrandisci", "Zoomer", "Vergrößern"],
+  "Alejar": ["Zoom out", "Riduci", "Dézoomer", "Verkleinern"],
+  "Ver toda la isla": ["See the whole island", "Vedi tutta l'isola", "Voir toute l'île", "Ganze Insel zeigen"],
+  "Ir a una zona": ["Go to an area", "Vai a una zona", "Aller à une zone", "Zu einem Gebiet"],
+  "Vista aérea": ["Aerial view", "Vista aerea", "Vue aérienne", "Luftbild"],
+  "Tipo de acceso": ["Type of access", "Tipo di accesso", "Type d'accès", "Zugangsart"],
+  "Días": ["Days", "Giorni", "Jours", "Tage"],
+  "Mapa de la ruta": ["Route map", "Mappa del percorso", "Carte de l'itinéraire", "Routenkarte"],
+  "Resumen": ["Summary", "Riepilogo", "Résumé", "Übersicht"],
+  "Filtrar": ["Filter", "Filtra", "Filtrer", "Filtern"],
+  "Buscar cliente, email o código": ["Search client, email or code", "Cerca cliente, email o codice", "Rechercher client, email ou code", "Gast, E-Mail oder Code suchen"],
+  "Tipo de barco": ["Boat type", "Tipo di barca", "Type de bateau", "Bootstyp"],
+  "Anterior": ["Previous", "Precedente", "Précédent", "Zurück"],
+  "Siguiente": ["Next", "Successivo", "Suivant", "Weiter"],
+  "Reseña": ["Review", "Recensione", "Avis", "Bewertung"],
+  "Clientes en la isla ahora": ["Clients on the island now", "Clienti sull'isola ora", "Clients sur l'île maintenant", "Gäste jetzt auf der Insel"],
+  "Llegadas confirmadas": ["Confirmed arrivals", "Arrivi confermati", "Arrivées confirmées", "Bestätigte Ankünfte"],
+  "Estancias completadas": ["Completed stays", "Soggiorni completati", "Séjours terminés", "Abgeschlossene Aufenthalte"],
+  "Estancia completada": ["Stay completed", "Soggiorno completato", "Séjour terminé", "Aufenthalt abgeschlossen"],
+  "Eliminar": ["Delete", "Elimina", "Supprimer", "Löschen"],
+  "¿Borrar?": ["Delete?", "Eliminare?", "Supprimer ?", "Löschen?"],
+  "plan": ["plan", "piano", "formule", "Paket"],
+  "Beach clubs": ["Beach clubs", "Beach club", "Beach clubs", "Beach Clubs"],
+  "Hola": ["Hello", "Ciao", "Bonjour", "Hallo"],
+
+  "Cerrar menú": ["Close menu", "Chiudi menu", "Fermer le menu", "Menü schließen"],
+  "Invitado": ["Guest", "Ospite", "Invité", "Gast"],
+  "Ver itinerario": ["View itinerary", "Vedi itinerario", "Voir l'itinéraire", "Reiseplan ansehen"],
+  "Finalizado": ["Finished", "Concluso", "Terminé", "Abgeschlossen"],
   "Itinerarios a medida": ["Tailor-made itineraries", "Itinerari su misura", "Itinéraires sur mesure", "Maßgeschneiderte Reisepläne"],
   "Cada cliente,": ["Every client,", "Ogni cliente,", "Chaque client,", "Jeder Gast,"],
   "su propio plan.": ["their own plan.", "il suo piano.", "son propre plan.", "sein eigener Plan."],
@@ -270,22 +392,76 @@ try { lang = localStorage.getItem("mey-lang") || (navigator.language || "es").sl
 if (!LANGS[lang]) lang = "es";
 export const getLang = () => lang;
 const idx = () => ORDER.indexOf(lang);
-export function t(s) { if (lang === "es" || s == null) return s; const k = s.trim(); const row = D[k] || INFO[k]; return row ? s.replace(k, row[idx()]) : s; }
+// whole-string lookup first; composite labels ("Ahora: … · …", "4 personas") are translated piece by piece
+function look(k) { const row = D[k] || INFO[k]; return row ? row[idx()] : null; }
+function tr(k, depth = 0) {
+  const w = look(k); if (w != null) return w;
+  if (depth > 3) return k;
+  if (k.includes(" · ")) return k.split(" · ").map(p => tr(p, depth + 1)).join(" · ");
+  let m = k.match(/^(.+?): (.+)$/); if (m) return `${tr(m[1], depth + 1)}: ${tr(m[2], depth + 1)}`;
+  m = k.match(/^(\d+(?:[.,]\d+)?) (\S.*)$/); if (m) { const r = tr(m[2], depth + 1); return r !== m[2] ? `${m[1]} ${r}` : k; }
+  m = k.match(/^(.+?), (\d+ \/ \d+)$/); if (m) return `${tr(m[1], depth + 1)}, ${m[2]}`;
+  return k;
+}
+export function t(s) { if (lang === "es" || s == null) return s; const k = String(s).trim(); if (!k) return s; const r = tr(k); return r === k ? s : String(s).replace(k, r); }
+export const hasKey = s => { const k = s.trim(); return !!(D[k] || INFO[k]) || (lang !== "es" && tr(k) !== k); };
 export function msg(key, es) { return lang === "es" ? es : MSG[key][idx()]; }
 export function venueInfo(v) {
   if (lang === "es") return v.info;
   if (INFO[v.info]) return INFO[v.info][idx()];
   return GEN[v.type][idx()].replace("{a}", v.area);
 }
-// translate every text node (and placeholder) under root, remembering the Spanish source
+// reverse lookup: any translated string back to its Spanish source (so a node first seen in another language still returns to Spanish)
+let REV = null;
+function unTr(k, depth = 0) {
+  const es = REV.get(k); if (es) return es;
+  if (depth > 3) return k;
+  if (k.includes(" · ")) return k.split(" · ").map(p => unTr(p, depth + 1)).join(" · ");
+  let m = k.match(/^(.+?): (.+)$/); if (m) return `${unTr(m[1], depth + 1)}: ${unTr(m[2], depth + 1)}`;
+  m = k.match(/^(\d+(?:[.,]\d+)?) (\S.*)$/); if (m) { const r = unTr(m[2], depth + 1); return r !== m[2] ? `${m[1]} ${r}` : k; }
+  return k;
+}
+const rev = s => {
+  if (!REV) { REV = new Map(); for (const tab of [D, INFO]) for (const k in tab) tab[k].forEach(v => { if (!REV.has(v)) REV.set(v, k); }); }
+  const k = s.trim(); if (!k) return s; const es = unTr(k); return es !== k ? s.replace(k, es) : s;
+};
+const ATTRS = ["placeholder", "aria-label", "alt", "title"];
+export const isForeign = s => { rev(" "); const k = s.trim(); return REV.has(k) && REV.get(k) !== k; };
+// translate every text node and every readable attribute under root, remembering the Spanish source
 export function translateTree(root = document.body) {
   const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   while (w.nextNode()) {
-    const n = w.currentNode; if (n.parentElement?.closest("script, style, #signal")) continue;
-    if (n.__es == null) { if (!n.nodeValue.trim()) continue; n.__es = n.nodeValue; }
-    n.nodeValue = t(n.__es);
+    const n = w.currentNode; if (n.parentElement?.closest("script, style, #signal, [data-no-i18n]")) continue;
+    if (n.__es == null || (n.__set != null && n.nodeValue !== n.__set)) { if (!n.nodeValue.trim()) continue; n.__es = rev(n.nodeValue); }
+    n.nodeValue = n.__set = t(n.__es);
   }
-  root.querySelectorAll?.("[placeholder]").forEach(el => { if (el.__es == null) el.__es = el.placeholder; el.placeholder = t(el.__es); });
+  const els = root.querySelectorAll ? [root, ...root.querySelectorAll(ATTRS.map(a => `[${a}]`).join(","))] : [];
+  for (const el of els) {
+    if (!el.getAttribute || el.closest?.("[data-no-i18n]")) continue;
+    for (const a of ATTRS) {
+      const cur = el.getAttribute(a); if (cur == null || !cur.trim()) continue;
+      el.__esA ||= {}; el.__setA ||= {};
+      if (el.__esA[a] == null || cur !== el.__setA[a]) el.__esA[a] = rev(cur);
+      el.setAttribute(a, el.__setA[a] = t(el.__esA[a]));
+    }
+  }
+}
+// anything rendered later (panels, lists, pop-ups, live statuses) is translated as soon as it appears
+let mo = null;
+export function watchI18n() {
+  if (mo) return;
+  mo = new MutationObserver(recs => {
+    if (lang === "es") return;
+    const seen = new Set();
+    for (const r of recs) {
+      const n = r.type === "characterData" ? r.target.parentElement : r.target;
+      if (!n || seen.has(n)) continue;
+      if (r.type === "attributes" && n.getAttribute(r.attributeName) === n.__setA?.[r.attributeName]) continue;
+      seen.add(n); if (n.nodeType === 1) translateTree(n);
+    }
+    mo.takeRecords(); // drop the records our own edits produced
+  });
+  mo.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
 }
 export function setLang(l) {
   if (!LANGS[l]) return; lang = l; try { localStorage.setItem("mey-lang", l); } catch {}

@@ -42,10 +42,11 @@
     <div class="sm-panel-inner">
       <ul class="sm-panel-list" role="list">
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#top"><span class="sm-panel-itemLabel">Home</span></a></li>
-        <li class="sm-panel-itemWrap"><button class="sm-panel-item sm-panel-toggle" type="button" id="svcToggle" aria-expanded="true" aria-controls="svcTree"><span class="sm-panel-itemLabel">Servicios</span></button></li>
-        <li class="sm-tree-wrap"><div class="sm-tree" id="svcTree"><nav class="branched-menu" id="bm" aria-label="Servicios"></nav></div></li>
+        <li class="sm-panel-itemWrap"><button class="sm-panel-item sm-panel-toggle" type="button" id="svcToggle" aria-expanded="false" aria-controls="svcTree"><span class="sm-panel-itemLabel">Servicios</span></button></li>
+        <li class="sm-tree-wrap"><div class="sm-tree" id="svcTree" data-closed><nav class="branched-menu" id="bm" aria-label="Servicios"></nav></div></li>
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#mapa"><span class="sm-panel-itemLabel">Mapa</span></a></li>
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#paquetes"><span class="sm-panel-itemLabel">Paquetes</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#reviews"><span class="sm-panel-itemLabel">Reviews</span></a></li>
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#faq"><span class="sm-panel-itemLabel">Preguntas</span></a></li>
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#contacto"><span class="sm-panel-itemLabel">Contacto</span></a></li>
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#area-cliente" data-login><span class="sm-panel-itemLabel">Área cliente</span></a></li>
@@ -77,10 +78,10 @@
   <!-- ============ HERO: the island, point by point ============ -->
   <section class="hero" id="mapa" aria-label="Mapa de Ibiza">
     <div class="hero__copy">
-      <p class="eyebrow eyebrow--light">Private concierge · Ibiza</p>
-      <h2 class="display">Ibiza,<br><em>without limits.</em></h2>
-      <p class="lede">Private stays. Extraordinary experiences. One dedicated concierge.</p>
-      <p class="hero__hint">Arrastra para girar la isla, pellizca o usa la rueda para acercar, y toca cualquier punto para ver el club, el beach club o la playa.</p>
+      <p class="eyebrow eyebrow--light">Concierge privado · Ibiza</p>
+      <h2 class="display">Ibiza,<br><em>sin límites.</em></h2>
+      <p class="lede">Estancias privadas. Experiencias extraordinarias. Un concierge dedicado.</p>
+      <p class="hero__hint">Arrastra para girar la isla, pellizca o usa Ctrl + rueda para acercar, y toca cualquier punto para ver el club, el beach club o la playa.</p>
       <div class="filters" role="group" aria-label="Mostrar en el mapa">
         <button type="button" class="filter" data-kind="club" aria-pressed="true"><i class="dot dot--club"></i>Clubs <b data-count="club"></b></button>
         <button type="button" class="filter" data-kind="beachclub" aria-pressed="true"><i class="dot dot--beachclub"></i>Beach clubs <b data-count="beachclub"></b></button>
@@ -89,6 +90,7 @@
       <a class="btn btn--primary btn--lg" href="#contacto">Diseña tu estancia</a>
     </div>
     <div class="map map3d" id="map" aria-label="Mapa 3D de Ibiza y Formentera con clubs, beach clubs y playas">
+      <span class="map3d__credit">Ortofoto y relieve © IGN · PNOA</span>
       <div class="pick" id="pickList" role="dialog" aria-label="Elige un lugar" hidden></div>
       <div class="map__zoom" role="group" aria-label="Zoom">
         <button type="button" data-zoom="in" aria-label="Acercar">+</button>
@@ -143,7 +145,7 @@
             <h3>Yates y barcos</h3>
             <p>Salidas desde el puerto de Eivissa hacia calas y Formentera, con patrón y tripulación.</p>
             <ul><li>Operadores de chárter autorizados</li><li>Día completo, medio día o atardecer</li><li>Comida a bordo</li></ul>
-            <a class="btn btn--primary" href="#contacto" data-svc="yates">Consultar yates y barcos</a>
+            <div class="stack__btns"><button class="btn btn--glass btn--onDark" type="button" data-fleet="all">Ver la flota</button><a class="btn btn--primary" href="#contacto" data-svc="yates">Consultar yates y barcos</a></div>
           </div>
         </article>
         <article class="stack__card" data-svc="motos">
@@ -180,10 +182,10 @@
           <div class="stack__media"><img src="data/photos/dalt-vila.jpg" alt="Vista aérea: Dalt Vila" loading="lazy"></div>
           <div class="stack__body">
             <p class="stack__place">Dalt Vila</p>
-            <h3>Fine dining</h3>
+            <h3>Alta cocina</h3>
             <p>Las mesas que merecen la pena al atardecer, y un chef privado en tu villa o a bordo.</p>
             <ul><li>Reservas en restaurantes de la isla</li><li>Chef a domicilio con producto local</li><li>Menús para celebraciones</li></ul>
-            <a class="btn btn--primary" href="#contacto" data-svc="dining">Consultar fine dining</a>
+            <a class="btn btn--primary" href="#contacto" data-svc="dining">Consultar alta cocina</a>
           </div>
         </article>
         <article class="stack__card" data-svc="beach">
@@ -223,7 +225,7 @@
       <div class="packs">
         <article class="pack">
           <p class="pack__days">Llegada · día 1</p>
-          <h3>Arrival</h3>
+          <h3>Llegada</h3>
           <ul><li>Transfer privado desde el aeropuerto</li><li>Villa lista, nevera llena</li><li>Cena del chef la primera noche</li></ul>
           <button class="btn btn--ink" data-pack="Arrival" type="button">Quiero este plan</button>
         </article>
@@ -256,6 +258,19 @@
       </header>
       <div class="ex" id="examples"></div>
       <div class="ex__cta"><a class="btn btn--primary" href="#area-cliente" id="exDemo">Ver un itinerario de ejemplo</a></div>
+    </div>
+  </section>
+
+  <!-- ============ REVIEWS ============ -->
+  <section class="sec sec--night" id="reviews">
+    <div class="wrap">
+      <header class="sec__head">
+        <p class="eyebrow eyebrow--light">Reviews</p>
+        <h2 class="display display--md">Lo que viven <em>nuestros clientes.</em></h2>
+        <p class="lede">Fotos y vídeos de estancias reales, compartidos por quienes ya han vivido Ibiza con nosotros. Arrastra el carrusel o toca una imagen para verla en grande.</p>
+      </header>
+      <div class="reviews__ring" id="reviewsRing"></div>
+      <p class="reviews__note">Contenido de ejemplo: este espacio se completa con las fotos y vídeos que compartan tus clientes.</p>
     </div>
   </section>
 
@@ -294,31 +309,43 @@
     <div class="wrap contact">
       <div class="contact__intro">
         <p class="eyebrow eyebrow--light">Contacto</p>
-        <h2 class="display display--md">Your Ibiza experience<br><em>starts here.</em></h2>
+        <h2 class="display display--md">Tu experiencia en Ibiza<br><em>empieza aquí.</em></h2>
         <p class="lede">Elige lo que te interesa y te respondemos personalmente. Sin bots y sin esperas.</p>
         <p class="contact__direct">También por email: <span class="selectable">meysociety@protonmail.com</span></p>
       </div>
       <form class="contact__form lg lg--panel" id="form" novalidate>
-        <fieldset>
-          <legend>¿Qué quieres organizar?</legend>
-          <div class="chips" id="chips"></div>
-        </fieldset>
         <div class="grid2">
+          <label>Nombre<input type="text" id="f-name" name="name" autocomplete="name" required></label>
+          <label>Personas<input type="number" id="f-people" name="people" min="1" max="40" value="2"></label>
           <label>Llegada<input type="date" id="f-from" name="from"></label>
           <label>Salida<input type="date" id="f-to" name="to"></label>
-          <label>Personas<input type="number" id="f-people" name="people" min="1" max="40" value="2"></label>
-          <label>Nombre<input type="text" id="f-name" name="name" autocomplete="name" required></label>
         </div>
+        <fieldset class="q">
+          <legend>¿Es tu primera vez en la isla?</legend>
+          <div class="chips" data-single="first" role="radiogroup"><button type="button" class="chip" role="radio" aria-checked="false" data-v="Sí">Sí</button><button type="button" class="chip" role="radio" aria-checked="false" data-v="No">No</button></div>
+        </fieldset>
+        <fieldset class="q">
+          <legend>¿Tenéis reservado el alojamiento?</legend>
+          <div class="chips" data-single="stay" role="radiogroup"><button type="button" class="chip" role="radio" aria-checked="false" data-v="Sí">Sí</button><button type="button" class="chip" role="radio" aria-checked="false" data-v="No">No</button><button type="button" class="chip" role="radio" aria-checked="false" data-v="Todavía no, buscamos villa">Todavía no, buscamos villa</button></div>
+        </fieldset>
+        <fieldset class="q">
+          <legend>Me interesa <small>(puedes elegir varias)</small></legend>
+          <div class="chips" id="chips"></div>
+        </fieldset>
+        <fieldset class="q">
+          <legend>Selecciona los clubs que te interesan <small>(uno o más)</small></legend>
+          <div class="chips" id="clubChips"></div>
+        </fieldset>
         <label>Cuéntanos más<textarea id="f-notes" name="notes" rows="3" placeholder="Celebración, preferencias, horarios…"></textarea></label>
         <div class="form__actions">
-          <button class="btn btn--glass btn--lg btn--onDark" type="submit">Enviar por WhatsApp</button>
+          <button class="btn btn--liquid btn--lg" type="submit"><span class="btn__liquid" aria-hidden="true"></span><span>Pedir presupuesto</span></button>
           <p class="form__status" id="formStatus" role="status"></p>
         </div>
         <p class="fine fine--light">Usamos tus datos solo para responder a tu solicitud. Puedes pedir que los borremos cuando quieras.</p>
       </form>
     </div>
     <footer class="foot wrap">
-      <span>Mey Society · Private concierge · Ibiza, Illes Balears</span>
+      <span>Mey Society · Concierge privado · Ibiza, Illes Balears</span>
       <span>Servicios prestados por proveedores con licencia.</span>
       <span class="credits">Fotos aéreas: PNOA cedido por © Instituto Geográfico Nacional (CC BY 4.0). Costa y relieve del mapa: MDT25 © Instituto Geográfico Nacional (CC BY 4.0). Ubicaciones: © Overture Maps Foundation (CDLA-Permissive-2.0). La información de cada lugar es orientativa.</span>
     </footer>
@@ -357,6 +384,7 @@
     <button class="btn btn--glass btn--sm btn--onDark" type="button" id="dashBack" hidden>← Registro</button>
     <div class="dash__who"><p class="eyebrow eyebrow--light"><span>Tu estancia</span> · <span id="dashPack"></span></p><h2 class="display display--sm" id="dashHello">Hola</h2><p class="dash__dates" id="dashDates"></p></div>
     <div class="dash__ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="ring-bg"/><circle cx="60" cy="60" r="52" class="ring" id="ring"/></svg><div><strong id="ringPct">0%</strong><span>completado</span></div></div>
+    <button class="btn btn--primary btn--sm dash__pdf" type="button" id="dashPdf"><span class="dash__pdfIco" aria-hidden="true"></span><span>Descargar PDF</span></button>
     <button class="btn btn--glass btn--sm btn--onDark" type="button" id="logout">Salir</button>
   </header>
   <nav class="dash__days" id="days" aria-label="Días"></nav>
@@ -405,6 +433,23 @@
   </form>
   <div class="admin__list" id="adminList" role="list"></div>
   <p class="fine fine--light admin__note">Los itinerarios se guardan en este navegador. Para que tus clientes los vean desde su móvil hace falta conectar una base de datos; el panel ya está preparado para ello.</p>
+</div>
+
+<div class="fleet" id="fleet" hidden role="dialog" aria-modal="true" aria-labelledby="fleetTitle">
+  <header class="fleet__top">
+    <div><p class="eyebrow eyebrow--light">Barcos y yates · Ibiza</p><h2 class="display display--sm" id="fleetTitle">Nuestra flota</h2></div>
+    <button class="lightbox__close fleet__close" type="button" id="fleetClose" aria-label="Cerrar"></button>
+  </header>
+  <div class="fleet__chips" id="fleetChips" role="toolbar" aria-label="Tipo de barco"></div>
+  <div class="fleet__ribbon" id="fleetRibbon"></div>
+  <div class="fleet__info" id="fleetInfo" aria-live="polite"></div>
+  <div class="fleet__nav"><button class="fleet__arrow" type="button" id="fleetPrev" aria-label="Anterior"></button><span class="fleet__count" id="fleetCount"></span><button class="fleet__arrow" type="button" id="fleetNext" aria-label="Siguiente"></button></div>
+  <p class="fleet__note">Imágenes ilustrativas. La flota disponible depende de la fecha y se confirma con cada operador de chárter autorizado.</p>
+</div>
+
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Reseña">
+  <button class="lightbox__close" type="button" id="lbClose" aria-label="Cerrar"></button>
+  <figure style="margin:0"><div id="lbMedia"></div><figcaption class="lightbox__cap" id="lbCap"></figcaption></figure>
 </div>
 
 <script src="vendor/gsap.min.js"></script>
