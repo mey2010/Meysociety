@@ -75,49 +75,6 @@
     </div>
   </section>
 
-  <!-- ============ HERO: the island, point by point ============ -->
-  <section class="hero" id="mapa" aria-label="Mapa de Ibiza">
-    <div class="hero__copy">
-      <p class="eyebrow eyebrow--light">Concierge privado · Ibiza</p>
-      <h2 class="display">Ibiza,<br><em>sin límites.</em></h2>
-      <p class="lede">Estancias privadas. Experiencias extraordinarias. Un concierge dedicado.</p>
-      <p class="hero__hint">Arrastra para girar la isla, pellizca o usa Ctrl + rueda para acercar, y toca cualquier punto para ver el club, el beach club o la playa.</p>
-      <div class="filters" role="group" aria-label="Mostrar en el mapa">
-        <button type="button" class="filter" data-kind="club" aria-pressed="true"><i class="dot dot--club"></i>Clubs <b data-count="club"></b></button>
-        <button type="button" class="filter" data-kind="beachclub" aria-pressed="true"><i class="dot dot--beachclub"></i>Beach clubs <b data-count="beachclub"></b></button>
-        <button type="button" class="filter" data-kind="beach" aria-pressed="true"><i class="dot dot--beach"></i>Playas <b data-count="beach"></b></button>
-      </div>
-      <a class="btn btn--primary btn--lg" href="#contacto">Diseña tu estancia</a>
-    </div>
-    <div class="map map3d" id="map" aria-label="Mapa 3D de Ibiza y Formentera con clubs, beach clubs y playas">
-      <span class="map3d__credit">Ortofoto y relieve © IGN · PNOA</span>
-      <div class="pick" id="pickList" role="dialog" aria-label="Elige un lugar" hidden></div>
-      <div class="map__zoom" role="group" aria-label="Zoom">
-        <button type="button" data-zoom="in" aria-label="Acercar">+</button>
-        <button type="button" data-zoom="out" aria-label="Alejar">−</button>
-        <button type="button" data-zoom="reset" aria-label="Ver toda la isla">⤢</button>
-      </div>
-      <div class="map__areas" role="group" aria-label="Ir a una zona">
-        <button type="button" data-area="sur">Sur</button>
-        <button type="button" data-area="eivissa">Eivissa</button>
-        <button type="button" data-area="oeste">Oeste</button>
-        <button type="button" data-area="santantoni">Sant Antoni</button>
-        <button type="button" data-area="formentera">Formentera</button>
-      </div>
-      <div class="pop" id="pop" role="dialog" aria-modal="false" aria-labelledby="popTitle" hidden>
-        <button class="pop__x" type="button" aria-label="Cerrar">×</button>
-        <figure class="pop__img"><img id="popImg" alt=""><figcaption>Vista aérea · PNOA © IGN</figcaption></figure>
-        <div class="pop__body">
-          <p class="pop__kind" id="popKind"></p>
-          <h3 id="popTitle"></h3>
-          <p class="pop__info" id="popInfo"></p>
-          <p class="pop__coord" id="popCoord"></p>
-          <button class="btn btn--primary" type="button" id="popBook">Reservar con Mey Society</button>
-          <p class="pop__fine">Sujeto a disponibilidad de cada sala.</p>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- ============ SERVICES: cards stack and fade as you scroll ============ -->
   <section class="sec sec--drape" id="servicios">
@@ -208,6 +165,50 @@
             <a class="btn btn--primary" href="#contacto" data-svc="noche">Consultar clubs y vip</a>
           </div>
         </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HERO: the island, point by point ============ -->
+  <section class="hero" id="mapa" aria-label="Mapa de Ibiza">
+    <div class="hero__copy">
+      <p class="eyebrow eyebrow--light">Concierge privado · Ibiza</p>
+      <h2 class="display">Ibiza,<br><em>sin límites.</em></h2>
+      <p class="lede">Estancias privadas. Experiencias extraordinarias. Un concierge dedicado.</p>
+      <p class="hero__hint">Arrastra para girar la isla y usa Ctrl + rueda para acercar; en el móvil, mueve y amplía con dos dedos. Toca cualquier punto para ver el club, el beach club o la playa.</p>
+      <div class="filters" role="group" aria-label="Mostrar en el mapa">
+        <button type="button" class="filter" data-kind="club" aria-pressed="true"><i class="dot dot--club"></i>Clubs <b data-count="club"></b></button>
+        <button type="button" class="filter" data-kind="beachclub" aria-pressed="true"><i class="dot dot--beachclub"></i>Beach clubs <b data-count="beachclub"></b></button>
+        <button type="button" class="filter" data-kind="beach" aria-pressed="true"><i class="dot dot--beach"></i>Playas <b data-count="beach"></b></button>
+      </div>
+      <a class="btn btn--primary btn--lg" href="#contacto">Diseña tu estancia</a>
+    </div>
+    <div class="map map3d" id="map" aria-label="Mapa 3D de Ibiza y Formentera con clubs, beach clubs y playas">
+      <span class="map3d__credit">Ortofoto y relieve © IGN · PNOA</span>
+      <div class="pick" id="pickList" role="dialog" aria-label="Elige un lugar" hidden></div>
+      <div class="map__zoom" role="group" aria-label="Zoom">
+        <button type="button" data-zoom="in" aria-label="Acercar">+</button>
+        <button type="button" data-zoom="out" aria-label="Alejar">−</button>
+        <button type="button" data-zoom="reset" aria-label="Ver toda la isla">⤢</button>
+      </div>
+      <div class="map__areas" role="group" aria-label="Ir a una zona">
+        <button type="button" data-area="sur">Sur</button>
+        <button type="button" data-area="eivissa">Eivissa</button>
+        <button type="button" data-area="oeste">Oeste</button>
+        <button type="button" data-area="santantoni">Sant Antoni</button>
+        <button type="button" data-area="formentera">Formentera</button>
+      </div>
+      <div class="pop" id="pop" role="dialog" aria-modal="false" aria-labelledby="popTitle" hidden>
+        <button class="pop__x" type="button" aria-label="Cerrar">×</button>
+        <figure class="pop__img"><img id="popImg" alt=""><figcaption>Vista aérea · PNOA © IGN</figcaption></figure>
+        <div class="pop__body">
+          <p class="pop__kind" id="popKind"></p>
+          <h3 id="popTitle"></h3>
+          <p class="pop__info" id="popInfo"></p>
+          <p class="pop__coord" id="popCoord"></p>
+          <button class="btn btn--primary" type="button" id="popBook">Reservar con Mey Society</button>
+          <p class="pop__fine">Sujeto a disponibilidad de cada sala.</p>
+        </div>
       </div>
     </div>
   </section>

@@ -516,8 +516,8 @@ input[type="number"] { -moz-appearance: textfield; }
 .sm-tree .branched-menu { padding-bottom: 0; }
 
 /* ---------------- no gap between the map and the services ---------------- */
-.hero { padding-bottom: 12px; min-height: auto; }
-#servicios { padding-top: 12px; }
+.hero { padding-block: clamp(60px, 8vw, 110px); min-height: auto; }
+#servicios { padding-top: clamp(40px, 6vw, 80px); }
 #servicios .sec__head { margin-bottom: 28px; }
 
 /* ---------------- login tabs ---------------- */
@@ -880,3 +880,10 @@ button.sm-panel-item { text-align: right; padding: 0; }
 @property --lx { syntax: "<percentage>"; inherits: false; initial-value: 30%; }
 @keyframes liquid { to { --lx: 70%; } }
 @media (prefers-reduced-motion: reduce) { .btn__liquid { animation: none; } .btn--liquid::after { display: none; } }
+
+/* ---------------- map floating on the page: no frame, no box ---------------- */
+.map.map3d { background: transparent; box-shadow: none; border-radius: 0; overflow: visible; }
+.map3d__gl { -webkit-mask-image: radial-gradient(ellipse 52% 52% at 50% 50%, #000 58%, rgb(0 0 0 / .55) 80%, transparent 100%); mask-image: radial-gradient(ellipse 52% 52% at 50% 50%, #000 58%, rgb(0 0 0 / .55) 80%, transparent 100%); }
+.map3d__credit { color: var(--ink-soft); text-shadow: none; opacity: .7; }
+.map3d .map__zoom button, .map3d .map__areas button { box-shadow: 0 0 0 1px rgb(13 10 56 / .08), 0 8px 20px -10px rgb(13 10 56 / .45); }
+@media (max-width: 900px) { .map.map3d { border-radius: 0; height: 74svh; } }

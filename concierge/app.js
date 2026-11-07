@@ -108,7 +108,7 @@ let active = null;
 const mapEl = document.getElementById("map"), pop = document.getElementById("pop"), pickList = document.getElementById("pickList");
 const counts = { club: 0, beachclub: 0, beach: 0 }; VENUES.forEach(v => counts[v.type]++);
 document.querySelectorAll("[data-count]").forEach(b => b.textContent = counts[b.dataset.count]);
-const wheelHint = () => { mapEl.dataset.wheelHint = t(/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘ + rueda para acercar" : "Ctrl + rueda para acercar"); };
+const wheelHint = () => { mapEl.dataset.wheelHint = t(/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘ + rueda para acercar" : "Ctrl + rueda para acercar"); mapEl.dataset.touchHint = t("Usa dos dedos para mover el mapa"); };
 wheelHint(); document.addEventListener("langchange", wheelHint);
 const map3d = await initMap3D(mapEl, {
   venues: VENUES, mapJson: MAP,
@@ -604,6 +604,21 @@ setInterval(() => { if (!dash.hidden && viewing) renderDash(false); }, 60000); /
 /* ---------------- client area: full itinerary as a PDF ---------------- */
 document.querySelector("#dashPdf .dash__pdfIco").innerHTML = ICONS.download;
 let jspdfReady = null;
+// inside claude.ai the page cannot trigger a download itself: it hands the file to the viewer, who confirms.
+// On an ordinary website window.claude does not exist and the browser download is used.
+const dlCap = window.claude?.use ? window.claude.use("downloads").catch(() => null) : Promise.resolve(null);
+async function savePDF(doc, filename) {
+  const dl = await Promise.race([dlCap, new Promise(r => setTimeout(() => r(null), 2500))]);
+  if (dl) {
+    try { await dl.save({ filename, data: doc.output("blob") }); return; }
+    catch (err) {
+      if (err?.code === "declined") return;
+      if (err?.code === "rate_limited") { alert(t("Ya hay una descarga pendiente de confirmar.")); return; }
+      if (!["unavailable", "not_granted", "capability_disabled", "capability_removed"].includes(err?.code)) throw err;
+    }
+  }
+  doc.save(filename);
+}
 const loadJsPDF = () => jspdfReady ||= new Promise((res, rej) => { if (window.jspdf) return res(window.jspdf); const s = document.createElement("script"); s.src = "vendor/jspdf.umd.min.js"; s.onload = () => res(window.jspdf); s.onerror = rej; document.head.appendChild(s); });
 const imgData = src => new Promise(res => { const im = new Image(); im.onload = () => { const c = document.createElement("canvas"); c.width = im.naturalWidth; c.height = im.naturalHeight; c.getContext("2d").drawImage(im, 0, 0); try { res(c.toDataURL("image/png")); } catch { res(null); } }; im.onerror = () => res(null); im.src = src; });
 // jsPDF's built-in Helvetica speaks WinAnsi: keep accents, swap anything outside it
@@ -687,7 +702,7 @@ async function downloadPDF() {
     doc.setFont("helvetica", "italic"); doc.setFontSize(8.5); doc.setTextColor(...SOFT);
     doc.text(doc.splitTextToSize(pdfTxt(t("Horarios orientativos. Tu concierge confirma cada servicio y te avisa de cualquier cambio.")), W - 2 * M), M, y + 2);
     footer();
-    doc.save(`Mey-Society-${rec.code}.pdf`);
+    await savePDF(doc, `Mey-Society-${rec.code}.pdf`);
   } catch (err) { console.error(err); alert(t("No se pudo generar el PDF. Inténtalo de nuevo.")); }
   finally { btn.disabled = false; btn.removeAttribute("aria-busy"); }
 }
