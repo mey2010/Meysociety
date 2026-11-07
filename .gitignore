@@ -2,3 +2,6 @@
 # Archivos de trabajo de las skills
 .taste-skill/
 __pycache__/
+
+# API keys (scroll-craft / kie.ai)
+.env
