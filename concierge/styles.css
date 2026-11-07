@@ -948,7 +948,7 @@ button.sm-panel-item { text-align: right; padding: 0; }
 .mb-form select option { color: #0d0a38; }
 .mb-form__act { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; }
 @media (prefers-reduced-motion: reduce) { .bell__btn.is-on .bell__ico, .toast.is-in { animation: none; } }
-.intro__line { text-transform: uppercase; letter-spacing: .14em; font-weight: 600; font-size: clamp(15px, 1.6vw, 22px); }
+.intro__line { text-transform: none; letter-spacing: -.01em; font-weight: 500; font-size: clamp(20px, 2.2vw, 30px); }
 
 /* =====================================================================
    LIQUID GLASS — every button: refractive glass, specular rim, a glint
