@@ -1,4 +1,5 @@
-/* Mey Society · Ibiza — illustrated island map, StaggeredMenu, services, client area. */
+/* Mey Society · Ibiza — illustrated island map, StaggeredMenu + BranchedMenu, services, client area. */
+import { ICONS } from "./icons.js";
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const FINE = matchMedia("(hover: hover) and (pointer: fine)").matches;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -263,7 +264,8 @@ document.getElementById("popBook").addEventListener("click", () => {
   // soft dots in the brand colours, drawn normally so they read on white
   const sprite = col => { const c = document.createElement("canvas"); c.width = c.height = 32; const g = c.getContext("2d"); const r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
     r.addColorStop(0, col); r.addColorStop(.45, col); r.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = r; g.fillRect(0, 0, 32, 32); return c; };
-  const SPR = [sprite("rgba(120,199,228,1)"), sprite("rgba(81,92,159,1)"), sprite("rgba(30,36,187,1)"), sprite("rgba(171,80,219,1)")];
+  // the six colours sampled from the logo, dark to light along the fold
+  const SPR = ["#0d0a38", "#292467", "#1e24bb", "#515c9f", "#78c7e4", "#ab50db"].map(sprite);
   let mx = 0, my = 0, tmx = 0, tmy = 0, t0 = performance.now();
   addEventListener("pointermove", e => { tmx = e.clientX / innerWidth - .5; tmy = e.clientY / innerHeight - .5; }, { passive: true });
   // pressing anywhere sends a ripple through the drape from that point
@@ -297,7 +299,7 @@ document.getElementById("popBook").addEventListener("click", () => {
         }
         if (px < -20 || px > W + 20 || py < -20 || py > H + 20) continue;
         const depth = clamp((4.4 - z2) / 2.4), s = (1.1 + depth * 3.6 + boost * 2.5) * (F / 1000);
-        const k = clamp((z + .7) / 1.4); const spr = SPR[Math.min(3, Math.floor(k * 4))];
+        const k = clamp((z + .7) / 1.4); const spr = SPR[Math.min(5, Math.floor(k * 6))];
         cx.globalAlpha = Math.min(1, .1 + depth * .45 + boost * .5);
         cx.drawImage(spr, px - s, py - s, s * 2, s * 2);
       }
@@ -335,6 +337,94 @@ document.getElementById("popBook").addEventListener("click", () => {
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
     addEventListener("resize", update); update();
   }
+}
+
+
+/* =====================================================================
+   BRANCHED MENU — React Bits <BranchedMenu /> ported to vanilla JS
+   (same DOM, CSS variables, branch geometry and draw/fold timing)
+   ===================================================================== */
+function BranchedMenu(nav, { items, defaultOpen = 0, defaultActive = "", onSelect, onToggle, color = "#f5f5f5", accentColor = "#f5f5f5", lineColor = "#3f3f46",
+  width = 240, rowHeight = 36, indent = 40, trunk = 14, radius = 10, lineWidth = 1.5, fontSize = 14, drawDuration = 400, foldDuration = 300 }) {
+  const PAD = 6, MARK = 16;
+  const toSet = o => new Set(Array.isArray(o) ? o : o >= 0 ? [o] : []);
+  const open = toSet(defaultOpen);
+  let active = defaultActive || (items.find((it, i) => it.children && open.has(i))?.children?.[0]?.value ?? "");
+  Object.entries({ "--bm-w": width + "px", "--bm-ink": color, "--bm-accent": accentColor, "--bm-line": lineColor, "--bm-font": fontSize + "px", "--bm-row": rowHeight + "px",
+    "--bm-indent": indent + "px", "--bm-line-w": lineWidth, "--bm-draw": drawDuration + "ms", "--bm-fold": foldDuration + "ms" }).forEach(([k, v]) => nav.style.setProperty(k, v));
+  const r = Math.min(radius, rowHeight / 2 - 2), endX = indent - 8;
+  const rowY = k => PAD + k * rowHeight + rowHeight / 2;
+  const branch = k => `M ${trunk} ${rowY(k) - r} A ${r} ${r} 0 0 0 ${trunk + r} ${rowY(k)} H ${endX}`;
+  const reach = k => `M ${trunk} 0 V ${rowY(k) - r} A ${r} ${r} 0 0 0 ${trunk + r} ${rowY(k)} H ${endX}`;
+  const length = k => rowY(k) - r + (Math.PI * r) / 2 + (endX - trunk - r);
+  const icon = name => name && ICONS[name] ? `<span class="branched-menu__icon" aria-hidden="true">${ICONS[name]}</span>` : "";
+  nav.innerHTML = `<span class="branched-menu__marker" aria-hidden="true"></span>` + items.map((it, i) => {
+    const kids = it.children;
+    if (!kids) return `<div class="branched-menu__section"><button type="button" class="branched-menu__head" data-leaf="${it.value ?? it.label}">${icon(it.icon)}${it.label}</button></div>`;
+    const h = PAD * 2 + kids.length * rowHeight;
+    return `<div class="branched-menu__section" data-i="${i}"><button type="button" class="branched-menu__head" data-sec="${i}">${it.label}</button>
+      <div class="branched-menu__body"><div class="branched-menu__fold"><div class="branched-menu__tree" style="height:${h}px">
+        <svg class="branched-menu__lines" width="${indent}" height="${h}" aria-hidden="true"><path class="branched-menu__base" d="M ${trunk} 0 V ${rowY(kids.length - 1) - r}"/>${kids.map((k, j) => `<path class="branched-menu__base" d="${branch(j)}"/>`).join("")}${kids.map((k, j) => `<path class="branched-menu__reach" data-v="${k.value}" d="${reach(j)}" style="stroke-dasharray:${length(j)};stroke-dashoffset:${length(j)}"/>`).join("")}</svg>
+        ${kids.map(k => `<button type="button" class="branched-menu__item" data-v="${k.value}" data-sec-of="${i}">${icon(k.icon)}<span class="branched-menu__label">${k.label}</span></button>`).join("")}
+      </div></div></div></div>`;
+  }).join("");
+  const marker = nav.querySelector(".branched-menu__marker"), heads = [...nav.children].filter(e => e.classList.contains("branched-menu__section")).map(s => s.querySelector(".branched-menu__head"));
+  const flat = items.flatMap(it => it.children ? it.children : [{ ...it, value: it.value ?? it.label }]);
+  function render(glide = true) {
+    nav.querySelectorAll(".branched-menu__section").forEach((sec, i) => {
+      const isOpen = open.has(i) && !!items[i].children; sec.toggleAttribute("data-open", isOpen);
+      const head = sec.querySelector(".branched-menu__head"); if (items[i].children) head.setAttribute("aria-expanded", isOpen);
+      const leaf = !items[i].children && (items[i].value ?? items[i].label) === active; head.toggleAttribute("data-active", leaf); leaf ? head.setAttribute("aria-current", "true") : head.removeAttribute("aria-current");
+      sec.querySelectorAll(".branched-menu__item").forEach(b => { const on = b.dataset.v === active; b.toggleAttribute("data-active", on); on ? b.setAttribute("aria-current", "true") : b.removeAttribute("aria-current"); b.tabIndex = isOpen ? 0 : -1; });
+      sec.querySelectorAll(".branched-menu__reach").forEach(p => { p.style.strokeDashoffset = p.dataset.v === active ? 0 : p.style.strokeDasharray; });
+    });
+    const as = items.findIndex(it => it.children?.some(k => k.value === active)), el = heads[as], on = as >= 0 && open.has(as) && el;
+    if (!glide) marker.style.transition = "none";
+    if (on) marker.style.top = `${el.offsetTop + (el.offsetHeight - MARK) / 2}px`;
+    marker.toggleAttribute("data-on", !!on);
+    if (!glide) { void marker.offsetHeight; marker.style.transition = ""; }
+  }
+  nav.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.sec != null) { const i = +b.dataset.sec; const o = !open.has(i); o ? open.add(i) : open.delete(i); onToggle?.(i, o); render(); setTimeout(() => render(false), foldDuration + 20); return; }
+    const v = b.dataset.v ?? b.dataset.leaf; if (v == null) return; active = v; render(); onSelect?.(v, flat.find(f => f.value === v));
+  });
+  new ResizeObserver(() => render(false)).observe(nav);
+  render(false);
+  return { reset() { active = ""; render(false); } };
+}
+
+// The services tree inside the main menu.
+const SVC_TREE = [
+  { label: "Barcos", svc: "yates", children: [
+    { value: "barcos-sin-licencia", label: "Sin licencia", icon: "badge" }, { value: "barcos-con-patron", label: "Con patrón", icon: "helm" },
+    { value: "barcos-lancha", label: "Lancha", icon: "boat" }, { value: "barcos-yate", label: "Yate", icon: "ship" } ] },
+  { label: "Motos de agua", svc: "motos", children: [
+    { value: "motos-sin-licencia", label: "Sin licencia", icon: "badge" }, { value: "motos-seadoo", label: "Sea-Doo", icon: "jet" }, { value: "motos-yamaha", label: "Yamaha", icon: "jet" } ] },
+  { label: "Villas", svc: "villas", children: [
+    { value: "villa-aura", label: "Villa Aura", icon: "villa" }, { value: "villa-moli", label: "Villa Molí", icon: "villa2" } ] },
+  { label: "Coches y motos", svc: "coches", children: [
+    { value: "coches-150", label: "Hasta 150 €/día", icon: "car" }, { value: "coches-300", label: "150 – 300 €/día", icon: "car2" },
+    { value: "coches-600", label: "300 – 600 €/día", icon: "car3" }, { value: "coches-lujo", label: "Más de 600 €/día", icon: "crown" },
+    { value: "motos-scooter", label: "Motos y scooters", icon: "moto" } ] },
+  { label: "Transfers", svc: "transfers", children: [
+    { value: "transfer-2-4", label: "2 – 4 personas", icon: "users" }, { value: "transfer-6-7", label: "6 – 7 personas", icon: "van" },
+    { value: "transfer-8-9", label: "8 – 9 personas", icon: "bus" }, { value: "transfer-10-13", label: "10 – 13 personas", icon: "bus2" } ] },
+  { label: "Chefs", value: "chefs", svc: "dining", icon: "chef" },
+];
+const svcMenu = BranchedMenu(document.getElementById("bm"), {
+  items: SVC_TREE, defaultOpen: 0, defaultActive: "__none__",
+  color: "#0d0a38", accentColor: "#ab50db", lineColor: "#c9cce8", width: 340, rowHeight: 38, fontSize: 15, indent: 42,
+  onSelect: (value, item) => {
+    const sec = SVC_TREE.find(s => s.value === value || s.children?.some(k => k.value === value));
+    select(sec.svc, true);
+    document.getElementById("f-notes").value = item && sec.children ? `Me interesa: ${sec.label} · ${item.label}.` : `Me interesa: ${sec.label}.`;
+    setTimeout(() => { SM.set(false); setTimeout(() => document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" }), 250); }, 380);
+  },
+});
+{
+  const t = document.getElementById("svcToggle"), tree = document.getElementById("svcTree");
+  t.addEventListener("click", () => { const o = t.getAttribute("aria-expanded") !== "true"; t.setAttribute("aria-expanded", o); tree.toggleAttribute("data-closed", !o); });
 }
 
 // glass highlight follows the pointer on primary buttons

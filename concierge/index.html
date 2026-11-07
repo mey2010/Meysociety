@@ -28,13 +28,12 @@
   <aside id="staggered-menu-panel" class="staggered-menu-panel" aria-hidden="true">
     <div class="sm-panel-inner">
       <ul class="sm-panel-list" role="list">
-        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#top"><span class="sm-panel-itemLabel">Inicio</span></a></li>
-        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#mapa"><span class="sm-panel-itemLabel">Mapa</span></a></li>
-        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#servicios"><span class="sm-panel-itemLabel">Servicios</span></a></li>
-        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#paquetes"><span class="sm-panel-itemLabel">Paquetes</span></a></li>
-        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#faq"><span class="sm-panel-itemLabel">Preguntas</span></a></li>
-        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#contacto"><span class="sm-panel-itemLabel">Contacto</span></a></li>
-        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#area-cliente" data-login><span class="sm-panel-itemLabel">Área cliente</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#top"><span class="sm-panel-itemLabel">Home</span></a></li>
+        <li class="sm-panel-itemWrap"><button class="sm-panel-item sm-panel-toggle" type="button" id="svcToggle" aria-expanded="true" aria-controls="svcTree"><span class="sm-panel-itemLabel">Servicios</span></button></li>
+      </ul>
+      <div class="sm-tree" id="svcTree"><nav class="branched-menu" id="bm" aria-label="Servicios"></nav></div>
+      <ul class="sm-more" role="list">
+        <li><a href="#mapa">Mapa</a></li><li><a href="#paquetes">Paquetes</a></li><li><a href="#faq">Preguntas</a></li><li><a href="#contacto">Contacto</a></li><li><a href="#area-cliente" data-login>Área cliente</a></li>
       </ul>
       <div class="sm-socials" aria-label="Contacto directo">
         <h3 class="sm-socials-title">Contacto</h3>
