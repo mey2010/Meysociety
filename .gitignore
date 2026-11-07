@@ -1,4 +1,9 @@
-
 # Archivos de trabajo de las skills
 .taste-skill/
 __pycache__/
+
+# API keys (scroll-craft / kie.ai)
+.env
+
+# Datos personales de las skills trader-* (cartera, config con email)
+trader/
