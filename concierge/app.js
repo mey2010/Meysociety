@@ -31,12 +31,12 @@ const P = k => proj(PLACES[k].ll);
 // Scene keyframes: camera position, look-at target (km), time of day 0 = morning, 1 = night
 const SCENES = [
   { where: "Ibiza",                    place: null,       pos: [5, 56, 44],        look: [-2, 0, -4],      tod: .10 },
-  { where: "Es Cubells · Cala Jondal", place: "cubells",  pos: [-6.2, 1.25, 5.4],  look: [-9.2, .05, 1.1], tod: .22 },
-  { where: "Marina Botafoch",          place: "botafoch", pos: [5.6, .95, -.4],    look: [1.9, .02, -3.6], tod: .32 },
-  { where: "Cala Bassa",               place: "bassa",    pos: [-12.4, .85, -6.2], look: [-15.5, 0, -9.7], tod: .42 },
-  { where: "Cala d'Hort · Es Vedrà",   place: "vedra",    pos: [-14.4, 1.05, -3.8],look: [-19, .15, 1],    tod: .56 },
-  { where: "Dalt Vila",                place: "eivissa",  pos: [-2.4, 1.35, -6.6],  look: [1.4, .05, -2.9], tod: .72 },
-  { where: "Platja d'en Bossa",        place: "bossa",    pos: [3.6, 2.3, 4.4],    look: [-1.4, 0, -.6],   tod: .9 },
+  { where: "Es Cubells · Cala Jondal", place: "cubells",  pos: [-5.6, .75, 4.4],   look: [-9, .05, 1.2], tod: .22 },
+  { where: "Marina Botafoch",          place: "botafoch", pos: [5.2, .6, -.9],     look: [2.1, 0, -3.7], tod: .32 },
+  { where: "Cala Bassa",               place: "bassa",    pos: [-12.6, .6, -6.9],  look: [-15.6, 0, -9.6], tod: .42 },
+  { where: "Cala d'Hort · Es Vedrà",   place: "vedra",    pos: [-15.2, .8, -2.8],  look: [-19.1, .2, 1.2],    tod: .56 },
+  { where: "Dalt Vila",                place: "eivissa",  pos: [-1.3, .6, -5.9],   look: [1.4, .05, -2.9], tod: .72 },
+  { where: "Platja d'en Bossa",        place: "bossa",    pos: [2.6, .9, 3.2],     look: [-1.2, 0, -.4],   tod: .9 },
   { where: "Ibiza y Formentera",       place: null,       pos: [-6, 40, 34],       look: [-2, 0, -5],      tod: 1 },
 ];
 
@@ -88,65 +88,90 @@ const sky = new THREE.Mesh(new THREE.SphereGeometry(1800, 48, 24), new THREE.Sha
 }));
 scene.add(sky);
 
-// ---- real terrain: Copernicus DEM GLO-30 heights + Sentinel-2 true colour (22 Jun 2025)
+// ---- real terrain: IGN MDT25 for the island, IGN MDT05 in the detail zones, PNOA orthophoto on top
 const BB = { lon0: 1.17, lon1: 1.65, lat0: 38.63, lat1: 39.13 };
 const TB = { x0: (BB.lon0 - LON0) * KX, x1: (BB.lon1 - LON0) * KX, z0: -(BB.lat1 - LAT0) * KZ, z1: -(BB.lat0 - LAT0) * KZ };
+const EXAG = 1.8;               // vertical exaggeration, the usual cinematic drone-map setting
+const SEA = -.03;               // sea-floor offset for vertices at or below sea level (km)
 const loader = new THREE.TextureLoader();
 const MAXANI = renderer.capabilities.getMaxAnisotropy();
-// PNOA aerial orthophoto (IGN), baked at ~14 m for the whole island
-const satTex = loader.load("data/pnoa_base.jpg", t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = MAXANI; t.needsUpdate = true; });
+const sfx = NARROW ? "_m" : "";
+const satTex = loader.load(`data/pnoa_base${sfx}.jpg`, t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = MAXANI; t.needsUpdate = true; });
 const shallowTex = loader.load("data/shallow.png", t => { t.colorSpace = THREE.NoColorSpace; t.needsUpdate = true; });
-const HN = 640; let HGT = null;
-function heightAt(x, z) { // km → metres from the DEM, bilinear
-  if (!HGT) return 0; const u = (x - TB.x0) / (TB.x1 - TB.x0) * (HN - 1), v = (z - TB.z0) / (TB.z1 - TB.z0) * (HN - 1);
-  if (u < 0 || u > HN - 1 || v < 0 || v > HN - 1) return -50;
-  const j = Math.min(HN - 2, Math.floor(u)), i = Math.min(HN - 2, Math.floor(v)), fu = u - j, fv = v - i;
-  const h = (a, b) => HGT[a * HN + b] / 10 - 100;
-  return (h(i, j) * (1 - fu) + h(i, j + 1) * fu) * (1 - fv) + (h(i + 1, j) * (1 - fu) + h(i + 1, j + 1) * fu) * fv;
+const SEA_CLIP = [new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)];
+
+// heights are packed in lossless PNGs: R = high byte, G = low byte, decimetres + 100 m
+function loadHeights(url) {
+  return fetch(url).then(r => r.blob()).then(b => createImageBitmap(b, { colorSpaceConversion: "none", premultiplyAlpha: "none" })).then(bmp => {
+    const n = bmp.width, c = document.createElement("canvas"); c.width = c.height = n;
+    const cx = c.getContext("2d", { willReadFrequently: true }); cx.drawImage(bmp, 0, 0); const d = cx.getImageData(0, 0, n, n).data;
+    const h = new Float32Array(n * n); for (let i = 0; i < n * n; i++) h[i] = ((d[i * 4] << 8) | d[i * 4 + 1]) / 10 - 100;
+    return { n, h };
+  });
 }
-// high-resolution PNOA patches (~2 m) around each scene, blended into the base at their edges
+function sample(H, u, v) { // u,v in 0..1, north-up
+  const x = u * (H.n - 1), y = v * (H.n - 1); if (x < 0 || y < 0 || x > H.n - 1 || y > H.n - 1) return -50;
+  const j = Math.min(H.n - 2, Math.floor(x)), i = Math.min(H.n - 2, Math.floor(y)), fx = x - j, fy = y - i, a = H.h;
+  return (a[i * H.n + j] * (1 - fx) + a[i * H.n + j + 1] * fx) * (1 - fy) + (a[(i + 1) * H.n + j] * (1 - fx) + a[(i + 1) * H.n + j + 1] * fx) * fy;
+}
+let BASEH = null;
+function heightAt(x, z) { if (!BASEH) return 0; return Math.max(0, sample(BASEH, (x - TB.x0) / (TB.x1 - TB.x0), (z - TB.z0) / (TB.z1 - TB.z0))); }
+const yOf = m => m > .2 ? Math.max(m, 1) * EXAG / 1000 + .002 : SEA;   // metres → scene y (km)
+function gridMesh(x0, z0, w, d, segs, H, extra) {
+  const g = new THREE.PlaneGeometry(w, d, segs, segs).rotateX(-Math.PI / 2); g.translate(x0 + w / 2, 0, z0 + d / 2);
+  const p = g.attributes.position, uv = g.attributes.uv;
+  for (let i = 0; i < p.count; i++) p.setY(i, yOf(sample(H, uv.getX(i), 1 - uv.getY(i))) + (extra || 0));
+  g.computeVertexNormals(); return g;
+}
 function fadeMask() {
   const c = document.createElement("canvas"); c.width = c.height = 256; const g = c.getContext("2d"), d = g.createImageData(256, 256);
   for (let y = 0; y < 256; y++) for (let x = 0; x < 256; x++) { const e = Math.min(x, y, 255 - x, 255 - y) / 255; const a = Math.min(1, Math.max(0, (e - .02) / .16)); const v = Math.round(a * a * (3 - 2 * a) * 255); const k = (y * 256 + x) * 4; d.data[k] = d.data[k + 1] = d.data[k + 2] = v; d.data[k + 3] = 255; }
   g.putImageData(d, 0, 0); return new THREE.CanvasTexture(c);
 }
-const SEA_CLIP = [new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)];
-function addPatches() {
-  return fetch("data/pnoa_patches.json").then(r => r.json()).then(meta => {
-    const mask = fadeMask(); const jobs = [];
-    for (const [k, [lo0, lo1, la0, la1]] of Object.entries(meta)) {
-      const a = proj([lo0, la1]), b = proj([lo1, la0]), w = b.x - a.x, d = b.z - a.z, n = NARROW ? 96 : 192;
-      const g = new THREE.PlaneGeometry(w, d, n - 1, n - 1).rotateX(-Math.PI / 2); g.translate(a.x + w / 2, 0, a.z + d / 2);
-      const p = g.attributes.position;
-      for (let i = 0; i < p.count; i++) { const m = heightAt(p.getX(i), p.getZ(i)); p.setY(i, m > .15 ? Math.max(m, 1) / 1000 + .0045 : -.02); }
-      g.computeVertexNormals();
-      jobs.push(new Promise(res => loader.load(`data/pnoa_${k}.jpg`, t => {
-        t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = MAXANI;
-        const mesh = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ map: t, alphaMap: mask, transparent: true, depthWrite: false, clippingPlanes: SEA_CLIP, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
-        mesh.renderOrder = 1; scene.add(mesh); res();
-      }, undefined, () => res())));
-    }
-    return Promise.all(jobs);
+const terrainMat = new THREE.MeshLambertMaterial({ map: satTex, clippingPlanes: SEA_CLIP, polygonOffset: true, polygonOffsetFactor: 6, polygonOffsetUnits: 6 });
+const terrainReady = loadHeights("data/height1024.png").then(H => {
+  BASEH = H;
+  scene.add(new THREE.Mesh(gridMesh(TB.x0, TB.z0, TB.x1 - TB.x0, TB.z1 - TB.z0, NARROW ? 320 : 640, H), terrainMat));
+  placeLights(); return fetch("data/pnoa_patches.json").then(r => r.json());
+}).then(meta => { initPatches(meta); thumbsReady(); });
+
+// detail zones: 5 m relief + ~2 m orthophoto, built when the camera comes near and freed when it leaves
+const PATCHES = []; const MASK = fadeMask(); const MAX_LIVE = NARROW ? 2 : 4;
+function initPatches(meta) {
+  for (const [k, [lo0, lo1, la0, la1]] of Object.entries(meta)) {
+    const a = proj([lo0, la1]), b = proj([lo1, la0]);
+    PATCHES.push({ k, x0: a.x, z0: a.z, w: b.x - a.x, d: b.z - a.z, cx: (a.x + b.x) / 2, cz: (a.z + b.z) / 2, state: "idle", mesh: null });
+  }
+}
+function buildPatch(P) {
+  P.state = "loading";
+  Promise.all([loadHeights(`data/h_${P.k}.png`), new Promise((res, rej) => loader.load(`data/pnoa_${P.k}${sfx}.jpg`, res, undefined, rej))]).then(([H, t]) => {
+    if (P.state !== "loading") { t.dispose(); return; }
+    t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = MAXANI;
+    const mesh = new THREE.Mesh(gridMesh(P.x0, P.z0, P.w, P.d, NARROW ? 200 : 384, H, .006),
+      new THREE.MeshLambertMaterial({ map: t, alphaMap: MASK, transparent: true, depthWrite: false, clippingPlanes: SEA_CLIP, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+    mesh.renderOrder = 1; scene.add(mesh); P.mesh = mesh; P.state = "live"; P.onLive?.(); P.onLive = null;
+  }).catch(() => { P.state = "idle"; });
+}
+function dropPatch(P) {
+  if (P.mesh) { scene.remove(P.mesh); P.mesh.geometry.dispose(); P.mesh.material.map.dispose(); P.mesh.material.dispose(); P.mesh = null; }
+  P.state = "idle";
+}
+function updatePatches(focus) { // focus: point the camera is looking at
+  if (!PATCHES.length) return;
+  const ranked = PATCHES.map(P => ({ P, d: Math.hypot(P.cx - focus.x, P.cz - focus.z) })).sort((a, b) => a.d - b.d);
+  ranked.forEach(({ P, d }, i) => {
+    const want = i < MAX_LIVE && d < 14;
+    if (want && P.state === "idle") buildPatch(P);
+    if (!want && P.state !== "idle") dropPatch(P);
   });
 }
-const terrainReady = fetch("data/height640.png").then(r => r.blob()).then(b => createImageBitmap(b, { colorSpaceConversion: "none", premultiplyAlpha: "none" })).then(bmp => {
-  // heights are packed in a lossless PNG: R = high byte, G = low byte (decimetres + 100 m)
-  const c = document.createElement("canvas"); c.width = c.height = HN; const cx = c.getContext("2d", { willReadFrequently: true, colorSpace: "srgb" });
-  cx.drawImage(bmp, 0, 0); const d = cx.getImageData(0, 0, HN, HN).data;
-  HGT = new Uint16Array(HN * HN); for (let i = 0; i < HN * HN; i++) HGT[i] = (d[i * 4] << 8) | d[i * 4 + 1];
-  const step = NARROW ? 2 : 1, n = HN / step;
-  const g = new THREE.PlaneGeometry(TB.x1 - TB.x0, TB.z1 - TB.z0, n - 1, n - 1).rotateX(-Math.PI / 2);
-  g.translate((TB.x0 + TB.x1) / 2, 0, (TB.z0 + TB.z1) / 2);
-  const pos = g.attributes.position;
-  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
-    const m = HGT[(i * step) * HN + j * step] / 10 - 100;
-    pos.setY(i * n + j, m > .15 ? Math.max(m, 1) / 1000 + .003 : -.02);
-  }
-  g.computeVertexNormals();
-  const terrain = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ map: satTex, clippingPlanes: SEA_CLIP }));
-  scene.add(terrain); placeLights();
-  return addPatches();
-}).then(() => thumbsReady());
+function patchesLiveNear(x, z) { // for thumbnails: build the nearest zone and wait for it
+  const P = PATCHES.slice().sort((a, b) => Math.hypot(a.cx - x, a.cz - z) - Math.hypot(b.cx - x, b.cz - z))[0];
+  if (!P) return Promise.resolve();
+  if (P.state === "live") return Promise.resolve();
+  return new Promise(res => { P.onLive = res; if (P.state === "idle") buildPatch(P); setTimeout(res, 8000); });
+}
 
 // ---- ocean: real-scale waves over the satellite's own shallows
 const ocean = new THREE.Mesh(new THREE.PlaneGeometry(3600, 3600, 1, 1).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
@@ -198,13 +223,13 @@ const lightsMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: fals
   fragmentShader: `varying float vA; void main(){ float d = length(gl_PointCoord - .5); float a = smoothstep(.5, 0., d); gl_FragColor = vec4(1., .78, .5, a * vA); }` });
 function placeLights() {
   const pos = [], size = [];
-  for (const k of TOWNS) { const c = P(k); const n = k === "eivissa" || k === "santantoni" ? 110 : 40; for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, r = Math.random() ** .6 * (n > 60 ? 1.3 : .6); const x = c.x + Math.cos(a) * r, z = c.z + Math.sin(a) * r * .8, h = heightAt(x, z); if (h < 1) continue; pos.push(x, h / 1000 + .012, z); size.push(.6 + Math.random()); } }
+  for (const k of TOWNS) { const c = P(k); const n = k === "eivissa" || k === "santantoni" ? 110 : 40; for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, r = Math.random() ** .6 * (n > 60 ? 1.3 : .6); const x = c.x + Math.cos(a) * r, z = c.z + Math.sin(a) * r * .8, h = heightAt(x, z); if (h < 1) continue; pos.push(x, h * EXAG / 1000 + .012, z); size.push(.6 + Math.random()); } }
   const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("s", new THREE.Float32BufferAttribute(size, 1));
   scene.add(new THREE.Points(g, lightsMat));
 }
 
-const sun = new THREE.DirectionalLight("#fff", 1.1); scene.add(sun);
-const hemi = new THREE.HemisphereLight("#ffffff", "#8a7a60", 1.6); scene.add(hemi);
+const sun = new THREE.DirectionalLight("#fff", 2); scene.add(sun);
+const hemi = new THREE.HemisphereLight("#ffffff", "#8a7a60", .95); scene.add(hemi);
 
 // ---- time of day
 const C = (h) => new THREE.Color(h);
@@ -216,13 +241,13 @@ const PAL = {
 const tmp = new THREE.Color();
 function setTime(t) {
   const gold = smooth(.45, .66, t) * (1 - smooth(.8, .95, t)), night = smooth(.78, .97, t);
-  const el = THREE.MathUtils.degToRad(60 * Math.pow(1 - t, 1.25) - 6), az = THREE.MathUtils.degToRad(lerp(50, -100, t));
+  const el = THREE.MathUtils.degToRad(40 * Math.pow(1 - t, 1.15) - 5), az = THREE.MathUtils.degToRad(lerp(50, -100, t));
   U.uSun.value.set(Math.cos(el) * Math.sin(az), Math.sin(el), Math.cos(el) * Math.cos(az)).normalize();
   const mix3 = (k, out) => out.copy(PAL.day[k]).lerp(PAL.gold[k], gold).lerp(PAL.night[k], night);
   mix3("z", U.uZenith.value); mix3("h", U.uHorizon.value); mix3("s", U.uSunCol.value);
   U.uGold.value = gold; U.uNight.value = night;
-  sun.position.copy(U.uSun.value).multiplyScalar(100); sun.color.copy(U.uSunCol.value); sun.intensity = lerp(1.1, .02, night) * (1 + .4 * gold);
-  hemi.color.set("#ffffff").lerp(U.uHorizon.value, .35 + .4 * gold); hemi.intensity = lerp(1.6, .09, night) * (1 - .25 * gold);
+  sun.position.copy(U.uSun.value).multiplyScalar(100); sun.color.copy(U.uSunCol.value); sun.intensity = lerp(2.1, .03, night) * (1 + .25 * gold);
+  hemi.color.set("#ffffff").lerp(U.uHorizon.value, .35 + .4 * gold); hemi.intensity = lerp(.95, .08, night) * (1 - .2 * gold);
   renderer.toneMappingExposure = lerp(1, .85, night);
 }
 
@@ -283,7 +308,7 @@ function updateUI() {
 const v3 = new THREE.Vector3();
 function placePin() {
   if (activeScene < 0 || !SCENES[activeScene].place) return;
-  const q = P(SCENES[activeScene].place); v3.set(q.x, .12, q.z).project(camera);
+  const q = P(SCENES[activeScene].place); v3.set(q.x, heightAt(q.x, q.z) * EXAG / 1000 + .03, q.z).project(camera);
   pin.style.transform = `translate(${(v3.x * .5 + .5) * innerWidth}px, ${(-v3.y * .5 + .5) * innerHeight}px) translate(-50%, -100%)`;
   pin.style.visibility = v3.z < 1 ? "visible" : "hidden";
 }
@@ -298,7 +323,7 @@ fetch("data/places.json").then(r => r.json()).then(list => {
     const q = proj([v.lon, v.lat]); const el = document.createElement("button");
     el.type = "button"; el.className = `venue venue--${v.type}`; el.innerHTML = `<i></i><span>${v.name}</span>`; el.setAttribute("aria-label", `${KIND[v.type]}: ${v.name}, ${v.area}`);
     el.addEventListener("click", () => openVenue(v, el)); venueLayer.append(el);
-    venues.push({ v, el, p: new THREE.Vector3(q.x, (v.alt || 2) / 1000 + .01, q.z) });
+    venues.push({ v, el, p: new THREE.Vector3(q.x, 0, q.z), alt: v.alt || 2 });
   }
 });
 document.querySelectorAll(".legend [data-kind]").forEach(b => b.addEventListener("click", () => { const k = b.dataset.kind; show[k] = !show[k]; b.setAttribute("aria-pressed", show[k]); }));
@@ -309,6 +334,7 @@ function placeVenues() {
   legendEl.classList.toggle("is-off", !inJourney || !document.getElementById("dash").hidden);
   if (!inJourney) return;
   for (const o of venues) {
+    if (BASEH && !o.fixed) { o.p.y = Math.max(heightAt(o.p.x, o.p.z), o.alt) * EXAG / 1000 + .012; o.fixed = true; }
     vv.copy(o.p).project(camera);
     const d = camera.position.distanceTo(o.p);
     const ok = show[o.v.type] && vv.z < 1 && Math.abs(vv.x) < 1.1 && Math.abs(vv.y) < 1.1 && d < 26;
@@ -334,6 +360,7 @@ document.addEventListener("pointerdown", e => { if (!pop.hidden && !e.target.clo
 const clock = new THREE.Clock();
 let worldVisible = true;
 new IntersectionObserver(([e]) => { worldVisible = e.isIntersecting; }, { rootMargin: "0px 0px 0px 0px" }).observe(journey);
+let frameN = 0;
 function frame() {
   const dt = Math.min(clock.getDelta(), .05);
   U.uTime.value += dt;
@@ -345,7 +372,11 @@ function frame() {
   const br = REDUCED ? 0 : 1;
   const ang = br * Math.sin(U.uTime.value * .045) * .16, ox = cam.p.x - cam.l.x, oz = cam.p.z - cam.l.z;
   camera.position.set(cam.l.x + ox * Math.cos(ang) - oz * Math.sin(ang), cam.p.y + Math.sin(U.uTime.value * .3) * .006 * br * cam.p.y, cam.l.z + ox * Math.sin(ang) + oz * Math.cos(ang));
+  // never fly into a hillside
+  const ground = heightAt(camera.position.x, camera.position.z) * EXAG / 1000;
+  if (camera.position.y < ground + .16) camera.position.y = ground + .16;
   camera.lookAt(cam.l);
+  if ((frameN++ & 15) === 0) updatePatches(cam.l);
   const near = clamp(camera.position.y * .15, .02, 8); if (Math.abs(near - camera.near) > .005) { camera.near = near; camera.updateProjectionMatrix(); }
   todNow = lerp(todNow, tod, k); setTime(todNow);
   updateUI(); placePin(); placeVenues();
