@@ -10,154 +10,103 @@
 </head>
 <body>
 
-<!-- Liquid glass refraction (Chromium uses it inside backdrop-filter; others fall back to blur) -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <filter id="lg-refract" x="0" y="0" width="100%" height="100%">
-    <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="7" result="n"/>
-    <feGaussianBlur in="n" stdDeviation="2" result="nb"/>
-    <feDisplacementMap in="SourceGraphic" in2="nb" scale="38" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-</svg>
-
-<canvas id="world" aria-hidden="true"></canvas>
-<div class="vignette" aria-hidden="true"></div>
-<div class="pins" id="pins" aria-hidden="true"></div>
-<div class="legend lg" role="group" aria-label="Mostrar en el mapa">
-  <button type="button" data-kind="club" aria-pressed="true"><i class="dot dot--club"></i>Clubs</button>
-  <button type="button" data-kind="beachclub" aria-pressed="true"><i class="dot dot--beachclub"></i>Beach clubs</button>
-  <button type="button" data-kind="beach" aria-pressed="true"><i class="dot dot--beach"></i>Playas</button>
-</div>
-<div class="venuePop lg lg--panel" id="venuePop" hidden>
-  <p data-k></p><h3></h3><p class="venuePop__c" data-c></p>
-  <button class="btn btn--glass btn--sm" type="button" data-book>Reservar con Mey Society</button>
-  <p class="venuePop__fine">Sujeto a disponibilidad de cada sala.</p>
-</div>
-
-<!-- ============ NAV: a glass pill that docks, then unfolds into the island ============ -->
-<header class="nav" id="nav">
-  <div class="nav__pill lg" id="navPill">
-    <a class="nav__brand" href="#top" aria-label="Mey Society, inicio"><img src="assets/logo.png" alt="" width="30" height="30"><span>Mey Society</span></a>
-    <span class="nav__where" id="navWhere" aria-live="polite">Ibiza</span>
-    <button class="nav__toggle" id="menuBtn" aria-expanded="false" aria-controls="menu"><span class="burger" aria-hidden="true"><i></i><i></i></span><span class="nav__label">Menú</span></button>
-    <a class="btn btn--glass btn--sm nav__cta" href="#contacto">Reservar</a>
+<!-- ============ STAGGERED MENU (React Bits, ported to vanilla JS + GSAP) ============ -->
+<div class="staggered-menu-wrapper fixed-wrapper" id="sm" data-position="right" style="--sm-accent:#ab50db">
+  <div class="sm-prelayers" aria-hidden="true">
+    <div class="sm-prelayer" style="background:#ab50db"></div>
+    <div class="sm-prelayer" style="background:#1e24bb"></div>
   </div>
-</header>
-
-<div class="menu" id="menu" hidden>
-  <div class="menu__sheet lg">
-    <div class="menu__map">
-      <svg viewBox="0 0 100 100" id="menuMap" aria-hidden="true"></svg>
-      <div class="menu__mapPins" id="menuPins"></div>
-    </div>
-    <nav class="menu__list" aria-label="Principal">
-      <p class="menu__eyebrow">Explora la isla</p>
-      <ol>
-        <li><a href="#top" data-scene="0"><em>01</em>Ibiza desde el cielo</a></li>
-        <li><a href="#top" data-scene="1"><em>02</em>Villas privadas</a></li>
-        <li><a href="#top" data-scene="2"><em>03</em>Yates y barcos</a></li>
-        <li><a href="#top" data-scene="3"><em>04</em>Motos de agua</a></li>
-        <li><a href="#top" data-scene="4"><em>05</em>Coches y transfers</a></li>
-        <li><a href="#top" data-scene="5"><em>06</em>Fine dining</a></li>
-        <li><a href="#top" data-scene="6"><em>07</em>Noche y VIP</a></li>
-      </ol>
-      <div class="menu__more">
-        <a href="#servicios">Servicios</a><a href="#paquetes">Paquetes</a><a href="#faq">Preguntas</a><a href="#contacto">Contacto</a>
-        <button class="btn btn--glass btn--sm" id="loginOpen" type="button">Área cliente</button>
+  <header class="staggered-menu-header" aria-label="Navegación principal">
+    <a class="sm-logo" href="#top" aria-label="Mey Society, inicio"><img src="assets/logo.png" alt="Mey Society" class="sm-logo-img" draggable="false" width="40" height="40"><span class="sm-logo-word">Mey Society</span></a>
+    <button class="sm-toggle" id="smToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="staggered-menu-panel" type="button">
+      <span class="sm-toggle-textWrap" aria-hidden="true"><span class="sm-toggle-textInner" id="smText"><span class="sm-toggle-line">Menú</span><span class="sm-toggle-line">Cerrar</span></span></span>
+      <span class="sm-icon" id="smIcon" aria-hidden="true"><span class="sm-icon-line" id="smH"></span><span class="sm-icon-line sm-icon-line-v" id="smV"></span></span>
+    </button>
+  </header>
+  <aside id="staggered-menu-panel" class="staggered-menu-panel" aria-hidden="true">
+    <div class="sm-panel-inner">
+      <ul class="sm-panel-list" role="list" data-numbering>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#top" data-index="1"><span class="sm-panel-itemLabel">Mapa</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#servicios" data-index="2"><span class="sm-panel-itemLabel">Servicios</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#paquetes" data-index="3"><span class="sm-panel-itemLabel">Paquetes</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#faq" data-index="4"><span class="sm-panel-itemLabel">Preguntas</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#contacto" data-index="5"><span class="sm-panel-itemLabel">Contacto</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#area-cliente" data-index="6" data-login><span class="sm-panel-itemLabel">Área cliente</span></a></li>
+      </ul>
+      <div class="sm-socials" aria-label="Contacto directo">
+        <h3 class="sm-socials-title">Contacto</h3>
+        <ul class="sm-socials-list" role="list">
+          <li class="sm-socials-item"><a href="mailto:meysociety@protonmail.com" class="sm-socials-link">Email</a></li>
+          <li class="sm-socials-item"><a href="#contacto" class="sm-socials-link">WhatsApp</a></li>
+        </ul>
       </div>
-    </nav>
-  </div>
+    </div>
+  </aside>
 </div>
 
 <main id="top">
 
-  <!-- ============ THE JOURNEY: scroll drives the camera across real Ibiza ============ -->
-  <section class="journey" id="journey" aria-label="Recorrido por Ibiza">
-    <div class="panels">
-      <article class="panel panel--hero is-on" data-scene="0">
-        <p class="panel__coord">38°54′N · 1°26′E · Mar Mediterráneo</p>
-        <h1 class="display">Ibiza,<br><em>without limits.</em></h1>
-        <p class="lede">Private stays. Extraordinary experiences. One dedicated concierge.</p>
-        <div class="panel__actions">
-          <a class="btn btn--glass btn--lg" href="#contacto">Diseña tu estancia</a>
-          <span class="hint">Desliza para recorrer la isla</span>
-        </div>
-      </article>
-
-      <article class="panel panel--left" data-scene="1">
-        <p class="panel__coord">Es Cubells · Cala Jondal · 38°52′N 1°19′E</p>
-        <h2 class="display">Villas privadas</h2>
-        <p>Casas con licencia turística, piscina y vistas al mar, preparadas antes de que aterrices.</p>
-        <ul class="facts"><li>Número de registro turístico visible en cada ficha</li><li>Limpieza, chef y compra a tu llegada</li><li>Disponibilidad confirmada en 24 h</li></ul>
-        <a class="btn btn--glass" href="#contacto" data-svc="villas">Consultar villas</a>
-      </article>
-
-      <article class="panel panel--right" data-scene="2">
-        <p class="panel__coord">Marina Botafoch · Dalt Vila · 38°55′N 1°27′E</p>
-        <h2 class="display">Yates y barcos</h2>
-        <p>Salidas desde el puerto de Eivissa hacia calas y Formentera, con patrón y tripulación.</p>
-        <ul class="facts"><li>Operadores de chárter autorizados</li><li>Fondeo fuera de posidonia, como marca la ley</li><li>Día completo, medio día o atardecer</li></ul>
-        <a class="btn btn--glass" href="#contacto" data-svc="yates">Consultar barcos</a>
-      </article>
-
-      <article class="panel panel--left" data-scene="3">
-        <p class="panel__coord">Costa oeste · Cala Bassa · 38°58′N 1°14′E <span class="tag">ubicación por confirmar</span></p>
-        <h2 class="display">Motos de agua</h2>
-        <p>Rutas guiadas con operadores autorizados, siempre dentro de las zonas balizadas para ello.</p>
-        <ul class="facts"><li>Para todos los niveles</li><li>Monitor y material incluidos</li><li>Punto de salida confirmado al reservar</li></ul>
-        <a class="btn btn--glass" href="#contacto" data-svc="motos">Consultar motos de agua</a>
-      </article>
-
-      <article class="panel panel--right" data-scene="4">
-        <p class="panel__coord">Camino a Cala d'Hort · Es Vedrà · 38°52′N 1°12′E</p>
-        <h2 class="display">Coches y transfers</h2>
-        <p>Descapotables, SUV y deportivos entregados en tu villa, y chófer privado con licencia VTC.</p>
-        <ul class="facts"><li>Aeropuerto, puerto y noches de club</li><li>Conductores con licencia</li><li>Por días o por semanas</li></ul>
-        <a class="btn btn--glass" href="#contacto" data-svc="coches">Consultar coches</a>
-      </article>
-
-      <article class="panel panel--left" data-scene="5">
-        <p class="panel__coord">Dalt Vila · Patrimonio de la Humanidad · 38°54′N 1°26′E</p>
-        <h2 class="display">Fine dining</h2>
-        <p>Las mesas que merecen la pena al atardecer, y un chef privado en tu villa o a bordo.</p>
-        <ul class="facts"><li>Reservas en restaurantes de la isla</li><li>Chef a domicilio con producto local</li><li>Menús para celebraciones</li></ul>
-        <a class="btn btn--glass" href="#contacto" data-svc="dining">Reservar mesa</a>
-      </article>
-
-      <article class="panel panel--right" data-scene="6">
-        <p class="panel__coord">Platja d'en Bossa · 38°53′N 1°24′E</p>
-        <h2 class="display">Noche y VIP</h2>
-        <p>Mesas, entradas y guest lists en clubs y beach clubs, gestionadas directamente con cada sala.</p>
-        <ul class="facts"><li>Mesas con servicio de botella</li><li>Guest lists cada noche</li><li>Solo mayores de 18 años</li></ul>
-        <a class="btn btn--glass" href="#contacto" data-svc="noche">Reservar la noche</a>
-      </article>
-
-      <article class="panel panel--hero panel--end" data-scene="7">
-        <p class="panel__coord">Eivissa y Formentera · Illes Pitiüses</p>
-        <h2 class="display">Your Ibiza experience<br><em>starts here.</em></h2>
-        <div class="panel__actions"><a class="btn btn--glass btn--lg" href="#contacto">Create your private experience</a></div>
-      </article>
+  <!-- ============ HERO: the island, point by point ============ -->
+  <section class="hero" id="mapa" aria-label="Mapa de Ibiza">
+    <div class="hero__copy">
+      <p class="eyebrow eyebrow--light">Private concierge · Ibiza</p>
+      <h1 class="display">Ibiza,<br><em>without limits.</em></h1>
+      <p class="lede">Private stays. Extraordinary experiences. One dedicated concierge.</p>
+      <p class="hero__hint">Toca cualquier punto del mapa para ver el club, el beach club o la playa.</p>
+      <div class="filters" role="group" aria-label="Mostrar en el mapa">
+        <button type="button" class="filter" data-kind="club" aria-pressed="true"><i class="dot dot--club"></i>Clubs <b data-count="club"></b></button>
+        <button type="button" class="filter" data-kind="beachclub" aria-pressed="true"><i class="dot dot--beachclub"></i>Beach clubs <b data-count="beachclub"></b></button>
+        <button type="button" class="filter" data-kind="beach" aria-pressed="true"><i class="dot dot--beach"></i>Playas <b data-count="beach"></b></button>
+      </div>
+      <a class="btn btn--primary btn--lg" href="#contacto">Diseña tu estancia</a>
     </div>
-    <div class="journey__rail" aria-hidden="true"><span id="railFill"></span></div>
+    <div class="map" id="map">
+      <svg class="map__svg" id="mapSvg" role="img" aria-label="Mapa ilustrado de Ibiza y Formentera con clubs, beach clubs y playas"></svg>
+      <div class="map__zoom" role="group" aria-label="Zoom">
+        <button type="button" data-zoom="in" aria-label="Acercar">+</button>
+        <button type="button" data-zoom="out" aria-label="Alejar">−</button>
+        <button type="button" data-zoom="reset" aria-label="Ver toda la isla">⤢</button>
+      </div>
+      <div class="map__areas" role="group" aria-label="Ir a una zona">
+        <button type="button" data-area="sur">Sur</button>
+        <button type="button" data-area="eivissa">Eivissa</button>
+        <button type="button" data-area="oeste">Oeste</button>
+        <button type="button" data-area="santantoni">Sant Antoni</button>
+        <button type="button" data-area="formentera">Formentera</button>
+      </div>
+      <div class="pop" id="pop" role="dialog" aria-modal="false" aria-labelledby="popTitle" hidden>
+        <button class="pop__x" type="button" aria-label="Cerrar">×</button>
+        <figure class="pop__img"><img id="popImg" alt=""><figcaption>Vista aérea · PNOA © IGN</figcaption></figure>
+        <div class="pop__body">
+          <p class="pop__kind" id="popKind"></p>
+          <h3 id="popTitle"></h3>
+          <p class="pop__info" id="popInfo"></p>
+          <p class="pop__coord" id="popCoord"></p>
+          <button class="btn btn--primary" type="button" id="popBook">Reservar con Mey Society</button>
+          <p class="pop__fine">Sujeto a disponibilidad de cada sala.</p>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- ============ SERVICES: the stage follows the pointer ============ -->
-  <section class="sec sec--ivory" id="servicios">
+  <section class="sec sec--light" id="servicios">
     <div class="wrap">
       <header class="sec__head">
         <p class="eyebrow">Servicios</p>
         <h2 class="display display--md">Toda la isla, <em>en una conversación.</em></h2>
-        <p class="lede lede--dark">Mueve el cursor sobre la isla. Cada servicio está anclado a un lugar real de Ibiza.</p>
+        <p class="lede lede--dark">Mueve el cursor sobre la isla: el mapa y las tarjetas te siguen. Cada servicio está anclado a un lugar real de Ibiza.</p>
       </header>
     </div>
     <div class="stage" id="stage">
-      <div class="stage__layer stage__layer--map" data-depth="0.15"><svg viewBox="0 0 100 100" id="stageMap" aria-hidden="true"></svg></div>
+      <div class="stage__layer stage__layer--map" data-depth="0.15"><svg id="stageMap" aria-hidden="true"></svg></div>
       <div class="stage__layer" data-depth="0.5" id="stageCards"></div>
       <div class="stage__glow" aria-hidden="true"></div>
     </div>
   </section>
 
   <!-- ============ PACKAGES ============ -->
-  <section class="sec sec--sand" id="paquetes">
+  <section class="sec sec--mist" id="paquetes">
     <div class="wrap">
       <header class="sec__head sec__head--split">
         <div>
@@ -191,7 +140,7 @@
   </section>
 
   <!-- ============ HOW ============ -->
-  <section class="sec sec--ivory" id="como">
+  <section class="sec sec--light" id="como">
     <div class="wrap how">
       <h2 class="display display--md">Así de sencillo.</h2>
       <ol class="how__steps">
@@ -204,7 +153,7 @@
   </section>
 
   <!-- ============ FAQ ============ -->
-  <section class="sec sec--sand" id="faq">
+  <section class="sec sec--mist" id="faq">
     <div class="wrap faq">
       <header class="sec__head"><p class="eyebrow">Preguntas frecuentes</p><h2 class="display display--md">Lo que todo el mundo nos pregunta.</h2></header>
       <div class="faq__list">
@@ -251,7 +200,7 @@
     <footer class="foot wrap">
       <span>Mey Society · Private concierge · Ibiza, Illes Balears</span>
       <span>Servicios prestados por proveedores con licencia.</span>
-      <span class="credits">Ortofoto: PNOA cedido por © Instituto Geográfico Nacional (CC BY 4.0). Aguas costeras: contiene datos modificados de Copernicus Sentinel (2025). Relieve: Copernicus DEM GLO-30 © DLR e.V. 2010-2014 y © Airbus Defence and Space GmbH 2014-2018, proporcionado por COPERNICUS (Unión Europea y ESA). Lugares: © Overture Maps Foundation (CDLA-Permissive-2.0). Costa de los mapas 2D: Natural Earth.</span>
+      <span class="credits">Fotos aéreas: PNOA cedido por © Instituto Geográfico Nacional (CC BY 4.0). Costa y relieve del mapa: MDT25 © Instituto Geográfico Nacional (CC BY 4.0). Ubicaciones: © Overture Maps Foundation (CDLA-Permissive-2.0). La información de cada lugar es orientativa.</span>
     </footer>
   </section>
 </main>
@@ -285,8 +234,6 @@
 </div>
 
 <script src="vendor/gsap.min.js"></script>
-<script src="vendor/ScrollTrigger.min.js"></script>
-<script src="vendor/lenis.min.js"></script>
 <script type="module" src="app.js"></script>
 </body>
 </html>
