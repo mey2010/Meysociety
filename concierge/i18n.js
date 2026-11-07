@@ -48,7 +48,7 @@ const D = {
   "Preguntas": ["FAQ", "Domande", "Questions", "Fragen"],
   "Contacto": ["Contact", "Contatti", "Contact", "Kontakt"],
   "Área cliente": ["Client area", "Area clienti", "Espace client", "Kundenbereich"],
-  "El contacto de tu contacto en Ibiza.": ["The contact your contacts call in Ibiza.", "Il contatto dei tuoi contatti a Ibiza.", "Le contact de vos contacts à Ibiza.", "Der Kontakt deiner Kontakte auf Ibiza."],
+  "El contacto de tu contacto": ["The contact of your contact", "Il contatto del tuo contatto", "Le contact de votre contact", "Der Kontakt deines Kontakts"],
   "Tú dinos qué quieres vivir. Nosotros abrimos las puertas.": ["Tell us what you want to live. We open the doors.", "Dicci cosa vuoi vivere. Noi apriamo le porte.", "Dites-nous ce que vous voulez vivre. Nous ouvrons les portes.", "Sag uns, was du erleben willst. Wir öffnen die Türen."],
   "Escríbenos": ["Message us", "Scrivici", "Écrivez-nous", "Schreib uns"],
   "Ver la isla": ["See the island", "Scopri l'isola", "Voir l'île", "Die Insel ansehen"],
