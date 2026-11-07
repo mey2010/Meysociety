@@ -1,5 +1,6 @@
 /* Mey Society · Ibiza — illustrated island map, StaggeredMenu + BranchedMenu, services, client area. */
 import { ICONS } from "./icons.js";
+import { LANGS, t, msg, venueInfo, translateTree, setLang, getLang } from "./i18n.js";
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const FINE = matchMedia("(hover: hover) and (pointer: fine)").matches;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -50,7 +51,7 @@ const SM = (() => {
   function animateText(o) {
     textTw?.kill(); const cur = o ? "Menú" : "Cerrar", target = o ? "Cerrar" : "Menú"; const seq = [cur]; let last = cur;
     for (let i = 0; i < 3; i++) { last = last === "Menú" ? "Cerrar" : "Menú"; seq.push(last); } if (last !== target) seq.push(target); seq.push(target);
-    textInner.innerHTML = seq.map(l => `<span class="sm-toggle-line">${l}</span>`).join("");
+    textInner.innerHTML = seq.map(l => `<span class="sm-toggle-line">${t(l)}</span>`).join("");
     gsap.set(textInner, { yPercent: 0 }); const n = seq.length;
     textTw = gsap.to(textInner, { yPercent: -((n - 1) / n) * 100, duration: .5 + n * .07, ease: "power4.out" });
   }
@@ -68,7 +69,8 @@ const SM = (() => {
     if (light === onLight) return; onLight = light; root.classList.toggle("sm-on-light", light);
     if (!open) gsap.to(btn, { color: light ? "#0d0a38" : "#ffffff", duration: .3, overwrite: "auto" });
   }
-  addEventListener("scroll", checkGround, { passive: true }); checkGround();
+  const band = () => root.classList.toggle("sm-scrolled", scrollY > 40);
+  addEventListener("scroll", () => { checkGround(); band(); }, { passive: true }); checkGround(); band();
   document.addEventListener("mousedown", e => { if (open && !panel.contains(e.target) && !btn.contains(e.target)) set(false); });
   addEventListener("keydown", e => { if (e.key === "Escape") set(false); });
   panel.addEventListener("click", e => {
@@ -187,12 +189,12 @@ const popImg = document.getElementById("popImg");
 function openPop(p) {
   if (active) active.g.classList.remove("is-active");
   active = p; p.g.classList.add("is-active");
-  document.getElementById("popKind").innerHTML = `<i class="dot dot--${p.v.type}"></i>${KIND[p.v.type]} · ${p.v.area}`;
+  document.getElementById("popKind").innerHTML = `<i class="dot dot--${p.v.type}"></i>${t(KIND[p.v.type])} · ${p.v.area}`;
   document.getElementById("popTitle").textContent = p.v.name;
-  document.getElementById("popInfo").textContent = p.v.info;
+  document.getElementById("popInfo").textContent = venueInfo(p.v);
   document.getElementById("popCoord").textContent = `${p.v.lat.toFixed(4)}° N · ${p.v.lon.toFixed(4)}° E`;
   popImg.src = p.v.photo; popImg.alt = `Vista aérea de ${p.v.name}`;
-  const book = document.getElementById("popBook"); book.textContent = p.v.type === "beach" ? "Organizar un día aquí" : "Reservar con Mey Society";
+  const book = document.getElementById("popBook"); book.textContent = t(p.v.type === "beach" ? "Organizar un día aquí" : "Reservar con Mey Society");
   pop.hidden = false; placePop();
   if (!REDUCED) gsap.fromTo(pop, { opacity: 0, scale: .92, y: 8 }, { opacity: 1, scale: 1, y: 0, duration: .45, ease: "back.out(1.6)" });
 }
@@ -280,6 +282,7 @@ document.getElementById("popBook").addEventListener("click", () => {
     mx += (tmx - mx) * .04; my += (tmy - my) * .04;
     for (let r = ripples.length - 1; r >= 0; r--) if (now - ripples[r].t > 2600) ripples.splice(r, 1);
     cx.clearRect(0, 0, W, H);
+    const fadeOut = 1 - clamp(scrollY / Math.max(1, innerHeight * .8)) * .7; // quieter behind the content below the intro
     const ry = .5 + mx * .5 + Math.sin(t * .07) * .25, rx = 1.05 + my * .25, cy = Math.cos(ry), sy = Math.sin(ry), cxr = Math.cos(rx), sxr = Math.sin(rx);
     const F = Math.min(W, H) * 1.25, scale = Math.max(W, H) * .62, R = Math.max(W, H);
     for (let j = 0; j < ROWS; j++) {
@@ -300,13 +303,13 @@ document.getElementById("popBook").addEventListener("click", () => {
         if (px < -20 || px > W + 20 || py < -20 || py > H + 20) continue;
         const depth = clamp((4.4 - z2) / 2.4), s = (1.1 + depth * 3.6 + boost * 2.5) * (F / 1000);
         const k = clamp((z + .7) / 1.4); const spr = SPR[Math.min(5, Math.floor(k * 6))];
-        cx.globalAlpha = Math.min(1, .1 + depth * .45 + boost * .5);
+        cx.globalAlpha = Math.min(1, (.1 + depth * .45) * fadeOut + boost * .5);
         cx.drawImage(spr, px - s, py - s, s * 2, s * 2);
       }
     }
     cx.globalAlpha = 1;
   }
-  if (REDUCED) draw(performance.now());
+  if (REDUCED) { draw(performance.now()); addEventListener("scroll", () => requestAnimationFrame(() => draw(performance.now())), { passive: true }); }
   else (function loop(now) { if (!document.hidden) draw(now); requestAnimationFrame(loop); })(performance.now());
 }
 
@@ -427,6 +430,36 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
   t.addEventListener("click", () => { const o = t.getAttribute("aria-expanded") !== "true"; t.setAttribute("aria-expanded", o); tree.toggleAttribute("data-closed", !o); });
 }
 
+/* =====================================================================
+   LANGUAGE — a floating switcher beside the menu, names only, no flags
+   ===================================================================== */
+{
+  const box = document.getElementById("lang"), btn = document.getElementById("langBtn"), list = document.getElementById("langList"), cur = document.getElementById("langCur");
+  const opts = [...list.querySelectorAll("[data-lang]")];
+  function show(o) {
+    btn.setAttribute("aria-expanded", o); list.hidden = !o;
+    if (o) { opts.forEach(x => x.tabIndex = -1); const a = opts.find(x => x.dataset.lang === getLang()); a.tabIndex = 0; a.focus();
+      if (!REDUCED) gsap.fromTo(list, { opacity: 0, y: -6, scale: .97 }, { opacity: 1, y: 0, scale: 1, duration: .28, ease: "power3.out" }); }
+  }
+  function choose(l) {
+    setLang(l); cur.textContent = LANGS[l]; btn.setAttribute("aria-label", LANGS[l]);
+    opts.forEach(x => x.setAttribute("aria-selected", x.dataset.lang === l)); show(false); btn.focus();
+  }
+  btn.addEventListener("click", () => show(list.hidden));
+  list.addEventListener("click", e => { const o = e.target.closest("[data-lang]"); if (o) choose(o.dataset.lang); });
+  list.addEventListener("keydown", e => {
+    const i = opts.indexOf(document.activeElement);
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); const n = opts[(i + (e.key === "ArrowDown" ? 1 : -1) + opts.length) % opts.length]; n.focus(); }
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (i >= 0) choose(opts[i].dataset.lang); }
+    if (e.key === "Escape") { show(false); btn.focus(); }
+  });
+  opts.forEach(o => o.tabIndex = -1);
+  document.addEventListener("mousedown", e => { if (!box.contains(e.target)) show(false); });
+  cur.textContent = LANGS[getLang()]; opts.forEach(x => x.setAttribute("aria-selected", x.dataset.lang === getLang()));
+  // translate once everything on the page has been built
+  if (getLang() !== "es") { document.documentElement.lang = getLang(); setTimeout(() => translateTree(document.body), 0); }
+}
+
 // glass highlight follows the pointer on primary buttons
 addEventListener("pointermove", e => { const el = e.target.closest?.(".btn--primary"); if (!el) return; const r = el.getBoundingClientRect(); el.style.setProperty("--mx", ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%"); el.style.setProperty("--my", ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%"); }, { passive: true });
 // smooth in-page anchors
@@ -450,11 +483,11 @@ document.querySelectorAll("[data-pack]").forEach(b => b.addEventListener("click"
 document.getElementById("form").addEventListener("submit", e => {
   e.preventDefault();
   const v = id => document.getElementById(id).value.trim(); const status = document.getElementById("formStatus");
-  if (!v("f-name")) { status.textContent = "Escribe tu nombre para que sepamos a quién responder."; document.getElementById("f-name").focus(); return; }
+  if (!v("f-name")) { status.textContent = msg("name", "Escribe tu nombre para que sepamos a quién responder."); document.getElementById("f-name").focus(); return; }
   const lines = [`Hola Mey Society, soy ${v("f-name")}.`, chosen.size ? "Me interesa: " + [...chosen].map(c => CHOICES[c]).join(", ") + "." : "", v("f-from") ? `Fechas: ${v("f-from")} a ${v("f-to") || "por definir"}.` : "", `Personas: ${v("f-people") || "por definir"}.`, v("f-notes")].filter(Boolean).join("\n");
   const url = CONFIG.whatsapp ? `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(lines)}` : `mailto:${CONFIG.email}?subject=${encodeURIComponent("Mi estancia en Ibiza")}&body=${encodeURIComponent(lines)}`;
   window.open(url, "_blank", "noopener");
-  status.textContent = CONFIG.whatsapp ? "Abriendo WhatsApp con tu mensaje." : "Abriendo tu correo con el mensaje preparado. Si no se abre, escríbenos a meysociety@protonmail.com.";
+  status.textContent = CONFIG.whatsapp ? msg("booked", "Abriendo WhatsApp con tu mensaje.") : msg("mailed", "Abriendo tu correo con el mensaje preparado. Si no se abre, escríbenos a meysociety@protonmail.com.");
 });
 
 /* =====================================================================
@@ -496,7 +529,7 @@ function status(d, i) {
 }
 function openDash(name) {
   dash.hidden = false; document.body.style.overflow = "hidden";
-  document.getElementById("dashHello").textContent = `Hola, ${name.charAt(0).toUpperCase() + name.slice(1)}`;
+  document.getElementById("dashHello").textContent = `${msg("hello", "Hola")}, ${name.charAt(0).toUpperCase() + name.slice(1)}`;
   const start = new Date(); start.setDate(start.getDate() - TODAY);
   const days = document.getElementById("days"); days.innerHTML = "";
   let total = 0, done = 0;
@@ -513,6 +546,7 @@ function openDash(name) {
   days.onclick = e => { const b = e.target.closest(".day"); if (!b) return; days.querySelectorAll(".day").forEach(x => x.setAttribute("aria-current", x === b)); showDay(+b.dataset.d); };
 }
 function showDay(d) {
+  queueMicrotask(() => translateTree(document.getElementById("dash")));
   const ol = document.getElementById("events"); ol.innerHTML = "";
   const map = document.getElementById("dashMap"); map.setAttribute("viewBox", `0 0 ${MAP.w} ${MAP.h}`); map.innerHTML = `<path class="land" d="${MAP.coast.join("")}"/>`;
   const pts = [];

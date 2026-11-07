@@ -18,22 +18,37 @@
     <div class="sm-prelayer" style="background:#ab50db"></div>
     <div class="sm-prelayer" style="background:#1e24bb"></div>
   </div>
+  <div class="sm-band" aria-hidden="true"></div>
   <header class="staggered-menu-header" aria-label="Navegación principal">
     <a class="sm-logo" href="#top" aria-label="Mey Society, inicio"><img src="assets/logo.png" alt="Mey Society" class="sm-logo-img" draggable="false" width="40" height="40"><span class="sm-logo-word">Mey Society</span></a>
+    <div class="sm-actions">
+    <div class="lang" id="lang">
+      <button class="lang__btn" id="langBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Idioma"><span id="langCur">Español</span><svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2 4.5 6 8.5 10 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <ul class="lang__list" id="langList" role="listbox" aria-label="Idioma" hidden>
+        <li role="option" data-lang="es" aria-selected="true">Español</li>
+        <li role="option" data-lang="en">English</li>
+        <li role="option" data-lang="it">Italiano</li>
+        <li role="option" data-lang="fr">Français</li>
+        <li role="option" data-lang="de">Deutsch</li>
+      </ul>
+    </div>
     <button class="sm-toggle" id="smToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="staggered-menu-panel" type="button">
       <span class="sm-toggle-textWrap" aria-hidden="true"><span class="sm-toggle-textInner" id="smText"><span class="sm-toggle-line">Menú</span><span class="sm-toggle-line">Cerrar</span></span></span>
       <span class="sm-icon" id="smIcon" aria-hidden="true"><span class="sm-icon-line" id="smH"></span><span class="sm-icon-line sm-icon-line-v" id="smV"></span></span>
     </button>
+    </div>
   </header>
   <aside id="staggered-menu-panel" class="staggered-menu-panel" aria-hidden="true">
     <div class="sm-panel-inner">
       <ul class="sm-panel-list" role="list">
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#top"><span class="sm-panel-itemLabel">Home</span></a></li>
         <li class="sm-panel-itemWrap"><button class="sm-panel-item sm-panel-toggle" type="button" id="svcToggle" aria-expanded="true" aria-controls="svcTree"><span class="sm-panel-itemLabel">Servicios</span></button></li>
-      </ul>
-      <div class="sm-tree" id="svcTree"><nav class="branched-menu" id="bm" aria-label="Servicios"></nav></div>
-      <ul class="sm-more" role="list">
-        <li><a href="#mapa">Mapa</a></li><li><a href="#paquetes">Paquetes</a></li><li><a href="#faq">Preguntas</a></li><li><a href="#contacto">Contacto</a></li><li><a href="#area-cliente" data-login>Área cliente</a></li>
+        <li class="sm-tree-wrap"><div class="sm-tree" id="svcTree"><nav class="branched-menu" id="bm" aria-label="Servicios"></nav></div></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#mapa"><span class="sm-panel-itemLabel">Mapa</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#paquetes"><span class="sm-panel-itemLabel">Paquetes</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#faq"><span class="sm-panel-itemLabel">Preguntas</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#contacto"><span class="sm-panel-itemLabel">Contacto</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#area-cliente" data-login><span class="sm-panel-itemLabel">Área cliente</span></a></li>
       </ul>
       <div class="sm-socials" aria-label="Contacto directo">
         <h3 class="sm-socials-title">Contacto</h3>
