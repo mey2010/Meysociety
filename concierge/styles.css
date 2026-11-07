@@ -528,7 +528,7 @@ input[type="number"] { -moz-appearance: textfield; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
 /* ---------------- MagicBento card (React Bits) ---------------- */
-.mb-card { --mb-glow: 200, 86, 230; --mb-accent: 200, 86, 230; --mb-x: -999px; --mb-y: -999px;
+.mb-card { --mb-glow: 200 86 230; --mb-accent: 200 86 230; --mb-x: -999px; --mb-y: -999px;
   position: relative; display: flex; flex-direction: column; min-width: 0; border-radius: 22px; overflow: hidden; isolation: isolate;
   background: linear-gradient(180deg, rgb(41 36 103 / .72), rgb(13 10 56 / .82)); box-shadow: 0 24px 48px -28px rgb(0 0 0 / .85), 0 8px 18px -12px rgb(0 0 0 / .6); }
 .mb-light { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(300px circle at var(--mb-x) var(--mb-y), rgb(var(--mb-glow) / .1), transparent 70%); }
@@ -660,3 +660,62 @@ select option { color: #0d0a38; }
   .stat__v { font-size: 32px; }
 }
 .btn[hidden], button[hidden] { display: none !important; }
+
+/* ---------------- cartoon 3D map ---------------- */
+.map3d { cursor: grab; touch-action: pan-y; background: radial-gradient(120% 90% at 50% 0%, #e9f6ff 0%, #c7e8ff 45%, #a9d6ff 100%);
+  box-shadow: inset 0 0 0 3px #0d0a38, 0 26px 50px -30px rgb(13 10 56 / .55); border-radius: 28px; }
+.map3d.is-dragging, .map3d:active { cursor: grabbing; }
+.map3d__gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.map3d__pins { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.map3d__pin, .map3d__cluster { position: absolute; left: 0; top: 0; pointer-events: auto; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+/* the 3D pin head is the visual; this is a generous, invisible tap target on top of it */
+.map3d__pin { width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: transparent; }
+.map3d__pin[hidden], .map3d__cluster[hidden] { display: none; }
+.map3d__pin:focus-visible { outline: 3px solid #0d0a38; outline-offset: -6px; }
+.map3d__label { position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); padding: 5px 10px; border-radius: 99px; white-space: nowrap;
+  font: 700 12px/1 var(--sans); color: #0d0a38; background: #fff; box-shadow: 0 0 0 2.5px #0d0a38, 0 4px 0 #0d0a38; opacity: 0; pointer-events: none; transition: opacity 200ms; }
+.map3d__pin:hover .map3d__label, .map3d__pin:focus-visible .map3d__label, .map3d__pin.is-active .map3d__label, .map3d__pin.is-named .map3d__label { opacity: 1; }
+.map3d__cluster { min-width: 40px; height: 40px; margin: -20px 0 0 -20px; padding: 0 10px; border-radius: 99px; font: 800 16px/40px var(--sans); color: #0d0a38;
+  background: #ffd76a; box-shadow: 0 0 0 3px #0d0a38, 0 5px 0 #0d0a38; transition: transform 120ms; }
+.map3d__cluster[data-kind="club"] { background: #ab50db; color: #fff; } .map3d__cluster[data-kind="beachclub"] { background: #78c7e4; } .map3d__cluster[data-kind="mix"] { background: linear-gradient(135deg, #ab50db 50%, #78c7e4 50%); color: #fff; text-shadow: 0 1px 0 #0d0a38; }
+.map3d__cluster:hover { filter: brightness(1.08); }
+.map3d__cluster:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.dot--beach { background: #ffd76a; box-shadow: 0 0 0 2px #fff, 0 0 0 3px #0d0a38; }
+.map3d .map__zoom button, .map3d .map__areas button { color: #0d0a38; background: #fff; box-shadow: 0 0 0 2.5px #0d0a38, 0 4px 0 #0d0a38; font-weight: 700; }
+.map3d .map__zoom button:hover, .map3d .map__areas button:hover, .map3d .map__areas button.is-on { background: #ffd76a; box-shadow: 0 0 0 2.5px #0d0a38, 0 4px 0 #0d0a38; }
+.map3d .map__areas button:active, .map3d .map__zoom button:active { transform: translateY(3px); box-shadow: 0 0 0 2.5px #0d0a38, 0 1px 0 #0d0a38; }
+.map3d .pop { box-shadow: 0 0 0 3px #0d0a38, 0 8px 0 #0d0a38, 0 30px 60px -20px rgb(0 0 0 / .5); z-index: 6; }
+.pick { position: absolute; z-index: 7; width: 240px; max-height: 60%; overflow: auto; padding: 8px; border-radius: 18px; background: #fff; color: #0d0a38;
+  box-shadow: 0 0 0 3px #0d0a38, 0 6px 0 #0d0a38, 0 24px 40px -20px rgb(0 0 0 / .45); }
+.pick[hidden] { display: none; }
+.pick p { margin: 4px 8px 8px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--royal); }
+.pick button { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 0 10px; border: 0; border-radius: 12px; background: none; color: inherit; font: 600 15px var(--sans); text-align: left; cursor: pointer; }
+.pick button:hover, .pick button:focus-visible { background: #eef0fa; outline: none; }
+.pick small { font-size: 11.5px; color: var(--lavender); font-weight: 500; }
+@media (max-width: 900px) { .pick { left: 12px !important; right: 12px; width: auto; top: auto !important; bottom: 12px; } }
+
+/* ---------------- home: itinerary examples ---------------- */
+#ejemplos .sec__head .lede { color: var(--on-dark-soft); }
+.ex { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(18px, 2.4vw, 28px); align-items: start; }
+.ex__item { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.ex__who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ex__who h3 { margin: 0; font: 400 24px/1.1 var(--serif); color: #fff; }
+.ex__who p { margin: 3px 0 0; font-size: 13px; color: var(--on-dark-soft); }
+.ex__avatar { display: grid; place-items: center; width: 44px; height: 44px; flex: none; border-radius: 50%; font: 700 14px var(--sans); color: #fff;
+  background: radial-gradient(circle at 30% 25%, rgb(var(--a) / .95), rgb(var(--a) / .45)); box-shadow: 0 0 0 2px rgb(255 255 255 / .14), 0 8px 20px -8px rgb(var(--a) / .8); }
+.ex__touches { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.ex__touches li { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 6px 11px; border-radius: 99px; font-size: 12.5px; color: var(--on-dark);
+  background: rgb(255 255 255 / .06); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .1); }
+.ex__touches svg { width: 13px; height: 13px; flex: none; color: #c856e6; }
+.ex__live { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; text-transform: none; color: #fff; font-size: 11.5px; letter-spacing: .02em; }
+.ex__live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #ff4f8a; box-shadow: 0 0 8px #ff4f8a; animation: ex-blink 1.4s ease-in-out infinite; }
+.ex__cta { display: flex; justify-content: center; margin-top: clamp(30px, 4vw, 48px); }
+.mb-card--live .mb-rail-fill { transition: transform 700ms cubic-bezier(.65, 0, .35, 1); }
+.mb-card--live .mb-status > * { transition: opacity 260ms ease, scale 320ms cubic-bezier(.34, 1.4, .64, 1); }
+.mb-card--live .mb-step--done .mb-done { scale: 1; } .mb-card--live .mb-step:not(.mb-step--done) .mb-done { scale: .4; }
+.mb-card--live .mb-step { transition: background-color 300ms ease; }
+.mb-card--live .mb-step--now { background: rgb(var(--mb-accent) / .14); }
+.mb-card--live.is-in .mb-step--done .mb-done { animation: none; }
+@keyframes ex-blink { 50% { opacity: .35; } }
+@media (max-width: 1000px) { .ex { grid-template-columns: minmax(0, 1fr); max-width: 560px; margin-inline: auto; } }
+@media (prefers-reduced-motion: reduce) { .ex__live::before { animation: none; } }

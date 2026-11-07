@@ -80,7 +80,7 @@
       <p class="eyebrow eyebrow--light">Private concierge · Ibiza</p>
       <h2 class="display">Ibiza,<br><em>without limits.</em></h2>
       <p class="lede">Private stays. Extraordinary experiences. One dedicated concierge.</p>
-      <p class="hero__hint">Toca cualquier punto del mapa para ver el club, el beach club o la playa.</p>
+      <p class="hero__hint">Arrastra para girar la isla, pellizca o usa la rueda para acercar, y toca cualquier punto para ver el club, el beach club o la playa.</p>
       <div class="filters" role="group" aria-label="Mostrar en el mapa">
         <button type="button" class="filter" data-kind="club" aria-pressed="true"><i class="dot dot--club"></i>Clubs <b data-count="club"></b></button>
         <button type="button" class="filter" data-kind="beachclub" aria-pressed="true"><i class="dot dot--beachclub"></i>Beach clubs <b data-count="beachclub"></b></button>
@@ -88,8 +88,8 @@
       </div>
       <a class="btn btn--primary btn--lg" href="#contacto">Diseña tu estancia</a>
     </div>
-    <div class="map" id="map">
-      <svg class="map__svg" id="mapSvg" role="img" aria-label="Mapa ilustrado de Ibiza y Formentera con clubs, beach clubs y playas"></svg>
+    <div class="map map3d" id="map" aria-label="Mapa 3D de Ibiza y Formentera con clubs, beach clubs y playas">
+      <div class="pick" id="pickList" role="dialog" aria-label="Elige un lugar" hidden></div>
       <div class="map__zoom" role="group" aria-label="Zoom">
         <button type="button" data-zoom="in" aria-label="Acercar">+</button>
         <button type="button" data-zoom="out" aria-label="Alejar">−</button>
@@ -241,6 +241,21 @@
         </article>
       </div>
       <p class="fine">Los precios dependen de fechas y disponibilidad y se confirman por escrito, con IVA incluido y condiciones de cancelación de cada proveedor, antes de cualquier pago.</p>
+    </div>
+  </section>
+
+  <!-- ============ EXAMPLES ============ -->
+  <section class="sec sec--night" id="ejemplos">
+    <div class="wrap">
+      <header class="sec__head sec__head--split">
+        <div>
+          <p class="eyebrow eyebrow--light">Itinerarios a medida</p>
+          <h2 class="display display--md">Cada cliente, <em>su propio plan.</em></h2>
+        </div>
+        <p class="lede">Así ven nuestros clientes su estancia en el área cliente: cada reserva se confirma, se pone en marcha y se completa en tiempo real. Ejemplos ilustrativos con nombres ficticios.</p>
+      </header>
+      <div class="ex" id="examples"></div>
+      <div class="ex__cta"><a class="btn btn--primary" href="#area-cliente" id="exDemo">Ver un itinerario de ejemplo</a></div>
     </div>
   </section>
 

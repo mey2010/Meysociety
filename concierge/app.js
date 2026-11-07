@@ -1,5 +1,6 @@
 /* Mey Society · Ibiza — illustrated island map, StaggeredMenu + BranchedMenu, services, client area. */
 import { ICONS } from "./icons.js";
+import { initMap3D } from "./map3d.js";
 import { LANGS, t, msg, venueInfo, translateTree, setLang, getLang } from "./i18n.js";
 import { TEMPLATES, fromTemplate, newCode, loadAll, saveAll, findForClient, timeline } from "./itineraries.js";
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -99,119 +100,66 @@ const KIND = { club: "Club", beachclub: "Beach club", beach: "Playa" };
 const NS = "http://www.w3.org/2000/svg";
 
 /* =====================================================================
-   HERO MAP — illustrated, pannable, zoomable, every point clickable
+   HERO MAP — cartoon 3D island: orbit, pan, zoom; every place tappable
    ===================================================================== */
 let active = null;
-const mapEl = document.getElementById("map"), svg = document.getElementById("mapSvg"), pop = document.getElementById("pop");
-const LABELS = [["EIVISSA", 1.432, 38.926], ["SANT ANTONI", 1.31, 38.992], ["SANT JOSEP", 1.29, 38.925], ["SANTA EULÀRIA", 1.52, 38.995], ["SANT JOAN", 1.5, 39.065], ["FORMENTERA", 1.47, 38.69]];
-{
-  const grid = []; for (let x = 0; x <= MAP.w; x += 50) grid.push(`<line x1="${x}" y1="0" x2="${x}" y2="${MAP.h}"/>`); for (let y = 0; y <= MAP.h; y += 50) grid.push(`<line x1="0" y1="${y}" x2="${MAP.w}" y2="${y}"/>`);
-  const coast = MAP.coast.join("");
-  const cont = Object.entries(MAP.contours).map(([lv, ps]) => `<path class="contour${+lv % 100 === 0 ? " major" : ""}" d="${ps.join("")}"/>`).join("");
-  svg.innerHTML = `<defs>
-      <linearGradient id="landFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a3592"/><stop offset=".55" stop-color="#292467"/><stop offset="1" stop-color="#1e1c5c"/></linearGradient>
-      <clipPath id="landClip"><path d="${coast}"/></clipPath></defs>
-    <g class="sea-grid">${grid.join("")}</g>
-    <text class="label label--sea" x="80" y="1120">Mar Mediterráneo</text>
-    <path class="shore" d="${coast}"/><path class="land" d="${coast}"/>
-    <g clip-path="url(#landClip)">${cont}</g>
-    ${LABELS.map(([t, lo, la]) => { const [x, y] = toSVG([lo, la]); return `<text class="label" x="${x}" y="${y}" text-anchor="middle">${t}</text>`; }).join("")}
-    <g id="pins"></g>`;
-}
-const pinsG = svg.querySelector("#pins"), pins = [];
-const counts = { club: 0, beachclub: 0, beach: 0 };
-for (const v of VENUES) {
-  const [x, y] = toSVG([v.lon, v.lat]); counts[v.type]++;
-  const g = document.createElementNS(NS, "g"); g.setAttribute("class", `pin pin--${v.type}`); g.setAttribute("tabindex", "0"); g.setAttribute("role", "button");
-  g.setAttribute("aria-label", `${KIND[v.type]}: ${v.name}, ${v.area}`);
-  g.innerHTML = `<g class="pin__s"><circle class="hit" r="14"/><circle class="halo" r="7"/><circle class="core" r="7"/><text x="12" y="4">${v.name}</text></g>`;
-  g.setAttribute("transform", `translate(${x} ${y})`); pinsG.append(g); pins.push({ v, g, x, y });
-  g.addEventListener("click", e => { e.stopPropagation(); openPop(pins.find(p => p.g === g)); });
-  g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPop(pins.find(p => p.g === g)); } });
-}
+const mapEl = document.getElementById("map"), pop = document.getElementById("pop"), pickList = document.getElementById("pickList");
+const counts = { club: 0, beachclub: 0, beach: 0 }; VENUES.forEach(v => counts[v.type]++);
 document.querySelectorAll("[data-count]").forEach(b => b.textContent = counts[b.dataset.count]);
+const map3d = await initMap3D(mapEl, {
+  venues: VENUES, mapJson: MAP,
+  onPick: (v) => { closeList(); openPop(v); },
+  onList: (list, anchor) => openList(list, anchor),
+  onEmpty: () => { closePop(); closeList(); },
+});
 document.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
-  const on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", on);
-  pins.forEach(p => { if (p.v.type === b.dataset.kind) p.g.classList.toggle("is-hidden", !on); });
-  if (!on && active && active.v.type === b.dataset.kind) closePop();
+  const on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", on); map3d.setFilter(b.dataset.kind, on);
+  if (!on && active && active.type === b.dataset.kind) closePop();
 }));
-
-// view box: fit, pan, zoom (wheel, pinch, buttons, preset areas)
-const FULL = { x: -40, y: -20, w: MAP.w + 80, h: MAP.h + 40 };
-const vb = { ...FULL };
-function fit(box) { // keep the container aspect so pins stay round
-  const r = mapEl.clientWidth / mapEl.clientHeight, cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-  let w = box.w, h = box.h; if (w / h < r) w = h * r; else h = w / r; return { x: cx - w / 2, y: cy - h / 2, w, h };
-}
-function apply() {
-  svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
-  const k = vb.w / mapEl.clientWidth; pins.forEach(p => p.g.firstChild.setAttribute("transform", `scale(${k})`));
-  mapEl.classList.toggle("is-zoomed", vb.w < 420);
-  if (active) placePop();
-}
-function goTo(box, dur = .9) {
-  const t = fit(box);
-  if (REDUCED || !dur) { Object.assign(vb, t); apply(); return; }
-  gsap.to(vb, { ...t, duration: dur, ease: "power3.inOut", onUpdate: apply });
-}
-function zoomAt(f, sx, sy) { // f < 1 zooms in, around screen point (sx, sy) in container px
-  const nw = clamp(vb.w * f, 120, FULL.w * 1.6), k = nw / vb.w;
-  const px = vb.x + (sx / mapEl.clientWidth) * vb.w, py = vb.y + (sy / mapEl.clientHeight) * vb.h;
-  vb.x = px - (px - vb.x) * k; vb.y = py - (py - vb.y) * k; vb.w = nw; vb.h = vb.h * k; apply();
-}
-mapEl.addEventListener("wheel", e => { e.preventDefault(); const r = mapEl.getBoundingClientRect(); zoomAt(Math.exp(e.deltaY * .0015), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
-const ptrs = new Map(); let lastDist = 0, moved = 0;
-mapEl.addEventListener("pointerdown", e => { if (e.target.closest(".pop, .map__zoom, .map__areas")) return; ptrs.set(e.pointerId, e); if (!e.target.closest(".pin")) mapEl.setPointerCapture?.(e.pointerId); moved = 0; mapEl.classList.add("is-dragging"); });
-mapEl.addEventListener("pointermove", e => {
-  if (!ptrs.has(e.pointerId)) return; const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, e);
-  if (ptrs.size === 1) { const dx = e.clientX - prev.clientX, dy = e.clientY - prev.clientY; moved += Math.abs(dx) + Math.abs(dy); vb.x -= dx * vb.w / mapEl.clientWidth; vb.y -= dy * vb.h / mapEl.clientHeight; apply(); }
-  else if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); const r = mapEl.getBoundingClientRect();
-    if (lastDist) zoomAt(lastDist / d, (a.clientX + b.clientX) / 2 - r.left, (a.clientY + b.clientY) / 2 - r.top); lastDist = d; moved = 99; }
-});
-const endPtr = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) lastDist = 0; if (!ptrs.size) mapEl.classList.remove("is-dragging"); };
-mapEl.addEventListener("pointerup", endPtr); mapEl.addEventListener("pointercancel", endPtr);
-mapEl.addEventListener("click", e => { if (moved < 6 && !e.target.closest(".pin, .pop, .map__zoom, .map__areas")) closePop(); }, true);
-mapEl.querySelector(".map__zoom").addEventListener("click", e => {
-  const z = e.target.closest("button")?.dataset.zoom; if (!z) return;
-  if (z === "reset") return goTo(FULL);
-  const t = { ...vb }; const f = z === "in" ? .6 : 1 / .6; const cx = t.x + t.w / 2, cy = t.y + t.h / 2; t.w = clamp(t.w * f, 120, FULL.w * 1.6); t.h = t.w * vb.h / vb.w; t.x = cx - t.w / 2; t.y = cy - t.h / 2; goTo(t, .5);
-});
+mapEl.querySelector(".map__zoom").addEventListener("click", e => { const z = e.target.closest("button")?.dataset.zoom; if (!z) return; z === "reset" ? map3d.reset() : map3d.zoom(z === "in" ? .6 : 1.6); });
 const AREAS = { sur: [1.30, 1.45, 38.82, 38.92], eivissa: [1.395, 1.475, 38.87, 38.94], oeste: [1.19, 1.31, 38.86, 38.99], santantoni: [1.27, 1.33, 38.955, 39.0], formentera: [1.36, 1.6, 38.63, 38.78] };
 mapEl.querySelector(".map__areas").addEventListener("click", e => {
-  const b = e.target.closest("button"); if (!b) return; const [lo0, lo1, la0, la1] = AREAS[b.dataset.area];
-  const [x0, y0] = toSVG([lo0, la1]), [x1, y1] = toSVG([lo1, la0]);
-  mapEl.querySelectorAll(".map__areas button").forEach(x => x.classList.toggle("is-on", x === b)); closePop(); goTo({ x: x0, y: y0, w: x1 - x0, h: y1 - y0 });
+  const b = e.target.closest("button"); if (!b) return; mapEl.querySelectorAll(".map__areas button").forEach(x => x.classList.toggle("is-on", x === b)); closePop(); closeList(); map3d.flyToArea(AREAS[b.dataset.area]);
 });
-new ResizeObserver(() => { Object.assign(vb, fit(vb)); apply(); }).observe(mapEl);
-Object.assign(vb, fit(FULL)); apply();
+// list chooser for pins that sit on top of each other
+function openList(list, anchor) {
+  closePop();
+  pickList.innerHTML = `<p>${t("Elige un lugar")}</p>` + list.map((v, i) => `<button type="button" data-i="${i}"><i class="dot dot--${v.type}"></i><span>${v.name}</span><small>${t(KIND[v.type])}</small></button>`).join("");
+  pickList.hidden = false; pickList._list = list;
+  const r = anchor.getBoundingClientRect(), m = mapEl.getBoundingClientRect();
+  pickList.style.left = Math.min(m.width - pickList.offsetWidth - 12, Math.max(12, r.left - m.left - pickList.offsetWidth / 2)) + "px";
+  pickList.style.top = Math.min(m.height - pickList.offsetHeight - 12, Math.max(12, r.top - m.top + 30)) + "px";
+  pickList.querySelector("button").focus();
+}
+function closeList() { pickList.hidden = true; }
+pickList.addEventListener("click", e => { const b = e.target.closest("[data-i]"); if (!b) return; const v = pickList._list[+b.dataset.i]; closeList(); openPop(v); });
 
 // popup
 const popImg = document.getElementById("popImg");
-function openPop(p) {
-  if (active) active.g.classList.remove("is-active");
-  active = p; p.g.classList.add("is-active");
-  document.getElementById("popKind").innerHTML = `<i class="dot dot--${p.v.type}"></i>${t(KIND[p.v.type])} · ${p.v.area}`;
-  document.getElementById("popTitle").textContent = p.v.name;
-  document.getElementById("popInfo").textContent = venueInfo(p.v);
-  document.getElementById("popCoord").textContent = `${p.v.lat.toFixed(4)}° N · ${p.v.lon.toFixed(4)}° E`;
-  popImg.src = p.v.photo; popImg.alt = `Vista aérea de ${p.v.name}`;
-  const book = document.getElementById("popBook"); book.textContent = t(p.v.type === "beach" ? "Organizar un día aquí" : "Reservar con Mey Society");
+function openPop(v) {
+  active = v; map3d.setActive(v);
+  document.getElementById("popKind").innerHTML = `<i class="dot dot--${v.type}"></i>${t(KIND[v.type])} · ${v.area}`;
+  document.getElementById("popTitle").textContent = v.name;
+  document.getElementById("popInfo").textContent = venueInfo(v);
+  document.getElementById("popCoord").textContent = `${v.lat.toFixed(4)}° N · ${v.lon.toFixed(4)}° E`;
+  popImg.src = v.photo; popImg.alt = `Vista aérea de ${v.name}`;
+  document.getElementById("popBook").textContent = t(v.type === "beach" ? "Organizar un día aquí" : "Reservar con Mey Society");
   pop.hidden = false; placePop();
   if (!REDUCED) gsap.fromTo(pop, { opacity: 0, scale: .92, y: 8 }, { opacity: 1, scale: 1, y: 0, duration: .45, ease: "back.out(1.6)" });
 }
 function placePop() {
-  if (!active || matchMedia("(max-width: 900px)").matches) return;
-  const sx = (active.x - vb.x) / vb.w * mapEl.clientWidth, sy = (active.y - vb.y) / vb.h * mapEl.clientHeight;
+  if (!active || pop.hidden || matchMedia("(max-width: 900px)").matches) return;
+  const s = map3d.screenOf(active); if (!s) return;
   const w = pop.offsetWidth, h = pop.offsetHeight, W = mapEl.clientWidth, H = mapEl.clientHeight;
-  let left = sx + 22, top = sy - h / 2; if (left + w > W - 12) left = sx - w - 22;
+  let left = s.x + 26, top = s.y - h / 2; if (left + w > W - 12) left = s.x - w - 26;
   pop.style.left = clamp(left, 12, W - w - 12) + "px"; pop.style.top = clamp(top, 12, H - h - 12) + "px";
-  pop.style.setProperty("--ox", (left < sx ? "100%" : "0%")); pop.style.setProperty("--oy", "50%");
 }
-function closePop() { if (!active) return; active.g.classList.remove("is-active"); active = null; pop.hidden = true; }
+(function follow() { placePop(); requestAnimationFrame(follow); })(); // the card follows its pin while the map turns
+function closePop() { if (!active) return; active = null; map3d.setActive(null); pop.hidden = true; }
 pop.querySelector(".pop__x").addEventListener("click", closePop);
-addEventListener("keydown", e => { if (e.key === "Escape") closePop(); });
+addEventListener("keydown", e => { if (e.key === "Escape") { closePop(); closeList(); } });
 document.getElementById("popBook").addEventListener("click", () => {
-  if (!active) return; const v = active.v; select(v.type === "club" ? "noche" : "beach", true);
+  if (!active) return; const v = active; select(v.type === "club" ? "noche" : "beach", true);
   document.getElementById("f-notes").value = `Me interesa ${v.name} (${v.area}).`; closePop();
   document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" });
 });
@@ -610,6 +558,61 @@ document.addEventListener("pointermove", e => { if (dash.hidden) return; documen
 document.getElementById("logout").addEventListener("click", () => { dash.hidden = true; if (fromAdmin) { openAdmin(); return; } document.body.style.overflow = ""; });
 document.getElementById("dashBack").addEventListener("click", () => { dash.hidden = true; openAdmin(); });
 setInterval(() => { if (!dash.hidden && viewing) renderDash(false); }, 60000); // statuses follow the clock
+
+/* ---------------- HOME: personalised itinerary previews (MagicBento automation, live) ---------------- */
+const EXAMPLES = [
+  { name: "Ana & Marc", who: "Aniversario · 2 personas", pack: "Sea & Sun", day: "Día 2 · Mar", glyph: "boat", accent: "200 86 230", ini: "AM",
+    touches: [["star", "Champán y flores a bordo"], ["sun", "Mesa frente a Es Vedrà al atardecer"]],
+    steps: [["10:30", "Salida en barco", "botafoch", "boat"], ["12:00", "Baño en Cala d'Hort", "hort", "wave"], ["13:30", "Comida a bordo", "savina", "dish"], ["20:00", "Cena frente a Es Vedrà", "hort", "dish"]] },
+  { name: "Grupo de Daniel", who: "Cumpleaños · 8 personas", pack: "Night Edition", day: "Día 2 · Noche", glyph: "star", accent: "171 80 219", ini: "D",
+    touches: [["users", "Furgoneta de 8 plazas toda la noche"], ["chef", "Tarta sorpresa en la mesa VIP"]],
+    steps: [["17:00", "Beach club", "bossa", "sun"], ["20:30", "Chef privado en la villa", "cubells", "dish"], ["23:30", "Mesa VIP", "bossa", "star"], ["04:00", "Chófer de vuelta", "cubells", "car"]] },
+  { name: "Familia Weber", who: "Familia · 5 personas", pack: "Completo", day: "Día 1 · Llegada", glyph: "plane", accent: "120 199 228", ini: "W",
+    touches: [["car", "Sillas infantiles en el transfer"], ["home", "Nevera llena antes de llegar"]],
+    steps: [["14:30", "Transfer privado", "airport", "car"], ["16:00", "Check-in en la villa", "cubells", "home"], ["17:30", "Piscina lista y toallas", "cubells", "sun"], ["21:00", "Menú infantil del chef", "cubells", "dish"]] },
+];
+const exRoot = document.getElementById("examples");
+exRoot.innerHTML = EXAMPLES.map((x, k) => `<article class="ex__item">
+  <div class="ex__who"><span class="ex__avatar" style="--a:${x.accent}">${x.ini}</span>
+    <div><h3>${x.name}</h3><p>${x.who} · ${x.pack}</p></div></div>
+  <ul class="ex__touches">${x.touches.map(([i, s]) => `<li>${ICONS[i] || ""}<span>${s}</span></li>`).join("")}</ul>
+  <div class="mb-card mb-card--live" style="--mb-accent:${x.accent};--mb-glow:${x.accent}" data-k="${k}"><span class="mb-light" aria-hidden="true"></span><div class="mb-content">
+    <div class="mb-header"><span class="mb-dot"></span><span>${x.day}</span><span class="ex__live">En directo</span></div>
+    <div class="mb-flow" style="--n:${x.steps.length};--fill:0">
+      <div class="mb-trigger mb-tile"><span class="mb-glyph">${ICONS[x.glyph]}</span>
+        <span class="mb-flow-copy"><span class="mb-flow-name">${x.day.split(" · ")[1]}</span><span class="mb-flow-meta" data-meta></span></span></div>
+      <ol class="mb-steps mb-well"><span class="mb-rail" aria-hidden="true"><span class="mb-rail-fill"></span></span>
+        ${x.steps.map(([time, title, place, icon], i) => `<li class="mb-step mb-step--next" style="--i:${i}">
+          <span class="mb-status"><span class="mb-pending"></span><span class="mb-spinner"></span><span class="mb-done">${ICONS.tick}</span></span>
+          <span class="mb-step-icon" aria-hidden="true">${ICONS[STEP_ICON[icon]] || ""}</span>
+          <span class="mb-step-copy"><b>${title}</b><small>${ICONS.pin}${PLACES[place].name}</small></span>
+          <span class="mb-step-time">${time}</span></li>`).join("")}
+      </ol></div></div><span class="mb-rim" aria-hidden="true"></span><span class="mb-border" aria-hidden="true"></span></div>
+</article>`).join("");
+// each card runs its own loop: step k goes pending → in progress → done, the rail fills, then the day starts over
+const exCards = [...exRoot.querySelectorAll(".mb-card--live")].map((card, k) => ({ card, x: EXAMPLES[k], cur: -1, t: 0, steps: [...card.querySelectorAll(".mb-step")], flow: card.querySelector(".mb-flow"), meta: card.querySelector("[data-meta]") }));
+function exPaint(c) {
+  const n = c.steps.length, cur = c.cur;
+  c.steps.forEach((s, i) => { s.className = "mb-step mb-step--" + (i < cur ? "done" : i === cur ? "now" : "next"); });
+  c.flow.style.setProperty("--fill", (n > 1 ? Math.min(1, Math.max(0, cur) / (n - 1)) : 0).toFixed(3));
+  const st = c.x.steps[cur];
+  c.meta.textContent = cur >= n ? `${n}/${n} ${t("completados")}` : st ? `${t("Ahora")}: ${t(st[1])} · ${PLACES[st[2]].name}` : `0/${n} ${t("completados")}`;
+}
+exCards.forEach((c, k) => { c.cur = REDUCED ? c.steps.length : k % c.steps.length; exPaint(c); });
+let exVisible = false;
+new IntersectionObserver(es => { exVisible = es.some(e => e.isIntersecting); }, { threshold: .15 }).observe(exRoot);
+if (!REDUCED) setInterval(() => {
+  if (!exVisible || document.hidden) return;
+  exCards.forEach((c, k) => {
+    if (++c.t < (c.cur >= c.steps.length ? 3 : 2)) return; // ~2.4 s per step, a longer hold when the day is complete
+    c.t = 0; c.cur = c.cur >= c.steps.length ? -1 : c.cur + 1;
+    if (c.cur === -1) { c.steps.forEach(s => s.className = "mb-step mb-step--next"); c.card.classList.remove("is-in"); void c.card.offsetWidth; c.card.classList.add("is-in"); c.cur = 0; }
+    exPaint(c);
+  });
+}, 1200);
+document.addEventListener("langchange", () => exCards.forEach(exPaint));
+document.addEventListener("pointermove", e => { if (!exVisible || !FINE) return; exCards.forEach(({ card }) => { const r = card.getBoundingClientRect(); card.style.setProperty("--mb-x", (e.clientX - r.left).toFixed(0) + "px"); card.style.setProperty("--mb-y", (e.clientY - r.top).toFixed(0) + "px"); }); }, { passive: true });
+document.getElementById("exDemo").addEventListener("click", e => { e.preventDefault(); const rec = findForClient("", "MEY-DEMO"); if (rec) { fromAdmin = false; openDash(rec); } });
 
 // ---- admin: register of every client's itinerary ----
 let filter = "all";
