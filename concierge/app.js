@@ -92,13 +92,42 @@ scene.add(sky);
 const BB = { lon0: 1.17, lon1: 1.65, lat0: 38.63, lat1: 39.13 };
 const TB = { x0: (BB.lon0 - LON0) * KX, x1: (BB.lon1 - LON0) * KX, z0: -(BB.lat1 - LAT0) * KZ, z1: -(BB.lat0 - LAT0) * KZ };
 const loader = new THREE.TextureLoader();
-const satTex = loader.load(NARROW ? "data/sat_2k.jpg" : "data/sat_4k.jpg", t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); t.needsUpdate = true; thumbsReady(); });
+const MAXANI = renderer.capabilities.getMaxAnisotropy();
+// PNOA aerial orthophoto (IGN), baked at ~14 m for the whole island
+const satTex = loader.load("data/pnoa_base.jpg", t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = MAXANI; t.needsUpdate = true; });
 const shallowTex = loader.load("data/shallow.png", t => { t.colorSpace = THREE.NoColorSpace; t.needsUpdate = true; });
 const HN = 640; let HGT = null;
-function heightAt(x, z) { // km → metres from the DEM
-  if (!HGT) return 0; const u = (x - TB.x0) / (TB.x1 - TB.x0), v = (z - TB.z0) / (TB.z1 - TB.z0);
-  if (u < 0 || u > 1 || v < 0 || v > 1) return 0; const i = Math.round(v * (HN - 1)), j = Math.round(u * (HN - 1));
-  return Math.max(0, HGT[i * HN + j] / 10 - 100);
+function heightAt(x, z) { // km → metres from the DEM, bilinear
+  if (!HGT) return 0; const u = (x - TB.x0) / (TB.x1 - TB.x0) * (HN - 1), v = (z - TB.z0) / (TB.z1 - TB.z0) * (HN - 1);
+  if (u < 0 || u > HN - 1 || v < 0 || v > HN - 1) return -50;
+  const j = Math.min(HN - 2, Math.floor(u)), i = Math.min(HN - 2, Math.floor(v)), fu = u - j, fv = v - i;
+  const h = (a, b) => HGT[a * HN + b] / 10 - 100;
+  return (h(i, j) * (1 - fu) + h(i, j + 1) * fu) * (1 - fv) + (h(i + 1, j) * (1 - fu) + h(i + 1, j + 1) * fu) * fv;
+}
+// high-resolution PNOA patches (~2 m) around each scene, blended into the base at their edges
+function fadeMask() {
+  const c = document.createElement("canvas"); c.width = c.height = 256; const g = c.getContext("2d"), d = g.createImageData(256, 256);
+  for (let y = 0; y < 256; y++) for (let x = 0; x < 256; x++) { const e = Math.min(x, y, 255 - x, 255 - y) / 255; const a = Math.min(1, Math.max(0, (e - .02) / .16)); const v = Math.round(a * a * (3 - 2 * a) * 255); const k = (y * 256 + x) * 4; d.data[k] = d.data[k + 1] = d.data[k + 2] = v; d.data[k + 3] = 255; }
+  g.putImageData(d, 0, 0); return new THREE.CanvasTexture(c);
+}
+const SEA_CLIP = [new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)];
+function addPatches() {
+  return fetch("data/pnoa_patches.json").then(r => r.json()).then(meta => {
+    const mask = fadeMask(); const jobs = [];
+    for (const [k, [lo0, lo1, la0, la1]] of Object.entries(meta)) {
+      const a = proj([lo0, la1]), b = proj([lo1, la0]), w = b.x - a.x, d = b.z - a.z, n = NARROW ? 96 : 192;
+      const g = new THREE.PlaneGeometry(w, d, n - 1, n - 1).rotateX(-Math.PI / 2); g.translate(a.x + w / 2, 0, a.z + d / 2);
+      const p = g.attributes.position;
+      for (let i = 0; i < p.count; i++) { const m = heightAt(p.getX(i), p.getZ(i)); p.setY(i, m > .15 ? Math.max(m, 1) / 1000 + .0045 : -.02); }
+      g.computeVertexNormals();
+      jobs.push(new Promise(res => loader.load(`data/pnoa_${k}.jpg`, t => {
+        t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = MAXANI;
+        const mesh = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ map: t, alphaMap: mask, transparent: true, depthWrite: false, clippingPlanes: SEA_CLIP, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+        mesh.renderOrder = 1; scene.add(mesh); res();
+      }, undefined, () => res())));
+    }
+    return Promise.all(jobs);
+  });
 }
 const terrainReady = fetch("data/height640.png").then(r => r.blob()).then(b => createImageBitmap(b, { colorSpaceConversion: "none", premultiplyAlpha: "none" })).then(bmp => {
   // heights are packed in a lossless PNG: R = high byte, G = low byte (decimetres + 100 m)
@@ -111,22 +140,23 @@ const terrainReady = fetch("data/height640.png").then(r => r.blob()).then(b => c
   const pos = g.attributes.position;
   for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
     const m = HGT[(i * step) * HN + j * step] / 10 - 100;
-    pos.setY(i * n + j, m > .6 ? m / 1000 + .003 : -.02);
+    pos.setY(i * n + j, m > .15 ? Math.max(m, 1) / 1000 + .003 : -.02);
   }
   g.computeVertexNormals();
-  const terrain = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ map: satTex, clippingPlanes: [new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)] }));
+  const terrain = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ map: satTex, clippingPlanes: SEA_CLIP }));
   scene.add(terrain); placeLights();
-});
+  return addPatches();
+}).then(() => thumbsReady());
 
 // ---- ocean: real-scale waves over the satellite's own shallows
 const ocean = new THREE.Mesh(new THREE.PlaneGeometry(3600, 3600, 1, 1).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
-    uniforms: { ...U, uSat: { value: satTex }, uShallow: { value: shallowTex }, uB: { value: new THREE.Vector4(TB.x0, TB.x1, TB.z0, TB.z1) } },
+    uniforms: { ...U, uSat: { value: loader.load("data/sat_2k.jpg", t => { t.colorSpace = THREE.SRGBColorSpace; }) }, uShallow: { value: shallowTex }, uB: { value: new THREE.Vector4(TB.x0, TB.x1, TB.z0, TB.z1) } },
   vertexShader: `varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position,1.); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
   fragmentShader: `
     uniform vec3 uSun, uZenith, uHorizon, uSunCol; uniform float uTime, uNight, uGold; uniform sampler2D uSat, uShallow; uniform vec4 uB; varying vec3 vW;
     vec2 g = vec2(0.); float fpm;
     void wave(vec2 p, vec2 d, float lambda, float slope, float speed){
-      float k = 6.2831 / lambda; float att = 1. - smoothstep(.12, .5, fpm / lambda);
+      float k = 6.2831 / lambda; float att = 1. - smoothstep(.05, .28, fpm / lambda);
       g += d * cos(dot(p, d) * k + uTime * speed) * slope * att;
     }
     void main(){
@@ -153,7 +183,7 @@ const ocean = new THREE.Mesh(new THREE.PlaneGeometry(3600, 3600, 1, 1).rotateX(-
       vec3 body = mix(deep, sat * mix(1.08, .25, uNight), smoothstep(.1, .8, sh) * .85);
       body *= mix(1., .8, uGold);
       vec3 col = mix(body, skyc, fres * .8);
-      float spec = pow(max(dot(R, uSun), 0.), 380.) * 7. + pow(max(dot(R, uSun), 0.), 30.) * .25 * uGold;
+      float spec = pow(max(dot(R, uSun), 0.), 240.) * 4. + pow(max(dot(R, uSun), 0.), 24.) * .3 * uGold;
       col += uSunCol * spec * (1. - uNight * .9);
       col = mix(col, uHorizon, smoothstep(40., 700., dist));
       gl_FragColor = vec4(col, 1.);
@@ -532,4 +562,4 @@ setTime(SCENES[0].tod);
 renderer.compile(scene, camera);
 requestAnimationFrame(frame);
 let thumbsDone = false;
-function thumbsReady() { terrainReady.then(() => { if (thumbsDone) return; thumbsDone = true; setTimeout(() => { try { renderThumbs(); } catch (err) { console.warn(err); } }, 300); }); }
+function thumbsReady() { Promise.resolve().then(() => { if (thumbsDone) return; thumbsDone = true; setTimeout(() => { try { renderThumbs(); } catch (err) { console.warn(err); } }, 300); }); }
