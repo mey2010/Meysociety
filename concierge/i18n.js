@@ -51,7 +51,7 @@ const D = {
   "El contacto de tu contacto": ["The contact of your contact", "Il contatto del tuo contatto", "Le contact de votre contact", "Der Kontakt deines Kontakts"],
   "Tú dinos qué quieres vivir. Nosotros abrimos las puertas.": ["Tell us what you want to live. We open the doors.", "Dicci cosa vuoi vivere. Noi apriamo le porte.", "Dites-nous ce que vous voulez vivre. Nous ouvrons les portes.", "Sag uns, was du erleben willst. Wir öffnen die Türen."],
   "Escríbenos": ["Message us", "Scrivici", "Écrivez-nous", "Schreib uns"],
-  "Ver la isla": ["See the island", "Scopri l'isola", "Voir l'île", "Die Insel ansehen"],
+  "Ver servicios": ["See services", "Vedi i servizi", "Voir les services", "Services ansehen"],
   "Toca cualquier punto del mapa para ver el club, el beach club o la playa.": ["Tap any point on the map to see the club, beach club or beach.", "Tocca un punto della mappa per vedere il club, il beach club o la spiaggia.", "Touchez un point de la carte pour voir le club, le beach club ou la plage.", "Tippe auf einen Punkt der Karte, um Club, Beach Club oder Strand zu sehen."],
   "Clubs": ["Clubs", "Club", "Clubs", "Clubs"],
   "Playas": ["Beaches", "Spiagge", "Plages", "Strände"],
