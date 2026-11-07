@@ -381,10 +381,15 @@
 
 <!-- client itinerary -->
 <div class="dash" id="dash" hidden>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <header class="dash__top">
     <button class="btn btn--glass btn--sm btn--onDark" type="button" id="dashBack" hidden>← Registro</button>
     <div class="dash__who"><p class="eyebrow eyebrow--light"><span>Tu estancia</span> · <span id="dashPack"></span></p><h2 class="display display--sm" id="dashHello">Hola</h2><p class="dash__dates" id="dashDates"></p></div>
     <div class="dash__ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="ring-bg"/><circle cx="60" cy="60" r="52" class="ring" id="ring"/></svg><div><strong id="ringPct">0%</strong><span>completado</span></div></div>
+    <div class="bell" id="bellWrap">
+      <button class="bell__btn" id="bellBtn" type="button" aria-label="Avisos de tu itinerario" aria-expanded="false" aria-controls="bellPanel"><span class="bell__ico" id="bellIco" aria-hidden="true"></span><span class="bell__badge" id="bellBadge" hidden>0</span></button>
+      <div class="bell__panel" id="bellPanel" hidden></div>
+    </div>
     <button class="btn btn--primary btn--sm dash__pdf" type="button" id="dashPdf"><span class="dash__pdfIco" aria-hidden="true"></span><span>Descargar PDF</span></button>
     <button class="btn btn--glass btn--sm btn--onDark" type="button" id="logout">Salir</button>
   </header>

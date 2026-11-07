@@ -13,7 +13,7 @@ export function createDepthRibbon(root, opts = {}) {
   const canvas = document.createElement("canvas"); canvas.className = "ribbon__band"; canvas.setAttribute("aria-hidden", "true");
   const stage = document.createElement("div"); stage.className = "ribbon__stage";
   const live = document.createElement("div"); live.className = "ribbon__live"; live.setAttribute("aria-live", "polite");
-  root.append(canvas, stage, live);
+  root.append(stage, live); // the connecting band is no longer drawn
   const ctx = canvas.getContext("2d");
 
   let items = [], cards = [], N = 0, W = 0, H = 0, cw = 0, ch = 0, P = 1400, dpr = 1;
@@ -92,7 +92,7 @@ export function createDepthRibbon(root, opts = {}) {
       let rem = dt; while (rem > 0) { const h = Math.min(rem, 1 / 240); st.vel += (SPRING * (st.target - st.pos) - DAMP * st.vel) * h; st.pos += st.vel * h; rem -= h; }
       if (Math.abs(st.target - st.pos) < .0005 && Math.abs(st.vel) < .001) { st.pos = st.target; st.vel = 0; } else busy = true;
     } else busy = true;
-    layout(); drawBand();
+    layout();
     if (o.autoplay && !reduced) busy = true;
     if (busy && visible && !document.hidden) raf = requestAnimationFrame(frame); else st.last = 0;
   }

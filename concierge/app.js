@@ -525,7 +525,7 @@ document.getElementById("adminForm").addEventListener("submit", async e => {
 });
 
 // ---- client dashboard ----
-function openDash(rec) {
+let openDash = function (rec) {
   viewing = rec; dash.hidden = false; admin.hidden = true; document.body.style.overflow = "hidden";
   document.getElementById("dashBack").hidden = !fromAdmin;
   const name = rec.demo ? (document.getElementById("l-email").value.split("@")[0] || t(rec.name)) : rec.name.split(" ")[0];
@@ -536,6 +536,7 @@ function openDash(rec) {
   renderDash(true);
 }
 function renderDash(first) {
+  renderBell();
   const rec = viewing, tl = timeline(rec);
   if (first) viewingDay = tl.state === "upcoming" ? 0 : tl.state === "finished" ? rec.days.length - 1 : tl.today;
   document.getElementById("ringPct").textContent = tl.pct + "%";
@@ -566,8 +567,8 @@ function renderFlow(tl) {
           <span class="mb-status" aria-label="${e.status === "done" ? "Completado" : e.status === "now" ? "En curso" : "Pendiente"}"><span class="mb-pending"></span><span class="mb-spinner"></span><span class="mb-done">${ICONS.tick}</span></span>
           <span class="mb-step-icon" aria-hidden="true">${ICONS[STEP_ICON[e.icon]] || ""}</span>
           <span class="mb-step-copy"><b>${t(e.title)}</b><small>${ICONS.pin}${t(PLACES[e.place].name)}</small></span>
-          <span class="mb-step-time">${e.time}</span></li>`).join("")}
-      </ol></div>`;
+          <span class="mb-step-time">${e.time}</span>${fromAdmin ? `<button class="mb-edit" type="button" data-edit="${e.i}" aria-label="${t("Editar")}">${ICONS.pencil}</button>` : ""}</li>`).join("")}
+      </ol>${fromAdmin ? `<button class="mb-add" type="button" data-add>${ICONS.plus}<span>${t("Añadir actividad")}</span></button>` : ""}</div>`;
   flow.closest(".mb-card").classList.remove("is-in"); void flow.offsetWidth; flow.closest(".mb-card").classList.add("is-in");
 }
 // Route of the whole stay, starting at the airport; travelled legs solid, upcoming legs dashed, current position pulsing
@@ -913,3 +914,113 @@ document.getElementById("fleetClose").addEventListener("click", closeFleet);
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !fleet.hidden) closeFleet(); });
 document.addEventListener("click", e => { const b = e.target.closest("[data-fleet]"); if (b) { e.preventDefault(); openFleet(b.dataset.fleet); } });
 document.addEventListener("langchange", () => { if (!fleet.hidden) openFleet(fleetCat); });
+
+
+/* ---------------- itinerary changes: admin edits create them, the client's bell announces them ---------------- */
+const nightKey = tm => { const [h, m] = tm.split(":").map(Number); return (h < 6 ? h + 24 : h) * 60 + m; };
+const iconFor = title => /barco|yate|velero|catamar/i.test(title) ? "boat" : /cena|comida|chef|almuerzo|desayuno/i.test(title) ? "dish" : /transfer|chófer|coche|recogida/i.test(title) ? "car" : /moto de agua|jet/i.test(title) ? "wave" : /villa|check/i.test(title) ? "home" : /playa|beach|atardecer/i.test(title) ? "sun" : "star";
+function changeText(c) {
+  const day = `${t("Día")} ${c.day + 1}`, before = x => `<span class="was">${t("antes")} ${x}</span>`;
+  if (c.kind === "time") return `${day} · ${t(c.title)}: ${t("nueva hora")} <b>${c.to}</b> ${before(c.from)}`;
+  if (c.kind === "place") return `${day} · ${t(c.title)}: <b>${t(PLACES[c.to]?.name || c.to)}</b> ${before(t(PLACES[c.from]?.name || c.from))}`;
+  if (c.kind === "title") return `${day} · ${c.time}: <b>${t(c.to)}</b> ${before(t(c.from))}`;
+  if (c.kind === "add") return `${day} · ${t("Nueva actividad")}: <b>${t(c.title)}</b> · ${c.time}`;
+  if (c.kind === "remove") return `${day} · ${t("Cancelada")}: <b>${t(c.title)}</b> · ${c.time}`;
+  return "";
+}
+const plain = html => { const d = document.createElement("div"); d.innerHTML = html; return d.textContent; };
+// save a change to the stored record, logging what changed for the client
+function commitChange(mutate) {
+  const all = loadAll(), r = all.find(x => x.id === viewing.id); if (!r) return;
+  const log = []; mutate(r, log); if (!log.length) return;
+  r.days.forEach(d => d.events.sort((a, b) => nightKey(a.time) - nightKey(b.time)));
+  r.rev = (r.rev || 0) + 1; r.changes = [...(r.changes || []), ...log.map(c => ({ ...c, rev: r.rev, at: new Date().toISOString() }))].slice(-60);
+  saveAll(all); viewing = r; renderDash(false);
+}
+const flowEl = document.getElementById("flow");
+function editForm(ev) {
+  const opts = Object.entries(PLACES).map(([k, p]) => `<option value="${k}" ${ev && ev.place === k ? "selected" : ""}>${t(p.name)}</option>`).join("");
+  return `<form class="mb-form">
+    <label>${t("Hora")}<input type="time" name="time" required value="${ev ? ev.time : "12:00"}"></label>
+    <label>${t("Actividad")}<input type="text" name="title" required value="${ev ? ev.title.replace(/"/g, "&quot;") : ""}"></label>
+    <label>${t("Lugar")}<select name="place">${opts}</select></label>
+    <div class="mb-form__act"><button class="btn btn--primary btn--sm" type="submit">${t("Guardar")}</button>${ev ? `<button class="btn btn--glass btn--sm btn--onDark" type="button" data-remove>${t("Eliminar")}</button>` : ""}<button class="btn btn--glass btn--sm btn--onDark" type="button" data-cancel>${t("Cancelar")}</button></div>
+  </form>`;
+}
+flowEl.addEventListener("click", e => {
+  if (!fromAdmin) return;
+  const ed = e.target.closest("[data-edit]"), add = e.target.closest("[data-add]");
+  if (ed) { const i = +ed.dataset.edit, ev = viewing.days[viewingDay].events[i], li = ed.closest("li"); li.classList.add("is-editing"); li.innerHTML = editForm(ev); li.dataset.i = i; li.querySelector("input[name=time]").focus(); return; }
+  if (add) { add.insertAdjacentHTML("beforebegin", `<div class="mb-step is-editing" data-new>${editForm(null)}</div>`); add.hidden = true; flowEl.querySelector("[data-new] input[name=title]").focus(); return; }
+  if (e.target.closest("[data-cancel]")) { renderDash(false); return; }
+  if (e.target.closest("[data-remove]")) {
+    const i = +e.target.closest("li").dataset.i, d = viewingDay;
+    commitChange((r, log) => { const ev = r.days[d].events[i]; if (!ev) return; r.days[d].events.splice(i, 1); log.push({ kind: "remove", day: d, title: ev.title, time: ev.time }); });
+  }
+});
+flowEl.addEventListener("submit", e => {
+  e.preventDefault(); if (!fromAdmin) return;
+  const f = e.target, v = { time: f.time.value, title: f.title.value.trim(), place: f.place.value }, d = viewingDay;
+  if (!v.time || !v.title) return;
+  const li = f.closest("li");
+  if (li) { const i = +li.dataset.i; commitChange((r, log) => {
+    const ev = r.days[d].events[i]; if (!ev) return;
+    if (ev.time !== v.time) log.push({ kind: "time", day: d, title: v.title, from: ev.time, to: v.time });
+    if (ev.place !== v.place) log.push({ kind: "place", day: d, title: v.title, from: ev.place, to: v.place });
+    if (ev.title !== v.title) log.push({ kind: "title", day: d, time: v.time, from: ev.title, to: v.title });
+    Object.assign(ev, v, ev.title !== v.title ? { icon: iconFor(v.title) } : {});
+  }); }
+  else commitChange((r, log) => { r.days[d].events.push({ ...v, icon: iconFor(v.title) }); log.push({ kind: "add", day: d, title: v.title, time: v.time }); });
+});
+
+// the client's bell
+const NKEY = code => "mey-notify-" + code;
+const nGet = code => { try { return JSON.parse(localStorage.getItem(NKEY(code))) || { on: false, seen: 0 }; } catch { return { on: false, seen: 0 }; } };
+const nSet = (code, v) => { try { localStorage.setItem(NKEY(code), JSON.stringify(v)); } catch {} };
+const bellWrap = document.getElementById("bellWrap"), bellBtn = document.getElementById("bellBtn"), bellPanel = document.getElementById("bellPanel"), bellBadge = document.getElementById("bellBadge"), toastEl = document.getElementById("toast");
+let toastT = 0;
+function toast(html) { toastEl.innerHTML = `<span class="toast__ico">${ICONS.bellOn}</span><span>${html}</span>`; toastEl.hidden = false; toastEl.classList.remove("is-in"); void toastEl.offsetWidth; toastEl.classList.add("is-in"); clearTimeout(toastT); toastT = setTimeout(() => { toastEl.hidden = true; }, 6500); }
+function renderBell() {
+  bellWrap.hidden = fromAdmin || !viewing; if (bellWrap.hidden) return;
+  const rec = viewing, st = nGet(rec.code), log = rec.changes || [], unseen = st.on ? log.filter(c => c.rev > st.seen).length : 0;
+  bellBtn.classList.toggle("is-on", st.on); bellBadge.hidden = !unseen; bellBadge.textContent = unseen;
+  document.getElementById("bellIco").innerHTML = st.on ? ICONS.bellOn : ICONS.bell;
+  const when = c => { const d = new Date(c.at); return `${fmtDate(d, { day: "numeric", month: "short" })} · ${d.toLocaleTimeString(getLang() === "es" ? "es-ES" : getLang(), { hour: "2-digit", minute: "2-digit" })}`; };
+  bellPanel.innerHTML = `<header class="bell__head"><b>${t("Avisos de tu itinerario")}</b>
+      <label class="switch"><input type="checkbox" id="bellToggle" ${st.on ? "checked" : ""}><span class="switch__track" aria-hidden="true"></span><span>${t(st.on ? "Activados" : "Desactivados")}</span></label></header>
+    ${st.on ? (log.length ? `<ol class="bell__list">${log.slice().reverse().slice(0, 15).map(c => `<li class="${c.rev > st.seen ? "is-new" : ""}"><small>${when(c)}</small><span>${changeText(c)}</span></li>`).join("")}</ol>`
+      : `<p class="bell__empty">${t("Sin cambios por ahora. Si algo cambia en tu itinerario, te avisaremos aquí al momento.")}</p>`)
+      : `<p class="bell__empty">${t("Activa los avisos y te diremos al momento cualquier cambio en tu itinerario: horas, lugares o actividades nuevas.")}</p>`}`;
+}
+const markSeen = () => { if (!viewing) return; const st = nGet(viewing.code); if (!st.on) return; st.seen = Math.max(st.seen, viewing.rev || 0); nSet(viewing.code, st); };
+bellBtn.addEventListener("click", e => {
+  e.stopPropagation(); const open = bellPanel.hidden; bellPanel.hidden = !open; bellBtn.setAttribute("aria-expanded", open);
+  if (!open) { markSeen(); renderBell(); }
+});
+bellPanel.addEventListener("change", async e => {
+  if (e.target.id !== "bellToggle" || !viewing) return;
+  const st = nGet(viewing.code); st.on = e.target.checked; if (st.on) st.seen = viewing.rev || 0; nSet(viewing.code, st);
+  if (st.on && "Notification" in window && Notification.permission === "default") { try { await Notification.requestPermission(); } catch {} }
+  renderBell(); if (st.on) toast(t("Avisos activados. Te avisaremos de cualquier cambio en tu itinerario."));
+});
+document.addEventListener("click", e => { if (!bellPanel.hidden && !bellWrap.contains(e.target)) { bellPanel.hidden = true; bellBtn.setAttribute("aria-expanded", "false"); markSeen(); renderBell(); } });
+// watch for changes while the client area is open (another tab, or the concierge's device once a backend is connected)
+function checkChanges() {
+  if (dash.hidden || fromAdmin || !viewing) return;
+  const fresh = loadAll().find(x => x.id === viewing.id); if (!fresh || (fresh.rev || 0) === (viewing.rev || 0)) return;
+  const prev = viewing.rev || 0, news = (fresh.changes || []).filter(c => c.rev > prev);
+  viewing = fresh; renderDash(false);
+  const st = nGet(fresh.code); if (!st.on || !news.length) return;
+  const msgTxt = news.length === 1 ? changeText(news[0]) : `${news.length} ${t("cambios nuevos")}`;
+  toast(`<b>${t("Tu itinerario ha cambiado")}</b><br>${msgTxt}`);
+  if ("Notification" in window && Notification.permission === "granted") { try { new Notification("Mey Society", { body: `${t("Tu itinerario ha cambiado")}: ${plain(msgTxt)}`, icon: "assets/logo.png", tag: "mey-" + fresh.code }); } catch {} }
+}
+window.addEventListener("storage", e => { if (e.key === "mey-itineraries-v1") checkChanges(); });
+setInterval(checkChanges, 15000);
+// on opening the client area, tell them about anything that changed since their last visit
+const _openDash = openDash;
+openDash = function (rec) {
+  _openDash(rec); bellPanel.hidden = true;
+  if (!fromAdmin) { const st = nGet(rec.code), unseen = st.on ? (rec.changes || []).filter(c => c.rev > st.seen).length : 0;
+    if (unseen) setTimeout(() => toast(`<b>${unseen === 1 ? t("Tienes 1 cambio nuevo en tu itinerario") : `${t("Cambios nuevos en tu itinerario")}: ${unseen}`}</b>`), 600); }
+};
