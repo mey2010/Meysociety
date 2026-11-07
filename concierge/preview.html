@@ -1,0 +1,272 @@
+<title>Mey Society Ibiza</title>
+<meta name="description" content="Private concierge en Ibiza: villas, yates, motos de agua, coches, transfers, restaurantes, beach clubs y noche. Un solo contacto.">
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="styles.css">
+
+<!-- Liquid glass refraction (Chromium uses it inside backdrop-filter; others fall back to blur) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="lg-refract" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="7" result="n"/>
+    <feGaussianBlur in="n" stdDeviation="2" result="nb"/>
+    <feDisplacementMap in="SourceGraphic" in2="nb" scale="38" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<canvas id="world" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+<div class="pins" id="pins" aria-hidden="true"></div>
+
+<!-- ============ NAV: a glass pill that docks, then unfolds into the island ============ -->
+<header class="nav" id="nav">
+  <div class="nav__pill lg" id="navPill">
+    <a class="nav__brand" href="#top" aria-label="Mey Society, inicio"><img src="assets/logo.png" alt="" width="30" height="30"><span>Mey Society</span></a>
+    <span class="nav__where" id="navWhere" aria-live="polite">Ibiza</span>
+    <button class="nav__toggle" id="menuBtn" aria-expanded="false" aria-controls="menu"><span class="burger" aria-hidden="true"><i></i><i></i></span><span class="nav__label">Menú</span></button>
+    <a class="btn btn--glass btn--sm nav__cta" href="#contacto">Reservar</a>
+  </div>
+</header>
+
+<div class="menu" id="menu" hidden>
+  <div class="menu__sheet lg">
+    <div class="menu__map">
+      <svg viewBox="0 0 100 100" id="menuMap" aria-hidden="true"></svg>
+      <div class="menu__mapPins" id="menuPins"></div>
+    </div>
+    <nav class="menu__list" aria-label="Principal">
+      <p class="menu__eyebrow">Explora la isla</p>
+      <ol>
+        <li><a href="#top" data-scene="0"><em>01</em>Ibiza desde el cielo</a></li>
+        <li><a href="#top" data-scene="1"><em>02</em>Villas privadas</a></li>
+        <li><a href="#top" data-scene="2"><em>03</em>Yates y barcos</a></li>
+        <li><a href="#top" data-scene="3"><em>04</em>Motos de agua</a></li>
+        <li><a href="#top" data-scene="4"><em>05</em>Coches y transfers</a></li>
+        <li><a href="#top" data-scene="5"><em>06</em>Fine dining</a></li>
+        <li><a href="#top" data-scene="6"><em>07</em>Noche y VIP</a></li>
+      </ol>
+      <div class="menu__more">
+        <a href="#servicios">Servicios</a><a href="#paquetes">Paquetes</a><a href="#faq">Preguntas</a><a href="#contacto">Contacto</a>
+        <button class="btn btn--glass btn--sm" id="loginOpen" type="button">Área cliente</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<main id="top">
+
+  <!-- ============ THE JOURNEY: scroll drives the camera across real Ibiza ============ -->
+  <section class="journey" id="journey" aria-label="Recorrido por Ibiza">
+    <div class="panels">
+      <article class="panel panel--hero is-on" data-scene="0">
+        <p class="panel__coord">38°54′N · 1°26′E · Mar Mediterráneo</p>
+        <h1 class="display">Ibiza,<br><em>without limits.</em></h1>
+        <p class="lede">Private stays. Extraordinary experiences. One dedicated concierge.</p>
+        <div class="panel__actions">
+          <a class="btn btn--glass btn--lg" href="#contacto">Diseña tu estancia</a>
+          <span class="hint">Desliza para recorrer la isla</span>
+        </div>
+      </article>
+
+      <article class="panel panel--left" data-scene="1">
+        <p class="panel__coord">Es Cubells · Cala Jondal · 38°52′N 1°19′E</p>
+        <h2 class="display">Villas privadas</h2>
+        <p>Casas con licencia turística, piscina y vistas al mar, preparadas antes de que aterrices.</p>
+        <ul class="facts"><li>Número de registro turístico visible en cada ficha</li><li>Limpieza, chef y compra a tu llegada</li><li>Disponibilidad confirmada en 24 h</li></ul>
+        <a class="btn btn--glass" href="#contacto" data-svc="villas">Consultar villas</a>
+      </article>
+
+      <article class="panel panel--right" data-scene="2">
+        <p class="panel__coord">Marina Botafoch · Dalt Vila · 38°55′N 1°27′E</p>
+        <h2 class="display">Yates y barcos</h2>
+        <p>Salidas desde el puerto de Eivissa hacia calas y Formentera, con patrón y tripulación.</p>
+        <ul class="facts"><li>Operadores de chárter autorizados</li><li>Fondeo fuera de posidonia, como marca la ley</li><li>Día completo, medio día o atardecer</li></ul>
+        <a class="btn btn--glass" href="#contacto" data-svc="yates">Consultar barcos</a>
+      </article>
+
+      <article class="panel panel--left" data-scene="3">
+        <p class="panel__coord">Costa oeste · Cala Bassa · 38°58′N 1°14′E <span class="tag">ubicación por confirmar</span></p>
+        <h2 class="display">Motos de agua</h2>
+        <p>Rutas guiadas con operadores autorizados, siempre dentro de las zonas balizadas para ello.</p>
+        <ul class="facts"><li>Para todos los niveles</li><li>Monitor y material incluidos</li><li>Punto de salida confirmado al reservar</li></ul>
+        <a class="btn btn--glass" href="#contacto" data-svc="motos">Consultar motos de agua</a>
+      </article>
+
+      <article class="panel panel--right" data-scene="4">
+        <p class="panel__coord">Camino a Cala d'Hort · Es Vedrà · 38°52′N 1°12′E</p>
+        <h2 class="display">Coches y transfers</h2>
+        <p>Descapotables, SUV y deportivos entregados en tu villa, y chófer privado con licencia VTC.</p>
+        <ul class="facts"><li>Aeropuerto, puerto y noches de club</li><li>Conductores con licencia</li><li>Por días o por semanas</li></ul>
+        <a class="btn btn--glass" href="#contacto" data-svc="coches">Consultar coches</a>
+      </article>
+
+      <article class="panel panel--left" data-scene="5">
+        <p class="panel__coord">Dalt Vila · Patrimonio de la Humanidad · 38°54′N 1°26′E</p>
+        <h2 class="display">Fine dining</h2>
+        <p>Las mesas que merecen la pena al atardecer, y un chef privado en tu villa o a bordo.</p>
+        <ul class="facts"><li>Reservas en restaurantes de la isla</li><li>Chef a domicilio con producto local</li><li>Menús para celebraciones</li></ul>
+        <a class="btn btn--glass" href="#contacto" data-svc="dining">Reservar mesa</a>
+      </article>
+
+      <article class="panel panel--right" data-scene="6">
+        <p class="panel__coord">Platja d'en Bossa · 38°53′N 1°24′E</p>
+        <h2 class="display">Noche y VIP</h2>
+        <p>Mesas, entradas y guest lists en clubs y beach clubs, gestionadas directamente con cada sala.</p>
+        <ul class="facts"><li>Mesas con servicio de botella</li><li>Guest lists cada noche</li><li>Solo mayores de 18 años</li></ul>
+        <a class="btn btn--glass" href="#contacto" data-svc="noche">Reservar la noche</a>
+      </article>
+
+      <article class="panel panel--hero panel--end" data-scene="7">
+        <p class="panel__coord">Eivissa y Formentera · Illes Pitiüses</p>
+        <h2 class="display">Your Ibiza experience<br><em>starts here.</em></h2>
+        <div class="panel__actions"><a class="btn btn--glass btn--lg" href="#contacto">Create your private experience</a></div>
+      </article>
+    </div>
+    <div class="journey__rail" aria-hidden="true"><span id="railFill"></span></div>
+  </section>
+
+  <!-- ============ SERVICES: the stage follows the pointer ============ -->
+  <section class="sec sec--ivory" id="servicios">
+    <div class="wrap">
+      <header class="sec__head">
+        <p class="eyebrow">Servicios</p>
+        <h2 class="display display--md">Toda la isla, <em>en una conversación.</em></h2>
+        <p class="lede lede--dark">Mueve el cursor sobre la isla. Cada servicio está anclado a un lugar real de Ibiza.</p>
+      </header>
+    </div>
+    <div class="stage" id="stage">
+      <div class="stage__layer stage__layer--map" data-depth="0.15"><svg viewBox="0 0 100 100" id="stageMap" aria-hidden="true"></svg></div>
+      <div class="stage__layer" data-depth="0.5" id="stageCards"></div>
+      <div class="stage__glow" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <!-- ============ PACKAGES ============ -->
+  <section class="sec sec--sand" id="paquetes">
+    <div class="wrap">
+      <header class="sec__head sec__head--split">
+        <div>
+          <p class="eyebrow">Paquetes a medida</p>
+          <h2 class="display display--md">Tres formas de empezar. <em>Infinitas de seguir.</em></h2>
+        </div>
+        <p class="lede lede--dark">Combinamos los servicios que elijas en un plan coordinado. Cada servicio lo presta y factura un proveedor con licencia; nosotros lo organizamos todo por una tarifa de concierge transparente.</p>
+      </header>
+      <div class="packs">
+        <article class="pack">
+          <p class="pack__days">Llegada · día 1</p>
+          <h3>Arrival</h3>
+          <ul><li>Transfer privado desde el aeropuerto</li><li>Villa lista, nevera llena</li><li>Cena del chef la primera noche</li></ul>
+          <button class="btn btn--ink" data-pack="Arrival" type="button">Quiero este plan</button>
+        </article>
+        <article class="pack pack--feature">
+          <p class="pack__days">Mar · 2 días</p>
+          <h3>Sea &amp; Sun</h3>
+          <ul><li>Barco con patrón a Formentera</li><li>Ruta guiada en moto de agua</li><li>Beach club con hamacas reservadas</li><li>Cena al atardecer en Dalt Vila</li></ul>
+          <button class="btn btn--glass btn--onDark" data-pack="Sea &amp; Sun" type="button">Quiero este plan</button>
+        </article>
+        <article class="pack">
+          <p class="pack__days">Noche · 3 noches</p>
+          <h3>Night Edition</h3>
+          <ul><li>Mesas VIP en los clubs que elijas</li><li>Guest lists y entradas preferentes</li><li>Chófer toda la noche</li></ul>
+          <button class="btn btn--ink" data-pack="Night Edition" type="button">Quiero este plan</button>
+        </article>
+      </div>
+      <p class="fine">Los precios dependen de fechas y disponibilidad y se confirman por escrito, con IVA incluido y condiciones de cancelación de cada proveedor, antes de cualquier pago.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOW ============ -->
+  <section class="sec sec--ivory" id="como">
+    <div class="wrap how">
+      <h2 class="display display--md">Así de sencillo.</h2>
+      <ol class="how__steps">
+        <li><span>Cuéntanos</span><p>Fechas, personas y lo que te apetece. Un mensaje basta.</p></li>
+        <li><span>Diseñamos tu plan</span><p>Recibes un itinerario con todo confirmado y el precio de cada servicio.</p></li>
+        <li><span>Lo sigues en tu panel</span><p>Tu área privada muestra cada día y cada reserva, en tiempo real.</p></li>
+        <li><span>Disfruta</span><p>Seguimos a un mensaje durante toda tu estancia.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="sec sec--sand" id="faq">
+    <div class="wrap faq">
+      <header class="sec__head"><p class="eyebrow">Preguntas frecuentes</p><h2 class="display display--md">Lo que todo el mundo nos pregunta.</h2></header>
+      <div class="faq__list">
+        <details><summary>¿Con cuánta antelación debo reservar?</summary><p>En julio y agosto, villas y barcos se reservan con semanas o meses de antelación. Para restaurantes y noche, unos días suelen bastar. Escríbenos cuanto antes y te decimos qué es urgente.</p></details>
+        <details><summary>¿Las villas tienen licencia turística?</summary><p>Sí. Solo trabajamos con propiedades con licencia de alquiler turístico, y su número de registro aparece en la ficha de cada villa.</p></details>
+        <details><summary>¿Necesito titulación para alquilar un barco?</summary><p>No, si lo alquilas con patrón. Si tienes titulación náutica válida, también hay opciones sin patrón según la embarcación.</p></details>
+        <details><summary>¿Dónde se pueden usar las motos de agua?</summary><p>Solo en las zonas y circuitos autorizados. Las rutas salen siempre con operadores con licencia y monitor.</p></details>
+        <details><summary>¿Cómo funcionan las mesas VIP y las guest lists?</summary><p>Reservamos directamente con cada club o beach club. Te confirmamos condiciones, consumo mínimo y horario por escrito. Acceso solo para mayores de 18 años.</p></details>
+        <details><summary>¿Quién me factura cada servicio?</summary><p>Cada proveedor con licencia factura su servicio. Nosotros cobramos una tarifa de concierge por diseñar y coordinar tu plan, siempre indicada antes de confirmar.</p></details>
+        <details><summary>¿Qué pasa si cambian mis planes?</summary><p>Te ayudamos a modificar o cancelar según las condiciones de cada proveedor, que te enviamos antes de pagar.</p></details>
+        <details><summary>¿Qué veo en el área cliente?</summary><p>Tu itinerario día a día: cada reserva, su hora, el lugar en el mapa y su estado, desde pendiente hasta completada.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="sec sec--night" id="contacto">
+    <div class="wrap contact">
+      <div class="contact__intro">
+        <p class="eyebrow eyebrow--light">Contacto</p>
+        <h2 class="display display--md">Your Ibiza experience<br><em>starts here.</em></h2>
+        <p class="lede">Elige lo que te interesa y te respondemos personalmente. Sin bots y sin esperas.</p>
+        <p class="contact__direct">También por email: <span class="selectable">meysociety@protonmail.com</span></p>
+      </div>
+      <form class="contact__form lg lg--panel" id="form" novalidate>
+        <fieldset>
+          <legend>¿Qué quieres organizar?</legend>
+          <div class="chips" id="chips"></div>
+        </fieldset>
+        <div class="grid2">
+          <label>Llegada<input type="date" id="f-from" name="from"></label>
+          <label>Salida<input type="date" id="f-to" name="to"></label>
+          <label>Personas<input type="number" id="f-people" name="people" min="1" max="40" value="2"></label>
+          <label>Nombre<input type="text" id="f-name" name="name" autocomplete="name" required></label>
+        </div>
+        <label>Cuéntanos más<textarea id="f-notes" name="notes" rows="3" placeholder="Celebración, preferencias, horarios…"></textarea></label>
+        <div class="form__actions">
+          <button class="btn btn--glass btn--lg btn--onDark" type="submit">Enviar por WhatsApp</button>
+          <p class="form__status" id="formStatus" role="status"></p>
+        </div>
+        <p class="fine fine--light">Usamos tus datos solo para responder a tu solicitud. Puedes pedir que los borremos cuando quieras.</p>
+      </form>
+    </div>
+    <footer class="foot wrap">
+      <span>Mey Society · Private concierge · Ibiza, Illes Balears</span>
+      <span>Servicios prestados por proveedores con licencia. Costa: Natural Earth (dominio público).</span>
+    </footer>
+  </section>
+</main>
+
+<!-- ============ CLIENT AREA ============ -->
+<div class="modal" id="login" hidden>
+  <div class="modal__card lg lg--panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <button class="modal__x" type="button" data-close aria-label="Cerrar">×</button>
+    <p class="eyebrow eyebrow--light">Área cliente</p>
+    <h2 id="loginTitle" class="display display--sm">Tu Ibiza, día a día.</h2>
+    <form id="loginForm">
+      <label>Email<input type="email" id="l-email" autocomplete="email" required placeholder="tu@email.com"></label>
+      <label>Código de reserva<input type="text" id="l-code" required placeholder="MEY-2027" value="MEY-DEMO"></label>
+      <button class="btn btn--glass btn--lg btn--onDark" type="submit">Entrar</button>
+      <p class="fine fine--light">Versión de demostración: cualquier email entra y muestra un itinerario de ejemplo.</p>
+    </form>
+  </div>
+</div>
+
+<div class="dash" id="dash" hidden>
+  <header class="dash__top">
+    <div><p class="eyebrow eyebrow--light">Tu estancia · <span class="demo">Ejemplo</span></p><h2 class="display display--sm" id="dashHello">Hola</h2></div>
+    <div class="dash__ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="ring-bg"/><circle cx="60" cy="60" r="52" class="ring" id="ring"/></svg><div><strong id="ringPct">0%</strong><span>completado</span></div></div>
+    <button class="btn btn--glass btn--sm btn--onDark" type="button" id="logout">Salir</button>
+  </header>
+  <nav class="dash__days" id="days" aria-label="Días"></nav>
+  <div class="dash__body">
+    <ol class="dash__events" id="events"></ol>
+    <div class="dash__map lg lg--panel"><svg viewBox="0 0 100 100" id="dashMap" aria-label="Mapa del día"></svg></div>
+  </div>
+</div>
+
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/ScrollTrigger.min.js"></script>
+<script src="vendor/lenis.min.js"></script>
+<script type="module" src="app.js"></script>
