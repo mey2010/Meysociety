@@ -22,6 +22,16 @@
 <canvas id="world" aria-hidden="true"></canvas>
 <div class="vignette" aria-hidden="true"></div>
 <div class="pins" id="pins" aria-hidden="true"></div>
+<div class="legend lg" role="group" aria-label="Mostrar en el mapa">
+  <button type="button" data-kind="club" aria-pressed="true"><i class="dot dot--club"></i>Clubs</button>
+  <button type="button" data-kind="beachclub" aria-pressed="true"><i class="dot dot--beachclub"></i>Beach clubs</button>
+  <button type="button" data-kind="beach" aria-pressed="true"><i class="dot dot--beach"></i>Playas</button>
+</div>
+<div class="venuePop lg lg--panel" id="venuePop" hidden>
+  <p data-k></p><h3></h3><p class="venuePop__c" data-c></p>
+  <button class="btn btn--glass btn--sm" type="button" data-book>Reservar con Mey Society</button>
+  <p class="venuePop__fine">Sujeto a disponibilidad de cada sala.</p>
+</div>
 
 <!-- ============ NAV: a glass pill that docks, then unfolds into the island ============ -->
 <header class="nav" id="nav">
@@ -240,7 +250,8 @@
     </div>
     <footer class="foot wrap">
       <span>Mey Society · Private concierge · Ibiza, Illes Balears</span>
-      <span>Servicios prestados por proveedores con licencia. Costa: Natural Earth (dominio público).</span>
+      <span>Servicios prestados por proveedores con licencia.</span>
+      <span class="credits">Imagen: contiene datos modificados de Copernicus Sentinel (2025). Relieve: Copernicus DEM GLO-30 © DLR e.V. 2010-2014 y © Airbus Defence and Space GmbH 2014-2018, proporcionado por COPERNICUS (Unión Europea y ESA). Lugares: © Overture Maps Foundation (CDLA-Permissive-2.0). Costa de los mapas 2D: Natural Earth.</span>
     </footer>
   </section>
 </main>

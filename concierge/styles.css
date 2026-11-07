@@ -41,6 +41,30 @@ a { color: inherit; }
 .pin i { width: 1px; height: 26px; background: linear-gradient(rgb(255 255 255 / .9), transparent); }
 .pin s { width: 8px; height: 8px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 5px rgb(255 255 255 / .18); text-decoration: none; }
 
+/* ---------------- venues on the map ---------------- */
+.venues { position: fixed; inset: 0; z-index: 1; pointer-events: none; transition: opacity 500ms var(--ease); }
+.venues.is-off { opacity: 0; visibility: hidden; }
+.venue { position: absolute; left: 0; top: 0; pointer-events: auto; display: flex; align-items: center; gap: 6px; padding: 4px; margin: -9px 0 0 -9px; border: 0; background: none; color: #fff; font: 600 11.5px/1 var(--sans); cursor: pointer; }
+.venue i { flex: none; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 6px rgb(0 0 0 / .45); }
+.venue--club i, .dot--club { background: #c86bff; }
+.venue--beachclub i, .dot--beachclub { background: #ffb547; }
+.venue--beach i, .dot--beach { background: #3fd0d4; }
+.venue span { padding: 5px 9px; border-radius: 99px; white-space: nowrap; background: rgb(8 22 34 / .55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: inset 0 1px 0 rgb(255 255 255 / .25);
+  opacity: 0; transform: translateX(-4px); transition: opacity 400ms var(--ease), transform 400ms var(--ease); }
+.venue.is-near span, .venue:hover span, .venue:focus-visible span { opacity: 1; transform: none; }
+.legend { position: fixed; left: max(14px, env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 3; display: flex; gap: 4px; padding: 5px; border-radius: 99px; color: var(--on-dark); transition: opacity 400ms; }
+.legend button { display: flex; align-items: center; gap: 7px; white-space: nowrap; height: 32px; padding: 0 12px; border: 0; border-radius: 99px; background: none; color: inherit; font: 500 12.5px var(--sans); cursor: pointer; opacity: .55; transition: opacity 200ms, background-color 200ms; }
+.legend button[aria-pressed="true"] { opacity: 1; background: rgb(255 255 255 / .12); }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.legend.is-off { opacity: 0; pointer-events: none; }
+.venuePop { position: fixed; z-index: 30; width: 280px; padding: 18px; color: var(--on-dark); }
+.venuePop[hidden] { display: none; }
+.venuePop p { margin: 0; font-size: 12px; color: var(--on-dark-soft); }
+.venuePop h3 { margin: 4px 0 2px; font: 400 30px/1 var(--serif); }
+.venuePop__c { font-variant-numeric: tabular-nums; margin-bottom: 14px !important; }
+.venuePop__fine { margin-top: 10px !important; font-size: 11px !important; }
+.credits { flex-basis: 100%; font-size: 11px; opacity: .8; }
+
 /* ---------------- liquid glass ---------------- */
 .lg { position: relative; isolation: isolate;
   background: linear-gradient(135deg, rgb(255 255 255 / .16), rgb(255 255 255 / .05));
@@ -111,7 +135,7 @@ a { color: inherit; }
 
 /* ---------------- journey ---------------- */
 .journey { position: relative; height: calc(8 * 130svh); }
-.panels { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+.panels { position: sticky; top: 0; height: 100svh; overflow: hidden; z-index: 2; }
 .panel { position: absolute; max-width: 34rem; opacity: 0; visibility: hidden; transform: translateY(18px); filter: blur(6px);
   transition: opacity 700ms var(--ease), transform 900ms var(--ease), filter 700ms var(--ease), visibility 0s 700ms; }
 .panel.is-on { opacity: 1; visibility: visible; transform: none; filter: none; transition-delay: 0s; }
@@ -296,4 +320,12 @@ input:focus, textarea:focus { outline: none; border-color: rgb(255 255 255 / .6)
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}
+
+/* glass helpers set position: relative; these two must stay fixed */
+.legend.lg, .venuePop.lg { position: fixed; }
+@media (max-width: 900px) {
+  .legend.lg { bottom: auto; top: calc(72px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); }
+  .legend button { padding: 0 10px; font-size: 12px; }
+  .venuePop.lg { left: 14px !important; right: 14px; width: auto; top: auto !important; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
 }

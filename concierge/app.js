@@ -30,14 +30,14 @@ const P = k => proj(PLACES[k].ll);
 
 // Scene keyframes: camera position, look-at target (km), time of day 0 = morning, 1 = night
 const SCENES = [
-  { where: "Ibiza",                    place: null,       pos: [6, 62, 52],      look: [-3, 0, -7],  tod: .10 },
-  { where: "Es Cubells · Cala Jondal", place: "cubells",  pos: [-3.6, 3.6, 9.2], look: [-7, 0, 1.6], tod: .22 },
-  { where: "Marina Botafoch",          place: "botafoch", pos: [6.4, 2.8, 2.8],  look: [1.8, 0, -3.8], tod: .32 },
-  { where: "Cala Bassa",               place: "bassa",    pos: [-9.6, 2.6, -3.4], look: [-15.6, 0, -9.6], tod: .42 },
-  { where: "Cala d'Hort · Es Vedrà",   place: "vedra",    pos: [-12, 2.4, -2.4], look: [-18.8, .1, 1.3], tod: .56 },
-  { where: "Dalt Vila",                place: "eivissa",  pos: [-3.6, 2.4, -8], look: [1.4, 0, -2.9], tod: .72 },
-  { where: "Platja d'en Bossa",        place: "bossa",    pos: [4.2, 2.8, 4.6],  look: [-1, 0, -.4],   tod: .9 },
-  { where: "Ibiza y Formentera",       place: null,       pos: [-9, 46, 40],     look: [-3, 0, -5],  tod: 1 },
+  { where: "Ibiza",                    place: null,       pos: [5, 56, 44],        look: [-2, 0, -4],      tod: .10 },
+  { where: "Es Cubells · Cala Jondal", place: "cubells",  pos: [-6.2, 1.25, 5.4],  look: [-9.2, .05, 1.1], tod: .22 },
+  { where: "Marina Botafoch",          place: "botafoch", pos: [5.6, .95, -.4],    look: [1.9, .02, -3.6], tod: .32 },
+  { where: "Cala Bassa",               place: "bassa",    pos: [-12.4, .85, -6.2], look: [-15.5, 0, -9.7], tod: .42 },
+  { where: "Cala d'Hort · Es Vedrà",   place: "vedra",    pos: [-14.4, 1.05, -3.8],look: [-19, .15, 1],    tod: .56 },
+  { where: "Dalt Vila",                place: "eivissa",  pos: [-2.4, 1.35, -6.6],  look: [1.4, .05, -2.9], tod: .72 },
+  { where: "Platja d'en Bossa",        place: "bossa",    pos: [3.6, 2.3, 4.4],    look: [-1.4, 0, -.6],   tod: .9 },
+  { where: "Ibiza y Formentera",       place: null,       pos: [-6, 40, 34],       look: [-2, 0, -5],      tod: 1 },
 ];
 
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -56,6 +56,7 @@ renderer.setSize(innerWidth, innerHeight, false);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.localClippingEnabled = true;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.02, 4000);
@@ -87,27 +88,42 @@ const sky = new THREE.Mesh(new THREE.SphereGeometry(1800, 48, 24), new THREE.Sha
 }));
 scene.add(sky);
 
-// ---- shallow-water mask: the real coast, blurred, so the sea turns turquoise near land
-const B = { x0: -26, x1: 24, z0: -28, z1: 30 };
-function coastMask() {
-  const c = document.createElement("canvas"); c.width = c.height = 1024;
-  const g = c.getContext("2d"); g.fillStyle = "#000"; g.fillRect(0, 0, 1024, 1024);
-  const toC = ll => { const p = proj(ll); return [(p.x - B.x0) / (B.x1 - B.x0) * 1024, (p.z - B.z0) / (B.z1 - B.z0) * 1024]; };
-  g.filter = "blur(4px)"; g.fillStyle = "#fff";
-  for (const ring of COAST) { g.beginPath(); ring.forEach((ll, i) => { const [x, y] = toC(ll); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.closePath(); g.lineWidth = 9; g.strokeStyle = "#fff"; g.stroke(); g.fill(); }
-  g.filter = "blur(1.5px)"; g.lineWidth = 3;
-  for (const ring of COAST) { g.beginPath(); ring.forEach((ll, i) => { const [x, y] = toC(ll); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.closePath(); g.stroke(); }
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.NoColorSpace; t.flipY = false; return t;
+// ---- real terrain: Copernicus DEM GLO-30 heights + Sentinel-2 true colour (22 Jun 2025)
+const BB = { lon0: 1.17, lon1: 1.65, lat0: 38.63, lat1: 39.13 };
+const TB = { x0: (BB.lon0 - LON0) * KX, x1: (BB.lon1 - LON0) * KX, z0: -(BB.lat1 - LAT0) * KZ, z1: -(BB.lat0 - LAT0) * KZ };
+const loader = new THREE.TextureLoader();
+const satTex = loader.load(NARROW ? "data/sat_2k.jpg" : "data/sat_4k.jpg", t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); t.needsUpdate = true; thumbsReady(); });
+const shallowTex = loader.load("data/shallow.png", t => { t.colorSpace = THREE.NoColorSpace; t.needsUpdate = true; });
+const HN = 640; let HGT = null;
+function heightAt(x, z) { // km → metres from the DEM
+  if (!HGT) return 0; const u = (x - TB.x0) / (TB.x1 - TB.x0), v = (z - TB.z0) / (TB.z1 - TB.z0);
+  if (u < 0 || u > 1 || v < 0 || v > 1) return 0; const i = Math.round(v * (HN - 1)), j = Math.round(u * (HN - 1));
+  return Math.max(0, HGT[i * HN + j] / 10 - 100);
 }
+const terrainReady = fetch("data/height640.png").then(r => r.blob()).then(b => createImageBitmap(b, { colorSpaceConversion: "none", premultiplyAlpha: "none" })).then(bmp => {
+  // heights are packed in a lossless PNG: R = high byte, G = low byte (decimetres + 100 m)
+  const c = document.createElement("canvas"); c.width = c.height = HN; const cx = c.getContext("2d", { willReadFrequently: true, colorSpace: "srgb" });
+  cx.drawImage(bmp, 0, 0); const d = cx.getImageData(0, 0, HN, HN).data;
+  HGT = new Uint16Array(HN * HN); for (let i = 0; i < HN * HN; i++) HGT[i] = (d[i * 4] << 8) | d[i * 4 + 1];
+  const step = NARROW ? 2 : 1, n = HN / step;
+  const g = new THREE.PlaneGeometry(TB.x1 - TB.x0, TB.z1 - TB.z0, n - 1, n - 1).rotateX(-Math.PI / 2);
+  g.translate((TB.x0 + TB.x1) / 2, 0, (TB.z0 + TB.z1) / 2);
+  const pos = g.attributes.position;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    const m = HGT[(i * step) * HN + j * step] / 10 - 100;
+    pos.setY(i * n + j, m > .6 ? m / 1000 + .003 : -.02);
+  }
+  g.computeVertexNormals();
+  const terrain = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ map: satTex, clippingPlanes: [new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)] }));
+  scene.add(terrain); placeLights();
+});
 
-// ---- ocean
+// ---- ocean: real-scale waves over the satellite's own shallows
 const ocean = new THREE.Mesh(new THREE.PlaneGeometry(3600, 3600, 1, 1).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
-  uniforms: { ...U, uMask: { value: coastMask() }, uB: { value: new THREE.Vector4(B.x0, B.x1, B.z0, B.z1) } },
+    uniforms: { ...U, uSat: { value: satTex }, uShallow: { value: shallowTex }, uB: { value: new THREE.Vector4(TB.x0, TB.x1, TB.z0, TB.z1) } },
   vertexShader: `varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position,1.); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
   fragmentShader: `
-    uniform vec3 uSun, uZenith, uHorizon, uSunCol; uniform float uTime, uNight, uGold; uniform sampler2D uMask; uniform vec4 uB; varying vec3 vW;
-    // Real-scale waves in metres. Each one fades out once it is smaller than a pixel,
-    // so distant water settles into a calm, reflective surface instead of moiré.
+    uniform vec3 uSun, uZenith, uHorizon, uSunCol; uniform float uTime, uNight, uGold; uniform sampler2D uSat, uShallow; uniform vec4 uB; varying vec3 vW;
     vec2 g = vec2(0.); float fpm;
     void wave(vec2 p, vec2 d, float lambda, float slope, float speed){
       float k = 6.2831 / lambda; float att = 1. - smoothstep(.12, .5, fpm / lambda);
@@ -129,64 +145,36 @@ const ocean = new THREE.Mesh(new THREE.PlaneGeometry(3600, 3600, 1, 1).rotateX(-
       float fres = .02 + .98 * pow(1. - max(dot(n, V), 0.), 5.);
       vec3 R = reflect(-V, n);
       vec3 skyc = mix(uHorizon, uZenith, pow(max(R.y, 0.), .45));
-      vec2 uv = vec2((vW.x - uB.x) / (uB.y - uB.x), (vW.z - uB.z) / (uB.w - uB.z));
-      float shallow = (uv.x > 0. && uv.x < 1. && uv.y > 0. && uv.y < 1.) ? texture2D(uMask, uv).r : 0.;
-      vec3 deep = mix(vec3(.02, .14, .24), vec3(.01, .03, .07), uNight);
-      vec3 turq = mix(vec3(.10, .55, .60), vec3(.03, .10, .14), uNight);
-      vec3 body = mix(deep, turq, smoothstep(.15, .85, shallow));
-      body *= mix(1., .75, uGold);
-      vec3 col = mix(body, skyc, fres * .85);
+      vec2 uv = vec2((vW.x - uB.x) / (uB.y - uB.x), 1. - (vW.z - uB.z) / (uB.w - uB.z));
+      bool inside = uv.x > 0. && uv.x < 1. && uv.y > 0. && uv.y < 1.;
+      float sh = inside ? texture2D(uShallow, uv).r : 0.;
+      vec3 sat = inside ? texture2D(uSat, uv).rgb : vec3(0.);
+      vec3 deep = mix(vec3(.015, .09, .16), vec3(.01, .025, .06), uNight);
+      vec3 body = mix(deep, sat * mix(1.08, .25, uNight), smoothstep(.1, .8, sh) * .85);
+      body *= mix(1., .8, uGold);
+      vec3 col = mix(body, skyc, fres * .8);
       float spec = pow(max(dot(R, uSun), 0.), 380.) * 7. + pow(max(dot(R, uSun), 0.), 30.) * .25 * uGold;
       col += uSunCol * spec * (1. - uNight * .9);
-      col = mix(col, uHorizon, smoothstep(60., 900., dist));
+      col = mix(col, uHorizon, smoothstep(40., 700., dist));
       gl_FragColor = vec4(col, 1.);
     }`,
 }));
 scene.add(ocean);
 
-// ---- land, from the real coastline
-function landTexture() {
-  const c = document.createElement("canvas"); c.width = c.height = 1024; const g = c.getContext("2d");
-  g.fillStyle = "#8a8160"; g.fillRect(0, 0, 1024, 1024);
-  const blot = (cols, n, r0, r1, a0, a1) => { for (let i = 0; i < n; i++) { g.fillStyle = cols[i % cols.length]; g.globalAlpha = a0 + Math.random() * (a1 - a0); const r = r0 + Math.random() * (r1 - r0); g.beginPath(); g.ellipse(Math.random() * 1024, Math.random() * 1024, r, r * (.5 + Math.random() * .6), Math.random() * 3, 0, 7); g.fill(); } };
-  blot(["#a08c64", "#b7a47c", "#7f7a52"], 260, 30, 90, .25, .5);     // dry fields and terraces
-  blot(["#3d4a2b", "#475634", "#34402a"], 5200, 2, 7, .35, .7);      // pine and juniper canopy
-  blot(["#e9e3d3", "#d9d0bd"], 900, 1, 2.2, .5, .9);                 // whitewashed houses
-  g.globalAlpha = 1;
-  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(.42, .42); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
-}
-const landTop = new THREE.MeshStandardMaterial({ map: landTexture(), roughness: 1, metalness: 0 });
-const landSide = new THREE.MeshStandardMaterial({ color: "#cdbf9f", roughness: .95 });
-for (const ring of COAST) {
-  const pts = ring.slice(0, -1).map(ll => { const p = proj(ll); return new THREE.Vector2(p.x, -p.z); });
-  const curve = new THREE.CatmullRomCurve3(pts.map(v => new THREE.Vector3(v.x, v.y, 0)), true, "centripetal");
-  const shape = new THREE.Shape(curve.getPoints(pts.length * 6).map(v => new THREE.Vector2(v.x, v.y)));
-  const geo = new THREE.ExtrudeGeometry(shape, { depth: .07, bevelEnabled: true, bevelThickness: .03, bevelSize: .08, bevelSegments: 3, curveSegments: 1 });
-  geo.rotateX(-Math.PI / 2); geo.translate(0, -.03, 0);
-  const m = new THREE.Mesh(geo, [landTop, landSide]); scene.add(m);
-}
-// Es Vedrà: a real 382 m islet off the south-west coast
-{
-  const g = new THREE.ConeGeometry(.3, .382, 28, 8);
-  const p = g.attributes.position; for (let i = 0; i < p.count; i++) { const y = p.getY(i); const k = .82 + .18 * Math.sin(i * 1.7) * (y < .18 ? 1 : .3); p.setX(i, p.getX(i) * k); p.setZ(i, p.getZ(i) * (k * .75)); }
-  g.computeVertexNormals();
-  const v = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: "#a39478", roughness: 1, flatShading: true }));
-  const q = P("vedra"); v.position.set(q.x, .19, q.z); v.rotation.y = .6; scene.add(v);
-}
-
-// ---- town lights for the night
+// ---- town lights for the night, sitting on the real terrain
 const TOWNS = ["eivissa", "botafoch", "bossa", "santantoni", "santaeul", "santjosep", "santjoan", "savina", "cubells", "airport"];
-{
+const lightsMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: U,
+  vertexShader: `attribute float s; uniform float uNight; varying float vA; void main(){ vec4 mv = modelViewMatrix * vec4(position,1.); gl_PointSize = s * 70. / -mv.z + 1.5; vA = uNight; gl_Position = projectionMatrix * mv; }`,
+  fragmentShader: `varying float vA; void main(){ float d = length(gl_PointCoord - .5); float a = smoothstep(.5, 0., d); gl_FragColor = vec4(1., .78, .5, a * vA); }` });
+function placeLights() {
   const pos = [], size = [];
-  for (const k of TOWNS) { const c = P(k); const n = k === "eivissa" || k === "santantoni" ? 90 : 34; for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, r = Math.random() ** .6 * (n > 40 ? 1.4 : .7); pos.push(c.x + Math.cos(a) * r, .1, c.z + Math.sin(a) * r * .8); size.push(.6 + Math.random()); } }
+  for (const k of TOWNS) { const c = P(k); const n = k === "eivissa" || k === "santantoni" ? 110 : 40; for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, r = Math.random() ** .6 * (n > 60 ? 1.3 : .6); const x = c.x + Math.cos(a) * r, z = c.z + Math.sin(a) * r * .8, h = heightAt(x, z); if (h < 1) continue; pos.push(x, h / 1000 + .012, z); size.push(.6 + Math.random()); } }
   const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("s", new THREE.Float32BufferAttribute(size, 1));
-  scene.add(new THREE.Points(g, new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: U,
-    vertexShader: `attribute float s; uniform float uNight; varying float vA; void main(){ vec4 mv = modelViewMatrix * vec4(position,1.); gl_PointSize = s * 70. / -mv.z + 1.5; vA = uNight; gl_Position = projectionMatrix * mv; }`,
-    fragmentShader: `varying float vA; void main(){ float d = length(gl_PointCoord - .5); float a = smoothstep(.5, 0., d); gl_FragColor = vec4(1., .78, .5, a * vA); }` })));
+  scene.add(new THREE.Points(g, lightsMat));
 }
 
-const sun = new THREE.DirectionalLight("#fff", 2.4); scene.add(sun);
-const hemi = new THREE.HemisphereLight("#cfe6f2", "#6b5b44", .9); scene.add(hemi);
+const sun = new THREE.DirectionalLight("#fff", 1.1); scene.add(sun);
+const hemi = new THREE.HemisphereLight("#ffffff", "#8a7a60", 1.6); scene.add(hemi);
 
 // ---- time of day
 const C = (h) => new THREE.Color(h);
@@ -203,8 +191,8 @@ function setTime(t) {
   const mix3 = (k, out) => out.copy(PAL.day[k]).lerp(PAL.gold[k], gold).lerp(PAL.night[k], night);
   mix3("z", U.uZenith.value); mix3("h", U.uHorizon.value); mix3("s", U.uSunCol.value);
   U.uGold.value = gold; U.uNight.value = night;
-  sun.position.copy(U.uSun.value).multiplyScalar(100); sun.color.copy(U.uSunCol.value); sun.intensity = lerp(2.6, .05, night) * (1 - .25 * gold);
-  hemi.color.copy(U.uZenith.value).lerp(tmp.set("#ffffff"), .35); hemi.intensity = lerp(1, .18, night);
+  sun.position.copy(U.uSun.value).multiplyScalar(100); sun.color.copy(U.uSunCol.value); sun.intensity = lerp(1.1, .02, night) * (1 + .4 * gold);
+  hemi.color.set("#ffffff").lerp(U.uHorizon.value, .35 + .4 * gold); hemi.intensity = lerp(1.6, .09, night) * (1 - .25 * gold);
   renderer.toneMappingExposure = lerp(1, .85, night);
 }
 
@@ -270,6 +258,48 @@ function placePin() {
   pin.style.visibility = v3.z < 1 ? "visible" : "hidden";
 }
 
+/* ---- venues: real clubs, beach clubs and beaches pinned on the terrain ---- */
+const KIND = { club: "Club", beachclub: "Beach club", beach: "Playa" };
+const venues = []; const show = { club: true, beachclub: true, beach: true };
+const venueLayer = document.createElement("div"); venueLayer.className = "venues"; document.body.append(venueLayer);
+const pop = document.getElementById("venuePop");
+fetch("data/places.json").then(r => r.json()).then(list => {
+  for (const v of list) {
+    const q = proj([v.lon, v.lat]); const el = document.createElement("button");
+    el.type = "button"; el.className = `venue venue--${v.type}`; el.innerHTML = `<i></i><span>${v.name}</span>`; el.setAttribute("aria-label", `${KIND[v.type]}: ${v.name}, ${v.area}`);
+    el.addEventListener("click", () => openVenue(v, el)); venueLayer.append(el);
+    venues.push({ v, el, p: new THREE.Vector3(q.x, (v.alt || 2) / 1000 + .01, q.z) });
+  }
+});
+document.querySelectorAll(".legend [data-kind]").forEach(b => b.addEventListener("click", () => { const k = b.dataset.kind; show[k] = !show[k]; b.setAttribute("aria-pressed", show[k]); }));
+const vv = new THREE.Vector3(); const legendEl = document.querySelector(".legend");
+function placeVenues() {
+  const inJourney = journey.getBoundingClientRect().bottom > innerHeight * .5;
+  venueLayer.classList.toggle("is-off", !inJourney || !document.getElementById("dash").hidden);
+  legendEl.classList.toggle("is-off", !inJourney || !document.getElementById("dash").hidden);
+  if (!inJourney) return;
+  for (const o of venues) {
+    vv.copy(o.p).project(camera);
+    const d = camera.position.distanceTo(o.p);
+    const ok = show[o.v.type] && vv.z < 1 && Math.abs(vv.x) < 1.1 && Math.abs(vv.y) < 1.1 && d < 26;
+    o.el.style.display = ok ? "" : "none"; if (!ok) continue;
+    o.el.style.transform = `translate(${((vv.x * .5 + .5) * innerWidth).toFixed(1)}px, ${((-vv.y * .5 + .5) * innerHeight).toFixed(1)}px)`;
+    o.el.classList.toggle("is-near", d < 7.5);
+    o.el.style.zIndex = String(1000 - Math.round(d * 10));
+  }
+}
+function openVenue(v, el) {
+  pop.hidden = false;
+  pop.querySelector("[data-k]").textContent = KIND[v.type] + " · " + v.area;
+  pop.querySelector("h3").textContent = v.name;
+  pop.querySelector("[data-c]").textContent = `${Math.abs(v.lat).toFixed(4)}°N · ${v.lon.toFixed(4)}°E`;
+  const svc = v.type === "club" ? "noche" : v.type === "beachclub" ? "beach" : null;
+  const b = pop.querySelector("[data-book]"); b.hidden = !svc;
+  b.onclick = () => { pop.hidden = true; if (svc) select(svc, true); document.getElementById("f-notes").value = `Me interesa ${v.name} (${v.area}).`; const t = document.getElementById("contacto"); lenis ? lenis.scrollTo(t, { duration: 1.6 }) : t.scrollIntoView(); };
+  const r = el.getBoundingClientRect(); pop.style.left = Math.min(innerWidth - 300, Math.max(12, r.left - 20)) + "px"; pop.style.top = Math.max(80, r.top - 170) + "px";
+}
+document.addEventListener("pointerdown", e => { if (!pop.hidden && !e.target.closest("#venuePop, .venue")) pop.hidden = true; });
+
 /* ---- render loop ---- */
 const clock = new THREE.Clock();
 let worldVisible = true;
@@ -283,11 +313,12 @@ function frame() {
   cam.p.lerp(want.p, REDUCED ? 1 : 1 - Math.pow(.02, dt)); cam.l.lerp(want.l, REDUCED ? 1 : 1 - Math.pow(.02, dt));
   // a breath of handheld drift so the shot never feels frozen
   const br = REDUCED ? 0 : 1;
-  camera.position.set(cam.p.x + Math.sin(U.uTime.value * .21) * .02 * br * cam.p.y ** .5, cam.p.y + Math.sin(U.uTime.value * .33) * .01 * br, cam.p.z);
+  const ang = br * Math.sin(U.uTime.value * .045) * .16, ox = cam.p.x - cam.l.x, oz = cam.p.z - cam.l.z;
+  camera.position.set(cam.l.x + ox * Math.cos(ang) - oz * Math.sin(ang), cam.p.y + Math.sin(U.uTime.value * .3) * .006 * br * cam.p.y, cam.l.z + ox * Math.sin(ang) + oz * Math.cos(ang));
   camera.lookAt(cam.l);
   const near = clamp(camera.position.y * .15, .02, 8); if (Math.abs(near - camera.near) > .005) { camera.near = near; camera.updateProjectionMatrix(); }
   todNow = lerp(todNow, tod, k); setTime(todNow);
-  updateUI(); placePin();
+  updateUI(); placePin(); placeVenues();
   if (worldVisible || document.getElementById("dash").hidden === false) renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
@@ -500,4 +531,5 @@ function showDay(d) {
 setTime(SCENES[0].tod);
 renderer.compile(scene, camera);
 requestAnimationFrame(frame);
-(window.requestIdleCallback || setTimeout)(() => { try { renderThumbs(); } catch (err) { console.warn(err); } }, { timeout: 1500 });
+let thumbsDone = false;
+function thumbsReady() { terrainReady.then(() => { if (thumbsDone) return; thumbsDone = true; setTimeout(() => { try { renderThumbs(); } catch (err) { console.warn(err); } }, 300); }); }
