@@ -63,7 +63,7 @@ const SM = (() => {
   let onLight = false;
   function checkGround() {
     const el = document.elementsFromPoint(innerWidth / 2, 44).find(n => n.matches?.("section"));
-    const light = !!el && (el.classList.contains("sec--light") || el.classList.contains("sec--mist"));
+    const light = !!el && !el.classList.contains("sec--night");
     if (light === onLight) return; onLight = light; root.classList.toggle("sm-on-light", light);
     if (!open) gsap.to(btn, { color: light ? "#0d0a38" : "#ffffff", duration: .3, overwrite: "auto" });
   }
@@ -260,37 +260,49 @@ document.getElementById("popBook").addEventListener("click", () => {
   let W = 0, H = 0;
   function size() { W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
   size(); addEventListener("resize", size);
-  // pre-rendered glow sprites in the brand colours
+  // soft dots in the brand colours, drawn normally so they read on white
   const sprite = col => { const c = document.createElement("canvas"); c.width = c.height = 32; const g = c.getContext("2d"); const r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
-    r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(.18, col); r.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = r; g.fillRect(0, 0, 32, 32); return c; };
-  const SPR = [sprite("rgba(120,199,228,.9)"), sprite("rgba(81,92,159,.85)"), sprite("rgba(30,36,187,.9)"), sprite("rgba(171,80,219,.9)")];
+    r.addColorStop(0, col); r.addColorStop(.45, col); r.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = r; g.fillRect(0, 0, 32, 32); return c; };
+  const SPR = [sprite("rgba(120,199,228,1)"), sprite("rgba(81,92,159,1)"), sprite("rgba(30,36,187,1)"), sprite("rgba(171,80,219,1)")];
   let mx = 0, my = 0, tmx = 0, tmy = 0, t0 = performance.now();
   addEventListener("pointermove", e => { tmx = e.clientX / innerWidth - .5; tmy = e.clientY / innerHeight - .5; }, { passive: true });
+  // pressing anywhere sends a ripple through the drape from that point
+  const ripples = [];
+  addEventListener("pointerdown", e => {
+    if (e.target.closest("a, button, input, textarea, .map, .pop, .staggered-menu-panel, .modal, .dash")) return;
+    ripples.push({ x: e.clientX, y: e.clientY, t: performance.now() }); if (ripples.length > 5) ripples.shift();
+    if (REDUCED) draw(performance.now());
+  }, { passive: true });
   function draw(now) {
     const t = (now - t0) / 1000, sc = scrollY / Math.max(1, innerHeight);
     mx += (tmx - mx) * .04; my += (tmy - my) * .04;
-    cx.clearRect(0, 0, W, H); cx.globalCompositeOperation = "lighter";
+    for (let r = ripples.length - 1; r >= 0; r--) if (now - ripples[r].t > 2600) ripples.splice(r, 1);
+    cx.clearRect(0, 0, W, H);
     const ry = .5 + mx * .5 + Math.sin(t * .07) * .25, rx = 1.05 + my * .25, cy = Math.cos(ry), sy = Math.sin(ry), cxr = Math.cos(rx), sxr = Math.sin(rx);
-    const F = Math.min(W, H) * 1.25, scale = Math.max(W, H) * .62;
+    const F = Math.min(W, H) * 1.25, scale = Math.max(W, H) * .62, R = Math.max(W, H);
     for (let j = 0; j < ROWS; j++) {
       const v = j / (ROWS - 1) * 2 - 1;
       for (let i = 0; i < COLS; i++) {
         const u = i / (COLS - 1) * 2 - 1;
-        // the fold: three travelling waves plus a slow scroll-driven twist
         const z = Math.sin(u * 2.3 + t * .55 + sc * .6) * .32 + Math.sin(v * 3.1 - t * .7) * .22 + Math.sin((u + v) * 1.6 + t * .35) * .18 + Math.cos(u * v * 3 + sc * .4) * .1;
         const x = u * 1.5, y = v;
-        // rotate (y-axis then x-axis) and project
         const x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
         const y2 = y * cxr - z1 * sxr, z2 = y * sxr + z1 * cxr + 3.2;
-        const px = W / 2 + x1 * scale / z2 * 1.6, py = H * .52 + y2 * scale / z2 * 1.6;
+        let px = W / 2 + x1 * scale / z2 * 1.6, py = H * .52 + y2 * scale / z2 * 1.6, boost = 0;
+        for (const rp of ripples) { // a ring travelling outward, fading as it goes
+          const age = (now - rp.t) / 1000, dx = px - rp.x, dy = py - rp.y, d = Math.hypot(dx, dy) || 1;
+          const front = age * R * .55, band = Math.exp(-((d - front) ** 2) / (2 * (60 + age * 50) ** 2)), fade = Math.exp(-age * 1.4);
+          const w = Math.sin((d - front) * .045) * band * fade;
+          px += dx / d * w * 26; py += dy / d * w * 26 - band * fade * 14; boost += band * fade;
+        }
         if (px < -20 || px > W + 20 || py < -20 || py > H + 20) continue;
-        const depth = clamp((4.4 - z2) / 2.4), s = (1.6 + depth * 5.5) * (F / 1000);
+        const depth = clamp((4.4 - z2) / 2.4), s = (1.1 + depth * 3.6 + boost * 2.5) * (F / 1000);
         const k = clamp((z + .7) / 1.4); const spr = SPR[Math.min(3, Math.floor(k * 4))];
-        cx.globalAlpha = .12 + depth * .5;
+        cx.globalAlpha = Math.min(1, .1 + depth * .45 + boost * .5);
         cx.drawImage(spr, px - s, py - s, s * 2, s * 2);
       }
     }
-    cx.globalAlpha = 1; cx.globalCompositeOperation = "source-over";
+    cx.globalAlpha = 1;
   }
   if (REDUCED) draw(performance.now());
   else (function loop(now) { if (!document.hidden) draw(now); requestAnimationFrame(loop); })(performance.now());
