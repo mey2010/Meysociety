@@ -3,6 +3,18 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "No encontramos ese itinerario. Revisa el email y el código de reserva.": ["We couldn't find that itinerary. Check the email and booking code.", "Non troviamo questo itinerario. Controlla email e codice di prenotazione.", "Itinéraire introuvable. Vérifiez l'email et le code de réservation.", "Reiseplan nicht gefunden. Prüfe E-Mail und Buchungscode."],
+  "Prueba con el código MEY-DEMO para ver un itinerario de ejemplo.": ["Try the code MEY-DEMO to see a sample itinerary.", "Prova il codice MEY-DEMO per vedere un itinerario di esempio.", "Essayez le code MEY-DEMO pour voir un itinéraire d'exemple.", "Probiere den Code MEY-DEMO für einen Beispielplan."],
+  "Cliente": ["Client", "Cliente", "Client", "Kunde"],
+  "Tu estancia": ["Your stay", "Il tuo soggiorno", "Votre séjour", "Dein Aufenthalt"],
+  "personas": ["guests", "persone", "personnes", "Personen"],
+  "Día": ["Day", "Giorno", "Jour", "Tag"],
+  "Ahora": ["Now", "Ora", "Maintenant", "Jetzt"],
+  "completados": ["completed", "completati", "terminés", "erledigt"],
+  "Tu ruta desde el aeropuerto": ["Your route from the airport", "Il tuo percorso dall'aeroporto", "Votre itinéraire depuis l'aéroport", "Deine Route ab dem Flughafen"],
+  "Recorrido": ["Travelled", "Percorso", "Parcouru", "Zurückgelegt"],
+  "Próximo": ["Next", "Prossimo", "À venir", "Als Nächstes"],
+  "Pendiente": ["Pending", "In attesa", "En attente", "Ausstehend"],
   "Menú": ["Menu", "Menu", "Menu", "Menü"],
   "Cerrar": ["Close", "Chiudi", "Fermer", "Schließen"],
   "Home": ["Home", "Home", "Accueil", "Start"],

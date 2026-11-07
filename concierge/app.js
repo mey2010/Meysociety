@@ -1,6 +1,7 @@
 /* Mey Society · Ibiza — illustrated island map, StaggeredMenu + BranchedMenu, services, client area. */
 import { ICONS } from "./icons.js";
 import { LANGS, t, msg, venueInfo, translateTree, setLang, getLang } from "./i18n.js";
+import { TEMPLATES, fromTemplate, newCode, loadAll, saveAll, findForClient, timeline } from "./itineraries.js";
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const FINE = matchMedia("(hover: hover) and (pointer: fine)").matches;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -240,14 +241,18 @@ document.getElementById("popBook").addEventListener("click", () => {
     (function idle() {
       setTimeout(() => {
         if (!document.hidden && intro.getBoundingClientRect().bottom > 0) {
-          const c = chars[Math.floor(Math.random() * chars.length)];
-          c.classList.remove("on"); c.classList.add("dim");
-          setTimeout(() => { c.classList.add("on"); c.classList.remove("dim"); }, 70);
-          setTimeout(() => { c.classList.remove("on"); }, 140);
-          setTimeout(() => { c.classList.add("on"); c.classList.remove("dim"); }, 210);
+          const pick = Math.random() < .35 ? 2 : 1;
+          for (let k = 0; k < pick; k++) {
+            const c = chars[Math.floor(Math.random() * chars.length)], d = k * 60;
+            setTimeout(() => { c.classList.remove("on"); c.classList.add("dim"); }, d);
+            setTimeout(() => { c.classList.add("on"); c.classList.remove("dim"); }, d + 60);
+            setTimeout(() => { c.classList.remove("on"); }, d + 120);
+            setTimeout(() => { c.classList.add("on"); c.classList.remove("dim"); }, d + 190);
+            if (Math.random() < .3) { setTimeout(() => { c.classList.remove("on"); c.classList.add("dim"); }, d + 260); setTimeout(() => { c.classList.add("on"); c.classList.remove("dim"); }, d + 330); }
+          }
         }
         idle();
-      }, 2600 + Math.random() * 3600);
+      }, 650 + Math.random() * 1300);
     })();
   }
 }
@@ -268,6 +273,7 @@ document.getElementById("popBook").addEventListener("click", () => {
     r.addColorStop(0, col); r.addColorStop(.45, col); r.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = r; g.fillRect(0, 0, 32, 32); return c; };
   // the six colours sampled from the logo, dark to light along the fold
   const SPR = ["#0d0a38", "#292467", "#1e24bb", "#515c9f", "#78c7e4", "#ab50db"].map(sprite);
+  const MAG = ["#6a2f85", "#9242b3", "#ab50db", "#c856e6", "#c856e6"].map(sprite); // the logo's magenta/pink, light to bright
   let mx = 0, my = 0, tmx = 0, tmy = 0, t0 = performance.now();
   addEventListener("pointermove", e => { tmx = e.clientX / innerWidth - .5; tmy = e.clientY / innerHeight - .5; }, { passive: true });
   // pressing anywhere sends a ripple through the drape from that point
@@ -302,7 +308,8 @@ document.getElementById("popBook").addEventListener("click", () => {
         }
         if (px < -20 || px > W + 20 || py < -20 || py > H + 20) continue;
         const depth = clamp((4.4 - z2) / 2.4), s = (1.1 + depth * 3.6 + boost * 2.5) * (F / 1000);
-        const k = clamp((z + .7) / 1.4); const spr = SPR[Math.min(5, Math.floor(k * 6))];
+        const k = clamp((z + .7) / 1.4), hsh = Math.abs(Math.sin(i * 12.9898 + j * 78.233) * 43758.5453) % 1;
+        const spr = hsh < .55 ? MAG[Math.min(4, Math.floor(k * 5))] : SPR[Math.min(5, Math.floor(k * 6))];
         cx.globalAlpha = Math.min(1, (.1 + depth * .45) * fadeOut + boost * .5);
         cx.drawImage(spr, px - s, py - s, s * 2, s * 2);
       }
@@ -491,73 +498,169 @@ document.getElementById("form").addEventListener("submit", e => {
 });
 
 /* =====================================================================
-   CLIENT AREA (demo data, clearly labelled)
+   CLIENT AREA + ADMIN
    ===================================================================== */
-const ICON = {
-  car: '<path d="M3 13l2-5h14l2 5v5h-3v-2H6v2H3z M6 13h12" fill="none" stroke="currentColor" stroke-width="1.6"/>',
-  home: '<path d="M4 11l8-6 8 6v8H4z M10 19v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.6"/>',
-  boat: '<path d="M3 15h18l-3 4H6z M12 4v10 M12 5l6 8H12" fill="none" stroke="currentColor" stroke-width="1.6"/>',
-  dish: '<path d="M4 15a8 8 0 0116 0z M2 17h20 M12 5v2" fill="none" stroke="currentColor" stroke-width="1.6"/>',
-  wave: '<path d="M2 14c3-3 5 3 8 0s5 3 8 0 3 0 4 0 M2 18c3-3 5 3 8 0s5 3 8 0" fill="none" stroke="currentColor" stroke-width="1.6"/>',
-  sun: '<circle cx="12" cy="13" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 4v3M4 13h3M17 13h3M6 7l2 2M18 7l-2 2" stroke="currentColor" stroke-width="1.6"/>',
-  star: '<path d="M12 3l2.6 5.6 6 .6-4.5 4 1.3 6L12 16l-5.4 3.2 1.3-6-4.5-4 6-.6z" fill="none" stroke="currentColor" stroke-width="1.6"/>',
-  check: '<path d="M5 12l4 4 10-10" fill="none" stroke="currentColor" stroke-width="2.2"/>',
-};
-const PLAN = [
-  { t: "Llegada", ev: [["14:30", "Transfer privado", "Aeropuerto a tu villa", "airport", "car"], ["16:00", "Check-in en la villa", "Es Cubells", "cubells", "home"], ["21:00", "Cena del chef privado", "En la villa", "cubells", "dish"]] },
-  { t: "Mar", ev: [["10:30", "Salida en barco", "Marina Botafoch", "botafoch", "boat"], ["13:30", "Comida a bordo", "Formentera", "savina", "dish"], ["19:30", "Regreso a puerto", "Marina Botafoch", "botafoch", "boat"]] },
-  { t: "Costa oeste", ev: [["11:00", "Ruta en moto de agua", "Cala Bassa", "bassa", "wave"], ["15:00", "Beach club", "Ses Salines", "salines", "sun"], ["20:00", "Atardecer", "Sant Antoni", "santantoni", "sun"]] },
-  { t: "Interior", ev: [["10:00", "Coche descapotable", "Entregado en la villa", "cubells", "car"], ["12:30", "Mirador de Es Vedrà", "Cala d'Hort", "hort", "sun"], ["21:00", "Cena al atardecer", "Dalt Vila", "eivissa", "dish"]] },
-  { t: "Noche", ev: [["17:00", "Beach club", "Platja d'en Bossa", "bossa", "sun"], ["23:30", "Mesa VIP", "Platja d'en Bossa", "bossa", "star"], ["04:00", "Chófer de vuelta", "A tu villa", "cubells", "car"]] },
-  { t: "Salida", ev: [["11:00", "Check-out", "Es Cubells", "cubells", "home"], ["13:00", "Transfer al aeropuerto", "Aeropuerto", "airport", "car"]] },
-];
-const TODAY = 2; // demo: the guest is on day 3
-const modal = document.getElementById("login"), dash = document.getElementById("dash");
-function closeModal() { modal.hidden = true; }
-function openLogin() { modal.hidden = false; document.getElementById("l-email").focus(); }
-modal.addEventListener("click", e => { if (e.target === modal || e.target.closest("[data-close]")) closeModal(); });
-document.getElementById("loginForm").addEventListener("submit", e => {
-  e.preventDefault(); const em = document.getElementById("l-email").value.trim();
-  closeModal(); openDash(em.split("@")[0] || "invitado");
-});
-document.getElementById("logout").addEventListener("click", () => { dash.hidden = true; document.body.style.overflow = ""; });
-function status(d, i) {
-  if (d < TODAY) return "done"; if (d > TODAY) return "next";
-  const h = new Date().getHours() + new Date().getMinutes() / 60; const [eh, em] = PLAN[d].ev[i][0].split(":").map(Number); const t = eh + em / 60;
-  const nxt = PLAN[d].ev.findIndex(x => { const [a, b] = x[0].split(":").map(Number); return a + b / 60 > h; });
-  return t <= h ? (i === nxt - 1 || (nxt === -1 && i === PLAN[d].ev.length - 1) ? "now" : "done") : "next";
-}
-function openDash(name) {
-  dash.hidden = false; document.body.style.overflow = "hidden";
-  document.getElementById("dashHello").textContent = `${msg("hello", "Hola")}, ${name.charAt(0).toUpperCase() + name.slice(1)}`;
-  const start = new Date(); start.setDate(start.getDate() - TODAY);
-  const days = document.getElementById("days"); days.innerHTML = "";
-  let total = 0, done = 0;
-  PLAN.forEach((d, i) => {
-    const date = new Date(start); date.setDate(start.getDate() + i);
-    const st = d.ev.map((_, j) => status(i, j)); const f = st.filter(s => s === "done").length / st.length;
-    total += st.length; done += st.filter(s => s === "done").length;
-    days.insertAdjacentHTML("beforeend", `<button class="day${i === TODAY ? " is-today" : ""}" data-d="${i}" aria-current="${i === TODAY}"><small>${date.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" })}</small><b>${d.t}</b><span class="bar"><i style="width:${(f * 100).toFixed(0)}%"></i></span></button>`);
-  });
-  const pct = Math.round(done / total * 100);
-  document.getElementById("ringPct").textContent = pct + "%";
-  requestAnimationFrame(() => { document.getElementById("ring").style.strokeDashoffset = (327 * (1 - pct / 100)).toFixed(1); });
-  showDay(TODAY);
-  days.onclick = e => { const b = e.target.closest(".day"); if (!b) return; days.querySelectorAll(".day").forEach(x => x.setAttribute("aria-current", x === b)); showDay(+b.dataset.d); };
-}
-function showDay(d) {
-  queueMicrotask(() => translateTree(document.getElementById("dash")));
-  const ol = document.getElementById("events"); ol.innerHTML = "";
-  const map = document.getElementById("dashMap"); map.setAttribute("viewBox", `0 0 ${MAP.w} ${MAP.h}`); map.innerHTML = `<path class="land" d="${MAP.coast.join("")}"/>`;
-  const pts = [];
-  PLAN[d].ev.forEach(([time, title, where, place, icon], j) => {
-    const s = status(d, j);
-    ol.insertAdjacentHTML("beforeend", `<li class="ev ev--${s}" style="--i:${j}"><span class="ev__dot"><svg viewBox="0 0 24 24" aria-hidden="true">${s === "done" ? ICON.check : ICON[icon]}</svg></span><div class="ev__card"><div class="ev__meta"><span>${time}</span><span>${PLACES[place].name}</span><span class="ev__state">${s === "done" ? "Completado" : s === "now" ? "En curso" : "Confirmado"}</span></div><h4>${title}</h4><p>${where}</p></div></li>`);
-    pts.push([...toSVG(PLACES[place].ll), s, PLACES[place].name]);
-  });
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("class", "route"); path.setAttribute("d", "M" + pts.map(p => p[0].toFixed(2) + "," + p[1].toFixed(2)).join("L")); map.append(path);
-  pts.forEach(([x, y, s, n], i) => map.insertAdjacentHTML("beforeend", `<circle class="mk mk--${s}" cx="${x}" cy="${y}" r="9"/><text x="${x + 14}" y="${y + 5 + (i % 2) * 16}">${n}</text>`));
-  if (!REDUCED) gsap.fromTo(path, { strokeDashoffset: 60 }, { strokeDashoffset: 0, duration: 2, ease: "power2.out" });
-}
+const STEP_ICON = { car: "car", home: "home", boat: "boat", dish: "chef", wave: "jet", sun: "sun", star: "star" };
+const modal = document.getElementById("login"), dash = document.getElementById("dash"), admin = document.getElementById("admin");
+const fmtDate = (d, o) => d.toLocaleDateString(getLang() === "es" ? "es-ES" : getLang(), o);
+let viewing = null, viewingDay = 0, fromAdmin = false;
 
+// ---- login: client (email + booking code) or admin (user + password) ----
+function closeModal() { modal.hidden = true; }
+function openLogin() { modal.hidden = false; setTab("client"); document.getElementById("l-email").focus(); }
+modal.addEventListener("click", e => { if (e.target === modal || e.target.closest("[data-close]")) closeModal(); });
+function setTab(t) {
+  const c = t === "client";
+  document.getElementById("tabClient").setAttribute("aria-selected", c); document.getElementById("tabAdmin").setAttribute("aria-selected", !c);
+  document.getElementById("loginForm").hidden = !c; document.getElementById("adminForm").hidden = c;
+}
+document.getElementById("tabClient").addEventListener("click", () => setTab("client"));
+document.getElementById("tabAdmin").addEventListener("click", () => { setTab("admin"); document.getElementById("a-user").focus(); });
+document.getElementById("loginForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const rec = findForClient(document.getElementById("l-email").value, document.getElementById("l-code").value);
+  const st = document.getElementById("loginStatus");
+  if (!rec) { st.textContent = t("No encontramos ese itinerario. Revisa el email y el código de reserva."); return; }
+  st.textContent = ""; closeModal(); fromAdmin = false; openDash(rec);
+});
+// Admin credentials. Only a SHA-256 hash is stored here; change the password before going live.
+const ADMIN = { user: "admin", hash: "d9011c261d3d9fc3833cb64f4ff3178b1995bf6b3fc6bf04c59e3bf95a50f3c4" };
+const sha256 = async txt => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(txt)))].map(b => b.toString(16).padStart(2, "0")).join("");
+document.getElementById("adminForm").addEventListener("submit", async e => {
+  e.preventDefault(); const st = document.getElementById("adminStatus");
+  const ok = document.getElementById("a-user").value.trim() === ADMIN.user && await sha256(document.getElementById("a-pass").value) === ADMIN.hash;
+  if (!ok) { st.textContent = "Usuario o contraseña incorrectos."; return; }
+  st.textContent = ""; document.getElementById("a-pass").value = ""; try { sessionStorage.setItem("mey-admin", "1"); } catch {}
+  closeModal(); openAdmin();
+});
+
+// ---- client dashboard ----
+function openDash(rec) {
+  viewing = rec; dash.hidden = false; admin.hidden = true; document.body.style.overflow = "hidden";
+  document.getElementById("dashBack").hidden = !fromAdmin;
+  const name = rec.demo ? (document.getElementById("l-email").value.split("@")[0] || rec.name) : rec.name.split(" ")[0];
+  document.getElementById("dashHello").textContent = `${msg("hello", "Hola")}, ${name.charAt(0).toUpperCase() + name.slice(1)}`;
+  document.getElementById("dashPack").textContent = `${rec.pack} · ${rec.guests} ${t("personas")}`;
+  const s = new Date(rec.start + "T12:00:00"), e = new Date(s); e.setDate(s.getDate() + rec.days.length - 1);
+  document.getElementById("dashDates").textContent = `${fmtDate(s, { day: "numeric", month: "long" })} – ${fmtDate(e, { day: "numeric", month: "long", year: "numeric" })}`;
+  renderDash(true);
+}
+function renderDash(first) {
+  const rec = viewing, tl = timeline(rec);
+  if (first) viewingDay = tl.state === "upcoming" ? 0 : tl.state === "finished" ? rec.days.length - 1 : tl.today;
+  document.getElementById("ringPct").textContent = tl.pct + "%";
+  requestAnimationFrame(() => { document.getElementById("ring").style.strokeDashoffset = (327 * (1 - tl.pct / 100)).toFixed(1); });
+  const days = document.getElementById("days"); days.innerHTML = "";
+  rec.days.forEach((d, i) => {
+    const date = new Date(rec.start + "T12:00:00"); date.setDate(date.getDate() + i);
+    const evs = tl.flat.filter(x => x.d === i), f = evs.filter(x => x.status === "done").length / Math.max(1, evs.length);
+    days.insertAdjacentHTML("beforeend", `<button class="day${i === tl.today && tl.state === "active" ? " is-today" : ""}" data-d="${i}" aria-current="${i === viewingDay}"><small>${fmtDate(date, { weekday: "short", day: "numeric", month: "short" })}</small><b>${t(d.title)}</b><span class="bar"><i style="width:${(f * 100).toFixed(0)}%"></i></span></button>`);
+  });
+  days.onclick = e => { const b = e.target.closest(".day"); if (!b) return; viewingDay = +b.dataset.d; renderDash(false); };
+  renderFlow(tl); renderRoute(tl);
+  translateTree(dash);
+}
+// MagicBento "automation" process: trigger tile + steps that wait, run and complete, on a filling rail
+function renderFlow(tl) {
+  const rec = viewing, d = viewingDay, evs = tl.flat.filter(x => x.d === d);
+  const date = new Date(rec.start + "T12:00:00"); date.setDate(date.getDate() + d);
+  const doneN = evs.filter(e => e.status === "done").length + (evs.some(e => e.status === "now") ? .5 : 0);
+  const now = evs.find(e => e.status === "now");
+  const flow = document.getElementById("flow");
+  flow.innerHTML = `<div class="mb-header"><span class="mb-dot"></span><span>${t("Día")} ${d + 1} · ${fmtDate(date, { weekday: "long", day: "numeric", month: "long" })}</span></div>
+    <div class="mb-flow" style="--n:${evs.length};--fill:${(evs.length > 1 ? Math.min(1, doneN / (evs.length - 1)) : doneN ? 1 : 0).toFixed(3)}">
+      <div class="mb-trigger mb-tile"><span class="mb-glyph">${ICONS[d === 0 ? "plane" : "calendar"]}</span>
+        <span class="mb-flow-copy"><span class="mb-flow-name">${t(rec.days[d].title)}</span><span class="mb-flow-meta">${now ? `${t("Ahora")}: ${t(now.title)} · ${PLACES[now.place].name}` : evs.length ? `${evs.filter(e => e.status === "done").length}/${evs.length} ${t("completados")}` : ""}</span></span></div>
+      <ol class="mb-steps mb-well"><span class="mb-rail" aria-hidden="true"><span class="mb-rail-fill"></span></span>
+        ${evs.map((e, i) => `<li class="mb-step mb-step--${e.status}" style="--i:${i}">
+          <span class="mb-status" aria-label="${e.status === "done" ? "Completado" : e.status === "now" ? "En curso" : "Pendiente"}"><span class="mb-pending"></span><span class="mb-spinner"></span><span class="mb-done">${ICONS.tick}</span></span>
+          <span class="mb-step-icon" aria-hidden="true">${ICONS[STEP_ICON[e.icon]] || ""}</span>
+          <span class="mb-step-copy"><b>${t(e.title)}</b><small>${ICONS.pin}${PLACES[e.place].name}</small></span>
+          <span class="mb-step-time">${e.time}</span></li>`).join("")}
+      </ol></div>`;
+  flow.closest(".mb-card").classList.remove("is-in"); void flow.offsetWidth; flow.closest(".mb-card").classList.add("is-in");
+}
+// Route of the whole stay, starting at the airport; travelled legs solid, upcoming legs dashed, current position pulsing
+function renderRoute(tl) {
+  const map = document.getElementById("dashMap"), pts = [];
+  const push = (place, status, d) => { const prev = pts[pts.length - 1]; if (prev && prev.place === place) { prev.status = status === "done" || prev.status === "done" ? (status === "now" ? "now" : prev.status === "now" ? "now" : status) : prev.status; prev.days.add(d); return; } const [x, y] = toSVG(PLACES[place].ll); pts.push({ place, x, y, status, days: new Set([d]) }); };
+  push("airport", tl.state === "upcoming" ? "next" : "done", 0);
+  tl.flat.forEach(e => push(e.place, e.status, e.d));
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y), pad = 70;
+  let x0 = Math.min(...xs) - pad, x1 = Math.max(...xs) + pad, y0 = Math.min(...ys) - pad, y1 = Math.max(...ys) + pad;
+  const w = x1 - x0, h = y1 - y0, side = Math.max(w, h * 1.1); x0 -= (side - w) / 2; x1 = x0 + side; const sh = side / 1.1; y0 -= (sh - h) / 2;
+  map.setAttribute("viewBox", `${x0.toFixed(0)} ${y0.toFixed(0)} ${side.toFixed(0)} ${sh.toFixed(0)}`);
+  const legs = pts.slice(1).map((p, i) => {
+    const a = pts[i], mx = (a.x + p.x) / 2, my = (a.y + p.y) / 2, dx = p.x - a.x, dy = p.y - a.y, k = .22;
+    const c = `${(mx - dy * k).toFixed(1)},${(my + dx * k).toFixed(1)}`;
+    const travelled = p.status === "done" || p.status === "now";
+    const today = p.days.has(viewingDay);
+    return `<path class="leg ${travelled ? "leg--done" : "leg--next"}${today ? " leg--today" : ""}" d="M${a.x.toFixed(1)},${a.y.toFixed(1)} Q${c} ${p.x.toFixed(1)},${p.y.toFixed(1)}" pathLength="1" style="--i:${i}"/>`;
+  }).join("");
+  const nowIdx = pts.findIndex(p => p.status === "now"), lastDone = pts.map(p => p.status).lastIndexOf("done");
+  const here = nowIdx >= 0 ? nowIdx : lastDone;
+  map.innerHTML = `<path class="land" d="${MAP.coast.join("")}"/>${legs}` + pts.map((p, i) => {
+    const cls = i === 0 ? "start" : i === here ? "now" : p.status;
+    return `<g class="stop stop--${cls}${p.days.has(viewingDay) ? " stop--today" : ""}" transform="translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})">${i === here ? '<circle class="pulse" r="10"/>' : ""}<circle r="${i === 0 ? 9 : 7}"/>${i === 0 ? `<g class="stop__ico" transform="translate(-6 -6) scale(.5)">${ICONS.plane.replace('width="16" height="16"', 'width="24" height="24"')}</g>` : `<text class="stop__n" y="3.5">${i}</text>`}<text class="stop__label" x="13" y="4">${PLACES[p.place].name.split(" · ")[0]}</text></g>`;
+  }).join("");
+  if (!REDUCED) map.querySelectorAll(".leg").forEach((l, i) => gsap.fromTo(l, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: .5, delay: .15 + i * .12, ease: "power2.out", clearProps: "strokeDashoffset" }));
+}
+// spotlight + border glow follow the pointer on the bento cards
+document.addEventListener("pointermove", e => { if (dash.hidden) return; document.querySelectorAll(".mb-card").forEach(c => { const r = c.getBoundingClientRect(); c.style.setProperty("--mb-x", (e.clientX - r.left).toFixed(0) + "px"); c.style.setProperty("--mb-y", (e.clientY - r.top).toFixed(0) + "px"); }); }, { passive: true });
+document.getElementById("logout").addEventListener("click", () => { dash.hidden = true; if (fromAdmin) { openAdmin(); return; } document.body.style.overflow = ""; });
+document.getElementById("dashBack").addEventListener("click", () => { dash.hidden = true; openAdmin(); });
+setInterval(() => { if (!dash.hidden && viewing) renderDash(false); }, 60000); // statuses follow the clock
+
+// ---- admin: register of every client's itinerary ----
+let filter = "all";
+const STATE = { active: "En curso", upcoming: "Próximo", finished: "Finalizado" };
+function openAdmin() {
+  admin.hidden = false; dash.hidden = true; document.body.style.overflow = "hidden"; renderAdmin();
+}
+function renderAdmin() {
+  const all = loadAll().filter(r => !r.demo), rows = all.map(r => ({ r, tl: timeline(r) }));
+  const c = k => rows.filter(x => x.tl.state === k).length;
+  const nextUp = rows.flatMap(x => x.tl.state !== "finished" && x.tl.next ? [{ r: x.r, e: x.tl.next }] : []).sort((a, b) => a.e.at - b.e.at)[0];
+  document.getElementById("stats").innerHTML = [
+    ["En curso", c("active"), "Clientes en la isla ahora"], ["Próximos", c("upcoming"), "Llegadas confirmadas"], ["Finalizados", c("finished"), "Estancias completadas"],
+    ["Siguiente", nextUp ? nextUp.e.time : "—", nextUp ? `${nextUp.r.name} · ${nextUp.e.title} · ${PLACES[nextUp.e.place].name}` : "Sin eventos pendientes"],
+  ].map(([k, v, s]) => `<div class="mb-card mb-card--stat"><span class="mb-light"></span><div class="mb-content"><span class="stat__k">${k}</span><strong class="stat__v">${v}</strong><span class="stat__s">${s}</span></div><span class="mb-rim"></span><span class="mb-border"></span></div>`).join("");
+  const q = document.getElementById("adminSearch").value.trim().toLowerCase();
+  const list = rows.filter(x => (filter === "all" || x.tl.state === filter) && (!q || [x.r.name, x.r.email, x.r.code, x.r.pack].join(" ").toLowerCase().includes(q)))
+    .sort((a, b) => ({ active: 0, upcoming: 1, finished: 2 }[a.tl.state] - { active: 0, upcoming: 1, finished: 2 }[b.tl.state]) || a.r.start.localeCompare(b.r.start));
+  const el = document.getElementById("adminList");
+  el.innerHTML = list.length ? list.map(({ r, tl }) => {
+    const s = new Date(r.start + "T12:00:00"), e = new Date(s); e.setDate(s.getDate() + r.days.length - 1);
+    const focus = tl.current && tl.current.status === "now" ? ["Ahora", tl.current] : tl.next ? ["Siguiente", tl.next] : null;
+    return `<div class="arow" role="listitem" data-id="${r.id}">
+      <div class="arow__who"><b>${r.name}</b><small>${r.email} · ${r.code}</small></div>
+      <div class="arow__pack"><span>${r.pack}</span><small>${r.guests} pers. · ${fmtDate(s, { day: "numeric", month: "short" })} – ${fmtDate(e, { day: "numeric", month: "short" })}</small></div>
+      <div class="arow__prog"><span class="pbar"><i style="width:${tl.pct}%"></i></span><small>${tl.pct}% · ${tl.done}/${tl.total}</small></div>
+      <div class="arow__next">${focus ? `<small>${focus[0]}</small><b>${focus[1].time} · ${focus[1].title}</b><small>${PLACES[focus[1].place].name} · ${fmtDate(focus[1].at, { weekday: "short", day: "numeric" })}</small>` : "<small>Estancia completada</small>"}</div>
+      <span class="pill pill--${tl.state}">${STATE[tl.state]}</span>
+      <div class="arow__act"><button class="btn btn--glass btn--sm btn--onDark" type="button" data-view>Ver itinerario</button><button class="arow__del" type="button" data-del aria-label="Eliminar ${r.name}">×</button></div>
+    </div>`;
+  }).join("") : `<p class="admin__empty">No hay itinerarios con este filtro.</p>`;
+}
+document.querySelector(".admin__filters").addEventListener("click", e => { const b = e.target.closest("[data-f]"); if (!b) return; filter = b.dataset.f; document.querySelectorAll(".admin__filters .chip").forEach(x => x.setAttribute("aria-pressed", x === b)); renderAdmin(); });
+document.getElementById("adminSearch").addEventListener("input", renderAdmin);
+document.getElementById("adminList").addEventListener("click", e => {
+  const row = e.target.closest(".arow"); if (!row) return; const id = row.dataset.id;
+  if (e.target.closest("[data-del]")) { const r = loadAll().find(x => x.id === id); if (r && row.classList.contains("is-confirm")) { saveAll(loadAll().filter(x => x.id !== id)); renderAdmin(); } else { row.classList.add("is-confirm"); e.target.closest("[data-del]").textContent = "¿Borrar?"; setTimeout(() => { row.classList.remove("is-confirm"); const d = row.querySelector("[data-del]"); if (d) d.textContent = "×"; }, 3000); } return; }
+  if (e.target.closest("[data-view]")) { fromAdmin = true; openDash(loadAll().find(x => x.id === id)); }
+});
+const newForm = document.getElementById("newForm");
+document.getElementById("n-pack").innerHTML = Object.keys(TEMPLATES).map(k => `<option>${k}</option>`).join("");
+document.getElementById("newItin").addEventListener("click", () => { newForm.hidden = !newForm.hidden; if (!newForm.hidden) { document.getElementById("n-code").value = newCode(); const d = new Date(); d.setDate(d.getDate() + 7); document.getElementById("n-start").value = d.toISOString().slice(0, 10); document.getElementById("n-name").focus(); } });
+document.getElementById("newCancel").addEventListener("click", () => { newForm.hidden = true; });
+newForm.addEventListener("submit", e => {
+  e.preventDefault(); const v = id => document.getElementById(id).value.trim();
+  const rec = { id: "c" + Date.now().toString(36), name: v("n-name"), email: v("n-email").toLowerCase(), code: v("n-code"), guests: +v("n-guests") || 2, pack: v("n-pack"), start: v("n-start"), days: fromTemplate(v("n-pack")), notes: v("n-notes") };
+  saveAll([...loadAll(), rec]); newForm.reset(); newForm.hidden = true; renderAdmin();
+});
+document.getElementById("exportItin").addEventListener("click", async () => {
+  const txt = JSON.stringify(loadAll().filter(r => !r.demo), null, 2);
+  try { await navigator.clipboard.writeText(txt); document.getElementById("exportItin").textContent = "Copiado al portapapeles"; } catch { document.getElementById("exportItin").textContent = "No se pudo copiar"; }
+  setTimeout(() => { document.getElementById("exportItin").textContent = "Exportar copia"; }, 2500);
+});
+document.getElementById("adminOut").addEventListener("click", () => { try { sessionStorage.removeItem("mey-admin"); } catch {} admin.hidden = true; document.body.style.overflow = ""; });

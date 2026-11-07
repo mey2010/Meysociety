@@ -316,26 +316,80 @@
     <button class="modal__x" type="button" data-close aria-label="Cerrar">×</button>
     <p class="eyebrow eyebrow--light">Área cliente</p>
     <h2 id="loginTitle" class="display display--sm">Tu Ibiza, día a día.</h2>
-    <form id="loginForm">
-      <label>Email<input type="email" id="l-email" autocomplete="email" required placeholder="tu@email.com"></label>
-      <label>Código de reserva<input type="text" id="l-code" required placeholder="MEY-2027" value="MEY-DEMO"></label>
+    <div class="tabs" role="tablist" aria-label="Tipo de acceso">
+      <button type="button" role="tab" id="tabClient" aria-selected="true" aria-controls="loginForm">Cliente</button>
+      <button type="button" role="tab" id="tabAdmin" aria-selected="false" aria-controls="adminForm">Admin</button>
+    </div>
+    <form id="loginForm" role="tabpanel" aria-labelledby="tabClient">
+      <label>Email<input type="email" id="l-email" autocomplete="email" placeholder="tu@email.com"></label>
+      <label>Código de reserva<input type="text" id="l-code" required placeholder="MEY-2027" value="MEY-DEMO" autocomplete="off"></label>
       <button class="btn btn--glass btn--lg btn--onDark" type="submit">Entrar</button>
-      <p class="fine fine--light">Versión de demostración: cualquier email entra y muestra un itinerario de ejemplo.</p>
+      <p class="form__status" id="loginStatus" role="status"></p>
+      <p class="fine fine--light">Prueba con el código MEY-DEMO para ver un itinerario de ejemplo.</p>
+    </form>
+    <form id="adminForm" role="tabpanel" aria-labelledby="tabAdmin" hidden>
+      <label>Usuario<input type="text" id="a-user" autocomplete="username" required></label>
+      <label>Contraseña<input type="password" id="a-pass" autocomplete="current-password" required></label>
+      <button class="btn btn--glass btn--lg btn--onDark" type="submit">Entrar como admin</button>
+      <p class="form__status" id="adminStatus" role="status"></p>
     </form>
   </div>
 </div>
 
+<!-- client itinerary -->
 <div class="dash" id="dash" hidden>
   <header class="dash__top">
-    <div><p class="eyebrow eyebrow--light">Tu estancia · <span class="demo">Ejemplo</span></p><h2 class="display display--sm" id="dashHello">Hola</h2></div>
+    <button class="btn btn--glass btn--sm btn--onDark" type="button" id="dashBack" hidden>← Registro</button>
+    <div class="dash__who"><p class="eyebrow eyebrow--light"><span>Tu estancia</span> · <span id="dashPack"></span></p><h2 class="display display--sm" id="dashHello">Hola</h2><p class="dash__dates" id="dashDates"></p></div>
     <div class="dash__ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="ring-bg"/><circle cx="60" cy="60" r="52" class="ring" id="ring"/></svg><div><strong id="ringPct">0%</strong><span>completado</span></div></div>
     <button class="btn btn--glass btn--sm btn--onDark" type="button" id="logout">Salir</button>
   </header>
   <nav class="dash__days" id="days" aria-label="Días"></nav>
   <div class="dash__body">
-    <ol class="dash__events" id="events"></ol>
-    <div class="dash__map lg lg--panel"><svg viewBox="0 0 100 100" id="dashMap" aria-label="Mapa del día"></svg></div>
+    <div class="mb-card" id="flowCard"><span class="mb-light" aria-hidden="true"></span><div class="mb-content" id="flow"></div><span class="mb-rim" aria-hidden="true"></span><span class="mb-border" aria-hidden="true"></span></div>
+    <div class="mb-card mb-card--map"><span class="mb-light" aria-hidden="true"></span>
+      <div class="mb-content"><div class="mb-header"><span class="mb-dot"></span><span>Tu ruta desde el aeropuerto</span></div>
+        <svg id="dashMap" class="routemap" aria-label="Mapa de la ruta"></svg>
+        <ul class="routemap__legend"><li><i class="lg-done"></i>Recorrido</li><li><i class="lg-next"></i>Próximo</li><li><i class="lg-now"></i>Ahora</li></ul></div>
+      <span class="mb-rim" aria-hidden="true"></span><span class="mb-border" aria-hidden="true"></span></div>
   </div>
+</div>
+
+<!-- admin: every client's itinerary -->
+<div class="admin" id="admin" hidden>
+  <header class="admin__top">
+    <div><p class="eyebrow eyebrow--light">Mey Society · Admin</p><h2 class="display display--sm">Registro de itinerarios</h2></div>
+    <div class="admin__actions">
+      <button class="btn btn--primary btn--sm" type="button" id="newItin">Nuevo itinerario</button>
+      <button class="btn btn--glass btn--sm btn--onDark" type="button" id="exportItin">Exportar copia</button>
+      <button class="btn btn--glass btn--sm btn--onDark" type="button" id="adminOut">Salir</button>
+    </div>
+  </header>
+  <section class="admin__stats" id="stats" aria-label="Resumen"></section>
+  <div class="admin__bar">
+    <div class="admin__filters" role="group" aria-label="Filtrar">
+      <button type="button" class="chip" data-f="all" aria-pressed="true">Todos</button>
+      <button type="button" class="chip" data-f="active" aria-pressed="false">En curso</button>
+      <button type="button" class="chip" data-f="upcoming" aria-pressed="false">Próximos</button>
+      <button type="button" class="chip" data-f="finished" aria-pressed="false">Finalizados</button>
+    </div>
+    <label class="admin__search"><span class="sr">Buscar</span><input type="search" id="adminSearch" placeholder="Buscar cliente, email o código"></label>
+  </div>
+  <form class="admin__new lg lg--panel" id="newForm" hidden>
+    <h3>Nuevo itinerario</h3>
+    <div class="grid3">
+      <label>Nombre<input id="n-name" required></label>
+      <label>Email<input id="n-email" type="email" required></label>
+      <label>Personas<input id="n-guests" type="number" min="1" max="40" value="2"></label>
+      <label>Llegada<input id="n-start" type="date" required></label>
+      <label>Paquete<select id="n-pack"></select></label>
+      <label>Código<input id="n-code" readonly></label>
+    </div>
+    <label>Notas<textarea id="n-notes" rows="2"></textarea></label>
+    <div class="form__actions"><button class="btn btn--primary" type="submit">Guardar itinerario</button><button class="btn btn--glass btn--onDark" type="button" id="newCancel">Cancelar</button></div>
+  </form>
+  <div class="admin__list" id="adminList" role="list"></div>
+  <p class="fine fine--light admin__note">Los itinerarios se guardan en este navegador. Para que tus clientes los vean desde su móvil hace falta conectar una base de datos; el panel ya está preparado para ello.</p>
 </div>
 
 <script src="vendor/gsap.min.js"></script>
