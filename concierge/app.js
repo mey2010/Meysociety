@@ -140,7 +140,7 @@ document.querySelectorAll(".filter").forEach(b => b.addEventListener("click", ()
   if (!on && active && active.type === b.dataset.kind) closePop();
 }));
 mapEl.querySelector(".map__zoom").addEventListener("click", e => { const z = e.target.closest("button")?.dataset.zoom; if (!z) return; z === "reset" ? map3d.reset() : map3d.zoom(z === "in" ? .6 : 1.6); });
-const AREAS = { sur: [1.30, 1.45, 38.82, 38.92], eivissa: [1.395, 1.475, 38.87, 38.94], oeste: [1.19, 1.31, 38.86, 38.99], santantoni: [1.27, 1.33, 38.955, 39.0], formentera: [1.36, 1.6, 38.63, 38.78] };
+const AREAS = { sur: [1.30, 1.45, 38.82, 38.92], bossa: [1.398, 1.432, 38.868, 38.902], eivissa: [1.395, 1.475, 38.87, 38.94], oeste: [1.19, 1.31, 38.86, 38.99], santantoni: [1.27, 1.33, 38.955, 39.0], formentera: [1.36, 1.6, 38.63, 38.78] };
 mapEl.querySelector(".map__areas").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return; mapEl.querySelectorAll(".map__areas button").forEach(x => x.classList.toggle("is-on", x === b)); closePop(); closeList(); map3d.flyToArea(AREAS[b.dataset.area]);
 });
