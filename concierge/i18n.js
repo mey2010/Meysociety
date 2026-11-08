@@ -48,7 +48,7 @@ const D = {
   "Preguntas": ["FAQ", "Domande", "Questions", "Fragen"],
   "Contacto": ["Contact", "Contatti", "Contact", "Kontakt"],
   "Área cliente": ["Client area", "Area clienti", "Espace client", "Kundenbereich"],
-  "Tú dinos qué quieres vivir. Nosotros abrimos las puertas.": ["Tell us what you want to live. We open the doors.", "Dicci cosa vuoi vivere. Noi apriamo le porte.", "Dites-nous ce que vous voulez vivre. Nous ouvrons les portes.", "Sag uns, was du erleben willst. Wir öffnen die Türen."],
+  "Ibiza tiene sus reglas. Nosotros conocemos el juego.": ["Ibiza has its rules. We know the game.", "Ibiza ha le sue regole. Noi conosciamo il gioco.", "Ibiza a ses règles. Nous connaissons le jeu.", "Ibiza hat ihre Regeln. Wir kennen das Spiel."],
   "Escríbenos": ["Message us", "Scrivici", "Écrivez-nous", "Schreib uns"],
   "Ver servicios": ["See services", "Vedi i servizi", "Voir les services", "Services ansehen"],
   "Toca cualquier punto del mapa para ver el club, el beach club o la playa.": ["Tap any point on the map to see the club, beach club or beach.", "Tocca un punto della mappa per vedere il club, il beach club o la spiaggia.", "Touchez un point de la carte pour voir le club, le beach club ou la plage.", "Tippe auf einen Punkt der Karte, um Club, Beach Club oder Strand zu sehen."],
