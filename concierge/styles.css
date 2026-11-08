@@ -1120,3 +1120,34 @@ html[data-theme="dark"] .staggered-menu-wrapper[data-open] .sm-logo-word { color
 /* ---------------- map filters: Clubs · Beach clubs · Playas on one row ---------------- */
 .hero .filters { flex-wrap: nowrap; }
 @media (max-width: 600px) { .hero .filter { height: 36px; padding: 0 11px; gap: 6px; font-size: 13.5px; white-space: nowrap; } .hero .filters { gap: 6px; } }
+
+/* =====================================================================
+   SERVICE CARDS — one piece: the photo fills the card, the info floats
+   at the bottom on a translucent glass panel
+   ===================================================================== */
+.stack__card { display: block; position: sticky; min-height: min(80vh, 660px); height: min(80vh, 660px); overflow: hidden; background: #0d0a38; }
+.stack__card:nth-child(even) { background: #0d0a38; }
+.stack__media { position: absolute; inset: 0; }
+.stack__media img { width: 100%; height: 100%; object-fit: cover; }
+.stack__media::after { background: linear-gradient(180deg, rgb(13 10 56 / 0) 38%, rgb(13 10 56 / .35) 62%, rgb(13 10 56 / .72) 100%); }
+.stack__body { position: absolute; left: clamp(12px, 2.2vw, 26px); right: clamp(12px, 2.2vw, 26px); bottom: clamp(12px, 2.2vw, 26px); z-index: 3;
+  gap: 10px; padding: clamp(18px, 2.6vw, 30px) clamp(18px, 3vw, 40px); border-radius: 24px; justify-items: center; text-align: center;
+  background: linear-gradient(180deg, rgb(255 255 255 / .14), rgb(255 255 255 / .05)), rgb(13 10 56 / .38);
+  -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .35), inset 0 0 0 1px rgb(255 255 255 / .14), 0 20px 40px -24px rgb(0 0 0 / .7); }
+.stack__body h3 { font-size: clamp(28px, 3.4vw, 46px); }
+.stack__body > p:not(.stack__place) { color: rgb(244 245 251 / .82); max-width: 62ch; }
+.stack__body ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin: 2px 0 4px; padding: 10px 0 0; border-top-color: rgb(255 255 255 / .16); font-size: 13.5px; }
+.stack__place { margin: 0; }
+/* the jet-ski cut-out sits in the upper part of the card, above the panel */
+.stack__media--product { display: grid; place-items: start center; padding-top: 4%; }
+.stack__media--product img { width: auto; max-width: 74%; height: auto; max-height: 52%; }
+@media (max-width: 900px) {
+  .stack__card { min-height: 78svh; height: 78svh; }
+  .stack__body { gap: 8px; padding: 16px 16px 18px; border-radius: 20px; }
+  .stack__body h3 { font-size: clamp(26px, 7.4vw, 34px); }
+  .stack__body > p:not(.stack__place) { font-size: 14px; line-height: 1.5; }
+  .stack__body ul { display: none; }
+  .stack__media--product img { max-width: 92%; max-height: 42%; }
+}
+html[data-theme="dark"] .stack__body { background: linear-gradient(180deg, rgb(255 255 255 / .1), rgb(255 255 255 / .03)), rgb(11 9 48 / .45); }
