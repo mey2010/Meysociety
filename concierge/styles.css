@@ -1181,3 +1181,21 @@ html[data-theme="dark"] .stack__body { background: linear-gradient(180deg, rgb(2
 @keyframes logo-shine { 0% { opacity: 0; transform: translateX(-75%); } 12% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(75%); } }
 @keyframes logo-press { 0% { transform: scale(1); } 35% { transform: scale(.93); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .flylogo__coin.is-shining { animation: none; } }
+
+/* service cards: the whole photo is shown, sharp, above the info panel; the same photo, blurred,
+   fills the rest of the card so it still reads as one piece */
+.stack__media-bg { position: absolute; inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px); object-fit: cover; filter: blur(30px) saturate(1.25) brightness(.72); transform: scale(1.05); pointer-events: none; }
+.stack__media > img:not(.stack__media-bg) { position: absolute; z-index: 1; left: clamp(14px, 2.4vw, 28px); right: clamp(14px, 2.4vw, 28px); top: clamp(14px, 2.4vw, 28px);
+  width: calc(100% - 2 * clamp(14px, 2.4vw, 28px)); height: calc(100% - var(--panel-h, 46%) - clamp(14px, 2.4vw, 28px)); object-fit: contain; object-position: 50% 50% !important;
+  filter: drop-shadow(0 18px 30px rgb(0 0 0 / .45)); }
+.stack__media--product > img:not(.stack__media-bg) { max-width: none; max-height: none; }
+.stack__media::after { background: linear-gradient(180deg, transparent 55%, rgb(13 10 56 / .35)); z-index: 2; }
+.stack__media--product .stack__media-bg { display: none; }
+/* wide screens: glass panel on the right, the whole photo large on the left (full card height) */
+@media (min-width: 901px) {
+  .stack__body { left: auto; top: clamp(14px, 2.2vw, 26px); width: min(44%, 520px); align-content: center; }
+  .stack__media { --m: clamp(18px, 2.6vw, 34px); --pw: min(44%, 520px); }
+  .stack__media > img:not(.stack__media-bg) { top: var(--m); left: var(--m); bottom: auto; right: auto;
+    width: calc(100% - var(--pw) - 3 * var(--m)); height: calc(100% - 2 * var(--m)); max-width: none; max-height: none; }
+  .stack__media::after { background: linear-gradient(90deg, transparent 45%, rgb(13 10 56 / .35)); }
+}

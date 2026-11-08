@@ -1127,3 +1127,14 @@ const routeZoom = (() => {
     base(b, k) { base = b; if (vb && k === key) { limit(); apply(); } else { vb = { ...b }; key = k; apply(); } },
   };
 })();
+
+
+/* ---------------- service cards: show every photo whole ---------------- */
+document.querySelectorAll(".stack__card").forEach(card => {
+  const media = card.querySelector(".stack__media"), img = media?.querySelector("img"), body = card.querySelector(".stack__body");
+  if (!img || !body) return;
+  if (!media.classList.contains("stack__media--product")) { const bg = img.cloneNode(); bg.className = "stack__media-bg"; bg.alt = ""; bg.setAttribute("aria-hidden", "true"); bg.removeAttribute("style"); media.insertBefore(bg, img); }
+  // the sharp photo uses the space above the glass panel, whatever height the panel has
+  const fit = () => { const gap = card.getBoundingClientRect().bottom - body.getBoundingClientRect().top; card.style.setProperty("--panel-h", Math.round(gap + 14) + "px"); };
+  new ResizeObserver(fit).observe(body); new ResizeObserver(fit).observe(card); fit();
+});
