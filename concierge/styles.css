@@ -1097,3 +1097,26 @@ html[data-theme="dark"] .staggered-menu-wrapper[data-open] .sm-logo-word { color
 .lightbox__frame { position: relative; border-radius: 18px; overflow: hidden; line-height: 0; }
 .lightbox__frame .lightbox__media { border-radius: 0; box-shadow: none; }
 .pop__img { overflow: hidden; }
+
+/* ---------------- Shatter Type on the name ---------------- */
+.shatter { position: relative; display: inline-block; max-width: 100%; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+.shatter.is-cut > .signal { visibility: hidden; }
+.shatter__layer { position: absolute; pointer-events: none; }
+.shatter__shard { position: absolute; inset: 0; will-change: transform, opacity; }
+.shatter__copy { display: block; width: 100%; height: 100%; box-sizing: border-box; }
+.shatter__cracks { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; opacity: 0; transition: opacity 300ms ease;
+  -webkit-mask-image: radial-gradient(150px circle at var(--crack-x, 50%) var(--crack-y, 50%), #000 0%, rgb(0 0 0 / .6) 45%, transparent 100%);
+  mask-image: radial-gradient(150px circle at var(--crack-x, 50%) var(--crack-y, 50%), #000 0%, rgb(0 0 0 / .6) 45%, transparent 100%); }
+.shatter__cracks polygon { fill: none; stroke: rgb(120 199 228 / .9); stroke-width: 1.2; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 3px rgb(255 255 255 / .9)); }
+.shatter.is-near .shatter__cracks { opacity: 1; }
+.shatter.is-burst .shatter__cracks { opacity: 0; }
+@media (hover: none) { .shatter__cracks { display: none; } }
+
+/* ---------------- Elastic Lettering on the tagline: always one line ---------------- */
+.intro__line.elastic { white-space: nowrap; font-size: min(clamp(20px, 2.2vw, 30px), 5.1vw); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.intro__line.elastic.is-grabbing { cursor: grabbing; }
+.elastic__ch { display: inline-block; will-change: transform; transform-origin: 50% 70%; }
+
+/* ---------------- map filters: Clubs · Beach clubs · Playas on one row ---------------- */
+.hero .filters { flex-wrap: nowrap; }
+@media (max-width: 600px) { .hero .filter { height: 36px; padding: 0 11px; gap: 6px; font-size: 13.5px; white-space: nowrap; } .hero .filters { gap: 6px; } }
