@@ -1089,3 +1089,11 @@ html[data-theme="dark"] .staggered-menu-wrapper[data-open] .sm-logo-word { color
 .stack__media--product img { width: 88%; height: auto; max-height: 82%; object-fit: contain; filter: drop-shadow(0 30px 30px rgb(0 0 0 / .55)); animation: glass-float 6s ease-in-out infinite; }
 .stack__media--product::after { background: none; }
 @media (prefers-reduced-motion: reduce) { .stack__media--product img { animation: none; } }
+
+/* HoloCard overlay + floating shadow */
+.holo { will-change: rotate, scale; transform-style: preserve-3d; }
+.holo__overlay { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; z-index: 2; border-radius: inherit; }
+.holo--shadow { box-shadow: var(--holo-sx, 0) var(--holo-sy, 18px) 40px -12px rgb(0 0 0 / .55); }
+.lightbox__frame { position: relative; border-radius: 18px; overflow: hidden; line-height: 0; }
+.lightbox__frame .lightbox__media { border-radius: 0; box-shadow: none; }
+.pop__img { overflow: hidden; }

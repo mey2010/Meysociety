@@ -2,6 +2,7 @@
 import { ICONS } from "./icons.js";
 import { createCircularCarousel } from "./circular-carousel.js";
 import { createDepthRibbon } from "./depth-ribbon.js";
+import { holo } from "./holo.js";
 import { initMap3D } from "./map3d.js";
 import { LANGS, t, msg, venueInfo, translateTree, setLang, getLang, watchI18n } from "./i18n.js";
 import { TEMPLATES, fromTemplate, newCode, loadAll, saveAll, findForClient, timeline } from "./itineraries.js";
@@ -860,6 +861,8 @@ function openLightbox(it) {
     ? `<video class="lightbox__media" src="${it.src}" poster="${it.poster || ""}" controls autoplay playsinline loop></video>`
     : `<img class="lightbox__media" src="${it.src}" alt="${t(it.title)}">`;
   lbCap.innerHTML = `${t(it.title)}<small>${t(it.subtitle || "")}</small>`;
+  const frame = lbMedia.querySelector(".lightbox__media"); const wrap = document.createElement("div"); wrap.className = "lightbox__frame";
+  frame.replaceWith(wrap); wrap.appendChild(frame); holo(wrap, { tiltMax: 8, hoverScale: 1.02, shadow: true });
   lb.hidden = false; document.body.style.overflow = "hidden"; document.getElementById("lbClose").focus();
 }
 function closeLightbox() { lb.hidden = true; lbMedia.innerHTML = ""; document.body.style.overflow = ""; }
@@ -909,6 +912,7 @@ function setFleetCat(cat) {
   fleetCat = cat; fleetList = cat === "all" ? FLEET : FLEET.filter(b => b.cat === cat);
   fleetChips.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === cat));
   ribbon.setItems(fleetItems());
+  document.querySelectorAll("#fleetRibbon .ribbon__card").forEach(c => holo(c, { tiltMax: 9, hoverScale: 1.03 }));
 }
 function openFleet(cat = "all") {
   fleet.hidden = false; document.body.style.overflow = "hidden";
@@ -1059,3 +1063,10 @@ openDash = function (rec) {
   btn.addEventListener("click", () => apply(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
   paint(); if (document.documentElement.dataset.theme === "dark") map3d.setTheme(true);
 }
+
+
+/* ---------------- HoloCard motion on the images ---------------- */
+// service cards tilt as a whole, the foil plays over their photo
+document.querySelectorAll(".stack__card").forEach(card => holo(card, { media: card.querySelector(".stack__media"), tiltMax: 5, hoverScale: 1.012, intensity: .26 }));
+// the venue photo in the map pop-up
+holo(document.querySelector(".pop__img"), { tiltMax: 10, hoverScale: 1.03 });
