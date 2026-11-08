@@ -74,8 +74,8 @@
     <p class="intro__line" id="introLine" data-no-i18n>Local connections. One contact.</p>
     <p class="intro__sub" id="introSub">Tú dinos qué quieres vivir. Nosotros abrimos las puertas.</p>
     <div class="intro__cta" id="introCta">
-      <a class="btn btn--primary btn--lg" href="#contacto">Escríbenos</a>
-      <a class="btn btn--ghost btn--lg" href="#servicios">Ver servicios</a>
+      <a class="btn btn--ghost btn--lg" href="#contacto">Escríbenos</a>
+      <a class="btn btn--primary btn--lg" href="#servicios">Ver servicios</a>
     </div>
   </section>
 
@@ -188,7 +188,6 @@
       <a class="btn btn--primary btn--lg" href="#contacto">Diseña tu estancia</a>
     </div>
     <div class="map map3d" id="map" aria-label="Mapa 3D de Ibiza y Formentera con clubs, beach clubs y playas">
-      <span class="map3d__credit">Ortofoto y relieve © IGN · PNOA</span>
       <div class="pick" id="pickList" role="dialog" aria-label="Elige un lugar" hidden></div>
       <div class="map__zoom" role="group" aria-label="Zoom">
         <button type="button" data-zoom="in" aria-label="Acercar">+</button>
@@ -205,7 +204,7 @@
       </div>
       <div class="pop" id="pop" role="dialog" aria-modal="false" aria-labelledby="popTitle" hidden>
         <button class="pop__x" type="button" aria-label="Cerrar">×</button>
-        <figure class="pop__img"><img id="popImg" alt=""><figcaption>Vista aérea · PNOA © IGN</figcaption></figure>
+        <figure class="pop__img"><img id="popImg" alt=""></figure>
         <div class="pop__body">
           <p class="pop__kind" id="popKind"></p>
           <h3 id="popTitle"></h3>
@@ -403,7 +402,14 @@
     <div class="mb-card" id="flowCard"><span class="mb-light" aria-hidden="true"></span><div class="mb-content" id="flow"></div><span class="mb-rim" aria-hidden="true"></span><span class="mb-border" aria-hidden="true"></span></div>
     <div class="mb-card mb-card--map"><span class="mb-light" aria-hidden="true"></span>
       <div class="mb-content"><div class="mb-header"><span class="mb-dot"></span><span>Tu ruta desde el aeropuerto</span></div>
-        <svg id="dashMap" class="routemap" aria-label="Mapa de la ruta"></svg>
+        <div class="routemap__wrap">
+          <svg id="dashMap" class="routemap" aria-label="Mapa de la ruta"></svg>
+          <div class="routemap__zoom" role="group" aria-label="Zoom">
+            <button type="button" data-rz="in" aria-label="Acercar">+</button>
+            <button type="button" data-rz="out" aria-label="Alejar">−</button>
+            <button type="button" data-rz="reset" aria-label="Ver toda la ruta">⤢</button>
+          </div>
+        </div>
         <ul class="routemap__legend"><li><i class="lg-done"></i>Recorrido</li><li><i class="lg-next"></i>Próximo</li><li><i class="lg-now"></i>Ahora</li></ul></div>
       <span class="mb-rim" aria-hidden="true"></span><span class="mb-border" aria-hidden="true"></span></div>
   </div>

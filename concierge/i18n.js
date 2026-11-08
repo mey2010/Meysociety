@@ -358,6 +358,7 @@ const D = {
   "Moto de agua Sea-Doo": ["Sea-Doo jet ski", "Moto d'acqua Sea-Doo", "Jet-ski Sea-Doo", "Sea-Doo Jetski"],
   "Deportivo aparcado junto a la playa": ["Sports car parked by the beach", "Auto sportiva parcheggiata vicino alla spiaggia", "Voiture de sport garée près de la plage", "Sportwagen am Strand geparkt"],
   "Playa d'en Bossa": ["Playa d'en Bossa", "Playa d'en Bossa", "Playa d'en Bossa", "Playa d'en Bossa"],
+  "Ver toda la ruta": ["See the whole route", "Vedi tutto il percorso", "Voir tout l'itinéraire", "Ganze Route zeigen"],
   "Itinerarios a medida": ["Tailor-made itineraries", "Itinerari su misura", "Itinéraires sur mesure", "Maßgeschneiderte Reisepläne"],
   "Cada cliente,": ["Every client,", "Ogni cliente,", "Chaque client,", "Jeder Gast,"],
   "su propio plan.": ["their own plan.", "il suo piano.", "son propre plan.", "sein eigener Plan."],

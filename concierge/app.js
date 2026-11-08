@@ -609,6 +609,7 @@ function renderRoute(tl) {
   let x0 = Math.min(...xs) - pad, x1 = Math.max(...xs) + pad, y0 = Math.min(...ys) - pad, y1 = Math.max(...ys) + pad;
   const w = x1 - x0, h = y1 - y0, side = Math.max(w, h * 1.1); x0 -= (side - w) / 2; x1 = x0 + side; const sh = side / 1.1; y0 -= (sh - h) / 2;
   map.setAttribute("viewBox", `${x0.toFixed(0)} ${y0.toFixed(0)} ${side.toFixed(0)} ${sh.toFixed(0)}`);
+  routeZoom.base({ x: x0, y: y0, w: side, h: sh }, viewing.id + ":" + viewingDay);
   const legs = pts.slice(1).map((p, i) => {
     const a = pts[i], mx = (a.x + p.x) / 2, my = (a.y + p.y) / 2, dx = p.x - a.x, dy = p.y - a.y, k = .22;
     const c = `${(mx - dy * k).toFixed(1)},${(my + dx * k).toFixed(1)}`;
@@ -1074,3 +1075,53 @@ openDash = function (rec) {
 /* ---------------- HoloCard motion ----------------
    Only on the product photos inside the services (every boat in the fleet) and on the opened reviews;
    the home page cards and the map stay still. Silver reflection only: no colour, no glitter. */
+
+
+/* ---------------- client route map: zoom & pan (buttons, wheel, drag, pinch) ---------------- */
+const routeZoom = (() => {
+  const svg = document.getElementById("dashMap"); let base = null, vb = null, key = "";
+  const apply = () => { svg.setAttribute("viewBox", `${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}`); svg.classList.toggle("is-zoomed", vb.w < base.w * .99); };
+  const limit = () => {
+    vb.w = clamp(vb.w, base.w / 8, base.w); vb.h = vb.w * base.h / base.w;
+    vb.x = clamp(vb.x, base.x - vb.w * .25, base.x + base.w - vb.w * .75); vb.y = clamp(vb.y, base.y - vb.h * .25, base.y + base.h - vb.h * .75);
+  };
+  const toSvg = (cx, cy) => { const r = svg.getBoundingClientRect(); return { x: vb.x + (cx - r.left) / r.width * vb.w, y: vb.y + (cy - r.top) / r.height * vb.h }; };
+  let anim = 0;
+  function zoomAt(f, px, py, smooth = true) {
+    if (!base) return; const to = { w: vb.w * f };
+    const target = { w: clamp(to.w, base.w / 8, base.w) }, k = target.w / vb.w;
+    const goal = { x: px - (px - vb.x) * k, y: py - (py - vb.y) * k, w: target.w, h: target.w * base.h / base.w };
+    if (!smooth || REDUCED) { vb = goal; limit(); apply(); return; }
+    const from = { ...vb }, t0 = performance.now(); cancelAnimationFrame(anim);
+    const step = now => { const e = Math.min(1, (now - t0) / 280), q = 1 - Math.pow(1 - e, 3);
+      vb = { x: from.x + (goal.x - from.x) * q, y: from.y + (goal.y - from.y) * q, w: from.w + (goal.w - from.w) * q, h: from.h + (goal.h - from.h) * q }; limit(); apply(); if (e < 1) anim = requestAnimationFrame(step); };
+    anim = requestAnimationFrame(step);
+  }
+  const center = () => ({ x: vb.x + vb.w / 2, y: vb.y + vb.h / 2 });
+  document.querySelector(".routemap__zoom").addEventListener("click", e => {
+    const z = e.target.closest("button")?.dataset.rz; if (!z || !base) return;
+    if (z === "reset") { const c = center(); zoomAt(base.w / vb.w, c.x, c.y); setTimeout(() => { vb = { ...base }; apply(); }, 300); return; }
+    const c = center(); zoomAt(z === "in" ? .6 : 1 / .6, c.x, c.y);
+  });
+  svg.addEventListener("wheel", e => { if (!base) return; e.preventDefault(); const p = toSvg(e.clientX, e.clientY); zoomAt(Math.exp(e.deltaY * .0022), p.x, p.y, false); }, { passive: false });
+  svg.addEventListener("dblclick", e => { const p = toSvg(e.clientX, e.clientY); zoomAt(.5, p.x, p.y); });
+  // drag to move; two fingers to pinch
+  const pts = new Map(); let last = null;
+  svg.addEventListener("pointerdown", e => { if (!base) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); svg.setPointerCapture(e.pointerId); last = null; });
+  svg.addEventListener("pointermove", e => {
+    if (!pts.has(e.pointerId) || !base) return; const prev = pts.get(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const r = svg.getBoundingClientRect();
+    if (pts.size === 1) { vb.x -= (e.clientX - prev.x) / r.width * vb.w; vb.y -= (e.clientY - prev.y) / r.height * vb.h; limit(); apply(); }
+    else if (pts.size === 2) {
+      const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y), m = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      if (last) { const p = toSvg(m.x, m.y); zoomAt(last.d / d, p.x, p.y, false); vb.x -= (m.x - last.m.x) / r.width * vb.w; vb.y -= (m.y - last.m.y) / r.height * vb.h; limit(); apply(); }
+      last = { d, m };
+    }
+  });
+  const up = e => { pts.delete(e.pointerId); if (pts.size < 2) last = null; };
+  svg.addEventListener("pointerup", up); svg.addEventListener("pointercancel", up);
+  return {
+    // each re-render keeps the visitor's zoom for the same itinerary and day; a new one starts whole
+    base(b, k) { base = b; if (vb && k === key) { limit(); apply(); } else { vb = { ...b }; key = k; apply(); } },
+  };
+})();
