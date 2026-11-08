@@ -5,6 +5,7 @@ import { createDepthRibbon } from "./depth-ribbon.js";
 import { holo } from "./holo.js";
 import { shatterType } from "./shatter.js";
 import { elasticLettering } from "./elastic.js";
+import { logoFlight } from "./logo-flight.js";
 import { initMap3D } from "./map3d.js";
 import { LANGS, t, msg, venueInfo, translateTree, setLang, getLang, watchI18n } from "./i18n.js";
 import { TEMPLATES, fromTemplate, newCode, loadAll, saveAll, findForClient, timeline } from "./itineraries.js";
@@ -234,6 +235,7 @@ document.getElementById("popBook").addEventListener("click", () => {
 // the name also shatters like glass (cursor cracks it, a click bursts it), and the tagline is an elastic band
 shatterType(document.getElementById("signal"));
 elasticLettering(document.getElementById("introLine"));
+logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.querySelector(".sm-logo-img"), headerLink: document.querySelector(".sm-logo"), src: "assets/logo3d.webp" });
 
 /* =====================================================================
    SPECTRAL DRAPE — a sheet of glowing dots folding in 3D (page background)
