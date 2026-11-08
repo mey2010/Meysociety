@@ -230,7 +230,7 @@ const io = new IntersectionObserver(es => { es.forEach(e => { const c = e.target
  */
 export function holo(el, opts = {}) {
   if (!el || el.__holo) return el?.__holo;
-  const o = { preset: "rainbow", intensity: .3, scale: 1, edgeSparkle: .45, frame: 1.1, glare: .55, foilColor: "#e2e6ec", tiltMax: 10, hoverScale: 1.03, idle: true, shadow: false, ...opts };
+  const o = { preset: "rainbow", intensity: 0, scale: 1, edgeSparkle: 0, frame: 1.4, glare: .7, foilColor: "#e2e6ec", tiltMax: 10, hoverScale: 1.03, idle: true, shadow: false, ...opts };
   o.foil = parseColor(o.foilColor);
   const media = opts.media || el;
   const overlay = document.createElement("canvas"); overlay.className = "holo__overlay"; overlay.setAttribute("aria-hidden", "true");

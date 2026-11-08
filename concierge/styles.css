@@ -1086,7 +1086,7 @@ html[data-theme="dark"] .staggered-menu-wrapper[data-open] .sm-logo-word { color
 .stack__body .btn, .stack__btns { justify-self: center; }
 .stack__btns { justify-content: center; }
 .stack__media--product { display: grid; place-items: center; background: radial-gradient(70% 60% at 50% 55%, rgb(171 80 219 / .55), transparent 70%), radial-gradient(90% 80% at 30% 20%, #2a2580, #0d0a38 75%); }
-.stack__media--product img { width: 88%; height: auto; max-height: 82%; object-fit: contain; filter: drop-shadow(0 30px 30px rgb(0 0 0 / .55)); animation: glass-float 6s ease-in-out infinite; }
+.stack__media--product img { width: 88%; height: auto; max-height: 82%; object-fit: contain; filter: drop-shadow(0 30px 30px rgb(0 0 0 / .55)); }
 .stack__media--product::after { background: none; }
 @media (prefers-reduced-motion: reduce) { .stack__media--product img { animation: none; } }
 

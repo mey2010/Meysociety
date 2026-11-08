@@ -1065,8 +1065,6 @@ openDash = function (rec) {
 }
 
 
-/* ---------------- HoloCard motion on the images ---------------- */
-// service cards tilt as a whole, the foil plays over their photo
-document.querySelectorAll(".stack__card").forEach(card => holo(card, { media: card.querySelector(".stack__media"), tiltMax: 5, hoverScale: 1.012, intensity: .26 }));
-// the venue photo in the map pop-up
-holo(document.querySelector(".pop__img"), { tiltMax: 10, hoverScale: 1.03 });
+/* ---------------- HoloCard motion ----------------
+   Only on the product photos inside the services (every boat in the fleet) and on the opened reviews;
+   the home page cards and the map stay still. Silver reflection only: no colour, no glitter. */
