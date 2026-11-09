@@ -7,7 +7,8 @@ import { shatterType } from "./shatter.js";
 import { elasticLettering } from "./elastic.js";
 import { logoFlight } from "./logo-flight.js";
 import { initMap3D } from "./map3d.js";
-import { LANGS, t, msg, venueInfo, translateTree, setLang, getLang, watchI18n } from "./i18n.js";
+import { initConsent } from "./consent.js";
+import { LANGS, t, msg, venueInfo, translateTree, setLang, getLang, watchI18n, applyMeta } from "./i18n.js";
 import { TEMPLATES, fromTemplate, newCode, loadAll, saveAll, findForClient, timeline } from "./itineraries.js";
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const FINE = matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -451,7 +452,7 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
   document.addEventListener("mousedown", e => { if (!box.contains(e.target)) show(false); });
   cur.textContent = LANGS[getLang()]; opts.forEach(x => x.setAttribute("aria-selected", x.dataset.lang === getLang()));
   // translate once everything on the page has been built
-  if (getLang() !== "es") { document.documentElement.lang = getLang(); setTimeout(() => translateTree(document.body), 0); }
+  if (getLang() !== "es") { document.documentElement.lang = getLang(); setTimeout(() => translateTree(document.body), 0); applyMeta(); }
   setTimeout(watchI18n, 0);
 }
 
@@ -463,7 +464,18 @@ document.querySelectorAll('a[href^="#"]').forEach(a => { if (a.closest("#sm")) r
 /* =====================================================================
    CONTACT
    ===================================================================== */
-const CONFIG = { whatsapp: "", email: "meysociety@protonmail.com" }; // whatsapp: international digits, no "+"
+const CONFIG = {
+  whatsapp: "",                       // international digits, no "+" (e.g. "34600111222")
+  email: "meysociety@protonmail.com",
+  analytics: { plausible: "", ga4: "" }, // plausible: your domain (cookieless); ga4: "G-XXXXXXX" (asks for consent first)
+};
+// floating WhatsApp button: straight to a chat when the number is set, otherwise to the contact form
+{ const fab = document.getElementById("fabContact"); if (CONFIG.whatsapp) { fab.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent("Hola Mey Society, me gustaría organizar mi estancia en Ibiza.")}`; fab.target = "_blank"; fab.rel = "noopener"; }
+  else fab.setAttribute("aria-label", "Escríbenos"), fab.addEventListener("click", e => { e.preventDefault(); document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" }); });
+  const sync = () => fab.classList.toggle("is-on", scrollY > innerHeight * .5 && !document.querySelector(".staggered-menu-wrapper[data-open]"));
+  addEventListener("scroll", sync, { passive: true }); sync(); }
+initConsent(CONFIG.analytics);
+const LOADED_AT = performance.now();
 const CHOICES = { yates: "Barco", motos: "Moto de agua", coches: "Coche", moto: "Moto", villas: "Villa", noche: "Clubs", transfers: "Transfer", dining: "Chef privado", beach: "Beach clubs" };
 const chips = document.getElementById("chips"), chosen = new Set();
 for (const [id, n] of Object.entries(CHOICES)) chips.insertAdjacentHTML("beforeend", `<button type="button" class="chip" data-c="${id}" aria-pressed="false">${n}</button>`);
@@ -496,6 +508,7 @@ document.querySelectorAll("[data-pack]").forEach(b => b.addEventListener("click"
 document.getElementById("form").addEventListener("submit", e => {
   e.preventDefault();
   const v = id => document.getElementById(id).value.trim(); const status = document.getElementById("formStatus");
+  if (v("f-website") || performance.now() - LOADED_AT < 2500) return; // a bot filled the hidden field or submitted instantly
   if (!v("f-name")) { status.textContent = msg("name", "Escribe tu nombre para que sepamos a quién responder."); document.getElementById("f-name").focus(); return; }
   // the summary always reaches us in Spanish, whatever language the visitor reads the page in
   const fmt = d => d ? d.split("-").reverse().join("/") : "";

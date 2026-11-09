@@ -75,10 +75,13 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
       if (Math.abs(S.spinTo - S.spin) > .05 || Math.abs(S.spinV) > .05) busy = true; else { S.spin = S.spinTo; S.spinV = 0; }
     }
     const kd = clamp01(S.kd), k = ease(kd), { x, y, size } = at(k), sc = size / start.size;
-    fly.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${sc.toFixed(4)})`;
-    spinEl.style.transform = S.spin ? `rotateY(${S.spin.toFixed(2)}deg)` : "";
     const docked = clamp01(S.kd) > .995 && p > .995;
-    fly.classList.toggle("is-docked", docked);
+    // in flight the coin lives in page coordinates, so the browser's own (threaded) scrolling carries it
+    // frame-perfectly and JS only adds the flight offset; once docked it is pinned to the viewport
+    if (docked !== S.docked) { S.docked = docked; fly.classList.toggle("is-docked", docked); fly.style.position = docked ? "fixed" : "absolute"; }
+    const oy = docked ? 0 : scrollY, ox = docked ? 0 : scrollX;
+    fly.style.transform = `translate3d(${(x + ox).toFixed(2)}px, ${(y + oy).toFixed(2)}px, 0) scale(${sc.toFixed(4)})`;
+    spinEl.style.transform = S.spin ? `rotateY(${S.spin.toFixed(2)}deg)` : "";
     const fp = (Math.round(clamp01(S.kd) * 50) / 50).toFixed(2); // coarse steps: the halo restyles rarely
     if (fp !== S.fp) { S.fp = fp; fly.style.setProperty("--fly-p", fp); }
 

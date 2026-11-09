@@ -1165,7 +1165,7 @@ html[data-theme="dark"] .stack__body { background: linear-gradient(180deg, rgb(2
 /* ---------------- the 3D logo that flies from the intro to the header ---------------- */
 .intro__logo { width: clamp(130px, 15vw, 190px); aspect-ratio: 1; margin-top: clamp(10px, 2vh, 26px); }
 .sm-logo-img.is-flown { visibility: hidden; }
-.flylogo { position: fixed; left: 0; top: 0; z-index: 41; display: block; transform-origin: 0 0; will-change: transform; -webkit-tap-highlight-color: transparent; perspective: 900px;
+.flylogo { position: absolute; left: 0; top: 0; z-index: 41; display: block; transform-origin: 0 0; will-change: transform; -webkit-tap-highlight-color: transparent; perspective: 900px;
   opacity: 0; transition: opacity 900ms var(--ease); }
 .intro.is-lit ~ * .flylogo, body:has(.intro.is-lit) .flylogo { opacity: 1; }
 .flylogo__coin { position: relative; display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; transform-style: preserve-3d;
@@ -1269,3 +1269,32 @@ html[data-theme="dark"] .flylogo__shadow { background: radial-gradient(closest-s
 .flylogo__core .flylogo__shine, .flylogo__core .flylogo__glint { -webkit-clip-path: circle(var(--core) at 50% 50%); clip-path: circle(var(--core) at 50% 50%); }
 .flylogo__core-edge { inset: calc(50% - var(--core) + .6%); border-radius: 50%;
   background: radial-gradient(closest-side, #2a2470, #3b2d8a 80%, #6a5bc4); }
+
+/* ---- SEO heading: the page's H1 reads "Private concierge in Ibiza", shown as a quiet kicker above the name ---- */
+.intro__title { margin: 0; display: grid; justify-items: center; gap: clamp(10px, 1.6vh, 18px); font: inherit; }
+.intro__title .signal { display: block; }
+.intro__kicker { margin: 0; font: 600 clamp(11px, 1vw, 13px)/1.2 var(--sans); letter-spacing: .32em; text-transform: uppercase; color: var(--indigo, #292467);
+  opacity: 0; transform: translateY(6px); }
+.intro.is-lit .intro__kicker { opacity: .78; transform: none; transition: opacity 900ms var(--ease), transform 900ms var(--ease); }
+html[data-theme="dark"] .intro__kicker { color: #c8e6f5; }
+/* footer legal links */
+.foot__legal { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.foot__legal a { color: inherit; opacity: .8; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.foot__legal a:hover { opacity: 1; }
+/* anti-spam field: off-screen for people, still in the form for bots */
+.hp { position: absolute !important; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+/* floating WhatsApp button */
+.fab-wa { position: fixed; z-index: 45; right: max(18px, env(safe-area-inset-right, 0px)); bottom: max(18px, env(safe-area-inset-bottom, 0px)); width: 58px; height: 58px; border-radius: 50%;
+  display: grid; place-items: center; color: #fff; background: radial-gradient(circle at 30% 25%, #4be27d, #1faa53 70%); text-decoration: none;
+  box-shadow: 0 14px 30px -10px rgb(31 170 83 / .7), inset 0 1.5px 0 rgb(255 255 255 / .45), 0 0 0 1px rgb(255 255 255 / .2);
+  opacity: 0; transform: translateY(16px) scale(.9); pointer-events: none; transition: opacity 400ms var(--ease), transform 500ms cubic-bezier(.3, 1.4, .6, 1); -webkit-tap-highlight-color: transparent; }
+.fab-wa.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.fab-wa:hover { transform: translateY(-2px) scale(1.04); }
+.fab-wa:focus-visible { outline: 2px solid var(--cyan, #78c7e4); outline-offset: 3px; }
+body:has(.fleet:not([hidden])) .fab-wa, body:has(.dash:not([hidden])) .fab-wa, body:has(.admin:not([hidden])) .fab-wa, body:has(.lightbox:not([hidden])) .fab-wa { opacity: 0; pointer-events: none; }
+/* consent bar (only shown when Google Analytics is configured) */
+.consent { position: fixed; z-index: 90; left: 50%; bottom: max(16px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(620px, calc(100vw - 32px));
+  display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; padding: 16px 18px; border-radius: 20px; color: #f4f5fb; font: 14px/1.5 var(--sans);
+  background: rgb(13 10 56 / .92); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 24px 60px -20px rgb(0 0 0 / .6), inset 0 0 0 1px rgb(255 255 255 / .14); }
+.consent p { margin: 0; flex: 1 1 260px; } .consent a { color: #78c7e4; }
+.consent__btns { display: flex; gap: 10px; }

@@ -3,6 +3,18 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Cookies": ["Cookies", "Cookie", "Cookies", "Cookies"],
+  "Usamos cookies de analítica para entender qué te interesa y mejorar la web. Solo se activan si aceptas.": ["We use analytics cookies to understand what interests you and improve the site. They are only set if you accept.", "Usiamo cookie analitici per capire cosa ti interessa e migliorare il sito. Si attivano solo se accetti.", "Nous utilisons des cookies d'analyse pour comprendre ce qui vous intéresse et améliorer le site. Ils ne sont activés que si vous acceptez.", "Wir verwenden Analyse-Cookies, um zu verstehen, was dich interessiert, und die Website zu verbessern. Sie werden nur gesetzt, wenn du zustimmst."],
+  "Más información": ["More information", "Maggiori informazioni", "En savoir plus", "Mehr erfahren"],
+  "Rechazar": ["Decline", "Rifiuta", "Refuser", "Ablehnen"],
+  "Aceptar": ["Accept", "Accetta", "Accepter", "Akzeptieren"],
+  "Escríbenos por WhatsApp": ["Message us on WhatsApp", "Scrivici su WhatsApp", "Écrivez-nous sur WhatsApp", "Schreib uns auf WhatsApp"],
+  "Web": ["Website", "Sito web", "Site web", "Website"],
+  "Concierge privado en Ibiza": ["Private concierge in Ibiza", "Concierge privato a Ibiza", "Conciergerie privée à Ibiza", "Privater Concierge auf Ibiza"],
+  "Aviso legal": ["Legal notice", "Note legali", "Mentions légales", "Impressum"],
+  "Política de privacidad": ["Privacy policy", "Informativa sulla privacy", "Politique de confidentialité", "Datenschutzerklärung"],
+  "Política de cookies": ["Cookie policy", "Cookie policy", "Politique de cookies", "Cookie-Richtlinie"],
+  "Legal": ["Legal", "Note legali", "Mentions légales", "Rechtliches"],
   "No encontramos ese itinerario. Revisa el email y el código de reserva.": ["We couldn't find that itinerary. Check the email and booking code.", "Non troviamo questo itinerario. Controlla email e codice di prenotazione.", "Itinéraire introuvable. Vérifiez l'email et le code de réservation.", "Reiseplan nicht gefunden. Prüfe E-Mail und Buchungscode."],
   "Prueba con el código MEY-DEMO para ver un itinerario de ejemplo.": ["Try the code MEY-DEMO to see a sample itinerary.", "Prova il codice MEY-DEMO per vedere un itinerario di esempio.", "Essayez le code MEY-DEMO pour voir un itinéraire d'exemple.", "Probiere den Code MEY-DEMO für einen Beispielplan."],
   "Cliente": ["Client", "Cliente", "Client", "Kunde"],
@@ -426,6 +438,8 @@ const MSG = {
 
 let lang = "es";
 try { lang = localStorage.getItem("mey-lang") || (navigator.language || "es").slice(0, 2); } catch { lang = (navigator.language || "es").slice(0, 2); }
+// a ?lang= link (what search engines index for each language) always wins
+const urlLang = new URLSearchParams(location.search).get("lang"); if (urlLang && LANGS[urlLang]) lang = urlLang;
 if (!LANGS[lang]) lang = "es";
 export const getLang = () => lang;
 const idx = () => ORDER.indexOf(lang);
@@ -500,8 +514,24 @@ export function watchI18n() {
   });
   mo.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
 }
+// title, description and link previews in each language (Google shows these in its results)
+const META = {
+  es: ["Concierge privado en Ibiza · Villas, yates y mesas VIP | Mey Society", "Concierge privado en Ibiza y Formentera: villas de lujo, alquiler de yates, mesas VIP en Pacha, Ushuaïa y beach clubs, chef privado y transfers. Un solo contacto, respuesta personal.", "es_ES"],
+  en: ["Private Concierge in Ibiza · Villas, Yachts & VIP Tables | Mey Society", "Private concierge in Ibiza and Formentera: luxury villas, yacht charters, VIP tables at Pacha, Ushuaïa and beach clubs, private chef and transfers. One contact, a personal reply.", "en_GB"],
+  it: ["Concierge privato a Ibiza · Ville, yacht e tavoli VIP | Mey Society", "Concierge privato a Ibiza e Formentera: ville di lusso, noleggio yacht, tavoli VIP al Pacha, Ushuaïa e beach club, chef privato e transfer. Un solo contatto, risposta personale.", "it_IT"],
+  fr: ["Conciergerie privée à Ibiza · Villas, yachts et tables VIP | Mey Society", "Conciergerie privée à Ibiza et Formentera : villas de luxe, location de yachts, tables VIP au Pacha, Ushuaïa et beach clubs, chef privé et transferts. Un seul contact, une réponse personnelle.", "fr_FR"],
+  de: ["Privater Concierge auf Ibiza · Villen, Yachten & VIP-Tische | Mey Society", "Privater Concierge auf Ibiza und Formentera: Luxusvillen, Yachtcharter, VIP-Tische im Pacha, Ushuaïa und Beach Clubs, Privatkoch und Transfers. Ein Kontakt, eine persönliche Antwort.", "de_DE"],
+};
+export function applyMeta(l = lang) {
+  const [title, desc, loc] = META[l] || META.es, set = (sel, v) => document.querySelector(sel)?.setAttribute("content", v);
+  document.title = title; set('meta[name="description"]', desc); set('meta[property="og:title"]', title); set('meta[name="twitter:title"]', title);
+  set('meta[property="og:description"]', desc); set('meta[name="twitter:description"]', desc); set('meta[property="og:locale"]', loc);
+  const canon = document.querySelector('link[rel="canonical"]'), alt = document.querySelector(`link[rel="alternate"][hreflang="${l}"]`);
+  if (canon && alt) canon.href = alt.href; // each language version is its own canonical page
+}
 export function setLang(l) {
   if (!LANGS[l]) return; lang = l; try { localStorage.setItem("mey-lang", l); } catch {}
-  document.documentElement.lang = l; translateTree(document.body);
+  document.documentElement.lang = l; translateTree(document.body); applyMeta(l);
+  try { const u = new URL(location.href); if (l === "es") u.searchParams.delete("lang"); else u.searchParams.set("lang", l); history.replaceState(history.state, "", u); } catch {}
   document.dispatchEvent(new CustomEvent("langchange", { detail: l }));
 }

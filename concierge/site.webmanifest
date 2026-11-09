@@ -1,0 +1,16 @@
+{
+  "name": "Mey Society · Concierge privado en Ibiza",
+  "short_name": "Mey Society",
+  "description": "Villas, yates, mesas VIP, beach clubs y chef privado en Ibiza. Un solo contacto.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d0a38",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
