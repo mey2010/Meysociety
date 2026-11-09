@@ -141,7 +141,9 @@ function startMap() {
   }).catch(err => { console.error(err); loader.classList.add("is-error"); });
 }
 new IntersectionObserver((es, io) => { if (es.some(e => e.isIntersecting)) { io.disconnect(); startMap(); } }, { rootMargin: "900px 0px" }).observe(mapEl);
-(window.requestIdleCallback || (f => setTimeout(f, 2500)))(() => setTimeout(startMap, 1500), { timeout: 4000 });
+// warm the map up in the background, but only during a pause: never while the visitor is scrolling
+{ const later = () => document.documentElement.classList.contains("is-scrolling") ? setTimeout(later, 600) : startMap();
+  (window.requestIdleCallback || (f => setTimeout(f, 2500)))(() => setTimeout(later, 1500), { timeout: 4000 }); }
 document.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
   const on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", on); map3d.setFilter(b.dataset.kind, on);
   if (!on && active && active.type === b.dataset.kind) closePop();

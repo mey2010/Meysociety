@@ -26,12 +26,19 @@ async function fetchBlob(url, onBytes) {
   return new Blob(parts, { type: r.headers.get("content-type") || "" });
 }
 const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+// cooperative time-slicing: heavy loops run in ~8 ms pieces and hand the thread back in between,
+// so scrolling, the logo and the carousels never freeze while the map is being built
+const yieldNow = () => globalThis.scheduler?.yield ? scheduler.yield() : new Promise(r => setTimeout(r, 0));
+async function sliced(n, body, budget = 8) {
+  let t = performance.now();
+  for (let i = 0; i < n; i++) { body(i); if ((i & 63) === 63 && performance.now() - t > budget) { await yieldNow(); t = performance.now(); } }
+}
 async function loadHeights(url, onBytes) {
   const bmp = await createImageBitmap(await fetchBlob(url, onBytes), { colorSpaceConversion: "none", premultiplyAlpha: "none" });
   const w = bmp.width, h = bmp.height, c = document.createElement("canvas"); c.width = w; c.height = h;
   const cx = c.getContext("2d", { willReadFrequently: true }); cx.drawImage(bmp, 0, 0);
   const d = cx.getImageData(0, 0, w, h).data, a = new Float32Array(w * h);
-  for (let i = 0; i < w * h; i++) a[i] = ((d[i * 4] << 8) | d[i * 4 + 1]) / 10 - 100;
+  await sliced(h, i => { for (let j = i * w, e = j + w; j < e; j++) a[j] = ((d[j * 4] << 8) | d[j * 4 + 1]) / 10 - 100; });
   return { w, h, a };
 }
 async function loadGray(url) {
@@ -48,15 +55,15 @@ const bilinear = (arr, w, h, u, v, out = 0) => {
 };
 const uvOf = (x, z) => [(x - A.x) / (B.x - A.x), (z - A.z) / (B.z - A.z)];   // v = 0 at the north edge
 // per-pixel world-space normals from the relief, so ridges and gullies stay crisp at any zoom
-function normalTexture(H, scale) {
+async function normalTexture(H, scale) {
   const w = Math.max(2, Math.round(H.w * scale)), h = Math.max(2, Math.round(H.h * scale)), px = new Uint8Array(w * h * 4);
   const dx = (B.x - A.x) / (w - 1), dz = (B.z - A.z) / (h - 1), k = EXAG / 1000, at = (i, j) => bilinear(H.a, H.w, H.h, j / (w - 1), i / (h - 1), 0);
-  const row = new Float32Array(w * h); for (let i = 0; i < h; i++) for (let j = 0; j < w; j++) row[i * w + j] = Math.max(0, at(i, j)) * k;
-  for (let i = 0; i < h; i++) for (let j = 0; j < w; j++) {
+  const row = new Float32Array(w * h); await sliced(h, i => { for (let j = 0; j < w; j++) row[i * w + j] = Math.max(0, at(i, j)) * k; });
+  await sliced(h, i => { for (let j = 0; j < w; j++) {
     const l = row[i * w + Math.max(0, j - 1)], r = row[i * w + Math.min(w - 1, j + 1)], u = row[Math.max(0, i - 1) * w + j], d = row[Math.min(h - 1, i + 1) * w + j];
     let nx = (l - r) / (2 * dx), nz = (u - d) / (2 * dz), ny = 1; const L = Math.hypot(nx, ny, nz); nx /= L; ny /= L; nz /= L;
     const o = ((h - 1 - i) * w + j) * 4; px[o] = (nx * .5 + .5) * 255; px[o + 1] = (ny * .5 + .5) * 255; px[o + 2] = (nz * .5 + .5) * 255; px[o + 3] = 255;
-  }
+  } });
   const t = new THREE.DataTexture(px, w, h, THREE.RGBAFormat); t.colorSpace = THREE.NoColorSpace;
   t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.needsUpdate = true; return t;
 }
@@ -78,7 +85,9 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   Object.assign(sun.shadow.camera, { left: -34, right: 34, top: 34, bottom: -34, near: 1, far: 120 }); sun.shadow.bias = -.0004; sun.shadow.normalBias = .02;
   scene.add(sun, sun.target);
 
-  const orthoUrl = !small && renderer.capabilities.maxTextureSize >= 8192 ? "data/ortho_xl.jpg" : renderer.capabilities.maxTextureSize >= 4096 ? "data/ortho_hi.jpg" : "data/ortho_lo.jpg";
+  // the base photo: 3072x4096 is plenty for the whole-island view (the detail tiles take over when zooming in);
+  // the 5120x6144 version cost a long freeze to upload for no visible gain at that distance
+  const orthoUrl = renderer.capabilities.maxTextureSize >= 4096 && !small ? "data/ortho_hi.jpg" : "data/ortho_lo.jpg";
   const orthoBlob = fetchBlob(orthoUrl, f => { prog.o = f; report(); });     // downloads in parallel with the relief
   const [H, M] = await Promise.all([loadHeights("data/height_mdt25.png", f => { prog.h = f; report(); }), loadGray("data/mask1024.png")]);
   const hAt = (x, z) => { const [u, v] = uvOf(x, z); return bilinear(H.a, H.w, H.h, u, v, -30); };
@@ -87,9 +96,12 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   const maxTex = renderer.capabilities.maxTextureSize;
   const orthoObjUrl = URL.createObjectURL(await orthoBlob);
   const ortho = await new THREE.TextureLoader().loadAsync(orthoObjUrl); URL.revokeObjectURL(orthoObjUrl);
+  try { await ortho.image.decode?.(); } catch {} // decoded off the main thread, not at upload time
   prog.build = .25; report(); await nextFrame();
   ortho.colorSpace = THREE.SRGBColorSpace; ortho.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
-  const nrm = normalTexture(H, small ? .45 : .62);
+  const nrm = await normalTexture(H, small ? .45 : .62);
+  // each big texture goes to the graphics card in its own moment, not all together on the first frame
+  try { renderer.initTexture(ortho); await yieldNow(); renderer.initTexture(nrm); await yieldNow(); } catch {}
   prog.build = .6; report(); await nextFrame();
   const maskTex = new THREE.CanvasTexture(M.canvas); maskTex.colorSpace = THREE.NoColorSpace;
   const isleU = { uIsle: { value: new THREE.Vector4(ISLE.cx, ISLE.cz, ISLE.ax, ISLE.az) } };
@@ -100,11 +112,11 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     const g = new THREE.PlaneGeometry(B.x - A.x, B.z - A.z, NX - 1, NZ - 1).rotateX(-Math.PI / 2);
     g.translate((A.x + B.x) / 2, 0, (A.z + B.z) / 2);
     const pos = g.attributes.position;
-    for (let i = 0; i < pos.count; i++) {
+    await sliced(pos.count, i => {
       const x = pos.getX(i), z = pos.getZ(i), m = hAt(x, z);
       pos.setY(i, m > .4 ? m * EXAG / 1000 : -.02 - (1 - maskAt(x, z)) * .5);
-    }
-    g.computeVertexNormals();
+    });
+    await yieldNow(); g.computeVertexNormals(); await yieldNow();
     const mat = new THREE.MeshStandardMaterial({ map: ortho, roughness: .93, metalness: 0 });
     mat.onBeforeCompile = sh => {
       sh.uniforms.uNrm = { value: nrm }; sh.uniforms.uIsle = isleU.uIsle; sh.uniforms.uMaskT = { value: maskTex };
@@ -327,6 +339,8 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     for (; ci < clusterEls.length; ci++) clusterEls[ci].hidden = true;
   }
   const off = new THREE.Vector3();
+  // shaders compile in parallel (where the browser supports it) instead of stalling the first frame
+  try { await renderer.compileAsync(scene, camera); } catch {}
   (function loop(now) {
     requestAnimationFrame(loop); if (!visible || document.hidden) { last = now; return; }
     const dt = Math.min(.05, (now - last) / 1000); last = now; t += dt; seaU.uTime.value = t;
