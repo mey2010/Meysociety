@@ -1172,14 +1172,6 @@ html[data-theme="dark"] .stack__body { background: linear-gradient(180deg, rgb(2
   filter: drop-shadow(0 calc(26px * (1 - var(--fly-p, 0)) + 4px) calc(34px * (1 - var(--fly-p, 0)) + 8px) rgb(30 36 187 / calc(.45 - var(--fly-p, 0) * .2))); cursor: pointer; }
 .flylogo__coin img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
 .flylogo__coin .holo__overlay { border-radius: 50%; }
-/* the silver reflection a press sends across the metal */
-.flylogo__shine { position: absolute; inset: -25%; z-index: 3; pointer-events: none; opacity: 0;
-  background: linear-gradient(112deg, transparent 30%, rgb(255 255 255 / .25) 38%, rgb(248 250 255 / .95) 45%, rgb(214 222 236 / .55) 49%, transparent 54%,
-    transparent 58%, rgb(255 255 255 / .75) 61%, transparent 64%); transform: translateX(-75%); }
-.flylogo__coin.is-shining .flylogo__shine { animation: logo-shine 1150ms cubic-bezier(.35, .1, .2, 1) both; }
-.flylogo__coin.is-shining { animation: logo-press 520ms cubic-bezier(.34, 1.5, .64, 1); }
-@keyframes logo-shine { 0% { opacity: 0; transform: translateX(-75%); } 12% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(75%); } }
-@keyframes logo-press { 0% { transform: scale(1); } 35% { transform: scale(.93); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .flylogo__coin.is-shining { animation: none; } }
 
 /* service cards: the whole photo is shown, sharp, above the info panel; the same photo, blurred,
@@ -1205,13 +1197,45 @@ html[data-theme="dark"] .stack__body { background: linear-gradient(180deg, rgb(2
 .flylogo__coin img { position: relative; z-index: 1; border-radius: 50%;
   -webkit-mask-image: radial-gradient(circle closest-side at 50% 50%, #000 88%, rgb(0 0 0 / .8) 94%, transparent 100%);
   mask-image: radial-gradient(circle closest-side at 50% 50%, #000 88%, rgb(0 0 0 / .8) 94%, transparent 100%); }
-.flylogo__coin::before, .flylogo__coin::after { content: ""; position: absolute; inset: 2%; border-radius: 50%; pointer-events: none; z-index: 0;
+.flylogo__coin::before, .flylogo__coin::after, .flylogo__back::before, .flylogo__back::after { content: ""; position: absolute; inset: 2%; border-radius: 50%; pointer-events: none; z-index: 0;
   background: conic-gradient(from 0deg, #78c7e4, #1e24bb, #6a2f85, #c856e6, #ab50db, #515c9f, #78c7e4); }
-.flylogo__coin::before { filter: blur(calc(14px - var(--fly-p, 0) * 9px)); opacity: calc(.95 - var(--fly-p, 0) * .35); animation: neon-spin 9s linear infinite; transform: scale(1.04); }
-.flylogo__coin::after { inset: -6%; filter: blur(calc(34px - var(--fly-p, 0) * 24px)); opacity: calc(.55 - var(--fly-p, 0) * .25); animation: neon-spin 14s linear infinite reverse, neon-breathe 3.2s ease-in-out infinite alternate; }
+.flylogo__coin::before, .flylogo__back::before { filter: blur(calc(14px - var(--fly-p, 0) * 9px)); opacity: calc(.95 - var(--fly-p, 0) * .35); animation: neon-spin 9s linear infinite; transform: scale(1.04); }
+.flylogo__coin::after, .flylogo__back::after { inset: -6%; filter: blur(calc(34px - var(--fly-p, 0) * 24px)); opacity: calc(.55 - var(--fly-p, 0) * .25); animation: neon-spin 14s linear infinite reverse, neon-breathe 3.2s ease-in-out infinite alternate; }
 .flylogo__coin .holo__overlay { z-index: 2; -webkit-mask-image: radial-gradient(circle closest-side, #000 88%, transparent 100%); mask-image: radial-gradient(circle closest-side, #000 88%, transparent 100%); }
-.flylogo__shine { -webkit-mask-image: radial-gradient(circle closest-side, #000 62%, transparent 72%); mask-image: radial-gradient(circle closest-side, #000 62%, transparent 72%); }
 @keyframes neon-spin { to { rotate: 360deg; } }
 @keyframes neon-breathe { from { opacity: calc(.4 - var(--fly-p, 0) * .2); } to { opacity: calc(.7 - var(--fly-p, 0) * .3); } }
-@media (prefers-reduced-motion: reduce) { .flylogo__coin::before, .flylogo__coin::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .flylogo__coin::before, .flylogo__coin::after, .flylogo__back::before, .flylogo__back::after { animation: none; } }
 .sm-logo-img { box-shadow: 0 0 14px 2px rgb(171 80 219 / .55), 0 0 4px rgb(120 199 228 / .7); }
+
+/* ---- the coin: arc flight with a spin (front and back faces), a neon trail, a fine press reflection ---- */
+.flylogo__spin { position: absolute; inset: 0; display: block; transform-style: preserve-3d; will-change: transform; }
+.flylogo__coin { position: absolute; inset: 0; transform-style: flat; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.flylogo__back { position: absolute; inset: 0; display: block; border-radius: 50%; transform: rotateY(180deg); backface-visibility: hidden; -webkit-backface-visibility: hidden; pointer-events: none; }
+.flylogo__back img { position: relative; z-index: 1; display: block; width: 100%; height: 100%; border-radius: 50%; filter: brightness(.9) saturate(1.1);
+  -webkit-mask-image: radial-gradient(circle closest-side, #000 88%, rgb(0 0 0 / .8) 94%, transparent 100%); mask-image: radial-gradient(circle closest-side, #000 88%, rgb(0 0 0 / .8) 94%, transparent 100%); }
+.flylogo__trail { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 40; pointer-events: none; }
+/* press: a broad soft sheen that lifts the logo's own colours (overlay, never a white wash) and a hair-thin glint,
+   both clipped to the face of the coin */
+.flylogo__shine, .flylogo__glint { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0; border-radius: 50%;
+  -webkit-clip-path: circle(45% at 50% 50%); clip-path: circle(45% at 50% 50%); background-size: 300% 100%; background-position: 100% 0; background-repeat: no-repeat; }
+.flylogo__shine { mix-blend-mode: overlay;
+  background-image: linear-gradient(108deg, transparent 44%, rgb(255 255 255 / .5) 47.6%, #fff 50%, rgb(255 255 255 / .5) 52.4%, transparent 56%); }
+.flylogo__glint { mix-blend-mode: screen;
+  background-image: linear-gradient(108deg, transparent 49.5%, rgb(255 255 255 / .95) 50%, transparent 50.5%, transparent 51.3%, rgb(225 235 255 / .4) 51.6%, transparent 51.9%); }
+.flylogo__coin.is-shining .flylogo__shine, .flylogo__coin.is-shining .flylogo__glint { animation: logo-sweep 1050ms cubic-bezier(.45, .05, .25, 1) both; }
+.flylogo__coin.is-shining .flylogo__glint { animation-delay: 40ms; }
+@keyframes logo-sweep { 0% { opacity: 0; background-position: 100% 0; } 14% { opacity: 1; } 82% { opacity: 1; } 100% { opacity: 0; background-position: 0% 0; } }
+.flylogo__coin.is-shining { animation: logo-press 460ms cubic-bezier(.3, 1.4, .6, 1); }
+@keyframes logo-press { 0% { transform: scale(1); } 35% { transform: scale(.955); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .flylogo__coin.is-shining, .flylogo__coin.is-shining .flylogo__shine, .flylogo__coin.is-shining .flylogo__glint { animation: none; } }
+/* letters the coin flies over strike on and stutter in the logo's colours */
+.signal .ch.pass { animation: ch-pass 760ms linear both; }
+@keyframes ch-pass {
+  0% { text-shadow: 0 0 4px #fff, 0 0 16px rgb(120 199 228), 0 0 38px rgb(120 199 228 / .9), 0 0 80px rgb(30 36 187 / .8); filter: brightness(1.5); }
+  10% { opacity: .35; } 18% { opacity: 1; } 28% { opacity: .55; } 36% { opacity: 1; }
+  40% { text-shadow: 0 0 4px #fff, 0 0 16px rgb(171 80 219), 0 0 40px rgb(200 86 230 / .9), 0 0 84px rgb(106 47 133 / .8); filter: brightness(1.35); }
+  70% { text-shadow: 0 0 3px #fff, 0 0 14px rgb(200 86 230 / .8), 0 0 34px rgb(171 80 219 / .6), 0 0 70px rgb(30 36 187 / .5); filter: brightness(1.15); }
+}
+@media (prefers-reduced-motion: reduce) { .signal .ch.pass { animation: none; } }
+/* the focused fleet card hands its neon outline on gently while the ribbon glides */
+.ribbon__card { transition: box-shadow 700ms ease; }

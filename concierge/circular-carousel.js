@@ -10,7 +10,7 @@ const PRESETS = {
   panorama: { axis: "y", tilt: 0, perspective: 0, curve: 1, spread: 1, inward: true, billboard: false, backfaces: false, window: 0 },
 };
 const INTRO_LENGTH = { assemble: 1500, rise: 1400, spin: 1800, none: 0 };
-const TILES = 8, OVERLAP = 2.5, DRAG_THRESHOLD = 5, SPRING = 118, SETTLE_SPEED = 9, CAPTION_SPACE = 76, TO_RAD = Math.PI / 180;
+const TILES = 8, OVERLAP = 2.5, DRAG_THRESHOLD = 5, SPRING = 52, SETTLE_SPEED = 9, CAPTION_SPACE = 76, TO_RAD = Math.PI / 180;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const wrap = d => ((((d + 180) % 360) + 360) % 360) - 180;
 const easeOut = t => 1 - Math.pow(1 - t, 4);
@@ -186,9 +186,11 @@ export function createCircularCarousel(root, opts = {}) {
       if (Math.abs(state.target - state.angle) < .004 && Math.abs(state.velocity) < .03) { state.angle = state.target; state.velocity = 0; state.target = null; }
       busy = true;
     } else {
-      const tau = .18 + S.momentum * 1.5;
+      // hovering a drifting ring just eases it to a standstill (no snap, no jump); everything else settles on a card
+      const softStop = S.autoplay === "drift" && state.hover && !state.drag;
+      const tau = cruise ? 1.1 : softStop ? .5 : .18 + S.momentum * 1.5;
       state.velocity += (cruise - state.velocity) * (1 - Math.exp(-dt / tau)); state.angle += state.velocity * dt;
-      if (cruise === 0 && S.snap && Math.abs(state.velocity) < SETTLE_SPEED) state.target = nearest(state.angle);
+      if (cruise === 0 && S.snap && !softStop && Math.abs(state.velocity) < SETTLE_SPEED) state.target = nearest(state.angle);
       busy = busy || cruise !== 0 || Math.abs(state.velocity) > .01 || state.target !== null;
     }
     if (S.autoplay === "step" && !paused && !state.intro && state.introDone) {
@@ -220,15 +222,16 @@ export function createCircularCarousel(root, opts = {}) {
       else if (S.layout.inward) tr = `rotateY(${base}deg) translateZ(${-r}px)`;
       else { tr = `rotateY(${base}deg) translateZ(${r}px)`; if (S.layout.billboard) tr += ` rotateY(${-(base + angle)}deg)`; }
       if (mod.lift) tr += S.axis === "x" ? ` translateX(${mod.lift}px)` : ` translateY(${mod.lift}px)`;
-      card.style.transform = tr;
+      if (card._tr !== tr) { card.style.transform = tr; card._tr = tr; }
       const world = wrap(base + angle), facing = Math.cos(world * TO_RAD);
       if (S.layout.inward) card.style.visibility = Math.abs(world) > 86 ? "hidden" : "";
-      card.style.setProperty("--cc-depth", (S.depthFade * Math.pow((1 - facing) / 2, 1.25)).toFixed(3));
+      const dep = (Math.round(S.depthFade * Math.pow((1 - facing) / 2, 1.25) * 200) / 200).toFixed(3);
+      if (card._dep !== dep) { card.style.setProperty("--cc-depth", dep); card._dep = dep; }
     }
     setActive(((Math.round(-state.angle / S.step) % S.count) + S.count) % S.count || 0);
   };
   const frame = now => {
-    raf = 0; const dt = state.last ? Math.min((now - state.last) / 1000, .05) : 1 / 60; state.last = now;
+    raf = 0; const dt = state.last ? Math.min((now - state.last) / 1000, .1) : 1 / 60; state.last = now;
     const busy = advance(dt, now); render(now);
     if (busy && visible && !document.hidden) raf = requestAnimationFrame(frame); else state.last = 0;
   };
@@ -298,10 +301,11 @@ export function createCircularCarousel(root, opts = {}) {
     else { cancelAnimationFrame(raf); raf = 0; state.last = 0; videos.forEach(v => v.video.pause()); }
   }).observe(root);
 
-  // wait for the first images (max 2.4 s), then run the intro
-  const srcs = list.slice(0, 16).map(it => it.type === "video" ? it.poster : it.src).filter(Boolean);
+  // start as soon as the cards facing the viewer are decoded (max .7 s); the rest keep loading as they rise
+  const srcOf = it => it.type === "video" ? it.poster : it.src, front = [0, 1, count - 1, 2, count - 2].filter((v, k, a) => v >= 0 && v < count && a.indexOf(v) === k);
   const load = src => new Promise(r => { const im = new Image(); im.decoding = "async"; im.onload = () => (im.decode ? im.decode().then(r, r) : r()); im.onerror = r; im.src = src; });
-  Promise.race([Promise.all(srcs.map(load)), new Promise(r => setTimeout(r, 2400))]).then(() => { ready = true; root.dataset.ready = ""; state.introDone = false; state.intro = null; wake(); });
+  list.forEach(it => { const s = srcOf(it); if (s) load(s); });
+  Promise.race([Promise.all(front.map(i => srcOf(list[i])).filter(Boolean).map(load)), new Promise(r => setTimeout(r, 700))]).then(() => { ready = true; root.dataset.ready = ""; state.introDone = false; state.intro = null; wake(); });
   measure(); render(performance.now()); wake();
   return { focus: focusIndex, step: stepBy, get active() { return active; } };
 }

@@ -235,7 +235,7 @@ document.getElementById("popBook").addEventListener("click", () => {
 // the name also shatters like glass (cursor cracks it, a click bursts it), and the tagline is an elastic band
 shatterType(document.getElementById("signal"));
 elasticLettering(document.getElementById("introLine"));
-logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.querySelector(".sm-logo-img"), headerLink: document.querySelector(".sm-logo"), src: "assets/logo-neon.webp", menu: document.querySelector(".staggered-menu-wrapper") });
+logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.querySelector(".sm-logo-img"), headerLink: document.querySelector(".sm-logo"), src: "assets/logo-neon.webp", menu: document.querySelector(".staggered-menu-wrapper"), letters: document.getElementById("signal") });
 
 /* =====================================================================
    SPECTRAL DRAPE — a sheet of glowing dots folding in 3D (page background)
@@ -878,12 +878,13 @@ function closeLightbox() { lb.hidden = true; lbMedia.innerHTML = ""; document.bo
 document.getElementById("lbClose").addEventListener("click", closeLightbox);
 lb.addEventListener("click", e => { if (e.target === lb) closeLightbox(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !lb.hidden) closeLightbox(); });
-const reviewsItems = () => REVIEWS.map(r => ({ ...r, title: t(r.title), subtitle: t(r.subtitle), alt: t(r.title) }));
+const thumbOf = (p, r = "-r") => p ? "data/thumbs/" + p.split("/").pop().replace(/\.(jpe?g|png)$/i, "") + r + ".webp" : p;
+const reviewsItems = () => REVIEWS.map(r => ({ ...r, src: r.type === "video" ? r.src : thumbOf(r.src), poster: r.poster && thumbOf(r.poster), title: t(r.title), subtitle: t(r.subtitle), alt: t(r.title) }));
 const ringEl = document.getElementById("reviewsRing");
 const mountReviews = () => {
   ringEl.replaceChildren();
   createCircularCarousel(ringEl, {
-    items: reviewsItems(), preset: "cylinder", intro: "rise", cardWidth: innerWidth < 600 ? 170 : 230, aspectRatio: 1, speed: 34, captions: true, tilt: -7,
+    items: reviewsItems(), preset: "cylinder", intro: "rise", cardWidth: innerWidth < 600 ? 170 : 230, aspectRatio: 1, speed: 20, captions: true, tilt: -7,
     interval: 7.5, parallax: .36, cornerRadius: 19, fadeColor: "#1d1a5c", label: "Reviews",
     onItemClick: (it, i, front) => { if (front) openLightbox(REVIEWS[i]); },
   });
@@ -908,7 +909,9 @@ const fleet = document.getElementById("fleet"), fleetInfo = document.getElementB
 document.getElementById("fleetClose").innerHTML = ICONS.close;
 document.getElementById("fleetPrev").innerHTML = ICONS.left; document.getElementById("fleetNext").innerHTML = ICONS.right;
 let ribbon = null, fleetCat = "all", fleetList = FLEET;
-const fleetItems = () => fleetList.map(b => ({ ...b, title: t(b.title), tag: t(CAT_LABEL[b.cat]) }));
+const fleetItems = () => fleetList.map(b => ({ ...b, src: thumbOf(b.src, ""), title: t(b.title), tag: t(CAT_LABEL[b.cat]) }));
+// warm the cache so the fleet opens instantly
+window.requestIdleCallback?.(() => FLEET.forEach(b => { const im = new Image(); im.decoding = "async"; im.src = thumbOf(b.src, ""); }), { timeout: 4000 });
 function renderFleetInfo(b, i) {
   if (!b) return;
   fleetInfo.innerHTML = `<h3>${t(b.title)}</h3>

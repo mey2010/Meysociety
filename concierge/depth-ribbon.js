@@ -3,7 +3,7 @@
    Drag, flick, wheel, arrow keys or the buttons move along the ribbon; it springs onto the nearest card. */
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-const SPRING = 90, DAMP = 2 * Math.sqrt(SPRING);
+const SPRING = 46, DAMP = 2 * Math.sqrt(SPRING);
 
 export function createDepthRibbon(root, opts = {}) {
   const o = { items: [], onChange: null, onItemClick: null, autoplay: 4.5, label: "Galería", ...opts };
@@ -37,7 +37,7 @@ export function createDepthRibbon(root, opts = {}) {
       c.innerHTML = `<img src="${it.src}" alt="" draggable="false" decoding="async"><span class="ribbon__shine"></span><span class="ribbon__tag">${it.tag || ""}</span>`;
       stage.appendChild(c); return c;
     });
-    st.pos = st.target = 0; st.vel = 0; st.enter = reduced ? 1 : 0; st.enterAt = performance.now(); st.idleAt = performance.now() + 2500;
+    st.pos = st.target = 0; st.vel = 0; st.enter = reduced ? 1 : 0; st.enterAt = performance.now(); st.idleAt = performance.now() + 2200;
     measure(); wake();
   }
   function measure() {
@@ -72,7 +72,7 @@ export function createDepthRibbon(root, opts = {}) {
       // cards that have passed slide out to the side and fade instead of swelling toward the camera
       let x = p.x, y = p.y, z = p.z;
       if (uu < 0) { const k = -uu; x = -k * cw * .95; y = k * ch * .1; z = k * cw * .25; }
-      const op = clamp((uu + .75) / .6, 0, 1) * clamp((N - .6 - uu) / 1.2, 0, 1) * clamp(1.15 - uu * .12, 0, 1) * e;
+      const op = clamp((uu + .75) / .6, 0, 1) * clamp((N >= 4 ? N - 1.5 - uu : N - .6 - uu) / 1.1, 0, 1) * clamp(1.15 - uu * .12, 0, 1) * e;
       c.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateY(${uu < 0 ? -uu * 28 : yaw}deg) rotateZ(${roll}deg)`;
       c.style.opacity = op.toFixed(3);
       c.style.zIndex = String(1000 - Math.round(uu * 100));
@@ -84,21 +84,27 @@ export function createDepthRibbon(root, opts = {}) {
     if (a !== st.active) { st.active = a; cards.forEach((c, i) => c.toggleAttribute("data-front", i === a)); live.textContent = `${items[a].title}, ${a + 1} / ${N}`; o.onChange?.(items[a], a); }
   }
   function frame(now) {
-    raf = 0; const dt = st.last ? Math.min((now - st.last) / 1000, .05) : 1 / 60; st.last = now;
+    raf = 0; const dt = st.last ? Math.min((now - st.last) / 1000, .1) : 1 / 60; st.last = now;
     let busy = false;
     if (st.enter < 1) { const k = clamp((now - st.enterAt) / 1100, 0, 1); st.enter = 1 - Math.pow(1 - k, 3); busy = true; }
     if (!st.drag) {
-      if (o.autoplay && !reduced && !st.hover && now > st.idleAt) { st.target = Math.round(st.target) + 1; st.idleAt = now + o.autoplay * 1000; }
-      let rem = dt; while (rem > 0) { const h = Math.min(rem, 1 / 240); st.vel += (SPRING * (st.target - st.pos) - DAMP * st.vel) * h; st.pos += st.vel * h; rem -= h; }
-      if (Math.abs(st.target - st.pos) < .0005 && Math.abs(st.vel) < .001) { st.pos = st.target; st.vel = 0; } else busy = true;
+      const cruise = o.autoplay && N >= 4 && !reduced && !st.hover && now > st.idleAt;
+      if (cruise) {
+        // autoplay is one continuous glide along the ribbon (no stop-and-go steps); it eases in from rest
+        const v = 1 / o.autoplay; st.vel += (v - st.vel) * (1 - Math.exp(-dt / .9)); st.pos += st.vel * dt; st.target = st.pos; st.cruising = true; busy = true;
+      } else {
+        if (st.cruising) { st.cruising = false; st.target = Math.ceil(st.pos + st.vel * .5 - .02); } // when it is stopped, it glides on to the next card
+        let rem = dt; while (rem > 0) { const h = Math.min(rem, 1 / 240); st.vel += (SPRING * (st.target - st.pos) - DAMP * st.vel) * h; st.pos += st.vel * h; rem -= h; }
+        if (Math.abs(st.target - st.pos) < .0005 && Math.abs(st.vel) < .001) { st.pos = st.target; st.vel = 0; } else busy = true;
+      }
     } else busy = true;
     layout();
-    if (o.autoplay && !reduced) busy = true;
+    if (o.autoplay && N >= 4 && !reduced) busy = true;
     if (busy && visible && !document.hidden) raf = requestAnimationFrame(frame); else st.last = 0;
   }
   const wake = () => { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame); };
-  const goTo = i => { let t = Math.round(st.target), cur = ((t % N) + N) % N, d = i - cur; if (d > N / 2) d -= N; if (d < -N / 2) d += N; st.target = t + d; st.idleAt = performance.now() + 6000; wake(); };
-  const by = d => { st.target = Math.round(st.target) + d; st.idleAt = performance.now() + 6000; wake(); };
+  const goTo = i => { st.cruising = false; let t = Math.round(st.target), cur = ((t % N) + N) % N, d = i - cur; if (d > N / 2) d -= N; if (d < -N / 2) d += N; st.target = t + d; st.idleAt = performance.now() + 6000; wake(); };
+  const by = d => { st.cruising = false; st.target = (st.vel > .05 ? Math.ceil(st.pos - .02) : Math.round(st.target)) + d - (st.vel > .05 && d > 0 ? 1 : 0); st.idleAt = performance.now() + 6000; wake(); };
 
   // input: drag along the ribbon (either axis), flick, wheel, keys
   root.addEventListener("pointerdown", e => { if (e.button !== 0) return; st.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, pos: st.pos, moved: false, t: performance.now(), samples: [] }; });
@@ -112,14 +118,14 @@ export function createDepthRibbon(root, opts = {}) {
   });
   const up = e => {
     const d = st.drag; if (!d || d.id !== e.pointerId) return; st.drag = null; delete root.dataset.dragging;
-    if (!d.moved) { const c = e.target.closest?.(".ribbon__card"); if (c) { const i = +c.dataset.i; if (i === st.active && Math.abs(st.pos - Math.round(st.pos)) < .2) o.onItemClick?.(items[i], i); else goTo(i); } return; }
+    if (!d.moved) { const c = e.target.closest?.(".ribbon__card"); if (c) { const i = +c.dataset.i; if (i === st.active && Math.abs(st.pos - Math.round(st.pos)) < .35) o.onItemClick?.(items[i], i); else goTo(i); } return; }
     const a = d.samples[0], b = d.samples[d.samples.length - 1], v = a && b && b.t > a.t ? (b.p - a.p) / ((b.t - a.t) / 1000) : 0;
     st.target = Math.round(st.pos + clamp(v, -6, 6) * .28); st.vel = v * .4; st.idleAt = performance.now() + 6000; wake();
   };
   root.addEventListener("pointerup", up); root.addEventListener("pointercancel", up);
   root.addEventListener("click", e => { if (e.detail === 0) { const c = e.target.closest?.(".ribbon__card"); if (c) { const i = +c.dataset.i; i === st.active ? o.onItemClick?.(items[i], i) : goTo(i); } } }); // keyboard activation
   let wheelLock = 0;
-  root.addEventListener("wheel", e => { e.preventDefault(); const now = performance.now(); if (now < wheelLock) return; const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY; if (Math.abs(d) < 4) return; by(Math.sign(d)); wheelLock = now + 380; }, { passive: false });
+  root.addEventListener("wheel", e => { e.preventDefault(); const now = performance.now(); if (now < wheelLock) return; const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY; if (Math.abs(d) < 4) return; by(Math.sign(d)); wheelLock = now + 520; }, { passive: false });
   root.addEventListener("keydown", e => { if (e.key === "ArrowRight" || e.key === "ArrowDown") by(1); else if (e.key === "ArrowLeft" || e.key === "ArrowUp") by(-1); else return; e.preventDefault(); });
   root.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") st.hover = true; });
   root.addEventListener("pointerleave", () => { st.hover = false; st.idleAt = performance.now() + 2500; wake(); });
