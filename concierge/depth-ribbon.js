@@ -34,7 +34,7 @@ export function createDepthRibbon(root, opts = {}) {
     cards = items.map((it, i) => {
       const c = document.createElement("button"); c.type = "button"; c.className = "ribbon__card"; c.dataset.i = i;
       c.setAttribute("aria-label", `${it.title}, ${i + 1} / ${N}`);
-      c.innerHTML = `<img src="${it.src}" alt="" draggable="false" decoding="async"><span class="ribbon__shine"></span><span class="ribbon__tag">${it.tag || ""}</span>`;
+      c.innerHTML = `<img data-src="${it.src}" alt="" draggable="false" decoding="async"><span class="ribbon__shine"></span><span class="ribbon__tag">${it.tag || ""}</span>`;
       stage.appendChild(c); return c;
     });
     st.pos = st.target = 0; st.vel = 0; st.enter = reduced ? 1 : 0; st.enterAt = performance.now(); st.idleAt = performance.now() + 2200;
@@ -78,6 +78,8 @@ export function createDepthRibbon(root, opts = {}) {
       c.style.zIndex = String(1000 - Math.round(uu * 100));
       c.style.setProperty("--dim", clamp(Math.abs(uu) * .22, 0, .6).toFixed(3));
       c.style.pointerEvents = op > .25 ? "auto" : "none";
+      // photos load only for the cards near the front (a long fleet never decodes every image at once)
+      if (uu > -1.5 && uu < 4.5) { const im = c.firstElementChild; if (im && !im.src && im.dataset.src) im.src = im.dataset.src; }
       c.tabIndex = Math.round(u) === 0 ? 0 : -1;
     });
     const a = ((Math.round(st.pos) % N) + N) % N;

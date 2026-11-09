@@ -1307,3 +1307,49 @@ body:has(.fleet:not([hidden])) .fab-wa, body:has(.dash:not([hidden])) .fab-wa, b
 .btn { animation-play-state: paused; }
 .btn.is-vis { animation-play-state: running; }
 html.is-scrolling .btn, html.is-scrolling .sm-toggle, html.is-scrolling .lang__btn, html.is-scrolling .bell__btn, html.is-scrolling .fleet__arrow, html.is-scrolling .map__zoom button { animation-play-state: paused; }
+
+/* ---------------- fleet: real boats by type + the boat sheet ---------------- */
+.fleet__chips small { margin-left: 4px; font-size: 11px; opacity: .65; font-variant-numeric: tabular-nums; }
+.fleet__actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 6px; }
+.fleet__info .fleet__actions .btn { margin-top: 0; }
+.boat { position: fixed; inset: 0; z-index: 72; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px));
+  background: rgb(7 5 30 / .82); overflow: auto; animation: boat-in 320ms var(--ease) both; }
+.boat[hidden] { display: none; }
+@keyframes boat-in { from { opacity: 0; } }
+.boat__card { position: relative; width: min(1180px, 100%); display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); gap: clamp(16px, 2.4vw, 30px);
+  padding: clamp(14px, 2vw, 24px); border-radius: 30px; color: var(--on-dark); background: linear-gradient(160deg, rgb(41 36 103 / .97), rgb(13 10 56 / .98));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .25), inset 0 0 0 1px rgb(120 199 228 / .2), 0 40px 90px -30px #000; animation: boat-up 420ms var(--ease) both; }
+@keyframes boat-up { from { opacity: 0; transform: translateY(18px) scale(.985); } }
+.boat__close { position: absolute; top: 12px; right: 12px; z-index: 3; }
+.boat__gallery { display: grid; gap: 10px; min-width: 0; }
+.boat__main { position: relative; aspect-ratio: 3 / 2; border-radius: 20px; overflow: hidden; background: #0b0930; touch-action: pan-y; }
+.boat__main img { width: 100%; height: 100%; object-fit: cover; display: block; animation: boat-img 380ms var(--ease) both; }
+@keyframes boat-img { from { opacity: .35; } }
+.boat__main.is-loading::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: linear-gradient(90deg, transparent, #c856e6, #78c7e4, transparent); background-size: 50% 100%; animation: boat-bar 900ms linear infinite; }
+@keyframes boat-bar { from { background-position: -50% 0; } to { background-position: 150% 0; } }
+.boat__nav { position: absolute; top: 50%; translate: 0 -50%; width: 42px; height: 42px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; color: #fff;
+  background: rgb(13 10 56 / .55); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .25); }
+.boat__nav svg { width: 20px; height: 20px; }
+.boat__nav--prev { left: 10px; } .boat__nav--next { right: 10px; }
+.boat__thumbs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.boat__thumbs button { padding: 0; border: 0; border-radius: 12px; overflow: hidden; aspect-ratio: 3 / 2; cursor: pointer; background: #0b0930; opacity: .6; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .12); transition: opacity 200ms, box-shadow 200ms; }
+.boat__thumbs button[aria-current="true"] { opacity: 1; box-shadow: 0 0 0 2px #c856e6; }
+.boat__thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.boat__info { display: grid; align-content: start; gap: 10px; padding: 6px 4px 4px; }
+.boat__info h3 { margin: 0; font: 600 clamp(26px, 2.6vw, 36px)/1.08 var(--sans); color: #fff; padding-right: 48px; }
+.boat__note { margin: 0; color: var(--on-dark-soft); line-height: 1.55; font-size: 14.5px; }
+.boat__specs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; margin: 6px 0 2px; padding: 14px 0; border-top: 1px solid rgb(255 255 255 / .12); border-bottom: 1px solid rgb(255 255 255 / .12); }
+.boat__specs dt { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: #78c7e4; }
+.boat__specs dd { margin: 2px 0 0; font-size: 15px; color: #fff; }
+.boat__h { margin: 4px 0 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #78c7e4; }
+.boat__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.boat__chips li { padding: 6px 11px; border-radius: 99px; font-size: 13px; background: rgb(255 255 255 / .08); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .14); }
+.boat__chips--soft li { background: rgb(200 86 230 / .16); box-shadow: inset 0 0 0 1px rgb(200 86 230 / .35); }
+.boat__info .btn { justify-self: start; margin-top: 8px; }
+.boat__fine { margin: 0; font-size: 12px; color: var(--on-dark-soft); opacity: .8; }
+@media (max-width: 860px) {
+  .boat { place-items: start center; }
+  .boat__card { grid-template-columns: 1fr; border-radius: 24px; }
+  .boat__info .btn { justify-self: stretch; }
+}
+@media (prefers-reduced-motion: reduce) { .boat, .boat__card, .boat__main img { animation: none; } }

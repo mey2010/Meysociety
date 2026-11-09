@@ -2,6 +2,7 @@
 import { ICONS } from "./icons.js";
 import { createCircularCarousel } from "./circular-carousel.js";
 import { createDepthRibbon } from "./depth-ribbon.js";
+import { FLEET, FLEET_TYPES, TYPE_NOTE } from "./fleet-data.js";
 import { holo } from "./holo.js";
 import { shatterType } from "./shatter.js";
 import { elasticLettering } from "./elastic.js";
@@ -907,65 +908,114 @@ const mountReviews = () => {
 mountReviews();
 document.addEventListener("langchange", mountReviews);
 
-/* ---------------- FLEET: Depth Ribbon of boats (Barcos / Yates) ---------------- */
-// Illustrative examples. Replace src/specs with the real boats each charter operator offers.
-const FLEET = [
-  { src: "data/boats/sin-licencia.jpg", cat: "sin-licencia", title: "Lancha sin licencia", len: "5 m", pax: 5, extra: "15 CV · sin titulación" },
-  { src: "data/boats/lancha-8m.jpg", cat: "lancha", title: "Lancha abierta", len: "8 m", pax: 8, extra: "Solárium de proa" },
-  { src: "data/boats/cruiser-12m.jpg", cat: "con-patron", title: "Crucero de día", len: "12 m", pax: 10, extra: "Patrón incluido" },
-  { src: "data/boats/catamaran-14m.jpg", cat: "con-patron", title: "Catamarán a vela", len: "—", pax: 6, extra: "Patrón incluido" },
-  { src: "data/boats/velero-clasico.jpg", cat: "con-patron", title: "Goleta clásica", len: "24 m", pax: 12, extra: "Tripulación incluida" },
-  { src: "data/boats/yate-deportivo-18m.jpg", cat: "yate", title: "Yate deportivo", len: "18 m", pax: 12, extra: "Patrón y marinero" },
-  { src: "data/boats/superyate-25m.jpg", cat: "yate", title: "Superyate", len: "25 m", pax: 12, extra: "Tripulación de 4" },
-];
-const FLEET_CATS = [["all", "Todos"], ["sin-licencia", "Sin licencia"], ["con-patron", "Con patrón"], ["lancha", "Lancha"], ["yate", "Yate"]];
-const CAT_LABEL = Object.fromEntries(FLEET_CATS);
+/* ---------------- FLEET: Depth Ribbon of the real boats, grouped by type ---------------- */
+// Data in fleet-data.js (from the operators' 2026 catalogue, without prices).
+const CAT_LABEL = Object.fromEntries(FLEET_TYPES);
 const fleet = document.getElementById("fleet"), fleetInfo = document.getElementById("fleetInfo"), fleetChips = document.getElementById("fleetChips");
 document.getElementById("fleetClose").innerHTML = ICONS.close;
 document.getElementById("fleetPrev").innerHTML = ICONS.left; document.getElementById("fleetNext").innerHTML = ICONS.right;
+const cardSrc = b => `data/fleet/card/${b.id}.webp`, fullSrc = (b, k) => `data/fleet/4k/${b.id}-${k}.webp`;
 let ribbon = null, fleetCat = "all", fleetList = FLEET;
-const fleetItems = () => fleetList.map(b => ({ ...b, src: thumbOf(b.src, ""), title: t(b.title), tag: t(CAT_LABEL[b.cat]) }));
-// warm the cache so the fleet opens instantly
-window.requestIdleCallback?.(() => FLEET.forEach(b => { const im = new Image(); im.decoding = "async"; im.src = thumbOf(b.src, ""); }), { timeout: 4000 });
+const fleetItems = () => fleetList.map(b => ({ ...b, src: cardSrc(b), title: t(b.name), tag: t(CAT_LABEL[b.type]) }));
+const paxText = b => b.pax ? `${t("Hasta")} ${b.pax} ${t("personas")}` : "";
 function renderFleetInfo(b, i) {
   if (!b) return;
-  fleetInfo.innerHTML = `<h3>${t(b.title)}</h3>
-    <ul class="fleet__specs"><li>${ICONS.boat}${t(CAT_LABEL[b.cat])}</li>${b.len !== "—" ? `<li>${ICONS.ruler}${b.len}</li>` : ""}<li>${ICONS.users2}${t("Hasta")} ${b.pax} ${t("personas")}</li><li>${ICONS.star}${t(b.extra)}</li></ul>
-    <button class="btn btn--primary btn--sm" type="button" data-ask>${t("Pedir disponibilidad")}</button>`;
+  fleetInfo.innerHTML = `<h3>${b.name}</h3>
+    <ul class="fleet__specs"><li>${ICONS.boat}${t(CAT_LABEL[b.type])}</li>${b.len ? `<li>${ICONS.ruler}${b.len}</li>` : ""}${b.pax ? `<li>${ICONS.users2}${paxText(b)}</li>` : ""}${b.crew ? `<li>${ICONS.helm}${t(b.crew)}</li>` : ""}</ul>
+    <div class="fleet__actions"><button class="btn btn--glass btn--onDark btn--sm" type="button" data-sheet>${t("Ver ficha")}</button><button class="btn btn--primary btn--sm" type="button" data-ask>${t("Pedir disponibilidad")}</button></div>`;
   fleetInfo.classList.remove("is-swap"); void fleetInfo.offsetWidth; fleetInfo.classList.add("is-swap");
   document.getElementById("fleetCount").textContent = `${String(i + 1).padStart(2, "0")} / ${String(fleetList.length).padStart(2, "0")}`;
 }
 function setFleetCat(cat) {
-  fleetCat = cat; fleetList = cat === "all" ? FLEET : FLEET.filter(b => b.cat === cat);
-  fleetChips.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === cat));
+  fleetCat = FLEET_TYPES.some(([k]) => k === cat) ? cat : "all"; fleetList = fleetCat === "all" ? FLEET : FLEET.filter(b => b.type === fleetCat);
+  fleetChips.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === fleetCat));
   ribbon.setItems(fleetItems());
   document.querySelectorAll("#fleetRibbon .ribbon__card").forEach(c => holo(c, { tiltMax: 9, hoverScale: 1.03, idle: false })); // tilt on hover only: the ribbon already moves
 }
 function openFleet(cat = "all") {
   fleet.hidden = false; document.body.style.overflow = "hidden";
-  fleetChips.innerHTML = FLEET_CATS.map(([k, l]) => `<button type="button" data-cat="${k}" aria-pressed="${k === cat}">${t(l)}</button>`).join("");
+  // only the types that have boats, each with its count
+  fleetChips.innerHTML = FLEET_TYPES.filter(([k]) => k === "all" || FLEET.some(b => b.type === k))
+    .map(([k, l]) => `<button type="button" data-cat="${k}" aria-pressed="${k === cat}">${t(l)} <small>${k === "all" ? FLEET.length : FLEET.filter(b => b.type === k).length}</small></button>`).join("");
   if (!ribbon) ribbon = createDepthRibbon(document.getElementById("fleetRibbon").appendChild(document.createElement("div")), {
     items: [], label: t("Nuestra flota"),
     onChange: (b, i) => renderFleetInfo(fleetList[i], i),
-    onItemClick: (b, i) => askFleet(fleetList[i]),
+    onItemClick: (b, i) => openBoat(fleetList[i]),   // tapping the boat in front opens its sheet
   });
   setFleetCat(cat);
   requestAnimationFrame(() => document.querySelector("#fleetRibbon .ribbon").focus({ preventScroll: true }));
 }
 function closeFleet() { fleet.hidden = true; document.body.style.overflow = ""; }
 function askFleet(b) {
-  closeFleet(); select("yates", true);
-  document.getElementById("f-notes").value = `${t("Me interesa")}: ${t(b.title)}${b.len !== "—" ? " " + b.len : ""} (${t(CAT_LABEL[b.cat])}).`;
+  closeBoat(); closeFleet(); select("yates", true);
+  document.getElementById("f-notes").value = `${t("Me interesa")}: ${b.name}${b.len ? " · " + b.len : ""} (${t(CAT_LABEL[b.type])}).`;
   document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" });
 }
+
+/* the boat sheet: full-resolution photos and the basics, never prices */
+const sheet = document.createElement("div"); sheet.className = "boat"; sheet.hidden = true;
+sheet.setAttribute("role", "dialog"); sheet.setAttribute("aria-modal", "true"); sheet.setAttribute("aria-labelledby", "boatName");
+document.body.appendChild(sheet);
+let boatNow = null, shot = 1;
+function showShot(k) {
+  const b = boatNow; if (!b) return; shot = ((k - 1 + b.photos) % b.photos) + 1;
+  const main = sheet.querySelector(".boat__main img"), next = new Image();
+  next.decoding = "async"; next.src = fullSrc(b, shot); next.alt = `${b.name}, ${t("foto")} ${shot}`;
+  sheet.querySelector(".boat__main").classList.add("is-loading");
+  (next.decode ? next.decode() : Promise.resolve()).catch(() => {}).then(() => { if (boatNow !== b) return; main.replaceWith(next); sheet.querySelector(".boat__main").classList.remove("is-loading"); });
+  sheet.querySelectorAll(".boat__thumbs button").forEach((x, i) => x.setAttribute("aria-current", i + 1 === shot));
+}
+function openBoat(b) {
+  if (!b) return; boatNow = b; shot = 1;
+  const row = (label, v) => v ? `<div><dt>${t(label)}</dt><dd>${v}</dd></div>` : "";
+  sheet.innerHTML = `<div class="boat__card">
+    <button class="lightbox__close boat__close" type="button" data-close aria-label="${t("Cerrar")}">${ICONS.close}</button>
+    <div class="boat__gallery">
+      <div class="boat__main"><img src="${cardSrc(b)}" alt="${b.name}" decoding="async">
+        <button class="boat__nav boat__nav--prev" type="button" data-shot="-1" aria-label="${t("Anterior")}">${ICONS.left}</button>
+        <button class="boat__nav boat__nav--next" type="button" data-shot="1" aria-label="${t("Siguiente")}">${ICONS.right}</button></div>
+      <div class="boat__thumbs">${Array.from({ length: b.photos }, (_, i) => `<button type="button" data-go="${i + 1}" aria-label="${t("foto")} ${i + 1}"><img src="${i === 0 ? cardSrc(b) : fullSrc(b, i + 1)}" alt="" loading="lazy" decoding="async"></button>`).join("")}</div>
+    </div>
+    <div class="boat__info">
+      <p class="eyebrow eyebrow--light">${t(CAT_LABEL[b.type])}</p>
+      <h3 id="boatName">${b.name}</h3>
+      <p class="boat__note">${t(TYPE_NOTE[b.type] || "")}</p>
+      <dl class="boat__specs">
+        ${row("Eslora", b.len)}${row("Personas de día", b.pax ? String(b.pax) : "")}${row("Para dormir a bordo", b.night ? `${b.night} ${t("personas")}` : "")}
+        ${row("Camarotes", b.cabins && t(b.cabins))}${row("Tripulación", b.crew && t(b.crew))}${row("Salida", b.port && t(b.port))}${row("Motor", b.extra)}
+      </dl>
+      ${b.incl ? `<p class="boat__h">${t("Incluye")}</p><ul class="boat__chips">${b.incl.map(x => `<li>${t(x)}</li>`).join("")}</ul>` : ""}
+      ${b.toys ? `<p class="boat__h">${t("Extras disponibles")}</p><ul class="boat__chips boat__chips--soft">${b.toys.map(x => `<li>${t(x)}</li>`).join("")}</ul>` : ""}
+      ${!b.len && !b.pax ? `<p class="boat__note">${t("Te confirmamos eslora, capacidad y condiciones al pedir disponibilidad.")}</p>` : ""}
+      <button class="btn btn--primary" type="button" data-ask>${t("Pedir disponibilidad")}</button>
+      <p class="boat__fine">${t("Precio según fecha, duración y extras: te lo enviamos al pedir disponibilidad.")}</p>
+    </div></div>`;
+  sheet.hidden = false; showShot(1);
+  requestAnimationFrame(() => sheet.querySelector(".boat__close").focus());
+}
+function closeBoat() { if (sheet.hidden) return; sheet.hidden = true; boatNow = null; }
+sheet.addEventListener("click", e => {
+  if (e.target === sheet || e.target.closest("[data-close]")) return closeBoat();
+  const s = e.target.closest("[data-shot]"); if (s) return showShot(shot + +s.dataset.shot);
+  const g = e.target.closest("[data-go]"); if (g) return showShot(+g.dataset.go);
+  if (e.target.closest("[data-ask]")) askFleet(boatNow);
+});
+// swipe between photos on touch screens
+{ let sx = null; sheet.addEventListener("pointerdown", e => { if (e.target.closest(".boat__main")) sx = e.clientX; });
+  sheet.addEventListener("pointerup", e => { if (sx === null) return; const d = e.clientX - sx; sx = null; if (Math.abs(d) > 40) showShot(shot + (d < 0 ? 1 : -1)); }); }
+document.addEventListener("keydown", e => {
+  if (sheet.hidden) return;
+  if (e.key === "Escape") { e.stopImmediatePropagation(); closeBoat(); } else if (e.key === "ArrowRight") showShot(shot + 1); else if (e.key === "ArrowLeft") showShot(shot - 1);
+}, true);
+
 fleetChips.addEventListener("click", e => { const b = e.target.closest("button[data-cat]"); if (b) setFleetCat(b.dataset.cat); });
-fleetInfo.addEventListener("click", e => { if (e.target.closest("[data-ask]")) askFleet(fleetList[ribbon.active]); });
+fleetInfo.addEventListener("click", e => { if (e.target.closest("[data-ask]")) askFleet(fleetList[ribbon.active]); else if (e.target.closest("[data-sheet]")) openBoat(fleetList[ribbon.active]); });
 document.getElementById("fleetPrev").addEventListener("click", () => ribbon.prev());
 document.getElementById("fleetNext").addEventListener("click", () => ribbon.next());
 document.getElementById("fleetClose").addEventListener("click", closeFleet);
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !fleet.hidden) closeFleet(); });
 document.addEventListener("click", e => { const b = e.target.closest("[data-fleet]"); if (b) { e.preventDefault(); openFleet(b.dataset.fleet); } });
-document.addEventListener("langchange", () => { if (!fleet.hidden) openFleet(fleetCat); });
+document.addEventListener("langchange", () => { if (!fleet.hidden) openFleet(fleetCat); if (boatNow) openBoat(boatNow); });
 
 
 /* ---------------- itinerary changes: admin edits create them, the client's bell announces them ---------------- */
