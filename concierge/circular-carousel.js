@@ -10,7 +10,7 @@ const PRESETS = {
   panorama: { axis: "y", tilt: 0, perspective: 0, curve: 1, spread: 1, inward: true, billboard: false, backfaces: false, window: 0 },
 };
 const INTRO_LENGTH = { assemble: 1500, rise: 1400, spin: 1800, none: 0 };
-const TILES = 8, OVERLAP = 2.5, DRAG_THRESHOLD = 5, SPRING = 52, SETTLE_SPEED = 9, CAPTION_SPACE = 76, TO_RAD = Math.PI / 180;
+const TILES = innerWidth < 700 ? 5 : 6, OVERLAP = 2.5, DRAG_THRESHOLD = 5, SPRING = 52, SETTLE_SPEED = 9, CAPTION_SPACE = 76, TO_RAD = Math.PI / 180;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const wrap = d => ((((d + 180) % 360) + 360) % 360) - 180;
 const easeOut = t => 1 - Math.pow(1 - t, 4);

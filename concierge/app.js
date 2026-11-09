@@ -8,6 +8,7 @@ import { elasticLettering } from "./elastic.js";
 import { logoFlight } from "./logo-flight.js";
 import { initMap3D } from "./map3d.js";
 import { initConsent } from "./consent.js";
+import "./drape-core.js"; // shared drawing code for the dot background (fallback path)
 import { LANGS, t, msg, venueInfo, translateTree, setLang, getLang, watchI18n, applyMeta } from "./i18n.js";
 import { TEMPLATES, fromTemplate, newCode, loadAll, saveAll, findForClient, timeline } from "./itineraries.js";
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -79,7 +80,8 @@ const SM = (() => {
     if (!open) gsap.to(btn, { color: light ? "#0d0a38" : "#ffffff", duration: .3, overwrite: "auto" });
   }
   const band = () => root.classList.toggle("sm-scrolled", scrollY > 40);
-  addEventListener("scroll", () => { checkGround(); band(); }, { passive: true }); checkGround(); band();
+  let groundTick = false;
+  addEventListener("scroll", () => { if (groundTick) return; groundTick = true; requestAnimationFrame(() => { groundTick = false; checkGround(); band(); }); }, { passive: true }); checkGround(); band();
   document.addEventListener("themechange", () => { onLight = null; checkGround(); });
   document.addEventListener("mousedown", e => { if (open && !panel.contains(e.target) && !btn.contains(e.target)) set(false); });
   addEventListener("keydown", e => { if (e.key === "Escape") set(false); });
@@ -242,65 +244,50 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
    SPECTRAL DRAPE — a sheet of glowing dots folding in 3D (page background)
    ===================================================================== */
 {
-  const cv = document.getElementById("drape"), cx = cv.getContext("2d");
-  const small = matchMedia("(max-width: 900px)").matches;
-  const COLS = small ? 56 : 96, ROWS = small ? 34 : 54;
-  const dpr = Math.min(devicePixelRatio || 1, 1.5);
-  let W = 0, H = 0;
-  function size() { W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
-  size(); addEventListener("resize", size);
-  // soft dots in the brand colours, drawn normally so they read on white
-  const sprite = col => { const c = document.createElement("canvas"); c.width = c.height = 32; const g = c.getContext("2d"); const r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
-    r.addColorStop(0, col); r.addColorStop(.45, col); r.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = r; g.fillRect(0, 0, 32, 32); return c; };
-  // the six colours sampled from the logo, dark to light along the fold
-  const SPR_LIGHT = ["#0d0a38", "#292467", "#1e24bb", "#515c9f", "#78c7e4", "#ab50db"].map(sprite), SPR_DARK = ["#c9cce8", "#9fa6ff", "#5a63ff", "#8f96d6", "#78c7e4", "#ab50db"].map(sprite);
-  let SPR = document.documentElement.dataset.theme === "dark" ? SPR_DARK : SPR_LIGHT;
-  document.addEventListener("themechange", e => { SPR = e.detail === "dark" ? SPR_DARK : SPR_LIGHT; if (REDUCED) draw(performance.now()); });
-  const MAG = ["#6a2f85", "#9242b3", "#ab50db", "#c856e6", "#c856e6"].map(sprite); // the logo's magenta/pink, light to bright
-  let mx = 0, my = 0, tmx = 0, tmy = 0, t0 = performance.now();
-  addEventListener("pointermove", e => { tmx = e.clientX / innerWidth - .5; tmy = e.clientY / innerHeight - .5; }, { passive: true });
-  // pressing anywhere sends a ripple through the drape from that point
-  const ripples = [];
+  // The drape is drawn on a background thread (Web Worker + OffscreenCanvas) so scrolling, the service cards and
+  // the carousels never wait for it. Browsers without that support draw it here, at a lighter density and 30 fps.
+  const cv = document.getElementById("drape");
+  const state = () => ({ w: innerWidth, h: innerHeight, dpr: 1, scrollY, theme: document.documentElement.dataset.theme || "light", small: matchMedia("(max-width: 900px)").matches, reduced: REDUCED });
+  let post = () => {}; // messages before the drape is ready are simply dropped (it reads the live state on start)
+  const fallback = () => {
+    // same drawing, in this thread, at 30 fps
+    const fx = globalThis.makeDrape(cv.getContext("2d"), () => document.createElement("canvas"));
+    fx.set(state()); post = m => fx.message(m);
+    let lastDraw = 0;
+    (function loop(now) { if (!document.hidden && now - lastDraw > 32) { lastDraw = now; fx.draw(now); } requestAnimationFrame(loop); })(performance.now());
+  };
+  // the worker must say hello before the canvas is handed over, so a blocked or broken worker never costs the background
+  try {
+    if (!cv.transferControlToOffscreen || typeof Worker === "undefined") throw 0;
+    const worker = new Worker("drape-worker.js"); let done = false;
+    const giveUp = () => { if (done) return; done = true; worker.terminate(); fallback(); };
+    const timer = setTimeout(giveUp, 2000);
+    worker.onerror = giveUp;
+    worker.onmessage = e => {
+      if (e.data !== "ready" || done) return; done = true; clearTimeout(timer);
+      const off = cv.transferControlToOffscreen();
+      worker.postMessage({ type: "init", canvas: off, ...state() }, [off]);
+      post = m => worker.postMessage(m);
+    };
+  } catch { fallback(); }
+  addEventListener("resize", () => post({ type: "size", ...state() }));
+  addEventListener("scroll", () => post({ type: "scroll", scrollY }), { passive: true });
+  addEventListener("pointermove", e => post({ type: "pointer", x: e.clientX / innerWidth - .5, y: e.clientY / innerHeight - .5 }), { passive: true });
   addEventListener("pointerdown", e => {
     if (e.target.closest("a, button, input, textarea, .map, .pop, .staggered-menu-panel, .modal, .dash")) return;
-    ripples.push({ x: e.clientX, y: e.clientY, t: performance.now() }); if (ripples.length > 5) ripples.shift();
-    if (REDUCED) draw(performance.now());
+    post({ type: "ripple", x: e.clientX, y: e.clientY });
   }, { passive: true });
-  function draw(now) {
-    const t = (now - t0) / 1000, sc = scrollY / Math.max(1, innerHeight);
-    mx += (tmx - mx) * .04; my += (tmy - my) * .04;
-    for (let r = ripples.length - 1; r >= 0; r--) if (now - ripples[r].t > 2600) ripples.splice(r, 1);
-    cx.clearRect(0, 0, W, H);
-    const fadeOut = 1 - clamp(scrollY / Math.max(1, innerHeight * .8)) * .7; // quieter behind the content below the intro
-    const ry = .5 + mx * .5 + Math.sin(t * .07) * .25, rx = 1.05 + my * .25, cy = Math.cos(ry), sy = Math.sin(ry), cxr = Math.cos(rx), sxr = Math.sin(rx);
-    const F = Math.min(W, H) * 1.25, scale = Math.max(W, H) * .62, R = Math.max(W, H);
-    for (let j = 0; j < ROWS; j++) {
-      const v = j / (ROWS - 1) * 2 - 1;
-      for (let i = 0; i < COLS; i++) {
-        const u = i / (COLS - 1) * 2 - 1;
-        const z = Math.sin(u * 2.3 + t * .55 + sc * .6) * .32 + Math.sin(v * 3.1 - t * .7) * .22 + Math.sin((u + v) * 1.6 + t * .35) * .18 + Math.cos(u * v * 3 + sc * .4) * .1;
-        const x = u * 1.5, y = v;
-        const x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
-        const y2 = y * cxr - z1 * sxr, z2 = y * sxr + z1 * cxr + 3.2;
-        let px = W / 2 + x1 * scale / z2 * 1.6, py = H * .52 + y2 * scale / z2 * 1.6, boost = 0;
-        for (const rp of ripples) { // a ring travelling outward, fading as it goes
-          const age = (now - rp.t) / 1000, dx = px - rp.x, dy = py - rp.y, d = Math.hypot(dx, dy) || 1;
-          const front = age * R * .55, band = Math.exp(-((d - front) ** 2) / (2 * (60 + age * 50) ** 2)), fade = Math.exp(-age * 1.4);
-          const w = Math.sin((d - front) * .045) * band * fade;
-          px += dx / d * w * 26; py += dy / d * w * 26 - band * fade * 14; boost += band * fade;
-        }
-        if (px < -20 || px > W + 20 || py < -20 || py > H + 20) continue;
-        const depth = clamp((4.4 - z2) / 2.4), s = (1.1 + depth * 3.6 + boost * 2.5) * (F / 1000);
-        const k = clamp((z + .7) / 1.4), hsh = Math.abs(Math.sin(i * 12.9898 + j * 78.233) * 43758.5453) % 1;
-        const spr = hsh < .55 ? MAG[Math.min(4, Math.floor(k * 5))] : SPR[Math.min(5, Math.floor(k * 6))];
-        cx.globalAlpha = Math.min(1, (.1 + depth * .45) * fadeOut + boost * .5);
-        cx.drawImage(spr, px - s, py - s, s * 2, s * 2);
-      }
-    }
-    cx.globalAlpha = 1;
-  }
-  if (REDUCED) { draw(performance.now()); addEventListener("scroll", () => requestAnimationFrame(() => draw(performance.now())), { passive: true }); }
-  else (function loop(now) { if (!document.hidden) draw(now); requestAnimationFrame(loop); })(performance.now());
+  document.addEventListener("themechange", e => post({ type: "theme", theme: e.detail }));
+  document.addEventListener("visibilitychange", () => post({ type: "visible", visible: !document.hidden }));
+}
+
+// glass buttons float only while on screen, and hold still while the page is scrolling
+{
+  const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle("is-vis", e.isIntersecting)));
+  const watch = root => root.querySelectorAll?.(".btn").forEach(b => { if (!b.__io) { b.__io = 1; io.observe(b); } });
+  watch(document); new MutationObserver(rs => rs.forEach(r => r.addedNodes.forEach(n => n.nodeType === 1 && (n.matches?.(".btn") ? watch(n.parentNode) : watch(n))))).observe(document.body, { childList: true, subtree: true });
+  let st = 0; const html = document.documentElement;
+  addEventListener("scroll", () => { if (!st) html.classList.add("is-scrolling"); clearTimeout(st); st = setTimeout(() => { st = 0; html.classList.remove("is-scrolling"); }, 160); }, { passive: true });
 }
 
 /* =====================================================================
@@ -312,23 +299,36 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
   cards.forEach((c, i) => c.style.setProperty("--i", i));
   document.querySelectorAll(".stack__card [data-svc]").forEach(b => b.addEventListener("click", () => select(b.dataset.svc, true)));
   if (!REDUCED) {
-    let ticking = false;
+    let ticking = false, stuck = [], tops = [];
+    // a dark veil per card stands in for the old brightness() filter: only its opacity changes, which the
+    // compositor does on its own without repainting the card (photo, blurred backdrop and glass panel)
+    const veils = cards.map(c => { const v = document.createElement("span"); v.className = "stack__veil"; v.setAttribute("aria-hidden", "true"); c.appendChild(v); return v; });
+    const last = cards.map(() => ({ s: "", o: "", v: "" }));
+    // where each card sticks and where it sits in the page: measured on resize, not on every scroll frame
+    function measure() {
+      stuck = cards.map(c => parseFloat(getComputedStyle(c).top) || 0);
+      // natural (un-stuck) position of each card: read once with sticky switched off for the measurement
+      cards.forEach(c => c.style.position = "relative");
+      tops = cards.map(c => { let y = 0, el = c; while (el) { y += el.offsetTop; el = el.offsetParent; } return y; });
+      cards.forEach(c => c.style.position = "");
+      update();
+    }
     function update() {
       ticking = false;
-      const vh = innerHeight;
-      const cover = cards.map((c, i) => { // how far card i has slid into its stuck position (0..1)
-        const r = c.getBoundingClientRect(), stuckAt = parseFloat(getComputedStyle(c).top) || 0;
-        return clamp((vh - r.top) / Math.max(1, vh - stuckAt));
-      });
+      const vh = innerHeight, sy = scrollY;
+      const cover = cards.map((c, i) => clamp((vh - Math.max(tops[i] - sy, stuck[i])) / Math.max(1, vh - stuck[i])));
       cards.forEach((c, i) => {
         let k = 0; for (let j = i + 1; j < cards.length; j++) k += cover[j];
-        const s = 1 - Math.min(k, 4) * .05, o = 1 - clamp(k * .55 - .1, 0, .95);
-        c.style.transform = `scale(${s.toFixed(4)})`; c.style.opacity = o.toFixed(3);
-        c.style.filter = k > .05 ? `brightness(${(1 - Math.min(k, 2) * .18).toFixed(3)})` : "";
+        const s = (1 - Math.min(k, 4) * .05).toFixed(4), o = (1 - clamp(k * .55 - .1, 0, .95)).toFixed(3), v = (Math.min(k, 2) * .2).toFixed(3);
+        const L = last[i];
+        if (L.s !== s) { c.style.transform = `scale(${s})`; L.s = s; }
+        if (L.o !== o) { c.style.opacity = o; L.o = o; }
+        if (L.v !== v) { veils[i].style.opacity = v; L.v = v; }
       });
     }
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
-    addEventListener("resize", update); update();
+    addEventListener("resize", measure); addEventListener("load", measure); measure();
+    new ResizeObserver(() => measure()).observe(cards[0].parentElement);
   }
 }
 
@@ -937,7 +937,7 @@ function setFleetCat(cat) {
   fleetCat = cat; fleetList = cat === "all" ? FLEET : FLEET.filter(b => b.cat === cat);
   fleetChips.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === cat));
   ribbon.setItems(fleetItems());
-  document.querySelectorAll("#fleetRibbon .ribbon__card").forEach(c => holo(c, { tiltMax: 9, hoverScale: 1.03 }));
+  document.querySelectorAll("#fleetRibbon .ribbon__card").forEach(c => holo(c, { tiltMax: 9, hoverScale: 1.03, idle: false })); // tilt on hover only: the ribbon already moves
 }
 function openFleet(cat = "all") {
   fleet.hidden = false; document.body.style.overflow = "hidden";

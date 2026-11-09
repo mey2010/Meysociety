@@ -167,7 +167,7 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
 
   // 3D tilt + silver glare (no colour), stronger while it is big
   // (the whole coin tilts, so its thickness shows; the glare is painted on the face)
-  holo(spinEl, { media: coin, tiltMax: 16, hoverScale: 1.04, glare: .8, intensity: 0, edgeSparkle: 0, frame: 0 });
+  holo(spinEl, { media: coin, tiltMax: 16, hoverScale: 1.04, glare: .8, intensity: 0, edgeSparkle: 0, frame: 0, idle: false }); // no idle drift: nothing runs while nobody touches it
   // a press sends a fine reflection across the face
   const shine = () => { [coin, core].forEach(el => el.classList.remove("is-shining")); void coin.offsetWidth; [coin, core].forEach(el => el.classList.add("is-shining")); };
   fly.addEventListener("pointerdown", shine);

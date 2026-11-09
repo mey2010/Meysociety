@@ -809,7 +809,7 @@ button.sm-panel-item { text-align: right; padding: 0; }
 .ribbon__shine { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / .18) 50%, transparent 65%); opacity: 0; pointer-events: none; }
 .ribbon__card[data-front] { box-shadow: 0 40px 80px -28px rgb(0 0 0 / .9), 0 0 0 2px rgb(200 86 230 / .9), 0 0 40px -6px rgb(200 86 230 / .6); }
 .ribbon__card[data-front] .ribbon__shine { animation: ribbon-shine 2.6s ease-in-out .3s 1 both; }
-.ribbon__tag { position: absolute; left: 14px; top: 14px; padding: 6px 11px; border-radius: 99px; font: 600 12px var(--sans); color: #fff; background: rgb(13 10 56 / .6); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .25); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.ribbon__tag { position: absolute; left: 14px; top: 14px; padding: 6px 11px; border-radius: 99px; font: 600 12px var(--sans); color: #fff; background: rgb(13 10 56 / .74); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .25); }
 .ribbon__card:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
 .ribbon__live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 @keyframes ribbon-shine { 0% { opacity: 0; transform: translateX(-60%); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateX(60%); } }
@@ -1132,8 +1132,7 @@ html[data-theme="dark"] .staggered-menu-wrapper[data-open] .sm-logo-word { color
 .stack__media::after { background: linear-gradient(180deg, rgb(13 10 56 / 0) 38%, rgb(13 10 56 / .35) 62%, rgb(13 10 56 / .72) 100%); }
 .stack__body { position: absolute; left: clamp(12px, 2.2vw, 26px); right: clamp(12px, 2.2vw, 26px); bottom: clamp(12px, 2.2vw, 26px); z-index: 3;
   gap: 10px; padding: clamp(18px, 2.6vw, 30px) clamp(18px, 3vw, 40px); border-radius: 24px; justify-items: center; text-align: center;
-  background: linear-gradient(180deg, rgb(255 255 255 / .14), rgb(255 255 255 / .05)), rgb(13 10 56 / .38);
-  -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
+  background: linear-gradient(180deg, rgb(255 255 255 / .14), rgb(255 255 255 / .05)), rgb(13 10 56 / .46);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / .35), inset 0 0 0 1px rgb(255 255 255 / .14), 0 20px 40px -24px rgb(0 0 0 / .7); }
 .stack__body h3 { font-size: clamp(28px, 3.4vw, 46px); }
 .stack__body > p:not(.stack__place) { color: rgb(244 245 251 / .82); max-width: 62ch; }
@@ -1298,3 +1297,13 @@ body:has(.fleet:not([hidden])) .fab-wa, body:has(.dash:not([hidden])) .fab-wa, b
   background: rgb(13 10 56 / .92); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 24px 60px -20px rgb(0 0 0 / .6), inset 0 0 0 1px rgb(255 255 255 / .14); }
 .consent p { margin: 0; flex: 1 1 260px; } .consent a { color: #78c7e4; }
 .consent__btns { display: flex; gap: 10px; }
+
+/* ================= performance: smooth on every device ================= */
+/* service cards: each card is its own GPU layer; the veil darkens it without repainting anything */
+.stack__card { will-change: transform, opacity; contain: layout paint; }
+.stack__veil { position: absolute; inset: 0; z-index: 6; border-radius: inherit; background: #07051e; opacity: 0; pointer-events: none; will-change: opacity; }
+.stack__media-bg { will-change: transform; }
+/* the slow float of the glass buttons only runs while a button is on screen (set by JS) */
+.btn { animation-play-state: paused; }
+.btn.is-vis { animation-play-state: running; }
+html.is-scrolling .btn, html.is-scrolling .sm-toggle, html.is-scrolling .lang__btn, html.is-scrolling .bell__btn, html.is-scrolling .fleet__arrow, html.is-scrolling .map__zoom button { animation-play-state: paused; }
