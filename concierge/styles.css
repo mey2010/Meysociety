@@ -1199,3 +1199,19 @@ html[data-theme="dark"] .stack__body { background: linear-gradient(180deg, rgb(2
     width: calc(100% - var(--pw) - 3 * var(--m)); height: calc(100% - 2 * var(--m)); max-width: none; max-height: none; }
   .stack__media::after { background: linear-gradient(90deg, transparent 45%, rgb(13 10 56 / .35)); }
 }
+
+/* the logo as before: no silver bezel, a soft neon halo in the logo's own colours */
+.flylogo__coin { overflow: visible; filter: none; }
+.flylogo__coin img { position: relative; z-index: 1; border-radius: 50%;
+  -webkit-mask-image: radial-gradient(circle closest-side at 50% 50%, #000 88%, rgb(0 0 0 / .8) 94%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side at 50% 50%, #000 88%, rgb(0 0 0 / .8) 94%, transparent 100%); }
+.flylogo__coin::before, .flylogo__coin::after { content: ""; position: absolute; inset: 2%; border-radius: 50%; pointer-events: none; z-index: 0;
+  background: conic-gradient(from 0deg, #78c7e4, #1e24bb, #6a2f85, #c856e6, #ab50db, #515c9f, #78c7e4); }
+.flylogo__coin::before { filter: blur(calc(14px - var(--fly-p, 0) * 9px)); opacity: calc(.95 - var(--fly-p, 0) * .35); animation: neon-spin 9s linear infinite; transform: scale(1.04); }
+.flylogo__coin::after { inset: -6%; filter: blur(calc(34px - var(--fly-p, 0) * 24px)); opacity: calc(.55 - var(--fly-p, 0) * .25); animation: neon-spin 14s linear infinite reverse, neon-breathe 3.2s ease-in-out infinite alternate; }
+.flylogo__coin .holo__overlay { z-index: 2; -webkit-mask-image: radial-gradient(circle closest-side, #000 88%, transparent 100%); mask-image: radial-gradient(circle closest-side, #000 88%, transparent 100%); }
+.flylogo__shine { -webkit-mask-image: radial-gradient(circle closest-side, #000 62%, transparent 72%); mask-image: radial-gradient(circle closest-side, #000 62%, transparent 72%); }
+@keyframes neon-spin { to { rotate: 360deg; } }
+@keyframes neon-breathe { from { opacity: calc(.4 - var(--fly-p, 0) * .2); } to { opacity: calc(.7 - var(--fly-p, 0) * .3); } }
+@media (prefers-reduced-motion: reduce) { .flylogo__coin::before, .flylogo__coin::after { animation: none; } }
+.sm-logo-img { box-shadow: 0 0 14px 2px rgb(171 80 219 / .55), 0 0 4px rgb(120 199 228 / .7); }
