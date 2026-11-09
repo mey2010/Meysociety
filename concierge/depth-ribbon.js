@@ -34,7 +34,8 @@ export function createDepthRibbon(root, opts = {}) {
     cards = items.map((it, i) => {
       const c = document.createElement("button"); c.type = "button"; c.className = "ribbon__card"; c.dataset.i = i;
       c.setAttribute("aria-label", `${it.title}, ${i + 1} / ${N}`);
-      c.innerHTML = `<img data-src="${it.src}" alt="" draggable="false" decoding="async"><span class="ribbon__shine"></span><span class="ribbon__tag">${it.tag || ""}</span>`;
+      c.innerHTML = `<img data-src="${it.src}" alt="" draggable="false" decoding="async"><span class="ribbon__ring" aria-hidden="true"></span><span class="ribbon__shine"></span><span class="ribbon__tag">${it.tag || ""}</span>`;
+      c._last = {};
       stage.appendChild(c); return c;
     });
     st.pos = st.target = 0; st.vel = 0; st.enter = reduced ? 1 : 0; st.enterAt = performance.now(); st.idleAt = performance.now() + 2200;
@@ -73,14 +74,22 @@ export function createDepthRibbon(root, opts = {}) {
       let x = p.x, y = p.y, z = p.z;
       if (uu < 0) { const k = -uu; x = -k * cw * .95; y = k * ch * .1; z = k * cw * .25; }
       const op = clamp((uu + .75) / .6, 0, 1) * clamp((N >= 4 ? N - 1.5 - uu : N - .6 - uu) / 1.1, 0, 1) * clamp(1.15 - uu * .12, 0, 1) * e;
-      c.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateY(${uu < 0 ? -uu * 28 : yaw}deg) rotateZ(${roll}deg)`;
-      c.style.opacity = op.toFixed(3);
-      c.style.zIndex = String(1000 - Math.round(uu * 100));
-      c.style.setProperty("--dim", clamp(Math.abs(uu) * .22, 0, .6).toFixed(3));
-      c.style.pointerEvents = op > .25 ? "auto" : "none";
-      // photos load only for the cards near the front (a long fleet never decodes every image at once)
-      if (uu > -1.5 && uu < 4.5) { const im = c.firstElementChild; if (im && !im.src && im.dataset.src) im.src = im.dataset.src; }
-      c.tabIndex = Math.round(u) === 0 ? 0 : -1;
+      // only touch what changed, and take invisible cards out of compositing altogether
+      const L = c._last, on = op > .002;
+      if (L.on !== on) { c.style.visibility = on ? "" : "hidden"; L.on = on; }
+      if (on) {
+        c.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) rotateY(${(uu < 0 ? -uu * 28 : yaw).toFixed(2)}deg) rotateZ(${roll.toFixed(2)}deg)`;
+        const o = op.toFixed(2); if (L.o !== o) { c.style.opacity = o; L.o = o; }
+        const zi = String(1000 - Math.round(uu * 100)); if (L.z !== zi) { c.style.zIndex = zi; L.z = zi; }
+        const dm = clamp(Math.abs(uu) * .22, 0, .6).toFixed(2); if (L.d !== dm) { c.style.setProperty("--dim", dm); L.d = dm; }
+      }
+      const pe = op > .25 ? "auto" : "none"; if (L.pe !== pe) { c.style.pointerEvents = pe; L.pe = pe; }
+      const ti = Math.round(u) === 0 ? 0 : -1; if (L.ti !== ti) { c.tabIndex = ti; L.ti = ti; }
+      // photos are fetched and decoded off-screen a few cards ahead, then faded in: never an empty card, never a pop
+      if (uu > -2 && uu < 11) { const im = c.firstElementChild; if (im && !im._req && im.dataset.src) {
+        im._req = true; const pre = new Image(); pre.decoding = "async"; pre.src = im.dataset.src;
+        (pre.decode ? pre.decode() : Promise.resolve()).catch(() => {}).then(() => { im.src = im.dataset.src; im.classList.add("is-in"); });
+      } }
     });
     const a = ((Math.round(st.pos) % N) + N) % N;
     if (a !== st.active) { st.active = a; cards.forEach((c, i) => c.toggleAttribute("data-front", i === a)); live.textContent = `${items[a].title}, ${a + 1} / ${N}`; o.onChange?.(items[a], a); }

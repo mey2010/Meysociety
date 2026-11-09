@@ -101,8 +101,11 @@ export function shatterType(h) {
     }
     if (performance.now() - burstAt > 1100) wrap.classList.remove("is-burst");
     if (busy || local) raf = requestAnimationFrame(tick);
+    // at rest the shards sit exactly on the real heading: show that instead, so a neon flicker repaints one
+    // heading rather than every shard copy
+    else wrap.classList.add("is-rest");
   }
-  const wake = () => { if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); } };
+  const wake = () => { wrap.classList.remove("is-rest"); if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); } };
   const toLocal = e => { const r = layer.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
   wrap.addEventListener("pointermove", e => { if (e.pointerType === "touch") return; pointer = toLocal(e); const p = pointer; wrap.style.setProperty("--crack-x", p.x + "px"); wrap.style.setProperty("--crack-y", p.y + "px"); wrap.classList.add("is-near"); wake(); });
   wrap.addEventListener("pointerleave", () => { pointer = null; wrap.classList.remove("is-near"); wake(); });

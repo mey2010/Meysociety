@@ -231,7 +231,8 @@ export function createCircularCarousel(root, opts = {}) {
     setActive(((Math.round(-state.angle / S.step) % S.count) + S.count) % S.count || 0);
   };
   const frame = now => {
-    raf = 0; const dt = state.last ? Math.min((now - state.last) / 1000, .1) : 1 / 60; state.last = now;
+    raf = 0; if (document.documentElement.classList.contains("is-covered")) { state.last = 0; return; } // a full-screen panel is open
+    const dt = state.last ? Math.min((now - state.last) / 1000, .1) : 1 / 60; state.last = now;
     const busy = advance(dt, now); render(now);
     if (busy && visible && !document.hidden) raf = requestAnimationFrame(frame); else state.last = 0;
   };
@@ -293,6 +294,7 @@ export function createCircularCarousel(root, opts = {}) {
     state.target = null; state.angle -= d * per * sg; state.velocity = -d * per * sg * 30; state.holdUntil = performance.now() + 1600;
     clearTimeout(state.wheelTimer); state.wheelTimer = setTimeout(() => { if (S.snap) state.target = nearest(state.angle + state.velocity * .12); wake(); }, 140); wake();
   }, { passive: false });
+  document.addEventListener("coverchange", e => { if (!e.detail) wake(); });
   document.addEventListener("visibilitychange", () => { if (document.hidden) { cancelAnimationFrame(raf); raf = 0; state.last = 0; videos.forEach(v => v.video.pause()); } else { wake(); active = -1; } });
   new ResizeObserver(() => { measure(); wake(); }).observe(root);
   new IntersectionObserver(([en]) => {

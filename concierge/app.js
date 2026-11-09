@@ -281,7 +281,8 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     post({ type: "ripple", x: e.clientX, y: e.clientY });
   }, { passive: true });
   document.addEventListener("themechange", e => post({ type: "theme", theme: e.detail }));
-  document.addEventListener("visibilitychange", () => post({ type: "visible", visible: !document.hidden }));
+  const vis = () => post({ type: "visible", visible: !document.hidden && !document.documentElement.classList.contains("is-covered") });
+  document.addEventListener("visibilitychange", vis); document.addEventListener("coverchange", vis);
 }
 
 // glass buttons float only while on screen, and hold still while the page is scrolling
@@ -930,7 +931,6 @@ function setFleetCat(cat) {
   fleetCat = FLEET_TYPES.some(([k]) => k === cat) ? cat : "all"; fleetList = fleetCat === "all" ? FLEET : FLEET.filter(b => b.type === fleetCat);
   fleetChips.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === fleetCat));
   ribbon.setItems(fleetItems());
-  document.querySelectorAll("#fleetRibbon .ribbon__card").forEach(c => holo(c, { tiltMax: 9, hoverScale: 1.03, idle: false })); // tilt on hover only: the ribbon already moves
 }
 function openFleet(cat = "all") {
   fleet.hidden = false; document.body.style.overflow = "hidden";
@@ -1206,3 +1206,17 @@ document.querySelectorAll(".stack__card").forEach(card => {
   const fit = () => { const gap = card.getBoundingClientRect().bottom - body.getBoundingClientRect().top; card.style.setProperty("--panel-h", Math.round(gap + 14) + "px"); };
   new ResizeObserver(fit).observe(body); new ResizeObserver(fit).observe(card); fit();
 });
+
+/* ---------------- full-screen panels pause the page underneath ----------------
+   While the fleet, the client area or the admin panel covers the screen, the page below is neither painted nor
+   animated: the 3D map, the dot background and the reviews ring all stop, and resume when the panel closes. */
+{
+  const covers = ["fleet", "dash", "admin"].map(id => document.getElementById(id)).filter(Boolean), html = document.documentElement;
+  const sync = () => {
+    const covered = covers.some(el => !el.hidden);
+    if (covered === html.classList.contains("is-covered")) return;
+    html.classList.toggle("is-covered", covered);
+    document.dispatchEvent(new CustomEvent("coverchange", { detail: covered }));
+  };
+  const mo = new MutationObserver(sync); covers.forEach(el => mo.observe(el, { attributes: true, attributeFilter: ["hidden"] })); sync();
+}

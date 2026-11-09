@@ -72,9 +72,11 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   const prog = { h: 0, o: 0, build: 0 }, report = () => onProgress?.(Math.round(prog.h * 30 + prog.o * 45 + prog.build * 25));
   const small = matchMedia("(max-width: 900px)").matches, reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance", premultipliedAlpha: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.75 : 2)); renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5)); // sharp on retina, ~44% fewer pixels than 2x renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12; renderer.setClearColor(0x000000, 0);
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // the sun and the island never move: the shadow map is drawn once, not on every frame
+  renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true;
   el.prepend(renderer.domElement); renderer.domElement.className = "map3d__gl";
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(36, 1, .05, 420);
   scene.fog = new THREE.Fog(PAGE_NOW.clone(), 80, 210);
@@ -342,7 +344,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   // shaders compile in parallel (where the browser supports it) instead of stalling the first frame
   try { await renderer.compileAsync(scene, camera); } catch {}
   (function loop(now) {
-    requestAnimationFrame(loop); if (!visible || document.hidden) { last = now; return; }
+    requestAnimationFrame(loop); if (!visible || document.hidden || document.documentElement.classList.contains("is-covered")) { last = now; return; }
     const dt = Math.min(.05, (now - last) / 1000); last = now; t += dt; seaU.uTime.value = t;
     if (flight) {
       const k = Math.min(1, (now - flight.t0) / flight.dur), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;

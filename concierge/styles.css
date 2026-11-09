@@ -807,7 +807,10 @@ button.sm-panel-item { text-align: right; padding: 0; }
 .ribbon__card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .ribbon__card::after { content: ""; position: absolute; inset: 0; background: #0b0930; opacity: var(--dim, 0); pointer-events: none; }
 .ribbon__shine { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / .18) 50%, transparent 65%); opacity: 0; pointer-events: none; }
-.ribbon__card[data-front] { box-shadow: 0 40px 80px -28px rgb(0 0 0 / .9), 0 0 0 2px rgb(200 86 230 / .9), 0 0 40px -6px rgb(200 86 230 / .6); }
+/* the focused card's neon outline is its own layer that only fades (no shadow repainted on a moving card) */
+.ribbon__ring { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 2; opacity: 0; transition: opacity 600ms ease;
+  box-shadow: inset 0 0 0 2px rgb(200 86 230 / .95), inset 0 0 24px -4px rgb(200 86 230 / .55); }
+.ribbon__card[data-front] .ribbon__ring { opacity: 1; }
 .ribbon__card[data-front] .ribbon__shine { animation: ribbon-shine 2.6s ease-in-out .3s 1 both; }
 .ribbon__tag { position: absolute; left: 14px; top: 14px; padding: 6px 11px; border-radius: 99px; font: 600 12px var(--sans); color: #fff; background: rgb(13 10 56 / .74); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .25); }
 .ribbon__card:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
@@ -1237,7 +1240,8 @@ html[data-theme="dark"] .stack__body { background: linear-gradient(180deg, rgb(2
 }
 @media (prefers-reduced-motion: reduce) { .signal .ch.pass { animation: none; } }
 /* the focused fleet card hands its neon outline on gently while the ribbon glides */
-.ribbon__card { transition: box-shadow 700ms ease; }
+.ribbon__card img { opacity: 0; transition: opacity 450ms ease; }
+.ribbon__card img.is-in { opacity: 1; }
 
 /* ---- body: the coin has real thickness (a stack of discs forms its edge), a bevelled rim in the
    logo's colours lit from the top left, and a soft contact shadow beneath it ---- */
@@ -1353,3 +1357,8 @@ html.is-scrolling .btn, html.is-scrolling .sm-toggle, html.is-scrolling .lang__b
   .boat__info .btn { justify-self: stretch; }
 }
 @media (prefers-reduced-motion: reduce) { .boat, .boat__card, .boat__main img { animation: none; } }
+
+/* a full-screen panel is open: nothing underneath is painted (the panel itself is outside <main>) */
+html.is-covered main, html.is-covered .drape, html.is-covered .flylogo, html.is-covered .flylogo__trail, html.is-covered .fab-wa { visibility: hidden; }
+.shatter.is-cut.is-rest > .signal { visibility: visible; }
+.shatter.is-rest > .shatter__layer { visibility: hidden; }
