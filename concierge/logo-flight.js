@@ -7,7 +7,7 @@ import { holo } from "./holo.js";
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-export function logoFlight({ slot, headerImg, headerLink, src }) {
+export function logoFlight({ slot, headerImg, headerLink, src, menu }) {
   const fly = document.createElement("a");
   fly.className = "flylogo"; fly.href = headerLink.getAttribute("href") || "#top";
   fly.setAttribute("aria-label", headerLink.getAttribute("aria-label") || "Mey Society");
@@ -27,15 +27,23 @@ export function logoFlight({ slot, headerImg, headerLink, src }) {
   }
   function place() {
     raf = 0; if (!start) return;
-    const p = Math.min(1, Math.max(0, scrollY / travel)), k = reduced ? (p > .5 ? 1 : 0) : ease(p);
+    const ps = Math.min(1, Math.max(0, scrollY / travel)), p = Math.max(ps, forced), k = reduced ? (p > .5 ? 1 : 0) : ease(p);
     const x = start.x + (end.x - start.x) * k;
     const yy = (start.y - scrollY) * (1 - k) + end.y * k;                  // follows the page, then settles on the header row
     const sc = (start.size + (end.size - start.size) * k) / start.size;
     fly.style.transform = `translate3d(${x.toFixed(2)}px, ${yy.toFixed(2)}px, 0) scale(${sc.toFixed(4)})`;
-    fly.classList.toggle("is-docked", p >= 1);
+    fly.classList.toggle("is-docked", ps >= 1 || forced > .99);
     fly.style.setProperty("--fly-p", p.toFixed(3));
   }
   addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(place); }, { passive: true });
+  // opening the menu sends the logo to its corner too; closing it lets the logo return to where the scroll had it
+  let forced = 0, fAnim = 0;
+  function force(to) {
+    cancelAnimationFrame(fAnim); const from = forced, t0 = performance.now(), dur = reduced ? 1 : 620;
+    const step = now => { const e = Math.min(1, (now - t0) / dur); forced = from + (to - from) * (1 - Math.pow(1 - e, 3)); place(); if (e < 1) fAnim = requestAnimationFrame(step); };
+    fAnim = requestAnimationFrame(step);
+  }
+  if (menu) new MutationObserver(() => force(menu.hasAttribute("data-open") ? 1 : 0)).observe(menu, { attributes: true, attributeFilter: ["data-open"] });
   new ResizeObserver(measure).observe(document.documentElement);
   addEventListener("load", measure); measure();
   document.fonts?.ready.then(measure);

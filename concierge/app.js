@@ -235,7 +235,7 @@ document.getElementById("popBook").addEventListener("click", () => {
 // the name also shatters like glass (cursor cracks it, a click bursts it), and the tagline is an elastic band
 shatterType(document.getElementById("signal"));
 elasticLettering(document.getElementById("introLine"));
-logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.querySelector(".sm-logo-img"), headerLink: document.querySelector(".sm-logo"), src: "assets/logo-neon.webp" });
+logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.querySelector(".sm-logo-img"), headerLink: document.querySelector(".sm-logo"), src: "assets/logo-neon.webp", menu: document.querySelector(".staggered-menu-wrapper") });
 
 /* =====================================================================
    SPECTRAL DRAPE — a sheet of glowing dots folding in 3D (page background)
