@@ -37,23 +37,28 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
     // the centre is its own piece, seated proud of the ring
     const d = start.size * .032; fly.style.setProperty("--d", d.toFixed(2) + "px");
     fly.querySelectorAll(".flylogo__core-edge").forEach((e, i, all) => { e.style.transform = `translateZ(${(t + d * (i + .5) / all.length).toFixed(2)}px)`; });
-    sizeCanvas(); wake(true);
+    sizeCanvas(); measureChars(); wake(true);
   }
 
   // ---- motion state ----
   // p: raw progress (scroll, or the menu tween); kd: what is shown, a critically damped follower of p
   // (so a wheel notch never makes the coin jump); spin: coin angle, rolled by the motion, at rest face-on
-  const S = { kd: 0, kv: 0, spin: 0, spinV: 0, spinTo: 0, still: 0, last: 0, trail: [], lastPt: null };
+  // sy: a smoothed copy of the scroll position. The whole flight is drawn from it (never from the raw value, which
+  // the browser updates on its own thread), and it follows harder the faster you scroll: gentle on a slow scroll,
+  // tight on a flick, never a jump.
+  const S = { kd: 0, kv: 0, sy: scrollY, sv: 0, spin: 0, spinV: 0, spinTo: 0, still: 0, last: 0, trail: [], lastPt: null, box: null };
   let forced = 0, fFrom = 0, fTo = 0, fT0 = 0, raf = 0;
   const FDUR = 820;
   const rawP = now => {
     if (fT0) { const e = clamp01((now - fT0) / FDUR); forced = fFrom + (fTo - fFrom) * ease(e); if (e >= 1) fT0 = 0; }
-    return Math.max(clamp01(scrollY / travel), forced);
+    return Math.max(clamp01(S.sy / travel), forced);
   };
 
   // the arc: from wherever the page holds the resting spot, bowing up and out (a toss), down onto the header logo
   function at(k) {
-    const ax = start.x, ay = start.y - scrollY, bx = end.x, by = end.y;
+    // the resting spot rides up with the page, easing into the header row instead of racing past it on a flick
+    const x0 = S.sy / travel, lim = .5, ride = travel * (x0 <= lim ? x0 : lim + (1 - lim) * Math.tanh((x0 - lim) / (1 - lim)));
+    const ax = start.x, ay = start.y - ride, bx = end.x, by = end.y;
     const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1, bow = Math.min(len * .24, 220, innerWidth * .2);
     const cx = (ax + bx) / 2 - (dy / len) * bow, cy = (ay + by) / 2 + (dx / len) * bow, u = 1 - k;
     return { x: u * u * ax + 2 * u * k * cx + k * k * bx, y: u * u * ay + 2 * u * k * cy + k * k * by, size: start.size + (end.size - start.size) * k };
@@ -61,12 +66,26 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
   function frame(now) {
     raf = 0; if (!start) return;
     const dt = S.last ? Math.min(.1, (now - S.last) / 1000) : 1 / 60; S.last = now;
-    const p = rawP(now);
     let busy = !!fT0;
-    if (reduced) { S.kd = p > .5 ? 1 : 0; S.kv = 0; }
+    if (reduced) S.sy = scrollY;
     else {
-      const w = 10.5, prev = S.kd; let rem = dt; // soft enough to iron out wheel notches, quick enough to stay with the page
-      while (rem > 0) { const h = Math.min(rem, 1 / 240); S.kv += (w * w * (p - S.kd) - 2 * w * S.kv) * h; S.kd += S.kv * h; rem -= h; }
+      // adaptive follow: the further the page has run ahead (a fast scroll), the stiffer the spring
+      for (let rem = dt; rem > 0; rem -= 1 / 240) {
+        const h = Math.min(rem, 1 / 240), gap = scrollY - S.sy, w = 12 + Math.min(14, Math.abs(gap) / 60);
+        S.sv += (w * w * gap - 2 * w * S.sv) * h; S.sy += S.sv * h;
+      }
+      if (Math.abs(scrollY - S.sy) < .25 && Math.abs(S.sv) < 2) { S.sy = scrollY; S.sv = 0; } else busy = true;
+    }
+    const p = rawP(now);
+    if (reduced) S.kd = p > .5 ? 1 : 0;
+    else {
+      // the flight itself has a top speed and a bounded acceleration, so even a violent flick plays out as one
+      // clean toss (about 0.7 s at most speed) instead of a jump; slow scrolls stay 1:1 under the finger
+      const prev = S.kd, wk = 10, VMAX = 2.2, AMAX = 16;
+      for (let rem = dt; rem > 0; rem -= 1 / 240) {
+        const h = Math.min(rem, 1 / 240), acc = Math.max(-AMAX, Math.min(AMAX, wk * wk * (p - S.kd) - 2 * wk * S.kv));
+        S.kv = Math.max(-VMAX, Math.min(VMAX, S.kv + acc * h)); S.kd += S.kv * h;
+      }
       if (Math.abs(p - S.kd) < 1e-4 && Math.abs(S.kv) < 1e-3) { S.kd = p; S.kv = 0; } else busy = true;
       // the coin rolls with the travel: one and a half turns across the whole flight, then settles face-on
       const dk = S.kd - prev; S.spinTo += dk * 540;
@@ -76,11 +95,8 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
     }
     const kd = clamp01(S.kd), k = ease(kd), { x, y, size } = at(k), sc = size / start.size;
     const docked = clamp01(S.kd) > .995 && p > .995;
-    // in flight the coin lives in page coordinates, so the browser's own (threaded) scrolling carries it
-    // frame-perfectly and JS only adds the flight offset; once docked it is pinned to the viewport
-    if (docked !== S.docked) { S.docked = docked; fly.classList.toggle("is-docked", docked); fly.style.position = docked ? "fixed" : "absolute"; }
-    const oy = docked ? 0 : scrollY, ox = docked ? 0 : scrollX;
-    fly.style.transform = `translate3d(${(x + ox).toFixed(2)}px, ${(y + oy).toFixed(2)}px, 0) scale(${sc.toFixed(4)})`;
+    if (docked !== S.docked) { S.docked = docked; fly.classList.toggle("is-docked", docked); }
+    fly.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${sc.toFixed(4)})`;
     spinEl.style.transform = S.spin ? `rotateY(${S.spin.toFixed(2)}deg)` : "";
     const fp = (Math.round(clamp01(S.kd) * 50) / 50).toFixed(2); // coarse steps: the halo restyles rarely
     if (fp !== S.fp) { S.fp = fp; fly.style.setProperty("--fly-p", fp); }
@@ -107,14 +123,17 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
   const SPR = TRAIL.map(sprite), CORE = sprite("255,255,255");
   function drawTrail(now) {
     const pts = S.trail; while (pts.length && now - pts[0].t > LIFE) pts.shift();
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, innerWidth, innerHeight);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (S.box) { const b = S.box; ctx.clearRect(b[0] - 2, b[1] - 2, b[2] - b[0] + 4, b[3] - b[1] + 4); S.box = null; } // only what was painted
     if (!pts.length) return false;
+    const box = S.box = [1e9, 1e9, -1e9, -1e9];
     const n = pts.length;
     for (let i = 0; i < n; i++) {
       const q = pts[i], life = (1 - clamp01((now - q.t) / LIFE)) ** 1.5; if (life <= 0) continue;
       const f = (1 - i / n) * (TRAIL.length - 1), k0 = Math.floor(f), mix = f - k0, k1 = Math.min(TRAIL.length - 1, k0 + 1);
       // dots overlap by about R / spacing, so each one is faint: the ribbon keeps its colour instead of burning to white
-      const R = q.r * (.22 + .4 * life), A = Math.min(.28, 2.3 * 3.5 / R) * life * q.a;
+      const R = q.r * (.22 + .4 * life); box[0] = Math.min(box[0], q.x - R); box[1] = Math.min(box[1], q.y - R); box[2] = Math.max(box[2], q.x + R); box[3] = Math.max(box[3], q.y + R);
+      const A = Math.min(.28, 2.3 * 3.5 / R) * life * q.a;
       ctx.globalAlpha = A * (1 - mix); ctx.drawImage(SPR[k0], q.x - R, q.y - R, 2 * R, 2 * R);
       ctx.globalAlpha = A * mix; ctx.drawImage(SPR[k1], q.x - R, q.y - R, 2 * R, 2 * R);
       const r2 = q.r * .09 * life + 1; ctx.globalAlpha = Math.min(.25, 1.2 * 3.5 / r2) * life * life * q.a; ctx.drawImage(CORE, q.x - r2, q.y - r2, 2 * r2, 2 * r2);
@@ -125,11 +144,12 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
 
   // the name's letters strike on and stutter as the coin flies over them
   const chars = letters ? [...letters.querySelectorAll(".ch")] : [], timers = new Map();
+  let charBoxes = [];
+  const measureChars = () => { charBoxes = chars.map(c => { const b = c.getBoundingClientRect(); return { c, x: b.left + b.width / 2, y: b.top + b.height / 2 + scrollY, w: b.width }; }).filter(b => b.w); };
   function lightLetters(pts) {
-    for (const c of chars) {
-      const b = c.getBoundingClientRect(); if (!b.width) continue;
-      const lx = b.left + b.width / 2, ly = b.top + b.height / 2;
-      if (!pts.some(q => Math.hypot(lx - q.x, ly - q.y) < q.r + b.width * .45)) continue;
+    for (const { c, x, y: py, w } of charBoxes) {
+      const lx = x, ly = py - S.sy; // same smoothed frame as the coin's scroll
+      if (!pts.some(q => Math.hypot(lx - q.x, ly - q.y) < q.r + w * .45)) continue;
       if (!c.classList.contains("pass")) c.classList.add("pass");
       clearTimeout(timers.get(c)); timers.set(c, setTimeout(() => c.classList.remove("pass"), 760));
     }
@@ -143,7 +163,7 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
   addEventListener("load", measure); measure();
   document.fonts?.ready.then(measure);
   // start where the page already is (a reload halfway down must not fly in from the top)
-  S.kd = rawP(performance.now()); S.spin = S.spinTo = 0;
+  S.sy = scrollY; S.kd = rawP(performance.now()); S.spin = S.spinTo = 0;
 
   // 3D tilt + silver glare (no colour), stronger while it is big
   // (the whole coin tilts, so its thickness shows; the glare is painted on the face)

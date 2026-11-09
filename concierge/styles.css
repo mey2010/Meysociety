@@ -1165,7 +1165,7 @@ html[data-theme="dark"] .stack__body { background: linear-gradient(180deg, rgb(2
 /* ---------------- the 3D logo that flies from the intro to the header ---------------- */
 .intro__logo { width: clamp(130px, 15vw, 190px); aspect-ratio: 1; margin-top: clamp(10px, 2vh, 26px); }
 .sm-logo-img.is-flown { visibility: hidden; }
-.flylogo { position: absolute; left: 0; top: 0; z-index: 41; display: block; transform-origin: 0 0; will-change: transform; -webkit-tap-highlight-color: transparent; perspective: 900px;
+.flylogo { position: fixed; left: 0; top: 0; z-index: 41; display: block; transform-origin: 0 0; will-change: transform; -webkit-tap-highlight-color: transparent; perspective: 900px;
   opacity: 0; transition: opacity 900ms var(--ease); }
 .intro.is-lit ~ * .flylogo, body:has(.intro.is-lit) .flylogo { opacity: 1; }
 .flylogo__coin { position: relative; display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; transform-style: preserve-3d;
