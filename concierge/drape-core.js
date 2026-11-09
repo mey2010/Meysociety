@@ -11,7 +11,7 @@
     // the six colours sampled from the logo, dark to light along the fold
     const SPR_LIGHT = ["#0d0a38", "#292467", "#1e24bb", "#515c9f", "#78c7e4", "#ab50db"].map(sprite), SPR_DARK = ["#c9cce8", "#9fa6ff", "#5a63ff", "#8f96d6", "#78c7e4", "#ab50db"].map(sprite);
     const MAG = ["#6a2f85", "#9242b3", "#ab50db", "#c856e6", "#c856e6"].map(sprite); // the logo's magenta/pink, light to bright
-    let SPR = SPR_LIGHT, mx = 0, my = 0, tmx = 0, tmy = 0;
+    let SPR = SPR_LIGHT, mx = 0, my = 0, tmx = 0, tmy = 0, clock = 0, lastNow = 0, scShown = 0, lastScroll = -1e9;
     const t0 = performance.now(), ripples = [];
     function size() {
       const c = cx.canvas; c.width = Math.round(S.w * S.dpr); c.height = Math.round(S.h * S.dpr); cx.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
@@ -21,14 +21,19 @@
     function set(st) { const resize = st.w !== S.w || st.h !== S.h || st.dpr !== S.dpr || st.small !== S.small; Object.assign(S, st); SPR = S.theme === "dark" ? SPR_DARK : SPR_LIGHT; if (resize) size(); }
     function message(m) {
       if (m.type === "size") set(m);
-      else if (m.type === "scroll") S.scrollY = m.scrollY;
+      else if (m.type === "scroll") { S.scrollY = m.scrollY; lastScroll = performance.now(); }
       else if (m.type === "pointer") { tmx = m.x; tmy = m.y; }
       else if (m.type === "ripple") { ripples.push({ x: m.x, y: m.y, t: performance.now() }); if (ripples.length > 5) ripples.shift(); }
       else if (m.type === "theme") set({ theme: m.theme });
       else if (m.type === "visible") S.visible = m.visible;
     }
+    // true while the page is being scrolled: the background holds still so it never competes with the scroll
+    const scrolling = now => now - lastScroll < 180;
     function draw(now) {
-      const W = S.w, H = S.h, t = (now - t0) / 1000, sc = S.scrollY / Math.max(1, H);
+      // its own clock: it only advances while drawing, so after a pause the motion resumes exactly where it was
+      const step = lastNow ? Math.min(.05, (now - lastNow) / 1000) : 0; lastNow = now; clock += step;
+      scShown += (S.scrollY / Math.max(1, S.h) - scShown) * Math.min(1, step * 5); // the scroll-driven fold eases in
+      const W = S.w, H = S.h, t = clock, sc = scShown;
       mx += (tmx - mx) * .04; my += (tmy - my) * .04;
       for (let r = ripples.length - 1; r >= 0; r--) if (now - ripples[r].t > 2600) ripples.splice(r, 1);
       cx.clearRect(0, 0, W, H);
@@ -62,6 +67,6 @@
       }
       cx.globalAlpha = 1;
     }
-    return { set, message, draw, state: S };
+    return { set, message, draw, state: S, scrolling, rest: () => { lastNow = 0; } };
   };
 })(typeof self !== "undefined" ? self : globalThis);

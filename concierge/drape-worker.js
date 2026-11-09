@@ -5,9 +5,13 @@ let fx = null, raf = 0;
 const frame = typeof requestAnimationFrame === "function" ? requestAnimationFrame : f => setTimeout(() => f(performance.now()), 16);
 function loop(now) {
   raf = 0; if (!fx || !fx.state.visible) return;
-  fx.draw(now);
+  // 30 fps is plenty for a slow fold of dots, and nothing is drawn while the page is scrolling
+  if (fx.state.reduced) fx.draw(now);
+  else if (fx.scrolling(now)) fx.rest();
+  else if (now - last >= 31) { last = now; fx.draw(now); }
   if (!fx.state.reduced) raf = frame(loop);
 }
+let last = 0;
 const kick = () => { if (!raf) raf = frame(loop); };
 onmessage = e => {
   const m = e.data;

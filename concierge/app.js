@@ -257,7 +257,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     const fx = globalThis.makeDrape(cv.getContext("2d"), () => document.createElement("canvas"));
     fx.set(state()); post = m => fx.message(m);
     let lastDraw = 0;
-    (function loop(now) { if (!document.hidden && now - lastDraw > 32) { lastDraw = now; fx.draw(now); } requestAnimationFrame(loop); })(performance.now());
+    (function loop(now) { if (!document.hidden) { if (fx.scrolling(now)) fx.rest(); else if (now - lastDraw > 32) { lastDraw = now; fx.draw(now); } } requestAnimationFrame(loop); })(performance.now());
   };
   // the worker must say hello before the canvas is handed over, so a blocked or broken worker never costs the background
   try {
@@ -327,7 +327,12 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
         const L = last[i];
         if (L.s !== s) { c.style.transform = `scale(${s})`; L.s = s; }
         if (L.o !== o) { c.style.opacity = o; L.o = o; }
-        if (L.v !== v) { veils[i].style.opacity = v; L.v = v; }
+        if (L.v !== v) { veils[i].style.opacity = v; veils[i].style.display = +v ? "" : "none"; L.v = v; }
+        // overdraw: a card that is fully covered is not drawn at all, and one that the next card has fully slid
+        // over only draws the strip that still peeks out at the top (the GPU blends far fewer layers per frame)
+        const hide = +o < .04, strip = !hide && i + 1 < cards.length && cover[i + 1] >= .999;
+        if (L.h !== hide) { c.style.visibility = hide ? "hidden" : ""; L.h = hide; }
+        if (L.c !== strip) { c.style.clipPath = strip ? "inset(0 0 calc(100% - 90px) 0 round 34px 34px 0 0)" : ""; L.c = strip; }
       });
     }
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
@@ -1201,7 +1206,13 @@ const routeZoom = (() => {
 document.querySelectorAll(".stack__card").forEach(card => {
   const media = card.querySelector(".stack__media"), img = media?.querySelector("img"), body = card.querySelector(".stack__body");
   if (!img || !body) return;
-  if (!media.classList.contains("stack__media--product")) { const bg = img.cloneNode(); bg.className = "stack__media-bg"; bg.alt = ""; bg.setAttribute("aria-hidden", "true"); bg.removeAttribute("style"); media.insertBefore(bg, img); }
+  if (!media.classList.contains("stack__media--product")) {
+    // the backdrop is a tiny, pre-blurred copy (≈2 KB): the browser just scales it up, no blur to compute
+    const bg = img.cloneNode(); bg.className = "stack__media-bg"; bg.alt = ""; bg.setAttribute("aria-hidden", "true"); bg.removeAttribute("style");
+    bg.removeAttribute("loading"); bg.removeAttribute("width"); bg.removeAttribute("height");
+    bg.src = "data/services/bg/" + img.getAttribute("src").split("/").pop().replace(/\.(webp|jpe?g|png)$/i, "") + ".webp";
+    media.insertBefore(bg, img);
+  }
   // the sharp photo uses the space above the glass panel, whatever height the panel has
   const fit = () => { const gap = card.getBoundingClientRect().bottom - body.getBoundingClientRect().top; card.style.setProperty("--panel-h", Math.round(gap + 14) + "px"); };
   new ResizeObserver(fit).observe(body); new ResizeObserver(fit).observe(card); fit();

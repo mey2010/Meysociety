@@ -406,7 +406,7 @@ input:focus, textarea:focus { outline: none; border-color: var(--cyan); backgrou
 .dot { box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgb(81 92 159 / .4); }
 .sec--drape { background: transparent; }
 .sec--night { background: radial-gradient(70% 60% at 20% 0%, rgb(30 36 187 / .35), transparent 70%), linear-gradient(180deg, var(--indigo), var(--midnight)); }
-.stack__card { box-shadow: inset 0 1px 0 rgb(255 255 255 / .35), inset 0 0 0 1px rgb(120 199 228 / .25), 0 40px 70px -34px rgb(13 10 56 / .55); }
+.stack__card { box-shadow: inset 0 1px 0 rgb(255 255 255 / .35), inset 0 0 0 1px rgb(120 199 228 / .25), 0 22px 40px -26px rgb(13 10 56 / .55); }
 .map { box-shadow: inset 0 1px 0 rgb(255 255 255 / .25), inset 0 0 0 1px rgb(217 220 239 / .14), 0 40px 80px -40px rgb(13 10 56 / .55); }
 .stack__card { color: var(--on-dark); }
 
@@ -1178,7 +1178,7 @@ html[data-theme="dark"] .stack__body { background: linear-gradient(180deg, rgb(2
 
 /* service cards: the whole photo is shown, sharp, above the info panel; the same photo, blurred,
    fills the rest of the card so it still reads as one piece */
-.stack__media-bg { position: absolute; inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px); object-fit: cover; filter: blur(30px) saturate(1.25) brightness(.72); transform: scale(1.05); pointer-events: none; }
+.stack__media-bg { position: absolute; inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px); object-fit: cover; pointer-events: none; } /* pre-blurred image: no CSS filter */
 .stack__media > img:not(.stack__media-bg) { position: absolute; z-index: 1; left: clamp(14px, 2.4vw, 28px); right: clamp(14px, 2.4vw, 28px); top: clamp(14px, 2.4vw, 28px);
   width: calc(100% - 2 * clamp(14px, 2.4vw, 28px)); height: calc(100% - var(--panel-h, 46%) - clamp(14px, 2.4vw, 28px)); object-fit: contain; object-position: 50% 50% !important;
   filter: drop-shadow(0 18px 30px rgb(0 0 0 / .45)); }
@@ -1306,7 +1306,7 @@ body:has(.fleet:not([hidden])) .fab-wa, body:has(.dash:not([hidden])) .fab-wa, b
 /* service cards: each card is its own GPU layer; the veil darkens it without repainting anything */
 .stack__card { will-change: transform, opacity; contain: layout paint; }
 .stack__veil { position: absolute; inset: 0; z-index: 6; border-radius: inherit; background: #07051e; opacity: 0; pointer-events: none; will-change: opacity; }
-.stack__media-bg { will-change: transform; }
+.stack__media-bg { will-change: auto; } /* painted once into the card, not blurred again on every frame */
 /* the slow float of the glass buttons only runs while a button is on screen (set by JS) */
 .btn { animation-play-state: paused; }
 .btn.is-vis { animation-play-state: running; }
@@ -1409,3 +1409,25 @@ html.is-covered main, html.is-covered .drape, html.is-covered .flylogo, html.is-
    (otherwise the page grows wider than the phone after using the menu and everything shifts sideways) */
 .staggered-menu-wrapper.fixed-wrapper { overflow: hidden; }
 html { overflow-x: clip; }
+
+/* ---- the logo's neon halo: pre-blurred images that only rotate (no blur filter computed on every frame) ---- */
+.flylogo__coin::before, .flylogo__coin::after, .flylogo__back::before, .flylogo__back::after { background: none center / 100% 100% no-repeat; filter: none !important; }
+.flylogo__coin::before, .flylogo__back::before { inset: -10%; border-radius: 0; background-image: url("assets/halo-inner.webp"); transform: none; }
+.flylogo__coin::after, .flylogo__back::after { inset: -24%; border-radius: 0; background-image: url("assets/halo-outer.webp"); }
+
+/* ---- touch devices: no live blur behind moving content (it is re-computed every frame on phones) ----
+   the controls keep the same look with a slightly denser tint instead */
+@media (pointer: coarse) {
+  .btn, .sm-toggle, .lang__btn, .bell__btn, .fleet__arrow, .lightbox__close, .map__zoom button, .routemap__zoom button,
+  .map3d .map__zoom button, .map3d .map__areas button, .fab-wa, .boat__nav, .svc__card, .toast, .consent, .stack__btns .btn {
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .btn--ghost { background: rgb(255 255 255 / .92); }
+  .btn--glass, .fleet__arrow, .lightbox__close, .routemap__zoom button { background-color: rgb(30 26 92 / .62); }
+  /* header controls: light pill over light sections, deep tint over dark ones (their text colour follows the same switch) */
+  .sm-on-light:not([data-open]) .sm-toggle, .sm-on-light .lang__btn, [data-open] .lang__btn { background: rgb(255 255 255 / .92); }
+  .staggered-menu-wrapper:not(.sm-on-light):not([data-open]) .sm-toggle,
+  .staggered-menu-wrapper:not(.sm-on-light):not([data-open]) .lang__btn { background: rgb(30 26 92 / .62); }
+  .toast, .consent { background: rgb(21 17 70 / .97); }
+}
+/* the pre-blurred backdrop overflows the card on every side (beats the generic ".stack__media img" sizing) */
+.stack__media .stack__media-bg { inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px); max-width: none; max-height: none; }
