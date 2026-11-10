@@ -4,6 +4,7 @@ import { createCircularCarousel } from "./circular-carousel.js";
 import { createDepthRibbon } from "./depth-ribbon.js";
 import { FLEET, FLEET_TYPES, TYPE_NOTE } from "./fleet-data.js";
 import { initRoute3D } from "./route3d.js";
+import { initVillaTour } from "./villa-tour.js";
 import { holo } from "./holo.js";
 import { shatterType } from "./shatter.js";
 import { elasticLettering } from "./elastic.js";
@@ -1255,4 +1256,13 @@ document.querySelectorAll(".stack__card").forEach(card => {
     document.dispatchEvent(new CustomEvent("coverchange", { detail: covered }));
   };
   const mo = new MutationObserver(sync); covers.forEach(el => mo.observe(el, { attributes: true, attributeFilter: ["hidden"] })); sync();
+}
+
+/* ---------------- Villa Cala Molí: the scroll-driven film (loaded only when opened) ---------------- */
+{
+  const tour = initVillaTour({ onAsk: name => {
+    select("villas", true); document.getElementById("f-notes").value = `${t("Me interesa")}: ${name}.`;
+    document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" });
+  } });
+  document.addEventListener("click", e => { if (e.target.closest("[data-villa-tour]")) { e.preventDefault(); tour.open(); } });
 }

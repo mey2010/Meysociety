@@ -1,0 +1,307 @@
+/* Villa Cala Molí — a scroll-driven film. Scrolling flies a drone from the cove to the villa, through the
+   gate, up to the front door (which opens on its own) and through every room; each chapter brings a short
+   line of copy. Real footage, packed as one progressive file of frames (data/villa/cala-moli.bin) and drawn
+   on a canvas: scrubbing is frame-exact on every phone (no video seeking), frames are blended for fluidity,
+   and nothing is downloaded until the tour is opened. */
+import { getLang } from "./i18n.js";
+
+const SRC = "data/villa/cala-moli.bin";
+const DOOR = { x0: .449, x1: .488, y0: .556, y1: .813 };   // the front door in the last frame of the "door" shot
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const smooth = t => t * t * (3 - 2 * t);
+const lerp = (a, b, t) => a + (b - a) * t;
+
+// ---- copy: [kicker, headline, line, chips] per chapter, in the 5 languages of the site ----
+const ORDER = ["cala", "villa", "gate", "door", "salon", "cocina", "piscina", "suite", "terraza", "suites", "jacuzzi", "fin"];
+const T = {
+  es: {
+    ui: { name: "Villa Cala Molí", place: "Sant Josep · Ibiza", scroll: "Desliza para entrar", close: "Cerrar", loading: "Preparando el recorrido", ask: "Pedir disponibilidad", again: "Ver de nuevo", facts: ["5 suites con baño", "6 baños", "Piscina infinita", "Jacuzzi privado", "Acceso directo al mar"], fine: "Precio según fechas: te lo enviamos al pedir disponibilidad. Guestlist de cortesía sujeta a disponibilidad del club." },
+    cala: ["La cala", "Antes de la villa, su secreto.", "Agua turquesa a tus pies y acceso directo al mar. Hay quien cruza la isla buscando una cala así; tú te despiertas encima.", ["Cala Molí", "Acceso directo al mar"]],
+    villa: ["La villa", "Arquitectura que mira al mar.", "Líneas blancas sobre el pinar y una piscina suspendida sobre el horizonte. Desde el aire impresiona. Desde dentro, más.", ["Diseño contemporáneo", "Vistas a la bahía"]],
+    gate: ["La llegada", "La puerta se abre. Ibiza se queda fuera.", "Entrada privada, sin recepción y sin vecinos a la vista. Aquí nadie te pide la pulsera.", ["Acceso privado", "Aparcamiento"]],
+    door: ["Bienvenido", "Esta semana, esta puerta solo se abre para ti.", "Para ti y para los tuyos. El resto del mundo, que llame antes.", []],
+    salon: ["El salón", "Un salón sin paredes al paisaje.", "Ventanales de suelo a techo: el mar y el pinar forman parte de la decoración. El sofá ya tiene dueño.", ["Ventanales panorámicos", "Salida directa a la piscina"]],
+    cocina: ["Comedor y cocina", "Cenas que se alargan solas.", "Mesa para todos y cocina equipada. ¿No te apetece cocinar? Te ponemos chef privado y tú solo eliges el vino.", ["Cocina equipada", "Chef privado opcional"]],
+    piscina: ["La piscina", "El agua termina donde empieza el mar.", "Piscina infinita frente a la bahía. La foto que todos tus amigos te van a pedir.", ["Piscina infinita", "Solárium"]],
+    suite: ["La suite principal", "Despertar con el Mediterráneo delante.", "Cama frente al ventanal, bañera exenta y terraza propia. El despertador sobra: te levanta la luz.", ["Bañera exenta", "Terraza privada"]],
+    terraza: ["La terraza", "El mejor atardecer es privado.", "Dos sillas, una copa y la bahía entera. Sin reserva y sin consumición mínima.", ["Vistas al mar", "Puesta de sol"]],
+    suites: ["Las suites", "Cinco suites. Cero discusiones.", "Cada dormitorio con su propio baño: todos duermen como invitados de honor.", ["5 suites", "6 baños"]],
+    jacuzzi: ["El jacuzzi", "Burbujas entre pinos.", "Jacuzzi privado al aire libre. Perfecto para cerrar el día, o para empezarlo.", ["Jacuzzi privado", "Rodeado de pinar"]],
+    fin: ["Tu semana en Cala Molí", "Empieza con un mensaje.", "Villa, chef, barco en la cala y mesa en el club: lo coordinamos todo. Y por reservar con nosotros, guestlist de cortesía.", []],
+  },
+  en: {
+    ui: { name: "Villa Cala Molí", place: "Sant Josep · Ibiza", scroll: "Scroll to step inside", close: "Close", loading: "Preparing the tour", ask: "Check availability", again: "Watch again", facts: ["5 en-suite bedrooms", "6 bathrooms", "Infinity pool", "Private jacuzzi", "Direct access to the sea"], fine: "Price depends on dates: we send it when you ask for availability. Complimentary guest list subject to club availability." },
+    cala: ["The cove", "Before the villa, its secret.", "Turquoise water at your feet and direct access to the sea. Some people cross the island looking for a cove like this; you wake up above it.", ["Cala Molí", "Direct access to the sea"]],
+    villa: ["The villa", "Architecture that faces the sea.", "White lines above the pines and a pool hanging over the horizon. Impressive from the air. Even more from inside.", ["Contemporary design", "Bay views"]],
+    gate: ["The arrival", "The gate opens. Ibiza stays outside.", "A private entrance, no front desk, no neighbours in sight. Nobody asks for your wristband here.", ["Private access", "Parking"]],
+    door: ["Welcome", "This week, this door opens only for you.", "For you and yours. The rest of the world can call ahead.", []],
+    salon: ["The living room", "A living room with no walls to the view.", "Floor-to-ceiling glass: the sea and the pines are part of the décor. The sofa already has an owner.", ["Panoramic windows", "Straight out to the pool"]],
+    cocina: ["Dining and kitchen", "Dinners that run long on their own.", "A table for everyone and a fully equipped kitchen. Don't feel like cooking? We bring a private chef and you just pick the wine.", ["Equipped kitchen", "Optional private chef"]],
+    piscina: ["The pool", "The water ends where the sea begins.", "An infinity pool facing the bay. The photo all your friends will ask you for.", ["Infinity pool", "Sun deck"]],
+    suite: ["The master suite", "Wake up facing the Mediterranean.", "A bed in front of the window, a freestanding bath and your own terrace. No alarm needed: the light wakes you.", ["Freestanding bath", "Private terrace"]],
+    terraza: ["The terrace", "The best sunset is a private one.", "Two chairs, one glass and the whole bay. No booking, no minimum spend.", ["Sea views", "Sunset"]],
+    suites: ["The suites", "Five suites. Zero arguments.", "Every bedroom has its own bathroom: everyone sleeps like the guest of honour.", ["5 suites", "6 bathrooms"]],
+    jacuzzi: ["The jacuzzi", "Bubbles among the pines.", "A private open-air jacuzzi. Perfect to end the day, or to start it.", ["Private jacuzzi", "Surrounded by pines"]],
+    fin: ["Your week in Cala Molí", "It starts with one message.", "Villa, chef, a boat in the cove and a table at the club: we coordinate it all. And when you book with us, a complimentary guest list.", []],
+  },
+  it: {
+    ui: { name: "Villa Cala Molí", place: "Sant Josep · Ibiza", scroll: "Scorri per entrare", close: "Chiudi", loading: "Preparazione del tour", ask: "Chiedi disponibilità", again: "Rivedi", facts: ["5 suite con bagno", "6 bagni", "Piscina a sfioro", "Jacuzzi privata", "Accesso diretto al mare"], fine: "Prezzo in base alle date: te lo inviamo quando chiedi la disponibilità. Guest list in omaggio secondo disponibilità del club." },
+    cala: ["La cala", "Prima della villa, il suo segreto.", "Acqua turchese ai tuoi piedi e accesso diretto al mare. C'è chi attraversa l'isola per una cala così; tu ti svegli sopra.", ["Cala Molí", "Accesso diretto al mare"]],
+    villa: ["La villa", "Architettura che guarda il mare.", "Linee bianche sulla pineta e una piscina sospesa sull'orizzonte. Dall'alto colpisce. Da dentro, di più.", ["Design contemporaneo", "Vista sulla baia"]],
+    gate: ["L'arrivo", "Il cancello si apre. Ibiza resta fuori.", "Ingresso privato, niente reception e nessun vicino in vista. Qui nessuno ti chiede il braccialetto.", ["Accesso privato", "Parcheggio"]],
+    door: ["Benvenuto", "Questa settimana, questa porta si apre solo per te.", "Per te e per i tuoi. Il resto del mondo, che chiami prima.", []],
+    salon: ["Il salone", "Un salone senza pareti sul paesaggio.", "Vetrate dal pavimento al soffitto: il mare e la pineta fanno parte dell'arredo. Il divano ha già un padrone.", ["Vetrate panoramiche", "Uscita diretta in piscina"]],
+    cocina: ["Sala da pranzo e cucina", "Cene che si allungano da sole.", "Un tavolo per tutti e cucina attrezzata. Non ti va di cucinare? Ti portiamo uno chef privato e tu scegli solo il vino.", ["Cucina attrezzata", "Chef privato opzionale"]],
+    piscina: ["La piscina", "L'acqua finisce dove inizia il mare.", "Piscina a sfioro davanti alla baia. La foto che tutti i tuoi amici ti chiederanno.", ["Piscina a sfioro", "Solarium"]],
+    suite: ["La suite principale", "Svegliarsi con il Mediterraneo davanti.", "Letto davanti alla vetrata, vasca freestanding e terrazza privata. La sveglia non serve: ti alza la luce.", ["Vasca freestanding", "Terrazza privata"]],
+    terraza: ["La terrazza", "Il tramonto migliore è privato.", "Due sedie, un bicchiere e tutta la baia. Senza prenotazione e senza consumazione minima.", ["Vista mare", "Tramonto"]],
+    suites: ["Le suite", "Cinque suite. Zero discussioni.", "Ogni camera ha il suo bagno: tutti dormono da ospiti d'onore.", ["5 suite", "6 bagni"]],
+    jacuzzi: ["La jacuzzi", "Bollicine tra i pini.", "Jacuzzi privata all'aperto. Perfetta per chiudere la giornata, o per iniziarla.", ["Jacuzzi privata", "Immersa nella pineta"]],
+    fin: ["La tua settimana a Cala Molí", "Inizia con un messaggio.", "Villa, chef, barca nella cala e tavolo al club: coordiniamo tutto noi. E prenotando con noi, guest list in omaggio.", []],
+  },
+  fr: {
+    ui: { name: "Villa Cala Molí", place: "Sant Josep · Ibiza", scroll: "Faites défiler pour entrer", close: "Fermer", loading: "Préparation de la visite", ask: "Demander la disponibilité", again: "Revoir", facts: ["5 suites avec salle de bain", "6 salles de bain", "Piscine à débordement", "Jacuzzi privé", "Accès direct à la mer"], fine: "Prix selon les dates : nous vous l'envoyons lors de la demande de disponibilité. Guest list offerte selon disponibilité du club." },
+    cala: ["La crique", "Avant la villa, son secret.", "Une eau turquoise à vos pieds et un accès direct à la mer. Certains traversent l'île pour une crique pareille ; vous vous réveillez au-dessus.", ["Cala Molí", "Accès direct à la mer"]],
+    villa: ["La villa", "Une architecture tournée vers la mer.", "Des lignes blanches sur la pinède et une piscine suspendue sur l'horizon. Impressionnante vue du ciel. Plus encore de l'intérieur.", ["Design contemporain", "Vue sur la baie"]],
+    gate: ["L'arrivée", "Le portail s'ouvre. Ibiza reste dehors.", "Entrée privée, pas de réception, aucun voisin en vue. Ici, personne ne vous demande votre bracelet.", ["Accès privé", "Parking"]],
+    door: ["Bienvenue", "Cette semaine, cette porte ne s'ouvre que pour vous.", "Pour vous et les vôtres. Le reste du monde peut appeler avant.", []],
+    salon: ["Le salon", "Un salon sans murs sur le paysage.", "Des baies vitrées du sol au plafond : la mer et la pinède font partie du décor. Le canapé a déjà un propriétaire.", ["Baies panoramiques", "Accès direct à la piscine"]],
+    cocina: ["Salle à manger et cuisine", "Des dîners qui s'éternisent tout seuls.", "Une table pour tous et une cuisine équipée. Pas envie de cuisiner ? Nous envoyons un chef privé, vous choisissez le vin.", ["Cuisine équipée", "Chef privé en option"]],
+    piscina: ["La piscine", "L'eau s'arrête là où la mer commence.", "Une piscine à débordement face à la baie. La photo que tous vos amis vous demanderont.", ["Piscine à débordement", "Solarium"]],
+    suite: ["La suite parentale", "Se réveiller face à la Méditerranée.", "Un lit devant la baie vitrée, une baignoire îlot et votre terrasse. Pas besoin de réveil : la lumière s'en charge.", ["Baignoire îlot", "Terrasse privée"]],
+    terraza: ["La terrasse", "Le plus beau coucher de soleil est privé.", "Deux chaises, un verre et toute la baie. Sans réservation ni minimum de consommation.", ["Vue mer", "Coucher de soleil"]],
+    suites: ["Les suites", "Cinq suites. Zéro dispute.", "Chaque chambre a sa salle de bain : tout le monde dort en invité d'honneur.", ["5 suites", "6 salles de bain"]],
+    jacuzzi: ["Le jacuzzi", "Des bulles parmi les pins.", "Un jacuzzi privé en plein air. Parfait pour finir la journée, ou pour la commencer.", ["Jacuzzi privé", "Entouré de pins"]],
+    fin: ["Votre semaine à Cala Molí", "Elle commence par un message.", "Villa, chef, bateau dans la crique et table au club : nous coordonnons tout. Et en réservant avec nous, guest list offerte.", []],
+  },
+  de: {
+    ui: { name: "Villa Cala Molí", place: "Sant Josep · Ibiza", scroll: "Scrollen und eintreten", close: "Schließen", loading: "Tour wird vorbereitet", ask: "Verfügbarkeit anfragen", again: "Noch einmal ansehen", facts: ["5 Suiten mit Bad", "6 Bäder", "Infinity-Pool", "Privater Jacuzzi", "Direkter Zugang zum Meer"], fine: "Preis je nach Datum: Wir senden ihn dir mit der Verfügbarkeitsanfrage. Gästeliste als Geschenk, je nach Verfügbarkeit des Clubs." },
+    cala: ["Die Bucht", "Vor der Villa: ihr Geheimnis.", "Türkises Wasser zu deinen Füßen und direkter Zugang zum Meer. Manche durchqueren die Insel für so eine Bucht; du wachst darüber auf.", ["Cala Molí", "Direkter Zugang zum Meer"]],
+    villa: ["Die Villa", "Architektur mit Blick aufs Meer.", "Weiße Linien über dem Pinienwald und ein Pool, der über dem Horizont schwebt. Aus der Luft beeindruckend. Von innen noch mehr.", ["Zeitgenössisches Design", "Blick auf die Bucht"]],
+    gate: ["Die Ankunft", "Das Tor öffnet sich. Ibiza bleibt draußen.", "Privater Eingang, keine Rezeption, keine Nachbarn in Sicht. Hier fragt niemand nach deinem Armband.", ["Privater Zugang", "Parkplatz"]],
+    door: ["Willkommen", "Diese Woche öffnet sich diese Tür nur für dich.", "Für dich und deine Leute. Der Rest der Welt soll vorher anrufen.", []],
+    salon: ["Das Wohnzimmer", "Ein Wohnzimmer ohne Wände zur Landschaft.", "Bodentiefe Fenster: Meer und Pinien gehören zur Einrichtung. Das Sofa hat schon einen Besitzer.", ["Panoramafenster", "Direkt hinaus zum Pool"]],
+    cocina: ["Essbereich und Küche", "Abendessen, die von selbst länger werden.", "Ein Tisch für alle und eine voll ausgestattete Küche. Keine Lust zu kochen? Wir schicken einen Privatkoch, du wählst nur den Wein.", ["Ausgestattete Küche", "Privatkoch optional"]],
+    piscina: ["Der Pool", "Das Wasser endet, wo das Meer beginnt.", "Infinity-Pool mit Blick auf die Bucht. Das Foto, nach dem dich alle Freunde fragen werden.", ["Infinity-Pool", "Sonnendeck"]],
+    suite: ["Die Master-Suite", "Aufwachen mit dem Mittelmeer vor Augen.", "Das Bett vor der Fensterfront, eine freistehende Badewanne und eine eigene Terrasse. Kein Wecker nötig: Das Licht weckt dich.", ["Freistehende Badewanne", "Private Terrasse"]],
+    terraza: ["Die Terrasse", "Der schönste Sonnenuntergang ist privat.", "Zwei Stühle, ein Glas und die ganze Bucht. Ohne Reservierung, ohne Mindestverzehr.", ["Meerblick", "Sonnenuntergang"]],
+    suites: ["Die Suiten", "Fünf Suiten. Null Diskussionen.", "Jedes Schlafzimmer hat sein eigenes Bad: Alle schlafen wie Ehrengäste.", ["5 Suiten", "6 Bäder"]],
+    jacuzzi: ["Der Jacuzzi", "Blubbern zwischen Pinien.", "Privater Jacuzzi unter freiem Himmel. Perfekt, um den Tag zu beenden – oder zu beginnen.", ["Privater Jacuzzi", "Umgeben von Pinien"]],
+    fin: ["Deine Woche in Cala Molí", "Sie beginnt mit einer Nachricht.", "Villa, Koch, Boot in der Bucht und Tisch im Club: Wir koordinieren alles. Und wenn du bei uns buchst, gibt es die Gästeliste dazu.", []],
+  },
+};
+const tx = () => T[getLang()] || T.es;
+
+// ---- frames: one progressive file; compressed frames stay in memory, decoded ones live in a small cache ----
+function createFrames(onProgress) {
+  let head = null, buf = null, got = 0, base = 0, failed = false;
+  const cache = new Map(), pending = new Set(), MAX = innerWidth < 900 ? 44 : 80;
+  const ready = (async () => {
+    const res = await fetch(SRC); if (!res.ok) throw new Error("tour " + res.status);
+    const reader = res.body.getReader(); let pre = new Uint8Array(0);
+    for (;;) {
+      const { done, value } = await reader.read(); if (done) break;
+      if (!head) { // the header (sizes + index) comes first
+        const m = new Uint8Array(pre.length + value.length); m.set(pre); m.set(value, pre.length); pre = m;
+        if (pre.length < 4) continue; const hl = new DataView(pre.buffer, pre.byteOffset).getUint32(0, true); if (pre.length < 4 + hl) continue;
+        head = JSON.parse(new TextDecoder().decode(pre.subarray(4, 4 + hl))); base = 4 + hl;
+        buf = new Uint8Array(head.idx[head.idx.length - 1]); const rest = pre.subarray(base); buf.set(rest, 0); got = rest.length; onHead?.(head);
+      } else { buf.set(value, got); got += value.length; }
+      onProgress?.(got / buf.length);
+    }
+    onProgress?.(1);
+  })().catch(e => { failed = true; console.error(e); });
+  let onHead = null;
+  const has = i => head && got >= head.idx[i + 1];
+  function want(i) { // decode in the background if its bytes have arrived
+    if (!head || i < 0 || i >= head.idx.length - 1 || cache.has(i) || pending.has(i) || !has(i)) return;
+    pending.add(i);
+    createImageBitmap(new Blob([buf.subarray(head.idx[i], head.idx[i + 1])], { type: "image/webp" })).then(bm => {
+      pending.delete(i); cache.set(i, bm);
+      if (cache.size > MAX) { // drop the frames furthest from where we are
+        const far = [...cache.keys()].sort((a, b) => Math.abs(b - focus) - Math.abs(a - focus)).slice(0, cache.size - MAX);
+        far.forEach(k => { cache.get(k).close?.(); cache.delete(k); });
+      }
+      onFrame?.(i);
+    }).catch(() => pending.delete(i));
+  }
+  let focus = 0, onFrame = null;
+  return { ready, has, want, get: i => cache.get(i), setFocus: i => { focus = i; }, set onHead(f) { onHead = f; if (head) f(head); }, set onFrame(f) { onFrame = f; }, get head() { return head; }, get failed() { return failed; } };
+}
+
+export function initVillaTour({ onAsk } = {}) {
+  let root = null, api = null;
+  function build() {
+    const L = tx();
+    root = document.createElement("div"); root.className = "vt"; root.hidden = true; root.setAttribute("data-no-i18n", "");
+    root.setAttribute("role", "dialog"); root.setAttribute("aria-modal", "true"); root.setAttribute("aria-label", L.ui.name);
+    root.innerHTML = `
+      <div class="vt__scroll" tabindex="0">
+        <div class="vt__track"><div class="vt__stage">
+          <canvas class="vt__cv" aria-hidden="true"></canvas>
+          <div class="vt__shade" aria-hidden="true"></div>
+          <div class="vt__bars" aria-hidden="true"><i></i><i></i></div>
+          <div class="vt__cap" aria-live="polite"></div>
+          <div class="vt__hint"><span></span><em>${L.ui.scroll}</em></div>
+          <div class="vt__load"><i></i><span>${L.ui.loading}</span></div>
+        </div></div>
+        <section class="vt__end">
+          <p class="vt__k">${L.ui.place}</p><h3>${L.ui.name}</h3>
+          <ul class="vt__facts">${L.ui.facts.map(f => `<li>${f}</li>`).join("")}</ul>
+          <div class="vt__cta"><button class="btn btn--primary btn--lg" type="button" data-ask>${L.ui.ask}</button><button class="btn btn--glass btn--onDark" type="button" data-again>${L.ui.again}</button></div>
+          <p class="vt__fine">${L.ui.fine}</p>
+        </section>
+      </div>
+      <header class="vt__top"><div class="vt__brand"><b>${L.ui.name}</b><small>${L.ui.place}</small></div>
+        <button class="vt__x" type="button" data-close aria-label="${L.ui.close}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+      <nav class="vt__rail" aria-hidden="true"></nav>
+      <div class="vt__prog" aria-hidden="true"><i></i></div>`;
+    document.body.appendChild(root);
+    const scroller = root.querySelector(".vt__scroll"), track = root.querySelector(".vt__track"), stage = root.querySelector(".vt__stage");
+    const cv = root.querySelector(".vt__cv"), ctx = cv.getContext("2d"), cap = root.querySelector(".vt__cap"), rail = root.querySelector(".vt__rail");
+    const prog = root.querySelector(".vt__prog i"), hint = root.querySelector(".vt__hint"), load = root.querySelector(".vt__load"), bars = root.querySelector(".vt__bars");
+
+    // ---- timeline: every shot is a segment; the door shot is followed by the door-opening move ----
+    let seg = [], total = 0, chapters = [], head = null;
+    const frames = createFrames(f => { load.style.setProperty("--p", f.toFixed(3)); if (f >= 1) load.classList.add("is-done"); kick(); });
+    frames.onFrame = () => kick();
+    frames.onHead = h => {
+      head = h; let t = 0;
+      h.clips.forEach((c, i) => {
+        seg.push({ kind: "clip", ch: c.ch, first: c.first, n: c.n, t0: t, len: c.dur }); t += c.dur;
+        if (c.ch === "door" && h.clips[i + 1]) { seg.push({ kind: "door", ch: "door", from: c.first + c.n - 1, to: h.clips[i + 1].first, t0: t, len: 2.6 }); t += 2.6; }
+      });
+      total = t;
+      ORDER.forEach(id => { const ss = seg.filter(s => s.ch === id); if (ss.length) chapters.push({ id, t0: ss[0].t0, t1: ss[ss.length - 1].t0 + ss[ss.length - 1].len }); });
+      track.style.height = `calc(${Math.round(total * (innerWidth < 900 ? 21 : 24))}vh + 100vh)`;
+      rail.innerHTML = chapters.map((c, i) => `<i style="top:${(c.t0 / total * 100).toFixed(2)}%" data-i="${i}"></i>`).join("");
+      for (let i = 0; i < 6; i++) frames.want(i);
+      kick();
+    };
+
+    // ---- drawing ----
+    let W = 0, H = 0, dpr = 1, lastGood = null;
+    function size() {
+      dpr = Math.min(1.5, devicePixelRatio || 1); W = stage.clientWidth; H = stage.clientHeight;
+      const k = Math.min(1, 1600 / (W * dpr)); cv.width = Math.round(W * dpr * k); cv.height = Math.round(H * dpr * k); kick();
+    }
+    // cover-fit rect of a frame, with an optional zoom about a point given in frame coordinates (0..1)
+    function fit(zoom = 1, fx = .5, fy = .5) {
+      const cw = cv.width, chh = cv.height, s = Math.max(cw / head.w, chh / head.h) * zoom, w = head.w * s, h = head.h * s;
+      return { x: cw / 2 - fx * w, y: chh / 2 - fy * h, w, h };
+    }
+    let missing = false;
+    function near(i) { // the wanted frame, or the closest decoded one of the same shot (never a frame of another room)
+      let bm = frames.get(i); if (bm) return bm;
+      const c = head.clips.find(c => i >= c.first && i < c.first + c.n), lo = c ? c.first : i, hi = c ? c.first + c.n - 1 : i;
+      for (let d = 1; d < 12; d++) { bm = (i - d >= lo && frames.get(i - d)) || (i + d <= hi && frames.get(i + d)); if (bm) return bm; }
+      missing = true; frames.want(i); return null;
+    }
+    function drawFrame(i, alpha = 1, r = null) {
+      const bm = near(i); if (!bm) return false;
+      r = r || fit(); ctx.globalAlpha = alpha; ctx.drawImage(bm, r.x, r.y, r.w, r.h); ctx.globalAlpha = 1; lastGood = i; return true;
+    }
+    function drawClip(s, local, alpha = 1) {
+      const f = clamp(local / s.len, 0, 1) * (s.n - 1), i0 = Math.floor(f), frac = f - i0;
+      // a slow push-in over each shot adds life; two neighbouring frames are blended for fluid motion
+      const r = fit(1.02 + .03 * (local / s.len));
+      const ok = drawFrame(s.first + i0, alpha, r);
+      if (ok && frac > .02 && i0 + 1 < s.n && frames.get(s.first + i0 + 1)) drawFrame(s.first + i0 + 1, alpha * frac, r);
+      return ok;
+    }
+    function drawDoor(s, k) {
+      // 1) push in towards the door  2) the door swings open on its own  3) we fly through into the living room
+      const z = smooth(clamp(k / .92)), open = smooth(clamp((k - .16) / .42));
+      const dcx = (DOOR.x0 + DOOR.x1) / 2, dcy = (DOOR.y0 + DOOR.y1) / 2;
+      const base = fit(1.05), dw0 = (DOOR.x1 - DOOR.x0) * base.w, dh0 = (DOOR.y1 - DOOR.y0) * base.h;
+      const zEnd = Math.max(cv.width / dw0, cv.height / dh0) * 1.12, zoom = Math.exp(Math.log(zEnd) * z) * 1.05;
+      const aim = smooth(clamp(z / .55)), r = fit(zoom, lerp(.5, dcx, aim), lerp(.5, dcy, aim));
+      drawFrame(s.from, 1, r);
+      const dx = r.x + DOOR.x0 * r.w, dy = r.y + DOOR.y0 * r.h, dw = (DOOR.x1 - DOOR.x0) * r.w, dh = (DOOR.y1 - DOOR.y0) * r.h;
+      if (open > 0) {
+        ctx.save(); ctx.beginPath(); ctx.rect(dx, dy, dw, dh); ctx.clip();
+        // what waits inside, seen through the doorway (it settles as we arrive)
+        const bm = near(s.to); if (bm) { const ri = fit(1.18 - .13 * z); ctx.drawImage(bm, ri.x, ri.y, ri.w, ri.h); } else { ctx.fillStyle = "#f3efe8"; ctx.fillRect(dx, dy, dw, dh); }
+        // the door leaf, hinged on the left, swinging inwards
+        const lw = dw * Math.cos(open * 1.48), g = ctx.createLinearGradient(dx, 0, dx + lw, 0);
+        g.addColorStop(0, "#0e0f12"); g.addColorStop(.85, "#23252b"); g.addColorStop(1, "#3a3d45");
+        ctx.fillStyle = g; ctx.fillRect(dx, dy, lw, dh);
+        ctx.fillStyle = `rgba(0,0,0,${(.35 * (1 - open)).toFixed(3)})`; ctx.fillRect(dx + lw, dy, dw - lw, dh); // the room is dim until the door clears
+        ctx.restore();
+        // warm light spilling out of the doorway
+        const gl = ctx.createRadialGradient(dx + dw / 2, dy + dh / 2, 0, dx + dw / 2, dy + dh / 2, Math.max(dw, dh) * 1.6);
+        gl.addColorStop(0, `rgba(255,236,200,${(.28 * open * (1 - z)).toFixed(3)})`); gl.addColorStop(1, "rgba(255,236,200,0)");
+        ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = gl; ctx.fillRect(0, 0, cv.width, cv.height); ctx.globalCompositeOperation = "source-over";
+      }
+    }
+    const XF = .42; // seconds of timeline used to dissolve from one shot into the next
+    function draw(t) {
+      if (!head) return;
+      let k = seg.findIndex(s => t < s.t0 + s.len); if (k < 0) k = seg.length - 1;
+      const s = seg[k], local = t - s.t0, next = seg[k + 1];
+      missing = false;
+      // while a shot is still arriving, the previous picture stays on screen instead of a blank or a wrong room
+      const probe = s.kind === "door" ? s.from : s.first + Math.floor(clamp(local / s.len) * (s.n - 1));
+      frames.setFocus(probe); // (so a frame decoded for a far jump is kept, not evicted as 'far away')
+      if (!near(probe)) { for (let d = 1; d <= 6; d++) frames.want(probe + d); return; }
+      if (s.kind === "door") drawDoor(s, clamp(local / s.len));
+      else {
+        drawClip(s, local);
+        if (next && next.kind === "clip" && local > s.len - XF) drawClip(next, 0, smooth((local - (s.len - XF)) / XF)); // dissolve
+      }
+      // decode ahead of where we are going
+      const cur = s.kind === "door" ? s.to : s.first + Math.round(clamp(local / s.len) * (s.n - 1));
+      frames.setFocus(cur); const dir = t >= lastT ? 1 : -1; lastT = t;
+      for (let d = -3; d <= 16; d++) frames.want(cur + d * dir);
+      if (next) { const nf = next.kind === "clip" ? next.first : next.to; for (let d = 0; d < 4; d++) frames.want(nf + d); }
+      if (s.kind === "door") { frames.want(s.from); frames.want(s.to); }
+    }
+    let lastT = 0;
+
+    // ---- captions ----
+    let capCh = -1;
+    function caption(t) {
+      const i = chapters.findIndex(c => t >= c.t0 && t < c.t1), c = chapters[i];
+      if (i !== capCh) {
+        capCh = i; cap.classList.remove("is-in");
+        if (c) {
+          const [k, h, p, chips] = tx()[c.id];
+          cap.innerHTML = `<p class="vt__n"><span>${String(i + 1).padStart(2, "0")}</span><i></i>${k}</p><h2>${h.split(" ").map((w, j) => `<span style="--j:${j}"><b>${w}</b></span>`).join(" ")}</h2><p class="vt__p">${p}</p>${chips.length ? `<ul>${chips.map(x => `<li>${x}</li>`).join("")}</ul>` : ""}`;
+          void cap.offsetWidth; cap.classList.add("is-in");
+        }
+        rail.querySelectorAll("i").forEach((d, j) => d.classList.toggle("is-on", j === i));
+      }
+      if (c) { // fade the copy in after the cut and out before the next one
+        const u = (t - c.t0) / (c.t1 - c.t0), o = clamp(u / .1) * clamp((1 - u) / .12);
+        cap.style.opacity = o.toFixed(3); cap.style.setProperty("--drift", ((.5 - u) * 26).toFixed(1) + "px");
+      }
+    }
+
+    // ---- scroll → timeline, eased ----
+    let cur = 0, target = 0, raf = 0, lastNow = 0;
+    const read = () => { const max = track.offsetHeight - scroller.clientHeight; target = max > 0 ? clamp(scroller.scrollTop / max) * total : 0; };
+    function frame(now) {
+      raf = 0; const dt = lastNow ? Math.min(.05, (now - lastNow) / 1000) : .016; lastNow = now;
+      read(); cur = reduced ? target : cur + (target - cur) * (1 - Math.exp(-dt * 9));
+      if (Math.abs(target - cur) < .002) cur = target;
+      draw(cur); caption(cur);
+      prog.style.transform = `scaleX(${total ? (cur / total).toFixed(4) : 0})`;
+      hint.classList.toggle("is-off", cur > .5); bars.classList.toggle("is-on", cur > .15 && cur < total - .3);
+      if (cur !== target || missing) raf = requestAnimationFrame(frame); else lastNow = 0;
+    }
+    const kick = () => { if (!raf && root && !root.hidden) raf = requestAnimationFrame(frame); };
+    scroller.addEventListener("scroll", kick, { passive: true });
+    new ResizeObserver(size).observe(stage);
+
+    function close() { root.hidden = true; document.body.style.overflow = ""; document.documentElement.classList.remove("is-covered"); document.dispatchEvent(new CustomEvent("coverchange", { detail: false })); }
+    root.addEventListener("click", e => {
+      if (e.target.closest("[data-close]")) close();
+      else if (e.target.closest("[data-ask]")) { close(); onAsk?.(tx().ui.name); }
+      else if (e.target.closest("[data-again]")) scroller.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+    });
+    document.addEventListener("keydown", e => { if (e.key === "Escape" && root && !root.hidden) close(); });
+    api = { open() { root.hidden = false; document.body.style.overflow = "hidden"; document.documentElement.classList.add("is-covered"); document.dispatchEvent(new CustomEvent("coverchange", { detail: true })); scroller.scrollTop = 0; cur = 0; capCh = -1; size(); kick(); requestAnimationFrame(() => scroller.focus({ preventScroll: true })); } };
+  }
+  return { open() { if (!root || root.dataset.lang !== getLang()) { root?.remove(); build(); root.dataset.lang = getLang(); } api.open(); } };
+}
