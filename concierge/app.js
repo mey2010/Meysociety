@@ -3,6 +3,7 @@ import { ICONS } from "./icons.js";
 import { createCircularCarousel } from "./circular-carousel.js";
 import { createDepthRibbon } from "./depth-ribbon.js";
 import { FLEET, FLEET_TYPES, TYPE_NOTE } from "./fleet-data.js";
+import { initRoute3D } from "./route3d.js";
 import { holo } from "./holo.js";
 import { shatterType } from "./shatter.js";
 import { elasticLettering } from "./elastic.js";
@@ -648,7 +649,25 @@ function renderRoute(tl) {
     return `<g class="stop stop--${cls}${p.days.has(viewingDay) ? " stop--today" : ""}" transform="translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})">${i === here ? '<circle class="pulse" r="10"/>' : ""}<circle r="${i === 0 ? 9 : 7}"/>${i === 0 ? `<g class="stop__ico" transform="translate(-6 -6) scale(.5)">${ICONS.plane.replace('width="16" height="16"', 'width="24" height="24"')}</g>` : `<text class="stop__n" y="3.5">${i}</text>`}<text class="stop__label" x="13" y="4">${t(PLACES[p.place].name).split(" · ")[0]}</text></g>`;
   }).join("");
   if (!REDUCED) map.querySelectorAll(".leg").forEach((l, i) => gsap.fromTo(l, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: .5, delay: .15 + i * .12, ease: "power2.out", clearProps: "strokeDashoffset" }));
+  showRoute3D(pts.map(p => ({ ll: PLACES[p.place].ll, status: p.status, days: p.days, label: t(PLACES[p.place].name).split(" · ")[0] })), { today: viewingDay, here });
 }
+// the same route in 3D (turn, zoom, pan); the flat map above stays only as a fallback for devices without WebGL
+let route3d = null, route3dStarted = false, route3dLast = null;
+function showRoute3D(pts, opts) {
+  route3dLast = [pts, opts];
+  if (route3d) return route3d.setRoute(pts, opts);
+  if (route3dStarted) return; route3dStarted = true;
+  const el = document.getElementById("dashMap3d"), svg = document.getElementById("dashMap");
+  el.hidden = false; el.classList.add("is-loading");
+  initRoute3D(el, { planeIcon: ICONS.plane }).then(api => {
+    route3d = api; svg.setAttribute("hidden", ""); // (SVG elements have no .hidden property) el.classList.remove("is-loading"); api.setRoute(...route3dLast);
+  }).catch(err => { console.warn("route 3D unavailable, keeping the flat map", err); el.hidden = true; });
+}
+// the + / − / ⤢ buttons drive the 3D map once it is there
+document.querySelector(".routemap__zoom").addEventListener("click", e => {
+  const z = e.target.closest("button")?.dataset.rz; if (!z || !route3d) return;
+  e.stopImmediatePropagation(); z === "reset" ? route3d.reset() : route3d.zoom(z === "in" ? .6 : 1 / .6);
+}, true);
 // spotlight + border glow follow the pointer on the bento cards
 document.addEventListener("pointermove", e => { if (dash.hidden) return; document.querySelectorAll(".mb-card").forEach(c => { const r = c.getBoundingClientRect(); c.style.setProperty("--mb-x", (e.clientX - r.left).toFixed(0) + "px"); c.style.setProperty("--mb-y", (e.clientY - r.top).toFixed(0) + "px"); }); }, { passive: true });
 document.getElementById("logout").addEventListener("click", () => { dash.hidden = true; if (fromAdmin) { openAdmin(); return; } document.body.style.overflow = ""; });

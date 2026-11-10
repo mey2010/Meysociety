@@ -68,6 +68,12 @@ async function normalTexture(H, scale) {
   t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.needsUpdate = true; return t;
 }
 
+// shared with the client-area route map: the relief and the land mask are fetched and decoded once
+let heightsP = null, maskP = null;
+const sharedHeights = onBytes => heightsP || (heightsP = loadHeights("data/height_mdt25.png", onBytes));
+const sharedMask = () => maskP || (maskP = loadGray("data/mask1024.png"));
+export const MAPDATA = { A, B, EXAG, ISLE, LIMIT, toXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow, nextFrame };
+
 export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgress }) {
   const prog = { h: 0, o: 0, build: 0 }, report = () => onProgress?.(Math.round(prog.h * 30 + prog.o * 45 + prog.build * 25));
   const small = matchMedia("(max-width: 900px)").matches, reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -91,7 +97,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   // the 5120x6144 version cost a long freeze to upload for no visible gain at that distance
   const orthoUrl = renderer.capabilities.maxTextureSize >= 4096 && !small ? "data/ortho_hi.jpg" : "data/ortho_lo.jpg";
   const orthoBlob = fetchBlob(orthoUrl, f => { prog.o = f; report(); });     // downloads in parallel with the relief
-  const [H, M] = await Promise.all([loadHeights("data/height_mdt25.png", f => { prog.h = f; report(); }), loadGray("data/mask1024.png")]);
+  const [H, M] = await Promise.all([sharedHeights(f => { prog.h = f; report(); }), sharedMask()]);
   const hAt = (x, z) => { const [u, v] = uvOf(x, z); return bilinear(H.a, H.w, H.h, u, v, -30); };
   const maskAt = (x, z) => { const [u, v] = uvOf(x, z); return bilinear(M.g, M.w, M.h, u, v, 0); };
   const groundY = (x, z) => { const m = hAt(x, z); return m > .4 ? m * EXAG / 1000 : 0; };

@@ -1428,3 +1428,47 @@ html { overflow-x: clip; }
 }
 /* the pre-blurred backdrop overflows the card on every side (beats the generic ".stack__media img" sizing) */
 .stack__media .stack__media-bg { inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px); max-width: none; max-height: none; }
+
+/* ---------------- client area: the route in 3D, frameless ---------------- */
+.route3d { position: relative; width: 100%; aspect-ratio: 1 / .91; border-radius: 0; background: none; overflow: hidden; touch-action: pan-y; }
+.route3d[hidden] { display: none; }
+.route3d__gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+.route3d__gl:active { cursor: grabbing; }
+.route3d.is-loading::after { content: ""; position: absolute; inset: 0; margin: auto; width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid rgb(200 86 230 / .25); border-top-color: #c856e6; animation: mb-spin 800ms linear infinite; }
+.route3d__stops { position: absolute; inset: 0; pointer-events: none; }
+.route3d__stop { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 6px; translate: -11px -11px; will-change: transform; }
+.route3d__dot { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; font: 700 10.5px/1 var(--sans);
+  color: #0d0a38; background: #f4f5fb; box-shadow: 0 0 0 2px #0d0a38, 0 4px 10px rgb(0 0 0 / .45); }
+.route3d__dot svg { width: 12px; height: 12px; }
+.route3d__stop--done .route3d__dot { background: #c856e6; color: #fff; }
+.route3d__stop--start .route3d__dot { background: #1e24bb; color: #fff; box-shadow: 0 0 0 2px #f4f5fb, 0 4px 10px rgb(0 0 0 / .45); }
+.route3d__stop--now .route3d__dot { background: #fff; box-shadow: 0 0 0 3px #c856e6, 0 4px 12px rgb(0 0 0 / .5); }
+.route3d__pulse { position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 50%; box-shadow: 0 0 0 2px #c856e6; animation: halo 1.6s var(--ease) infinite; }
+.route3d__label { font: 600 11.5px/1.2 var(--sans); color: #f4f5fb; white-space: nowrap; text-shadow: 0 1px 3px #0d0a38, 0 0 6px #0d0a38; opacity: .6; }
+.route3d__stop.is-today .route3d__label, .route3d__stop--now .route3d__label, .route3d__stop--start .route3d__label { opacity: 1; }
+/* the old flat map also loses its square frame (it only shows where 3D is not available) */
+.routemap { background: none; border-radius: 0; }
+
+/* ---------------- service cards: the photo is a square, as large as the free space allows ---------------- */
+.stack__media:not(.stack__media--product) { container-type: size; --m: clamp(14px, 2.4vw, 28px); }
+.stack__media:not(.stack__media--product) > img:not(.stack__media-bg) {
+  --side: min(100cqw - 2 * var(--m), 100cqh - var(--panel-h, 46cqh) - var(--m));
+  top: var(--m); left: calc(50cqw - var(--side) / 2); right: auto; bottom: auto;
+  width: var(--side); height: var(--side); max-width: none; max-height: none;
+  object-fit: cover; object-position: 50% 50% !important; border-radius: 18px; }
+@media (min-width: 901px) {
+  .stack__media:not(.stack__media--product) { --m: clamp(18px, 2.6vw, 34px); }
+  .stack__media:not(.stack__media--product) > img:not(.stack__media-bg) {
+    --areaW: calc(100cqw - min(44cqw, 520px) - 3 * var(--m)); --areaH: calc(100cqh - 2 * var(--m));
+    --side: min(var(--areaW), var(--areaH));
+    top: calc(var(--m) + (var(--areaH) - var(--side)) / 2); left: calc(var(--m) + (var(--areaW) - var(--side)) / 2); border-radius: 22px; }
+}
+.routemap[hidden] { display: none !important; }
+/* no edges at all: the map dissolves into the card on every side */
+.route3d__gl, .route3d__stops {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
+  mask-composite: intersect; }
+.route3d__label.is-hidden { visibility: hidden; }
