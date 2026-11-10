@@ -1,12 +1,14 @@
 /* Villa Cala Molí — a scroll-driven film. Scrolling flies a drone from the cove to the villa, through the
    gate, up to the front door (which opens on its own) and through every room; each chapter brings a short
-   line of copy. Real footage, packed as one progressive file of frames (data/villa/cala-moli.txt) and drawn
+   line of copy. Real footage, packed as one progressive file of frames (data/villa/cala-moli-*.txt) and drawn
    on a canvas: scrubbing is frame-exact on every phone (no video seeking), frames are blended for fluidity,
    and nothing is downloaded until the tour is opened. */
 import { getLang } from "./i18n.js";
 
-const SRC = "data/villa/cala-moli.txt";
-const DOOR = { x0: .449, x1: .488, y0: .556, y1: .813 };   // the front door in the last frame of the "door" shot
+// two packs of the same film: full-width HD for laptops and tablets, a tall crop for phones held upright
+const PACK = matchMedia("(max-width: 720px) and (orientation: portrait)").matches ? "m" : "hd";
+const SRC = k => `data/villa/cala-moli-${PACK}-${k}.txt`;
+let DOOR = { x0: .449, x1: .488, y0: .556, y1: .813 };     // the front door in the last frame of the "door" shot (each pack brings its own)
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const smooth = t => t * t * (3 - 2 * t);
@@ -97,20 +99,22 @@ const tx = () => T[getLang()] || T.es;
 function createFrames(onProgress) {
   // one text file: a JSON header line, then one base64 WebP frame per line, read as it streams in
   let head = null, failed = false, onHead = null, onFrame = null, focus = 0;
-  const raw = [], cache = new Map(), pending = new Set(), MAX = innerWidth < 900 ? 44 : 80;
+  const raw = [], cache = new Map(), pending = new Set(), MAX = PACK === "m" ? 56 : 44; // decoded frames kept (HD ones are ~6 MB each)
   const ready = (async () => {
-    const res = await fetch(SRC); if (!res.ok) throw new Error("tour " + res.status);
-    const reader = res.body.getReader(), dec = new TextDecoder(); let tail = "";
-    for (;;) {
-      const { done, value } = await reader.read(); if (done) break;
-      const lines = (tail + dec.decode(value, { stream: true })).split("\n"); tail = lines.pop();
-      for (const ln of lines) {
-        if (!ln) continue;
-        if (!head) { head = JSON.parse(ln); onHead?.(head); continue; }
-        const bin = atob(ln), u = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) u[k] = bin.charCodeAt(k);
-        raw.push(u);
+    for (let part = 1; !head || part <= head.parts; part++) {
+      const res = await fetch(SRC(part)); if (!res.ok) throw new Error("tour " + res.status);
+      const reader = res.body.getReader(), dec = new TextDecoder(); let tail = "";
+      for (;;) {
+        const { done, value } = await reader.read(); if (done) break;
+        const lines = (tail + dec.decode(value, { stream: true })).split("\n"); tail = lines.pop();
+        for (const ln of lines) {
+          if (!ln) continue;
+          if (!head) { head = JSON.parse(ln); onHead?.(head); continue; }
+          const bin = atob(ln), u = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) u[k] = bin.charCodeAt(k);
+          raw.push(u);
+        }
+        if (head) onProgress?.(raw.length / head.frames);
       }
-      if (head) onProgress?.(raw.length / head.frames);
     }
     onProgress?.(1);
   })().catch(e => { failed = true; console.error(e); });
@@ -167,14 +171,18 @@ export function initVillaTour({ onAsk } = {}) {
     const frames = createFrames(f => { load.style.setProperty("--p", f.toFixed(3)); if (f >= 1) load.classList.add("is-done"); kick(); });
     frames.onFrame = () => kick();
     frames.onHead = h => {
-      head = h; let t = 0;
+      head = h; if (h.door) DOOR = { x0: h.door[0], x1: h.door[1], y0: h.door[2], y1: h.door[3] };
+      // shots overlap: each one starts playing underneath while the previous is still on screen, so a cut is a
+      // long dissolve between two moving pictures (never a jump). The door shot hands over through the doorway.
+      let t = 0, prev = null;
       h.clips.forEach((c, i) => {
-        seg.push({ kind: "clip", ch: c.ch, first: c.first, n: c.n, t0: t, len: c.dur }); t += c.dur;
-        if (c.ch === "door" && h.clips[i + 1]) { seg.push({ kind: "door", ch: "door", from: c.first + c.n - 1, to: h.clips[i + 1].first, t0: t, len: 2.6 }); t += 2.6; }
+        const xin = prev && prev.kind === "clip" ? Math.min(1.1, .42 * Math.min(prev.len, c.dur)) : 0;
+        const s = { kind: "clip", ch: c.ch, first: c.first, n: c.n, t0: t - xin, len: c.dur, xin }; seg.push(s); t = s.t0 + s.len; prev = s;
+        if (c.ch === "door" && h.clips[i + 1]) { prev = { kind: "door", ch: "door", from: c.first + c.n - 1, to: h.clips[i + 1].first, t0: t, len: 2.8 }; seg.push(prev); t += 2.8; }
       });
       total = t;
       ORDER.forEach(id => { const ss = seg.filter(s => s.ch === id); if (ss.length) chapters.push({ id, t0: ss[0].t0, t1: ss[ss.length - 1].t0 + ss[ss.length - 1].len }); });
-      track.style.height = `calc(${Math.round(total * (innerWidth < 900 ? 21 : 24))}vh + 100vh)`;
+      track.style.height = `calc(${Math.round(total * (innerWidth < 900 ? 25 : 28))}vh + 100vh)`;
       rail.innerHTML = chapters.map((c, i) => `<i style="top:${(c.t0 / total * 100).toFixed(2)}%" data-i="${i}"></i>`).join("");
       for (let i = 0; i < 6; i++) frames.want(i);
       kick();
@@ -183,8 +191,9 @@ export function initVillaTour({ onAsk } = {}) {
     // ---- drawing ----
     let W = 0, H = 0, dpr = 1, lastGood = null;
     function size() {
-      dpr = Math.min(1.5, devicePixelRatio || 1); W = stage.clientWidth; H = stage.clientHeight;
-      const k = Math.min(1, 1600 / (W * dpr)); cv.width = Math.round(W * dpr * k); cv.height = Math.round(H * dpr * k); kick();
+      dpr = Math.min(2, devicePixelRatio || 1); W = stage.clientWidth; H = stage.clientHeight;
+      const k = Math.min(1, 2200 / (W * dpr)); cv.width = Math.round(W * dpr * k); cv.height = Math.round(H * dpr * k);
+      ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high"; kick();
     }
     // cover-fit rect of a frame, with an optional zoom about a point given in frame coordinates (0..1)
     function fit(zoom = 1, fx = .5, fy = .5) {
@@ -205,7 +214,7 @@ export function initVillaTour({ onAsk } = {}) {
     function drawClip(s, local, alpha = 1) {
       const f = clamp(local / s.len, 0, 1) * (s.n - 1), i0 = Math.floor(f), frac = f - i0;
       // a slow push-in over each shot adds life; two neighbouring frames are blended for fluid motion
-      const r = fit(1.02 + .03 * (local / s.len));
+      const r = fit(1.02 + .035 * clamp(local / s.len));
       const ok = drawFrame(s.first + i0, alpha, r);
       if (ok && frac > .02 && i0 + 1 < s.n && frames.get(s.first + i0 + 1)) drawFrame(s.first + i0 + 1, alpha * frac, r);
       return ok;
@@ -222,7 +231,7 @@ export function initVillaTour({ onAsk } = {}) {
       if (open > 0) {
         ctx.save(); ctx.beginPath(); ctx.rect(dx, dy, dw, dh); ctx.clip();
         // what waits inside, seen through the doorway (it settles as we arrive)
-        const bm = near(s.to); if (bm) { const ri = fit(1.18 - .13 * z); ctx.drawImage(bm, ri.x, ri.y, ri.w, ri.h); } else { ctx.fillStyle = "#f3efe8"; ctx.fillRect(dx, dy, dw, dh); }
+        const bm = near(s.to); if (bm) { const ri = fit(1.15 - .13 * z); /* lands exactly on the framing the living-room shot starts with */ ctx.drawImage(bm, ri.x, ri.y, ri.w, ri.h); } else { ctx.fillStyle = "#f3efe8"; ctx.fillRect(dx, dy, dw, dh); }
         // the door leaf, hinged on the left, swinging inwards
         const lw = dw * Math.cos(open * 1.48), g = ctx.createLinearGradient(dx, 0, dx + lw, 0);
         g.addColorStop(0, "#0e0f12"); g.addColorStop(.85, "#23252b"); g.addColorStop(1, "#3a3d45");
@@ -235,27 +244,26 @@ export function initVillaTour({ onAsk } = {}) {
         ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = gl; ctx.fillRect(0, 0, cv.width, cv.height); ctx.globalCompositeOperation = "source-over";
       }
     }
-    const XF = .42; // seconds of timeline used to dissolve from one shot into the next
     function draw(t) {
       if (!head) return;
-      let k = seg.findIndex(s => t < s.t0 + s.len); if (k < 0) k = seg.length - 1;
-      const s = seg[k], local = t - s.t0, next = seg[k + 1];
+      // the shots alive at this moment: normally one; two while one dissolves into the next
+      const live = seg.filter(s => t >= s.t0 && t < s.t0 + s.len); if (!live.length) live.push(t < seg[0].t0 ? seg[0] : seg[seg.length - 1]);
+      const s = live[live.length - 1], local = clamp(t - s.t0, 0, s.len);
       missing = false;
+      const frameOf = (g, lt) => g.kind === "door" ? g.from : g.first + Math.floor(clamp(lt / g.len) * (g.n - 1));
+      const probe = frameOf(live[0], t - live[0].t0);
+      frames.setFocus(frameOf(s, local)); // (so frames decoded for a far jump are kept, not evicted as 'far away')
       // while a shot is still arriving, the previous picture stays on screen instead of a blank or a wrong room
-      const probe = s.kind === "door" ? s.from : s.first + Math.floor(clamp(local / s.len) * (s.n - 1));
-      frames.setFocus(probe); // (so a frame decoded for a far jump is kept, not evicted as 'far away')
       if (!near(probe)) { for (let d = 1; d <= 6; d++) frames.want(probe + d); return; }
-      if (s.kind === "door") drawDoor(s, clamp(local / s.len));
-      else {
-        drawClip(s, local);
-        if (next && next.kind === "clip" && local > s.len - XF) drawClip(next, 0, smooth((local - (s.len - XF)) / XF)); // dissolve
+      for (const g of live) {
+        const lt = clamp(t - g.t0, 0, g.len);
+        if (g.kind === "door") drawDoor(g, clamp(lt / g.len));
+        else drawClip(g, lt, g === live[0] ? 1 : smooth(clamp(lt / (g.xin || 1e-6))));
       }
-      // decode ahead of where we are going
-      const cur = s.kind === "door" ? s.to : s.first + Math.round(clamp(local / s.len) * (s.n - 1));
-      frames.setFocus(cur); const dir = t >= lastT ? 1 : -1; lastT = t;
-      for (let d = -3; d <= 16; d++) frames.want(cur + d * dir);
-      if (next) { const nf = next.kind === "clip" ? next.first : next.to; for (let d = 0; d < 4; d++) frames.want(nf + d); }
-      if (s.kind === "door") { frames.want(s.from); frames.want(s.to); }
+      // decode ahead of where we are going, including the start of the shot that comes next
+      const dir = t >= lastT ? 1 : -1; lastT = t;
+      for (const g of live) { const c = frameOf(g, t - g.t0); for (let d = -3; d <= 14; d++) frames.want(c + d * dir); if (g.kind === "door") { frames.want(g.from); for (let d = 0; d < 6; d++) frames.want(g.to + d); } }
+      const nx = seg[seg.indexOf(s) + (dir > 0 ? 1 : -1)]; if (nx) { const nf = nx.kind === "door" ? nx.from : dir > 0 ? nx.first : nx.first + nx.n - 1; for (let d = 0; d < 6; d++) frames.want(nf + (dir > 0 ? d : -d)); }
     }
     let lastT = 0;
 
@@ -279,19 +287,26 @@ export function initVillaTour({ onAsk } = {}) {
     }
 
     // ---- scroll → timeline, eased ----
-    let cur = 0, target = 0, raf = 0, lastNow = 0;
+    let cur = 0, target = 0, raf = 0, lastNow = 0, vel = 0, lastScroll = 0;
     const read = () => { const max = track.offsetHeight - scroller.clientHeight; target = max > 0 ? clamp(scroller.scrollTop / max) * total : 0; };
     function frame(now) {
       raf = 0; const dt = lastNow ? Math.min(.05, (now - lastNow) / 1000) : .016; lastNow = now;
-      read(); cur = reduced ? target : cur + (target - cur) * (1 - Math.exp(-dt * 9));
-      if (Math.abs(target - cur) < .002) cur = target;
+      read();
+      // at rest the film glides the last few hundredths onto a whole frame: a still picture is never a blend of two
+      let goal = target;
+      if (now - lastScroll > 140 && head) { const g = seg.filter(q => q.kind === "clip" && target >= q.t0 + (q.xin || 0) && target < q.t0 + q.len).pop(); if (g && g.n > 1) { const step = g.len / (g.n - 1); goal = g.t0 + Math.round((target - g.t0) / step) * step; } }
+      if (reduced) { cur = goal; vel = 0; }
+      else { // critically damped spring: follows the finger closely, lands without a bump
+        const w = 8.5; for (let rem = dt; rem > 0; rem -= 1 / 240) { const hh = Math.min(rem, 1 / 240); vel += (w * w * (goal - cur) - 2 * w * vel) * hh; cur += vel * hh; }
+        if (Math.abs(goal - cur) < .0015 && Math.abs(vel) < .01) { cur = goal; vel = 0; }
+      }
       draw(cur); caption(cur);
       prog.style.transform = `scaleX(${total ? (cur / total).toFixed(4) : 0})`;
       hint.classList.toggle("is-off", cur > .5); bars.classList.toggle("is-on", cur > .15 && cur < total - .3);
-      if (cur !== target || missing) raf = requestAnimationFrame(frame); else lastNow = 0;
+      if (vel !== 0 || now - lastScroll < 400 || missing) raf = requestAnimationFrame(frame); else lastNow = 0;
     }
     const kick = () => { if (!raf && root && !root.hidden) raf = requestAnimationFrame(frame); };
-    scroller.addEventListener("scroll", kick, { passive: true });
+    scroller.addEventListener("scroll", () => { lastScroll = performance.now(); kick(); }, { passive: true });
     new ResizeObserver(size).observe(stage);
 
     function close() { root.hidden = true; document.body.style.overflow = ""; document.documentElement.classList.remove("is-covered"); document.dispatchEvent(new CustomEvent("coverchange", { detail: false })); }
@@ -301,7 +316,7 @@ export function initVillaTour({ onAsk } = {}) {
       else if (e.target.closest("[data-again]")) scroller.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
     });
     document.addEventListener("keydown", e => { if (e.key === "Escape" && root && !root.hidden) close(); });
-    api = { open() { root.hidden = false; document.body.style.overflow = "hidden"; document.documentElement.classList.add("is-covered"); document.dispatchEvent(new CustomEvent("coverchange", { detail: true })); scroller.scrollTop = 0; cur = 0; capCh = -1; size(); kick(); requestAnimationFrame(() => scroller.focus({ preventScroll: true })); } };
+    api = { open() { root.hidden = false; document.body.style.overflow = "hidden"; document.documentElement.classList.add("is-covered"); document.dispatchEvent(new CustomEvent("coverchange", { detail: true })); scroller.scrollTop = 0; cur = 0; vel = 0; capCh = -1; size(); kick(); requestAnimationFrame(() => scroller.focus({ preventScroll: true })); } };
   }
   return { open() { if (!root || root.dataset.lang !== getLang()) { root?.remove(); build(); root.dataset.lang = getLang(); } api.open(); } };
 }
