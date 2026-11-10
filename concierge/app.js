@@ -8,7 +8,7 @@ import { holo } from "./holo.js";
 import { shatterType } from "./shatter.js";
 import { elasticLettering } from "./elastic.js";
 import { logoFlight } from "./logo-flight.js";
-import { initMap3D } from "./map3d.js";
+import { initMap3D, MAPDATA } from "./map3d.js";
 import { initConsent } from "./consent.js";
 import "./drape-core.js"; // shared drawing code for the dot background (fallback path)
 import { LANGS, t, msg, venueInfo, translateTree, setLang, getLang, watchI18n, applyMeta } from "./i18n.js";
@@ -658,11 +658,17 @@ function showRoute3D(pts, opts) {
   if (route3d) return route3d.setRoute(pts, opts);
   if (route3dStarted) return; route3dStarted = true;
   const el = document.getElementById("dashMap3d"), svg = document.getElementById("dashMap");
-  el.hidden = false; el.classList.add("is-loading");
-  initRoute3D(el, { planeIcon: ICONS.plane }).then(api => {
-    route3d = api; svg.setAttribute("hidden", ""); // (SVG elements have no .hidden property) el.classList.remove("is-loading"); api.setRoute(...route3dLast);
+  // the flat route is on screen straight away; the 3D one is built off-screen and takes its place when ready
+  // created only after the client area has painted: opening it never waits for the 3D canvas
+  const afterPaint = new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
+  afterPaint.then(() => initRoute3D(el, { planeIcon: ICONS.plane })).then(api => {
+    route3d = api; api.setRoute(...route3dLast);
+    el.hidden = false; el.classList.add("is-in"); svg.setAttribute("hidden", ""); // (SVG elements have no .hidden property)
   }).catch(err => { console.warn("route 3D unavailable, keeping the flat map", err); el.hidden = true; });
 }
+// start fetching the relief as soon as someone heads for the client area, so the 3D route is ready on arrival
+const prefetchRoute = () => { MAPDATA.sharedHeights(); MAPDATA.sharedMask(); };
+document.addEventListener("click", e => { if (e.target.closest("[data-login]")) prefetchRoute(); }, true);
 // the + / − / ⤢ buttons drive the 3D map once it is there
 document.querySelector(".routemap__zoom").addEventListener("click", e => {
   const z = e.target.closest("button")?.dataset.rz; if (!z || !route3d) return;

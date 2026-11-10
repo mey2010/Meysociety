@@ -1472,3 +1472,5 @@ html { overflow-x: clip; }
   mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
   mask-composite: intersect; }
 .route3d__label.is-hidden { visibility: hidden; }
+.route3d.is-in { animation: route-in 600ms var(--ease) both; }
+@keyframes route-in { from { opacity: 0; } }
