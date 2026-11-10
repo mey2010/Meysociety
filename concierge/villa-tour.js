@@ -1,11 +1,11 @@
 /* Villa Cala Molí — a scroll-driven film. Scrolling flies a drone from the cove to the villa, through the
    gate, up to the front door (which opens on its own) and through every room; each chapter brings a short
-   line of copy. Real footage, packed as one progressive file of frames (data/villa/cala-moli.bin) and drawn
+   line of copy. Real footage, packed as one progressive file of frames (data/villa/cala-moli.txt) and drawn
    on a canvas: scrubbing is frame-exact on every phone (no video seeking), frames are blended for fluidity,
    and nothing is downloaded until the tour is opened. */
 import { getLang } from "./i18n.js";
 
-const SRC = "data/villa/cala-moli.bin";
+const SRC = "data/villa/cala-moli.txt";
 const DOOR = { x0: .449, x1: .488, y0: .556, y1: .813 };   // the front door in the last frame of the "door" shot
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -95,29 +95,30 @@ const tx = () => T[getLang()] || T.es;
 
 // ---- frames: one progressive file; compressed frames stay in memory, decoded ones live in a small cache ----
 function createFrames(onProgress) {
-  let head = null, buf = null, got = 0, base = 0, failed = false;
-  const cache = new Map(), pending = new Set(), MAX = innerWidth < 900 ? 44 : 80;
+  // one text file: a JSON header line, then one base64 WebP frame per line, read as it streams in
+  let head = null, failed = false, onHead = null, onFrame = null, focus = 0;
+  const raw = [], cache = new Map(), pending = new Set(), MAX = innerWidth < 900 ? 44 : 80;
   const ready = (async () => {
     const res = await fetch(SRC); if (!res.ok) throw new Error("tour " + res.status);
-    const reader = res.body.getReader(); let pre = new Uint8Array(0);
+    const reader = res.body.getReader(), dec = new TextDecoder(); let tail = "";
     for (;;) {
       const { done, value } = await reader.read(); if (done) break;
-      if (!head) { // the header (sizes + index) comes first
-        const m = new Uint8Array(pre.length + value.length); m.set(pre); m.set(value, pre.length); pre = m;
-        if (pre.length < 4) continue; const hl = new DataView(pre.buffer, pre.byteOffset).getUint32(0, true); if (pre.length < 4 + hl) continue;
-        head = JSON.parse(new TextDecoder().decode(pre.subarray(4, 4 + hl))); base = 4 + hl;
-        buf = new Uint8Array(head.idx[head.idx.length - 1]); const rest = pre.subarray(base); buf.set(rest, 0); got = rest.length; onHead?.(head);
-      } else { buf.set(value, got); got += value.length; }
-      onProgress?.(got / buf.length);
+      const lines = (tail + dec.decode(value, { stream: true })).split("\n"); tail = lines.pop();
+      for (const ln of lines) {
+        if (!ln) continue;
+        if (!head) { head = JSON.parse(ln); onHead?.(head); continue; }
+        const bin = atob(ln), u = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) u[k] = bin.charCodeAt(k);
+        raw.push(u);
+      }
+      if (head) onProgress?.(raw.length / head.frames);
     }
     onProgress?.(1);
   })().catch(e => { failed = true; console.error(e); });
-  let onHead = null;
-  const has = i => head && got >= head.idx[i + 1];
-  function want(i) { // decode in the background if its bytes have arrived
-    if (!head || i < 0 || i >= head.idx.length - 1 || cache.has(i) || pending.has(i) || !has(i)) return;
+  const has = i => i >= 0 && i < raw.length;
+  function want(i) { // decode in the background if the frame has arrived
+    if (!has(i) || cache.has(i) || pending.has(i)) return;
     pending.add(i);
-    createImageBitmap(new Blob([buf.subarray(head.idx[i], head.idx[i + 1])], { type: "image/webp" })).then(bm => {
+    createImageBitmap(new Blob([raw[i]], { type: "image/webp" })).then(bm => {
       pending.delete(i); cache.set(i, bm);
       if (cache.size > MAX) { // drop the frames furthest from where we are
         const far = [...cache.keys()].sort((a, b) => Math.abs(b - focus) - Math.abs(a - focus)).slice(0, cache.size - MAX);
@@ -126,7 +127,6 @@ function createFrames(onProgress) {
       onFrame?.(i);
     }).catch(() => pending.delete(i));
   }
-  let focus = 0, onFrame = null;
   return { ready, has, want, get: i => cache.get(i), setFocus: i => { focus = i; }, set onHead(f) { onHead = f; if (head) f(head); }, set onFrame(f) { onFrame = f; }, get head() { return head; }, get failed() { return failed; } };
 }
 
