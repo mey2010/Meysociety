@@ -34,7 +34,7 @@ export function createDepthRibbon(root, opts = {}) {
     cards = items.map((it, i) => {
       const c = document.createElement("button"); c.type = "button"; c.className = "ribbon__card"; c.dataset.i = i;
       c.setAttribute("aria-label", `${it.title}, ${i + 1} / ${N}`);
-      c.innerHTML = `<img data-src="${it.src}" alt="" draggable="false" decoding="async"><span class="ribbon__ring" aria-hidden="true"></span><span class="ribbon__shine"></span><span class="ribbon__tag">${it.tag || ""}</span>`;
+      c.innerHTML = `<img data-src="${it.src}" alt="" draggable="false" decoding="async"><span class="ribbon__shine"></span><span class="ribbon__tag">${it.tag || ""}</span>`;
       c._last = {};
       stage.appendChild(c); return c;
     });
