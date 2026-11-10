@@ -6,8 +6,14 @@
 import { getLang } from "./i18n.js";
 
 // two packs of the same film: full-width HD for laptops and tablets, a tall crop for phones held upright
-const PACK = matchMedia("(max-width: 720px) and (orientation: portrait)").matches ? "m" : "hd";
+// two packs of the same film: Full HD (1920x1080, AVIF) for laptops and tablets, and a tall 608x1080 WebP crop
+// for phones held upright (also the fallback for the rare browser that cannot decode AVIF)
+const PHONE = matchMedia("(max-width: 720px) and (orientation: portrait)").matches;
+let PACK = PHONE ? "m" : "fhd";
 const SRC = k => `data/villa/cala-moli-${PACK}-${k}.txt`;
+// a tiny AVIF made with the same encoder as the frames: if the browser decodes it, the Full HD pack can be used
+const AVIF_OK = PHONE ? Promise.resolve(false) : fetch("data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAAD5bWV0YQAAAAAAAAAvaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAFBpY3R1cmVIYW5kbGVyAAAAAA5waXRtAAAAAAABAAAAHmlsb2MAAAAARAAAAQABAAAAAQAAASEAAAAbAAAAKGlpbmYAAAAAAAEAAAAaaW5mZQIAAAAAAQAAYXYwMUNvbG9yAAAAAGppcHJwAAAAS2lwY28AAAAUaXNwZQAAAAAAAABAAAAAQAAAABBwaXhpAAAAAAMICAgAAAAMYXYxQ4EADAAAAAATY29scm5jbHgAAgACAAIAAAAAF2lwbWEAAAAAAAAAAQABBAECgwQAAAAjbWRhdAoKAAAAAq//jV8wCDINEAD1gj/+mkMAAAgAcA==")
+  .then(r => r.blob()).then(b => createImageBitmap(b)).then(() => true, () => false);
 let DOOR = { x0: .449, x1: .488, y0: .556, y1: .813 };     // the front door in the last frame of the "door" shot (each pack brings its own)
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -99,8 +105,10 @@ const tx = () => T[getLang()] || T.es;
 function createFrames(onProgress) {
   // one text file: a JSON header line, then one base64 WebP frame per line, read as it streams in
   let head = null, failed = false, onHead = null, onFrame = null, focus = 0;
-  const raw = [], cache = new Map(), pending = new Set(), MAX = PACK === "m" ? 56 : 44; // decoded frames kept (HD ones are ~6 MB each)
+  const raw = [], cache = new Map(), pending = new Set(); let MAX = 56; // decoded frames kept in memory
   const ready = (async () => {
+    if (!PHONE && !(await AVIF_OK)) PACK = "m"; // very old browsers without AVIF: the universal WebP pack
+    MAX = PACK === "fhd" ? 30 : 56; // (a Full HD frame is ~8 MB once decoded)
     for (let part = 1; !head || part <= head.parts; part++) {
       const res = await fetch(SRC(part)); if (!res.ok) throw new Error("tour " + res.status);
       const reader = res.body.getReader(), dec = new TextDecoder(); let tail = "";
@@ -122,7 +130,7 @@ function createFrames(onProgress) {
   function want(i) { // decode in the background if the frame has arrived
     if (!has(i) || cache.has(i) || pending.has(i)) return;
     pending.add(i);
-    createImageBitmap(new Blob([raw[i]], { type: "image/webp" })).then(bm => {
+    createImageBitmap(new Blob([raw[i]], { type: head.type || "image/webp" })).then(bm => {
       pending.delete(i); cache.set(i, bm);
       if (cache.size > MAX) { // drop the frames furthest from where we are
         const far = [...cache.keys()].sort((a, b) => Math.abs(b - focus) - Math.abs(a - focus)).slice(0, cache.size - MAX);
@@ -192,7 +200,7 @@ export function initVillaTour({ onAsk } = {}) {
     let W = 0, H = 0, dpr = 1, lastGood = null;
     function size() {
       dpr = Math.min(2, devicePixelRatio || 1); W = stage.clientWidth; H = stage.clientHeight;
-      const k = Math.min(1, 2200 / (W * dpr)); cv.width = Math.round(W * dpr * k); cv.height = Math.round(H * dpr * k);
+      const k = Math.min(1, 2560 / (W * dpr)); cv.width = Math.round(W * dpr * k); cv.height = Math.round(H * dpr * k);
       ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high"; kick();
     }
     // cover-fit rect of a frame, with an optional zoom about a point given in frame coordinates (0..1)
@@ -214,7 +222,7 @@ export function initVillaTour({ onAsk } = {}) {
     function drawClip(s, local, alpha = 1) {
       const f = clamp(local / s.len, 0, 1) * (s.n - 1), i0 = Math.floor(f), frac = f - i0;
       // a slow push-in over each shot adds life; two neighbouring frames are blended for fluid motion
-      const r = fit(1.02 + .035 * clamp(local / s.len));
+      const r = fit(1 + .03 * clamp(local / s.len)); // starts at 1:1 (no resampling blur), then a very slow push-in
       const ok = drawFrame(s.first + i0, alpha, r);
       if (ok && frac > .02 && i0 + 1 < s.n && frames.get(s.first + i0 + 1)) drawFrame(s.first + i0 + 1, alpha * frac, r);
       return ok;
@@ -231,7 +239,7 @@ export function initVillaTour({ onAsk } = {}) {
       if (open > 0) {
         ctx.save(); ctx.beginPath(); ctx.rect(dx, dy, dw, dh); ctx.clip();
         // what waits inside, seen through the doorway (it settles as we arrive)
-        const bm = near(s.to); if (bm) { const ri = fit(1.15 - .13 * z); /* lands exactly on the framing the living-room shot starts with */ ctx.drawImage(bm, ri.x, ri.y, ri.w, ri.h); } else { ctx.fillStyle = "#f3efe8"; ctx.fillRect(dx, dy, dw, dh); }
+        const bm = near(s.to); if (bm) { const ri = fit(1.13 - .13 * z); /* lands exactly on the framing the living-room shot starts with */ ctx.drawImage(bm, ri.x, ri.y, ri.w, ri.h); } else { ctx.fillStyle = "#f3efe8"; ctx.fillRect(dx, dy, dw, dh); }
         // the door leaf, hinged on the left, swinging inwards
         const lw = dw * Math.cos(open * 1.48), g = ctx.createLinearGradient(dx, 0, dx + lw, 0);
         g.addColorStop(0, "#0e0f12"); g.addColorStop(.85, "#23252b"); g.addColorStop(1, "#3a3d45");
@@ -262,7 +270,7 @@ export function initVillaTour({ onAsk } = {}) {
       }
       // decode ahead of where we are going, including the start of the shot that comes next
       const dir = t >= lastT ? 1 : -1; lastT = t;
-      for (const g of live) { const c = frameOf(g, t - g.t0); for (let d = -3; d <= 14; d++) frames.want(c + d * dir); if (g.kind === "door") { frames.want(g.from); for (let d = 0; d < 6; d++) frames.want(g.to + d); } }
+      for (const g of live) { const c = frameOf(g, t - g.t0); for (let d = -2; d <= 12; d++) frames.want(c + d * dir); if (g.kind === "door") { frames.want(g.from); for (let d = 0; d < 6; d++) frames.want(g.to + d); } }
       const nx = seg[seg.indexOf(s) + (dir > 0 ? 1 : -1)]; if (nx) { const nf = nx.kind === "door" ? nx.from : dir > 0 ? nx.first : nx.first + nx.n - 1; for (let d = 0; d < 6; d++) frames.want(nf + (dir > 0 ? d : -d)); }
     }
     let lastT = 0;
