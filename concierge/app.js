@@ -216,7 +216,7 @@ document.getElementById("popBook").addEventListener("click", () => {
     // each letter strikes on at its own moment, stutters 2-4 times, then holds
     let done = 0;
     chars.forEach((c, i) => {
-      const start = 80 + Math.random() * 650 + (i === chars.length - 1 ? 300 : 0); // the name lights up quickly: it is the first thing people wait for let t = start;
+      const start = 80 + Math.random() * 650 + (i === chars.length - 1 ? 300 : 0); /* the name lights up quickly: it is the first thing people wait for */ let t = start;
       const flips = 2 + Math.floor(Math.random() * 3);
       for (let k = 0; k < flips; k++) {
         setTimeout(() => { c.classList.add("on"); c.classList.remove("dim"); }, t); t += 40 + Math.random() * 90;

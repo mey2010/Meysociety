@@ -4,7 +4,7 @@ Fecha: 11 de noviembre de 2026 · Página medida: inicio · Dispositivo simulado
 
 ## Resumen
 
-La portada pasa de mostrar el nombre de la marca a los 8 segundos a hacerlo en 1,6 segundos con una conexión 4G normal, y descarga un 62 % menos de datos. Con mala cobertura todavía tarda 6 segundos: es el punto que queda por mejorar y depende sobre todo del alojamiento.
+La portada descarga un 42 % menos de datos y el nombre de la marca termina de encenderse a los 4,4 segundos en lugar de a los 8, con una conexión 4G normal. Sigue por encima del objetivo de Google (2,5 segundos); con mala cobertura tarda 7,4 segundos. La página se ve desde el primer segundo, pero la animación de entrada retrasa lo que Google cuenta como contenido principal.
 
 ## Medidas
 
@@ -15,29 +15,29 @@ Laboratorio: Chrome sin interfaz con red limitada, servidor local sin compresió
 | Medida | Antes | Ahora | Objetivo de Google |
 |---|---|---|---|
 | Primer contenido visible (FCP) | 1,0 s | 0,8 s | menos de 1,8 s |
-| Contenido principal visible (LCP) | 8,0 s | 1,6 s | menos de 2,5 s |
-| Saltos de diseño (CLS) | 0,004 | 0,002 | menos de 0,1 |
-| Tiempo con la página bloqueada (TBT) | 3 386 ms | 166 ms | menos de 200 ms |
-| Peticiones al cargar | 63 | 35 | — |
-| Datos descargados | 5 235 KB | 2 002 KB | — |
+| Contenido principal visible (LCP) | 8,0 s | 4,4 s | menos de 2,5 s |
+| Saltos de diseño (CLS) | 0,004 | 0,004 | menos de 0,1 |
+| Tiempo con la página bloqueada (TBT) | 3 386 ms | 1 502 ms | menos de 200 ms |
+| Peticiones al cargar | 63 | 58 | — |
+| Datos descargados | 5 235 KB | 3 033 KB | — |
 
 ### 4G lento (1,6 Mbit/s, 150 ms de latencia)
 
 | Medida | Antes | Ahora | Objetivo de Google |
 |---|---|---|---|
 | Primer contenido visible (FCP) | 3,0 s | 2,5 s | menos de 1,8 s |
-| Contenido principal visible (LCP) | 11,9 s | 6,0 s | menos de 2,5 s |
-| Saltos de diseño (CLS) | 0,004 | 0,002 | menos de 0,1 |
-| Datos descargados | 2 539 KB | 1 270 KB | — |
+| Contenido principal visible (LCP) | 11,9 s | 7,4 s | menos de 2,5 s |
+| Saltos de diseño (CLS) | 0,004 | 0,004 | menos de 0,1 |
+| Datos descargados | 2 539 KB | 1 678 KB | — |
 
-El TBT está inflado en el laboratorio porque la máquina de pruebas no tiene tarjeta gráfica; no se compara en la tabla lenta por ese motivo.
+El TBT está inflado en el laboratorio porque la máquina de pruebas no tiene tarjeta gráfica y dibuja las animaciones con el procesador; en un móvil real será bastante menor, pero hay que confirmarlo con la prueba real. Por eso no se compara en la tabla lenta.
 
 ## Qué se ha cambiado
 
-1. El motor 3D del mapa (unos 700 KB) ya no se descarga al entrar. Se carga solo cuando hace falta.
+1. El motor 3D del mapa (unos 700 KB) ya no bloquea la entrada: se descarga aparte, después de que la página sea visible.
 2. El logo animado usa una versión de 49 KB en lugar de la de 153 KB.
 3. Los vídeos de las reseñas no descargan nada hasta que se reproducen.
-4. El nombre «Mey Society» se enciende antes: era lo que Google contaba como contenido principal y tardaba más de un segundo extra por la animación.
+4. El nombre «Mey Society» se enciende medio segundo antes. Es lo que Google cuenta como contenido principal.
 
 ## Qué falta y de quién depende
 
@@ -46,6 +46,7 @@ El TBT está inflado en el laboratorio porque la máquina de pruebas no tiene ta
 | Alojamiento con compresión Brotli o gzip | Los tres archivos de texto principales (343 KB) bajan a unos 85 KB. Es la mejora más grande en redes lentas | Alojamiento. Vercel, Netlify y Cloudflare Pages lo hacen solos; `.htaccess`, `_headers` y `vercel.json` ya están preparados |
 | Caché larga para imágenes y fuentes | La segunda visita carga casi al instante | Alojamiento, mismos archivos |
 | Probar en un móvil real | Confirma las cifras | Tú: abre https://pagespeed.web.dev con el dominio cuando esté publicado |
+| Acortar la pantalla de carga y la animación de entrada del nombre | Es lo que más acerca el LCP al objetivo de 2,5 s. Cambia el estilo de la entrada, así que es decisión tuya | Tú decides; trabajo de una tarde |
 | Trocear `styles.css` (150 KB) y `app.js` (105 KB) | Baja el primer contenido visible con mala cobertura | Trabajo pendiente, si la prueba real lo pide |
 | Logo de la pantalla de carga en WebP | Ahorra unos 90 KB | Trabajo pendiente, menor |
 
