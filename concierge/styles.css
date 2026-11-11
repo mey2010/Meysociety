@@ -1305,7 +1305,6 @@ body:has(.fleet:not([hidden])) .fab-wa, body:has(.dash:not([hidden])) .fab-wa, b
 /* the slow float of the glass buttons only runs while a button is on screen (set by JS) */
 .btn { animation-play-state: paused; }
 .btn.is-vis { animation-play-state: running; }
-html.is-scrolling .btn, html.is-scrolling .sm-toggle, html.is-scrolling .lang__btn, html.is-scrolling .bell__btn, html.is-scrolling .fleet__arrow, html.is-scrolling .map__zoom button { animation-play-state: paused; }
 
 /* ---------------- fleet: real boats by type + the boat sheet ---------------- */
 .fleet__chips small { margin-left: 4px; font-size: 11px; opacity: .65; font-variant-numeric: tabular-nums; }
@@ -1638,3 +1637,6 @@ html:not([data-theme="dark"]) .vt__end .btn--glass { color: var(--ink); backgrou
 }
 @media (prefers-reduced-motion: no-preference) and (max-width: 900px) { .stack__card { margin-bottom: calc(14vh + var(--hold, 0px)); } }
 .stack__snap { position: absolute; left: 0; width: 1px; height: 1px; pointer-events: none; }
+
+/* Villa tour: no progress lines (top bar and loading bar); while loading only the small text shows */
+.vt__prog, .vt__load i { display: none; }

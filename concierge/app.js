@@ -88,7 +88,12 @@ const SM = (() => {
   }
   const band = () => root.classList.toggle("sm-scrolled", scrollY > 40);
   let groundTick = false;
-  addEventListener("scroll", () => { if (groundTick) return; groundTick = true; requestAnimationFrame(() => { groundTick = false; checkGround(); band(); }); }, { passive: true }); checkGround(); band();
+  let groundAt = 0, groundEnd = 0;   // the hit-test runs at most every 120 ms while scrolling, and once when it stops
+  addEventListener("scroll", () => {
+    clearTimeout(groundEnd); groundEnd = setTimeout(() => { checkGround(); band(); }, 120);
+    if (groundTick) return; groundTick = true;
+    requestAnimationFrame(now => { groundTick = false; band(); if (now - groundAt > 120) { groundAt = now; checkGround(); } });
+  }, { passive: true }); checkGround(); band();
   document.addEventListener("themechange", () => { onLight = null; checkGround(); });
   document.addEventListener("mousedown", e => { if (open && !panel.contains(e.target) && !btn.contains(e.target)) set(false); });
   addEventListener("keydown", e => { if (e.key === "Escape") set(false); });
@@ -149,7 +154,7 @@ function startMap() {
 }
 new IntersectionObserver((es, io) => { if (es.some(e => e.isIntersecting)) { io.disconnect(); startMap(); } }, { rootMargin: "900px 0px" }).observe(mapEl);
 // warm the map up in the background, but only during a pause: never while the visitor is scrolling
-{ const later = () => document.documentElement.classList.contains("is-scrolling") ? setTimeout(later, 600) : startMap();
+{ const later = () => performance.now() - (window.__scrolledAt || 0) < 400 ? setTimeout(later, 600) : startMap();
   (window.requestIdleCallback || (f => setTimeout(f, 2500)))(() => setTimeout(later, 1500), { timeout: 4000 }); }
 document.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
   const on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", on); map3d.setFilter(b.dataset.kind, on);
@@ -279,7 +284,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
       post = m => worker.postMessage(m);
     };
   } catch { fallback(); }
-  addEventListener("resize", () => post({ type: "size", ...state() }));
+  onRealResize(() => post({ type: "size", ...state() }));
   addEventListener("scroll", () => post({ type: "scroll", scrollY }), { passive: true });
   addEventListener("pointermove", e => post({ type: "pointer", x: e.clientX / innerWidth - .5, y: e.clientY / innerHeight - .5 }), { passive: true });
   addEventListener("pointerdown", e => {
@@ -296,8 +301,8 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
   const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle("is-vis", e.isIntersecting)));
   const watch = root => root.querySelectorAll?.(".btn").forEach(b => { if (!b.__io) { b.__io = 1; io.observe(b); } });
   watch(document); new MutationObserver(rs => rs.forEach(r => r.addedNodes.forEach(n => n.nodeType === 1 && (n.matches?.(".btn") ? watch(n.parentNode) : watch(n))))).observe(document.body, { childList: true, subtree: true });
-  let st = 0; const html = document.documentElement;
-  addEventListener("scroll", () => { if (!st) html.classList.add("is-scrolling"); clearTimeout(st); st = setTimeout(() => { st = 0; html.classList.remove("is-scrolling"); }, 160); }, { passive: true });
+  /* (no "is-scrolling" class on <html> any more: flipping it restyled the whole page at the start and end of every scroll) */
+  addEventListener("scroll", () => { window.__scrolledAt = performance.now(); }, { passive: true });   // a timestamp only, no DOM writes
 }
 
 /* =====================================================================
@@ -350,7 +355,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
       });
     }
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
-    addEventListener("resize", measure); addEventListener("load", measure); measure();
+    onRealResize(measure); addEventListener("load", measure); measure();
     new ResizeObserver(() => measure()).observe(cards[0].parentElement);
     readingStops(window, { centers: () => snaps.map(n => n.getBoundingClientRect().top + scrollY), half: () => (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2, complete: true,
       active: () => !document.documentElement.classList.contains("is-covered") });
@@ -499,6 +504,12 @@ const CONFIG = {
   else fab.setAttribute("aria-label", "Escríbenos"), fab.addEventListener("click", e => { e.preventDefault(); document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" }); });
   const sync = () => fab.classList.toggle("is-on", scrollY > innerHeight * .5 && !document.querySelector(".staggered-menu-wrapper[data-open]"));
   addEventListener("scroll", sync, { passive: true }); sync(); }
+/* resize that ignores the phone's browser bars sliding in and out: on iPhone they reappear whenever you scroll
+   up, and re-measuring the page at that moment was a hitch felt only when scrolling up */
+function onRealResize(cb) {
+  let w = innerWidth, h = innerHeight;
+  addEventListener("resize", () => { if (innerWidth === w && Math.abs(innerHeight - h) < 160) return; w = innerWidth; h = innerHeight; cb(); });
+}
 initConsent(CONFIG.analytics);
 /* what people do, for Analytics: contact taps, legal-free and anonymous (no personal data is sent) */
 document.addEventListener("click", e => {
@@ -1255,10 +1266,12 @@ document.querySelectorAll(".stack__card").forEach(card => {
   const media = card.querySelector(".stack__media"), img = media?.querySelector("img"), body = card.querySelector(".stack__body");
   if (!img || !body) return;
   if (!media.classList.contains("stack__media--product")) {
-    // the backdrop is a tiny, pre-blurred copy (≈2 KB): the browser just scales it up, no blur to compute
-    const bg = img.cloneNode(); bg.className = "stack__media-bg"; bg.alt = ""; bg.setAttribute("aria-hidden", "true"); bg.removeAttribute("style");
-    bg.removeAttribute("loading"); bg.removeAttribute("width"); bg.removeAttribute("height");
-    bg.src = "data/services/bg/" + img.getAttribute("src").split("/").pop().replace(/\.(webp|jpe?g|png)$/i, "") + ".webp";
+    // the backdrop is a tiny pre-blurred copy taken from one shared sprite (all seven in one small file): the
+    // browser just scales it up, nothing to blur on every frame
+    const BG = ["aeropuerto", "coches", "dalt-vila", "hi-ibiza", "sa-trinxa", "villa-privada", "yates"];
+    const k = BG.indexOf(img.getAttribute("src").split("/").pop().replace(/\.(webp|jpe?g|png)$/i, ""));
+    const bg = document.createElement("div"); bg.className = "stack__media-bg"; bg.setAttribute("aria-hidden", "true");
+    if (k >= 0) bg.style.cssText = `background: url("data/services/bg-sprite.webp") ${(k / (BG.length - 1) * 100).toFixed(4)}% 50% / ${BG.length * 100}% 100% no-repeat`;
     media.insertBefore(bg, img);
   }
   // the sharp photo uses the space above the glass panel, whatever height the panel has
@@ -1280,11 +1293,11 @@ document.querySelectorAll(".stack__card").forEach(card => {
   const mo = new MutationObserver(sync); covers.forEach(el => mo.observe(el, { attributes: true, attributeFilter: ["hidden"] })); sync();
 }
 
-/* ---------------- Villa Cala Molí: the scroll-driven film (loaded only when opened) ---------------- */
+/* ---------------- Villa Aura: the scroll-driven film (loaded only when opened) ---------------- */
 {
   const tour = initVillaTour({ onAsk: name => {
     select("villas", true); document.getElementById("f-notes").value = `${t("Me interesa")}: ${name}.`;
     document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" });
   } });
-  document.addEventListener("click", e => { if (e.target.closest("[data-villa-tour]")) { e.preventDefault(); track("villa_tour_open", { villa: "Cala Molí" }); tour.open(); } });
+  document.addEventListener("click", e => { if (e.target.closest("[data-villa-tour]")) { e.preventDefault(); track("villa_tour_open", { villa: "Aura" }); tour.open(); } });
 }
