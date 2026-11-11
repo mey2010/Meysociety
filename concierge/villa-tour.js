@@ -143,7 +143,7 @@ function createFrames(onProgress) {
   const raw = [], cache = new Map(), pending = new Set(); let MAX = 56; // decoded frames kept in memory
   const ready = (async () => {
     if (!(await AVIF_OK)) throw new Error("no-avif");
-    MAX = PACK === "d" ? 18 : 24; // (a decoded 2560x1440 frame is ~15 MB, a phone frame ~7 MB)
+    MAX = PACK === "d" ? 24 : 30; // (a decoded 2560x1440 frame is ~15 MB, a phone frame ~7 MB)
     for (let part = 1; !head || part <= head.parts; part++) {
       const res = await fetch(SRC(part)); if (!res.ok) throw new Error("tour " + res.status);
       const reader = res.body.getReader(), dec = new TextDecoder(); let tail = "";
@@ -162,19 +162,30 @@ function createFrames(onProgress) {
     onProgress?.(1);
   })().catch(e => { failed = true; console.error(e); });
   const has = i => i >= 0 && i < raw.length;
-  function want(i) { // decode in the background if the frame has arrived
-    if (!has(i) || cache.has(i) || pending.has(i)) return;
-    pending.add(i);
+  /* decoding is the slow part (20-80 ms a frame), so it is scheduled, not fired at will: at most 2-3 decodes run
+     at once, and the queue is rebuilt every frame from where the scroll is going, nearest first and then every
+     other frame further ahead, so the picture that is needed now never waits behind ones that are not */
+  const CONC = Math.max(3, Math.min(6, navigator.hardwareConcurrency || 4)); let busy = 0, queue = [];   // decodes run in parallel on the device's cores
+  function start(i) {
+    busy++; pending.add(i);
     createImageBitmap(new Blob([raw[i]], { type: head.type || "image/webp" })).then(bm => {
-      pending.delete(i); cache.set(i, bm);
+      cache.set(i, bm);
       if (cache.size > MAX) { // drop the frames furthest from where we are
         const far = [...cache.keys()].sort((a, b) => Math.abs(b - focus) - Math.abs(a - focus)).slice(0, cache.size - MAX);
         far.forEach(k => { cache.get(k).close?.(); cache.delete(k); });
       }
       onFrame?.(i);
-    }).catch(() => pending.delete(i));
+    }).catch(() => {}).finally(() => { pending.delete(i); busy--; pump(); });
   }
-  return { ready, has, want, get failed() { return failed; }, get: i => cache.get(i), setFocus: i => { focus = i; }, set onHead(f) { onHead = f; if (head) f(head); }, set onFrame(f) { onFrame = f; }, get head() { return head; }, get failed() { return failed; } };
+  function pump() { while (busy < CONC && queue.length) { const i = queue.shift(); if (has(i) && !cache.has(i) && !pending.has(i)) start(i); } }
+  function want(i) { if (has(i) && !cache.has(i) && !pending.has(i) && !queue.includes(i)) { queue.push(i); pump(); } }
+  const STEPS = [0, 1, 2, 4, 6, 8, 10, 12, 14, 16, 3, 5, 7, 9, 11, -1, -2];
+  function plan(f, dir, extra = []) {
+    focus = f;
+    queue = STEPS.map(s => f + s * dir).concat(extra).filter((i, k, a) => has(i) && !cache.has(i) && !pending.has(i) && a.indexOf(i) === k);
+    pump();
+  }
+  return { ready, has, want, plan, get failed() { return failed; }, get: i => cache.get(i), setFocus: i => { focus = i; }, set onHead(f) { onHead = f; if (head) f(head); }, set onFrame(f) { onFrame = f; }, get head() { return head; }, get failed() { return failed; } };
 }
 
 export function initVillaTour({ onAsk } = {}) {
@@ -213,7 +224,7 @@ export function initVillaTour({ onAsk } = {}) {
     /* reading pauses: in every chapter the film stops for a stretch of scroll while its text is fully shown,
        and the scroll snaps there, so each room holds still long enough to read (going down or back up) */
     let holds = [], S = 0;
-    const HOLD = 2.6;                                   // length of each pause, in film seconds of scroll
+    const HOLD = 3.2;                                   // length of each pause, in film seconds of scroll
     const toT = s => { let acc = 0; for (const h of holds) { if (s < h.at + acc) return s - acc; if (s < h.at + acc + HOLD) return h.at; acc += HOLD; } return s - acc; };
     const toS = t => { let acc = 0; for (const h of holds) { if (t <= h.at) return t + acc; acc += HOLD; } return t + acc; };
     const frames = createFrames(f => { load.style.setProperty("--p", f.toFixed(3)); if (f >= 1) load.classList.add("is-done"); kick(); });
@@ -318,16 +329,19 @@ export function initVillaTour({ onAsk } = {}) {
       const probe = frameOf(live[0], t - live[0].t0);
       frames.setFocus(frameOf(s, local)); // (so frames decoded for a far jump are kept, not evicted as 'far away')
       // while a shot is still arriving, the previous picture stays on screen instead of a blank or a wrong room
-      if (!near(probe)) { for (let d = 1; d <= 6; d++) frames.want(probe + d); return; }
+      if (!near(probe)) { frames.plan(probe, 1); return; }
       for (const g of live) {
         const lt = clamp(t - g.t0, 0, g.len);
         if (g.kind === "door") drawDoor(g, clamp(lt / g.len));
         else drawClip(g, lt, g === live[0] ? 1 : smooth(clamp(lt / (g.xin || 1e-6))));
       }
-      // decode ahead of where we are going, including the start of the shot that comes next
-      const dir = t >= lastT ? 1 : -1; lastT = t;
-      for (const g of live) { const c = frameOf(g, t - g.t0); for (let d = -2; d <= 12; d++) frames.want(c + d * dir); if (g.kind === "door") { frames.want(g.from); for (let d = 0; d < 6; d++) frames.want(g.to + d); } }
-      const nx = seg[seg.indexOf(s) + (dir > 0 ? 1 : -1)]; if (nx) { const nf = nx.kind === "door" ? nx.from : dir > 0 ? nx.first : nx.first + nx.n - 1; for (let d = 0; d < 6; d++) frames.want(nf + (dir > 0 ? d : -d)); }
+      // decode ahead of where the scroll is going (the target, which the picture is still gliding towards)
+      const dir = target >= cur ? 1 : -1; lastT = t;
+      const tg = seg.filter(g => target >= g.t0 && target < g.t0 + g.len).pop() || s;
+      const extra = [];
+      for (const g of live) if (g.kind === "door") { extra.push(g.from); for (let d = 0; d < 6; d++) extra.push(g.to + d); }
+      const nx = seg[seg.indexOf(tg) + dir]; if (nx) { const nf = nx.kind === "door" ? nx.from : dir > 0 ? nx.first : nx.first + nx.n - 1; for (let d = 0; d < 6; d += 2) extra.push(nf + d * dir); }
+      frames.plan(frameOf(tg, clamp(target - tg.t0, 0, tg.len)), dir, extra);
     }
     let lastT = 0;
 
@@ -360,8 +374,8 @@ export function initVillaTour({ onAsk } = {}) {
       let goal = target;
       if (now - lastScroll > 140 && head) { const g = seg.filter(q => q.kind === "clip" && target >= q.t0 + (q.xin || 0) && target < q.t0 + q.len).pop(); if (g && g.n > 1) { const step = g.len / (g.n - 1); goal = g.t0 + Math.round((target - g.t0) / step) * step; } }
       if (reduced) { cur = goal; vel = 0; }
-      else { // critically damped spring: follows the finger closely, lands without a bump
-        const w = 8.5; for (let rem = dt; rem > 0; rem -= 1 / 240) { const hh = Math.min(rem, 1 / 240); vel += (w * w * (goal - cur) - 2 * w * vel) * hh; cur += vel * hh; }
+      else { // critically damped spring: follows the finger closely (tight, so the film never trails behind), lands without a bump
+        const w = 15; for (let rem = dt; rem > 0; rem -= 1 / 240) { const hh = Math.min(rem, 1 / 240); vel += (w * w * (goal - cur) - 2 * w * vel) * hh; cur += vel * hh; }
         if (Math.abs(goal - cur) < .0015 && Math.abs(vel) < .01) { cur = goal; vel = 0; }
       }
       draw(cur); caption(cur);
