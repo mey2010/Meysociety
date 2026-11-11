@@ -1517,6 +1517,8 @@ html { overflow-x: clip; }
 .vt__load { position: absolute; right: clamp(18px, 4vw, 40px); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); display: flex; align-items: center; gap: 10px; font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: rgb(244 245 251 / .7); transition: opacity 600ms; }
 .vt__load i { width: 70px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #c856e6 calc(var(--p, 0) * 100%), rgb(255 255 255 / .2) 0); }
 .vt__load.is-done { opacity: 0; }
+.vt__load.is-err { left: clamp(18px, 4vw, 40px); max-width: 34ch; margin-left: auto; text-transform: none; letter-spacing: .01em; font-size: 13px; line-height: 1.4; }
+.vt__load.is-err i { display: none; }
 .vt__end { position: relative; min-height: 100vh; min-height: 100dvh; display: grid; align-content: center; justify-items: center; gap: 18px; text-align: center; padding: 80px 24px;
   margin-top: -40px; border-radius: 40px 40px 0 0; background: radial-gradient(90% 70% at 50% 0%, #2a2580, #0d0a38 70%); box-shadow: 0 -30px 60px -20px rgb(0 0 0 / .6); }
 .vt__k { margin: 0; font-size: 12.5px; letter-spacing: .26em; text-transform: uppercase; color: #78c7e4; }
