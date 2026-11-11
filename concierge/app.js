@@ -3,7 +3,7 @@ import { ICONS } from "./icons.js";
 import { createCircularCarousel } from "./circular-carousel.js";
 import { createDepthRibbon } from "./depth-ribbon.js";
 import { FLEET, FLEET_TYPES, TYPE_NOTE } from "./fleet-data.js";
-import { initVillaTour } from "./villa-tour.js";
+import { initVillaTour, readingStops } from "./villa-tour.js";
 import { holo } from "./holo.js";
 import { shatterType } from "./shatter.js";
 import { elasticLettering } from "./elastic.js";
@@ -315,12 +315,20 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     const veils = cards.map(c => { const v = document.createElement("span"); v.className = "stack__veil"; v.setAttribute("aria-hidden", "true"); c.appendChild(v); return v; });
     const last = cards.map(() => ({ s: "", o: "", v: "" }));
     // where each card sticks and where it sits in the page: measured on resize, not on every scroll frame
+    /* reading pause: once a card has settled, the next one waits for an extra stretch of scroll (the "hold"),
+       and the page snaps to the middle of that stretch, so every service stops on screen going down or up */
+    const stack = cards[0].parentElement; let holdW = 0;
+    const snaps = cards.map(() => { const n = document.createElement("i"); n.className = "stack__snap"; n.setAttribute("aria-hidden", "true"); stack.appendChild(n); return n; });
     function measure() {
+      if (innerWidth !== holdW) { holdW = innerWidth; stack.style.setProperty("--hold", Math.round(document.documentElement.clientHeight * (innerWidth <= 900 ? .36 : .42)) + "px"); }
+      const hold = parseFloat(stack.style.getPropertyValue("--hold")) || 0;
       stuck = cards.map(c => parseFloat(getComputedStyle(c).top) || 0);
       // natural (un-stuck) position of each card: read once with sticky switched off for the measurement
       cards.forEach(c => c.style.position = "relative");
       tops = cards.map(c => { let y = 0, el = c; while (el) { y += el.offsetTop; el = el.offsetParent; } return y; });
       cards.forEach(c => c.style.position = "");
+      let sTop = 0; for (let el = stack; el; el = el.offsetParent) sTop += el.offsetTop;
+      snaps.forEach((n, i) => { n.style.top = (tops[i] - stuck[i] + hold / 2 - sTop).toFixed(0) + "px"; });
       update();
     }
     function update() {
@@ -344,6 +352,8 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
     addEventListener("resize", measure); addEventListener("load", measure); measure();
     new ResizeObserver(() => measure()).observe(cards[0].parentElement);
+    readingStops(window, { centers: () => snaps.map(n => n.getBoundingClientRect().top + scrollY), half: () => (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2, complete: true,
+      active: () => !document.documentElement.classList.contains("is-covered") });
   }
 }
 

@@ -1594,3 +1594,47 @@ main > .hero:has(+ :is(.sec--mist, .sec--night, .sec--light)) { padding-bottom: 
 .vt:not(.vt--phone) .vt__cap h2 { font-size: clamp(28px, 3.6vw, 52px); }
 .map3d__cluster.no-label .map3d__clabel { display: none; }
 .map3d__dot::before { inset: -7px; box-shadow: 0 0 0 1.5px rgb(255 255 255 / .6); }
+
+/* ---------------- Villa tour on the home page's white (light theme): same film, motion and timing; only the
+   surroundings change. Text that sits on the picture (desktop caption) stays white; everything on the page turns ink.
+   In dark mode the tour keeps the page's navy, like the rest of the site. ---------------- */
+html:not([data-theme="dark"]) .vt { background: #fff; color: var(--ink); }
+html:not([data-theme="dark"]) .vt__brand small { color: var(--ink-soft); }
+html:not([data-theme="dark"]) .vt__x { color: #fff; background: #0d0a38; box-shadow: 0 8px 20px -10px rgb(13 10 56 / .6); }
+html:not([data-theme="dark"]) .vt__prog { background: rgb(13 10 56 / .08); }
+html:not([data-theme="dark"]) .vt__rail { background: rgb(13 10 56 / .14); }
+html:not([data-theme="dark"]) .vt__rail i { background: rgb(13 10 56 / .32); }
+html:not([data-theme="dark"]) .vt__rail i.is-on { background: #0d0a38; box-shadow: 0 0 0 3px rgb(200 86 230 / .45); }
+html:not([data-theme="dark"]) .vt__hint { color: var(--ink-soft); }
+html:not([data-theme="dark"]) .vt__hint span { box-shadow: inset 0 0 0 1.5px rgb(13 10 56 / .55); }
+html:not([data-theme="dark"]) .vt__hint span::after { background: #0d0a38; }
+html:not([data-theme="dark"]) .vt__load { color: var(--ink-soft); }
+html:not([data-theme="dark"]) .vt__load i { background: linear-gradient(90deg, #c856e6 calc(var(--p, 0) * 100%), rgb(13 10 56 / .14) 0); }
+html:not([data-theme="dark"]) .vt__bars i { background: #fff; }
+/* desktop: the framed film floats on white with a soft shadow; the caption stays on the picture */
+html:not([data-theme="dark"]) .vt:not(.vt--phone) .vt__cv { box-shadow: 0 40px 80px -36px rgb(13 10 56 / .55), 0 0 0 1px rgb(13 10 56 / .08); }
+html:not([data-theme="dark"]) .vt:not(.vt--phone) .vt__cap { color: #fff; }
+/* phone: the film melts into the white page and the copy underneath is dark */
+html:not([data-theme="dark"]) .vt--phone .vt__shade { background: linear-gradient(180deg, rgb(7 5 30 / .28), transparent 16%, transparent 84%, #fff); }
+html:not([data-theme="dark"]) .vt--phone .vt__n { color: #1e24bb; }
+html:not([data-theme="dark"]) .vt--phone .vt__n span { color: var(--ink); }
+html:not([data-theme="dark"]) .vt--phone .vt__cap h2 { color: var(--ink); }
+html:not([data-theme="dark"]) .vt--phone .vt__p { color: var(--ink-soft); }
+html:not([data-theme="dark"]) .vt--phone .vt__cap li { background: rgb(13 10 56 / .05); box-shadow: inset 0 0 0 1px rgb(13 10 56 / .14); color: var(--ink); }
+/* the closing panel: a pale card instead of the navy one */
+html:not([data-theme="dark"]) .vt__end { background: radial-gradient(90% 70% at 50% 0%, #eceafd, #f7f7fc 70%); box-shadow: 0 -30px 60px -30px rgb(13 10 56 / .35); color: var(--ink); }
+html:not([data-theme="dark"]) .vt__k { color: #1e24bb; }
+html:not([data-theme="dark"]) .vt__facts li { background: #fff; box-shadow: inset 0 0 0 1px rgb(13 10 56 / .12), 0 6px 16px -12px rgb(13 10 56 / .4); }
+html:not([data-theme="dark"]) .vt__fine { color: var(--ink-soft); }
+html:not([data-theme="dark"]) .vt__end .btn--glass { color: var(--ink); background: rgb(13 10 56 / .05); box-shadow: inset 0 0 0 1px rgb(13 10 56 / .2); }
+
+/* reading pauses in the villa tour: markers of where the film holds still (readingStops in villa-tour.js) */
+.vt__snap { position: absolute; left: 0; width: 1px; height: 1px; pointer-events: none; }
+
+/* reading pause between service cards (see app.js SCROLL STACK): extra scroll while a card holds still (readingStops in villa-tour.js brings the scroll to rest there) */
+@media (prefers-reduced-motion: no-preference) {
+  .stack__card { margin-bottom: calc(22vh + var(--hold, 0px)); }
+  .stack::after { content: ""; height: calc(var(--hold, 0px) * 1.7); }   /* room inside the stack, so the last card also holds still */
+}
+@media (prefers-reduced-motion: no-preference) and (max-width: 900px) { .stack__card { margin-bottom: calc(14vh + var(--hold, 0px)); } }
+.stack__snap { position: absolute; left: 0; width: 1px; height: 1px; pointer-events: none; }

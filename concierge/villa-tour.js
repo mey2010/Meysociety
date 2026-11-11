@@ -20,6 +20,41 @@ const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const smooth = t => t * t * (3 - 2 * t);
 const lerp = (a, b, t) => a + (b - a) * t;
 
+/* Reading stops: places where the scroll comes to rest so a short text can be read, going down or up.
+   Unlike CSS scroll-snap it never pulls the reader back, so small wheel or trackpad steps always move on.
+   - between stops, a flick of the finger stops at the next stop it crosses (one stop per flick)
+   - with `complete`, a scroll that comes to rest between two stops finishes the move in the direction
+     it was going (the half-covered card glides into place)
+   Inside a stop's zone (center ± half) nothing is changed: that stretch of scroll is the pause itself. */
+export function readingStops(target, { centers, half, complete = false, active = () => true }) {
+  const win = target === window;
+  const getY = () => win ? scrollY : target.scrollTop;
+  const go = (y, smooth) => { auto = true; (win ? window : target).scrollTo({ top: y, behavior: smooth ? "smooth" : "auto" }); };
+  let finger = false, flingFrom = null, lastY = getY(), dir = 0, idle = 0, auto = false;
+  const evTarget = win ? window : target;
+  evTarget.addEventListener("touchstart", () => { finger = true; flingFrom = null; auto = false; }, { passive: true });
+  evTarget.addEventListener("touchend", () => { finger = false; flingFrom = getY(); }, { passive: true });
+  evTarget.addEventListener("wheel", () => { auto = false; flingFrom = null; }, { passive: true });
+  evTarget.addEventListener("scroll", () => {
+    const y = getY(); if (y !== lastY) dir = Math.sign(y - lastY); const prev = lastY; lastY = y;
+    clearTimeout(idle); idle = setTimeout(settle, 140);
+    if (auto || finger || flingFrom === null || !active()) return;
+    const cs = centers(), h = half();
+    // a flick that crosses the next stop (not the one it started from) stops right there
+    const c = cs.find(c => (c - prev) * dir >= 0 && (y - c) * dir >= 0 && Math.abs(c - flingFrom) > h);
+    if (c !== undefined) { flingFrom = null; go(c, false); }
+  }, { passive: true });
+  function settle() {
+    const was = auto; auto = false;
+    if (was || finger || !complete || !active()) return;
+    const cs = centers(), h = half(), y = getY();
+    if (!cs.length || y <= cs[0] + h || y >= cs[cs.length - 1] - h) return;   // only between the first and last stop
+    if (cs.some(c => Math.abs(y - c) <= h)) return;                              // resting inside a pause: leave it
+    const next = dir >= 0 ? cs.find(c => c > y) : [...cs].reverse().find(c => c < y);
+    if (next !== undefined) go(next, true);
+  }
+}
+
 // ---- copy: [kicker, headline, line, chips] per chapter, in the 5 languages of the site ----
 const ORDER = ["cala", "villa", "gate", "door", "salon", "cocina", "piscina", "suite", "terraza", "suites", "jacuzzi", "fin"];
 const T = {
@@ -176,6 +211,12 @@ export function initVillaTour({ onAsk } = {}) {
 
     // ---- timeline: every shot is a segment; the door shot is followed by the door-opening move ----
     let seg = [], total = 0, chapters = [], head = null;
+    /* reading pauses: in every chapter the film stops for a stretch of scroll while its text is fully shown,
+       and the scroll snaps there, so each room holds still long enough to read (going down or back up) */
+    let holds = [], S = 0;
+    const HOLD = 2.6;                                   // length of each pause, in film seconds of scroll
+    const toT = s => { let acc = 0; for (const h of holds) { if (s < h.at + acc) return s - acc; if (s < h.at + acc + HOLD) return h.at; acc += HOLD; } return s - acc; };
+    const toS = t => { let acc = 0; for (const h of holds) { if (t <= h.at) return t + acc; acc += HOLD; } return t + acc; };
     const frames = createFrames(f => { load.style.setProperty("--p", f.toFixed(3)); if (f >= 1) load.classList.add("is-done"); kick(); });
     /* if the film cannot load (old browser, network), say so instead of an endless "preparing" */
     frames.ready.then(() => { if (!frames.failed || frames.head) return; load.classList.add("is-err"); load.querySelector("span").textContent = L.ui.fail; });
@@ -192,8 +233,18 @@ export function initVillaTour({ onAsk } = {}) {
       });
       total = t;
       ORDER.forEach(id => { const ss = seg.filter(s => s.ch === id); if (ss.length) chapters.push({ id, t0: ss[0].t0, t1: ss[ss.length - 1].t0 + ss[ss.length - 1].len }); });
-      track.style.height = `calc(${Math.round(total * (innerWidth < 900 ? 25 : 28))}vh + 100vh)`;
-      rail.innerHTML = chapters.map((c, i) => `<i style="top:${(c.t0 / total * 100).toFixed(2)}%" data-i="${i}"></i>`).join("");
+      holds = chapters.map(c => {
+        const first = seg.find(q => q.ch === c.id), len = c.t1 - c.t0;
+        // the moment the shot has finished dissolving in and its text is fully on screen
+        return { at: Math.min(c.t1 - len * .2, Math.max(c.t0 + len * .14, first.t0 + (first.xin || 0) + .3)) };
+      });
+      S = total + holds.length * HOLD;
+      const K = innerWidth < 900 ? 25 : 28;             // vh of scroll per second of film
+      track.style.height = `calc(${Math.round(S * K)}vh + 100vh)`;
+      track.querySelectorAll(".vt__snap").forEach(n => n.remove());
+      let acc = 0;
+      holds.forEach(h => { const n = document.createElement("i"); n.className = "vt__snap"; n.setAttribute("aria-hidden", "true"); n.style.top = `${((h.at + acc + HOLD / 2) * K).toFixed(2)}vh`; track.appendChild(n); acc += HOLD; });
+      rail.innerHTML = chapters.map((c, i) => `<i style="top:${(toS(c.t0) / S * 100).toFixed(2)}%" data-i="${i}"></i>`).join("");
       for (let i = 0; i < 6; i++) frames.want(i);
       kick();
     };
@@ -301,7 +352,7 @@ export function initVillaTour({ onAsk } = {}) {
 
     // ---- scroll → timeline, eased ----
     let cur = 0, target = 0, raf = 0, lastNow = 0, vel = 0, lastScroll = 0;
-    const read = () => { const max = track.offsetHeight - scroller.clientHeight; target = max > 0 ? clamp(scroller.scrollTop / max) * total : 0; };
+    const read = () => { const max = track.offsetHeight - scroller.clientHeight; target = max > 0 && S ? toT(clamp(scroller.scrollTop / max) * S) : 0; };
     function frame(now) {
       raf = 0; const dt = lastNow ? Math.min(.05, (now - lastNow) / 1000) : .016; lastNow = now;
       read();
@@ -314,12 +365,13 @@ export function initVillaTour({ onAsk } = {}) {
         if (Math.abs(goal - cur) < .0015 && Math.abs(vel) < .01) { cur = goal; vel = 0; }
       }
       draw(cur); caption(cur);
-      prog.style.transform = `scaleX(${total ? (cur / total).toFixed(4) : 0})`;
+      { const max = track.offsetHeight - scroller.clientHeight; prog.style.transform = `scaleX(${max > 0 ? clamp(scroller.scrollTop / max).toFixed(4) : 0})`; } /* follows the scroll, so it keeps moving through the pauses */
       hint.classList.toggle("is-off", cur > .5); bars.classList.toggle("is-on", cur > .15 && cur < total - .3);
       if (vel !== 0 || now - lastScroll < 400 || missing) raf = requestAnimationFrame(frame); else lastNow = 0;
     }
     const kick = () => { if (!raf && root && !root.hidden) raf = requestAnimationFrame(frame); };
     scroller.addEventListener("scroll", () => { lastScroll = performance.now(); kick(); }, { passive: true });
+    readingStops(scroller, { centers: () => [...track.querySelectorAll(".vt__snap")].map(n => n.offsetTop), half: () => HOLD * (innerWidth < 900 ? 25 : 28) * innerHeight / 200 });
     new ResizeObserver(size).observe(cv);
 
     function close() { root.hidden = true; document.body.style.overflow = ""; document.documentElement.classList.remove("is-covered"); document.dispatchEvent(new CustomEvent("coverchange", { detail: false })); }
