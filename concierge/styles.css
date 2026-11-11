@@ -1662,3 +1662,5 @@ html[data-theme="dark"] .logo-note { color: #eef0fb; background: linear-gradient
 html[data-theme="dark"] .logo-note::before { background: rgb(30 26 90 / .92); }
 html[data-theme="dark"] .logo-note__k { color: #a9a4ff; } html[data-theme="dark"] .logo-note__q em, html[data-theme="dark"] .logo-note__s { color: #b4b8dc; }
 @media (prefers-reduced-motion: reduce) { .logo-note { transition: opacity 200ms; transform: none; filter: none; } }
+
+.fleet__nav.is-single .fleet__arrow { visibility: hidden; }

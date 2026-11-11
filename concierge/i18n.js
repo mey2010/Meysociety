@@ -3,6 +3,7 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Ver todos los servicios": ["See all services", "Vedi tutti i servizi", "Voir tous les services", "Alle Services ansehen"],
   "Qué es un concierge": ["What a concierge is", "Cos'è un concierge", "Qu'est-ce qu'un concierge", "Was ist ein Concierge"],
   "Un concierge es la persona que conoce la isla por dentro y la pone a tu servicio.": ["A concierge is the person who knows the island from the inside and puts it at your service.", "Un concierge è la persona che conosce l'isola dall'interno e la mette al tuo servizio.", "Un concierge, c'est la personne qui connaît l'île de l'intérieur et la met à votre service.", "Ein Concierge ist der Mensch, der die Insel von innen kennt und sie Ihnen zur Verfügung stellt."],
   "Tú me dices lo que te apetece, yo sé dónde, con quién y cómo conseguirlo.": ["You tell me what you feel like; I know where, with whom and how to make it happen.", "Tu mi dici cosa ti va; io so dove, con chi e come ottenerlo.", "Vous me dites ce dont vous avez envie ; je sais où, avec qui et comment l'obtenir.", "Sie sagen mir, worauf Sie Lust haben; ich weiß, wo, mit wem und wie."],

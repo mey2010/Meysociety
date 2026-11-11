@@ -100,7 +100,7 @@ const SM = (() => {
   panel.addEventListener("click", e => {
     const a = e.target.closest("a"); if (!a) return;
     if (a.hasAttribute("data-login")) { e.preventDefault(); set(false); openLogin(); return; }
-    const h = a.getAttribute("href"); if (h && h.startsWith("#")) { e.preventDefault(); set(false); setTimeout(() => document.querySelector(h)?.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" }), 250); }
+    const h = a.getAttribute("href"); if (h && h.startsWith("#")) { e.preventDefault(); set(false); setTimeout(() => scrollToEl(document.querySelector(h)), 250); }
   });
   return { set };
 })();
@@ -205,7 +205,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { closePop(); closeLi
 document.getElementById("popBook").addEventListener("click", () => {
   if (!active) return; const v = active; select(v.type === "club" ? "noche" : "beach", true);
   document.getElementById("f-notes").value = `${t("Me interesa")}: ${v.name} (${v.area}).`; closePop();
-  document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" });
+  scrollToEl(document.getElementById("contacto"));
 });
 
 /* =====================================================================
@@ -457,6 +457,7 @@ function BranchedMenu(nav, { items, defaultOpen = 0, defaultActive = "", onSelec
 
 // The services tree inside the main menu.
 const SVC_TREE = [
+  { label: "Ver todos los servicios", value: "todos", icon: "star" },
   { label: "Barcos", svc: "yates", children: [
     { value: "barcos-sin-licencia", label: "Sin licencia", icon: "badge" }, { value: "barcos-con-patron", label: "Con patrón", icon: "helm" },
     { value: "barcos-lancha", label: "Lancha", icon: "boat" }, { value: "barcos-yate", label: "Yate", icon: "ship" } ] },
@@ -478,14 +479,15 @@ const SVC_TREE = [
 const svcMenu = BranchedMenu(document.getElementById("bm"), {
   items: SVC_TREE, defaultOpen: -1, defaultActive: "__none__",
   color: "#0d0a38", accentColor: "#ab50db", lineColor: "#c9cce8", width: 340, rowHeight: 38, fontSize: 15, indent: 42,
-  onToggle: (i) => { if (i === 0) { SM.set(false); setTimeout(() => openFleet("all"), 260); } }, // Barcos → the fleet ribbon
+  onToggle: (i) => { if (SVC_TREE[i]?.label === "Barcos") { SM.set(false); setTimeout(() => openFleet("all"), 260); } }, // Barcos → the fleet ribbon
   onSelect: (value, item) => {
     if (value.startsWith("barcos-")) { SM.set(false); setTimeout(() => openFleet(value.slice(7)), 260); return; }
+    if (value === "todos") { SM.set(false); setTimeout(() => scrollToEl(document.getElementById("servicios")), 250); return; }   // the services section itself
     const sec = SVC_TREE.find(s => s.value === value || s.children?.some(k => k.value === value));
     select(sec.svc, true);
     if (value === "motos-scooter") select("moto", true);
     document.getElementById("f-notes").value = item && sec.children ? `${t("Me interesa")}: ${t(sec.label)} · ${t(item.label)}.` : `${t("Me interesa")}: ${t(sec.label)}.`;
-    setTimeout(() => { SM.set(false); setTimeout(() => document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" }), 250); }, 380);
+    setTimeout(() => { SM.set(false); setTimeout(() => scrollToEl(document.getElementById("contacto")), 250); }, 380);
   },
 });
 {
@@ -527,7 +529,7 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
 // glass highlight follows the pointer on primary buttons
 addEventListener("pointermove", e => { const el = e.target.closest?.(".btn--primary"); if (!el) return; const r = el.getBoundingClientRect(); el.style.setProperty("--mx", ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%"); el.style.setProperty("--my", ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%"); }, { passive: true });
 // smooth in-page anchors
-document.querySelectorAll('a[href^="#"]').forEach(a => { if (a.closest("#sm")) return; a.addEventListener("click", e => { const t = a.getAttribute("href").length > 1 && document.querySelector(a.getAttribute("href")); if (!t) return; e.preventDefault(); t.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" }); }); });
+document.querySelectorAll('a[href^="#"]').forEach(a => { if (a.closest("#sm")) return; a.addEventListener("click", e => { const t = a.getAttribute("href").length > 1 && document.querySelector(a.getAttribute("href")); if (!t) return; e.preventDefault(); scrollToEl(t); }); });
 
 /* =====================================================================
    CONTACT
@@ -539,7 +541,7 @@ const CONFIG = {
 };
 // floating WhatsApp button: straight to a chat when the number is set, otherwise to the contact form
 { const fab = document.getElementById("fabContact"); if (CONFIG.whatsapp) { fab.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent("Hola Mey Society, me gustaría organizar mi estancia en Ibiza.")}`; fab.target = "_blank"; fab.rel = "noopener"; }
-  else fab.setAttribute("aria-label", "Escríbenos"), fab.addEventListener("click", e => { e.preventDefault(); document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" }); });
+  else fab.setAttribute("aria-label", "Escríbenos"), fab.addEventListener("click", e => { e.preventDefault(); scrollToEl(document.getElementById("contacto")); });
   const sync = () => fab.classList.toggle("is-on", scrollY > innerHeight * .5 && !document.querySelector(".staggered-menu-wrapper[data-open]"));
   addEventListener("scroll", sync, { passive: true }); sync(); }
 /* resize that ignores the phone's browser bars sliding in and out: on iPhone they reappear whenever you scroll
@@ -547,6 +549,12 @@ const CONFIG = {
 function onRealResize(cb) {
   let w = innerWidth, h = innerHeight;
   addEventListener("resize", () => { if (innerWidth === w && Math.abs(innerHeight - h) < 160) return; w = innerWidth; h = innerHeight; cb(); });
+}
+/* in-page jumps go to a section's real place in the layout: scrollIntoView would aim at where an entering section
+   is drawn mid-animation (the flap sections slide up 90px as they arrive) and land 90px too far */
+function scrollToEl(el, smooth = !REDUCED) {
+  if (!el) return; let y = 0; for (let n = el; n; n = n.offsetParent) y += n.offsetTop;
+  scrollTo({ top: Math.max(0, y - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0)), behavior: smooth ? "smooth" : "auto" });
 }
 initConsent(CONFIG.analytics);
 /* what people do, for Analytics: contact taps, legal-free and anonymous (no personal data is sent) */
@@ -584,7 +592,7 @@ document.querySelectorAll("[data-pack]").forEach(b => b.addEventListener("click"
   const map = { "Arrival": ["transfers", "villas", "dining"], "Sea & Sun": ["yates", "motos", "beach", "dining"], "Night Edition": ["noche", "transfers"] };
   (map[b.dataset.pack] || []).forEach(id => select(id, true));
   document.getElementById("f-notes").value = `${t("Me interesa")}: ${t("plan")} ${b.dataset.pack}.`;
-  const t = document.getElementById("contacto"); t.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" });
+  const t = document.getElementById("contacto"); scrollToEl(t);
 }));
 document.getElementById("form").addEventListener("submit", e => {
   e.preventDefault();
@@ -1033,6 +1041,7 @@ function setFleetCat(cat) {
   fleetCat = FLEET_TYPES.some(([k]) => k === cat) ? cat : "all"; fleetList = fleetCat === "all" ? FLEET : FLEET.filter(b => b.type === fleetCat);
   fleetChips.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === fleetCat));
   ribbon.setItems(fleetItems());
+  document.querySelector(".fleet__nav").classList.toggle("is-single", fleetList.length < 2);   // one boat: nothing to step through
 }
 function openFleet(cat = "all") {
   fleet.hidden = false; document.body.style.overflow = "hidden";
@@ -1051,7 +1060,7 @@ function closeFleet() { fleet.hidden = true; document.body.style.overflow = ""; 
 function askFleet(b) {
   closeBoat(); closeFleet(); select("yates", true);
   document.getElementById("f-notes").value = `${t("Me interesa")}: ${b.name}${b.len ? " · " + b.len : ""} (${t(CAT_LABEL[b.type])}).`;
-  document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" });
+  scrollToEl(document.getElementById("contacto"));
 }
 
 /* the boat sheet: full-resolution photos and the basics, never prices */
@@ -1335,7 +1344,7 @@ document.querySelectorAll(".stack__card").forEach(card => {
 {
   const tour = initVillaTour({ onAsk: name => {
     select("villas", true); document.getElementById("f-notes").value = `${t("Me interesa")}: ${name}.`;
-    document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" });
+    scrollToEl(document.getElementById("contacto"));
   } });
   document.addEventListener("click", e => { if (e.target.closest("[data-villa-tour]")) { e.preventDefault(); track("villa_tour_open", { villa: "Aura" }); tour.open(); } });
 }

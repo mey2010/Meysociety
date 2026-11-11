@@ -98,6 +98,7 @@ export function createDepthRibbon(root, opts = {}) {
     raf = 0; const dt = st.last ? Math.min((now - st.last) / 1000, .1) : 1 / 60; st.last = now;
     let busy = false;
     if (st.enter < 1) { const k = clamp((now - st.enterAt) / 1100, 0, 1); st.enter = 1 - Math.pow(1 - k, 3); busy = true; }
+    if (N < 2) { st.pos = st.target = 0; st.vel = 0; }   // one boat: held still in front
     if (!st.drag) {
       const cruise = o.autoplay && N >= 4 && !reduced && !st.hover && now > st.idleAt;
       if (cruise) {
@@ -114,8 +115,8 @@ export function createDepthRibbon(root, opts = {}) {
     if (busy && visible && !document.hidden) raf = requestAnimationFrame(frame); else st.last = 0;
   }
   const wake = () => { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame); };
-  const goTo = i => { st.cruising = false; let t = Math.round(st.target), cur = ((t % N) + N) % N, d = i - cur; if (d > N / 2) d -= N; if (d < -N / 2) d += N; st.target = t + d; st.idleAt = performance.now() + 6000; wake(); };
-  const by = d => { st.cruising = false; st.target = (st.vel > .05 ? Math.ceil(st.pos - .02) : Math.round(st.target)) + d - (st.vel > .05 && d > 0 ? 1 : 0); st.idleAt = performance.now() + 6000; wake(); };
+  const goTo = i => { if (N < 2) return; st.cruising = false; let t = Math.round(st.target), cur = ((t % N) + N) % N, d = i - cur; if (d > N / 2) d -= N; if (d < -N / 2) d += N; st.target = t + d; st.idleAt = performance.now() + 6000; wake(); };
+  const by = d => { if (N < 2) return; st.cruising = false; st.target = (st.vel > .05 ? Math.ceil(st.pos - .02) : Math.round(st.target)) + d - (st.vel > .05 && d > 0 ? 1 : 0); st.idleAt = performance.now() + 6000; wake(); };
 
   // input: drag along the ribbon (either axis), flick, wheel, keys
   root.addEventListener("pointerdown", e => { if (e.button !== 0) return; st.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, pos: st.pos, moved: false, t: performance.now(), samples: [] }; });
@@ -123,6 +124,7 @@ export function createDepthRibbon(root, opts = {}) {
     const d = st.drag; if (!d || d.id !== e.pointerId) return;
     const dx = e.clientX - d.x, dy = e.clientY - d.y;
     if (!d.moved) { if (Math.hypot(dx, dy) < 6) return; if (e.pointerType !== "mouse" && Math.abs(dy) > Math.abs(dx) * 1.3) { st.drag = null; return; } d.moved = true; root.dataset.dragging = ""; try { root.setPointerCapture(e.pointerId); } catch {} }
+    if (N < 2) return;   // a single boat stays put in front: nothing to browse
     st.pos = d.pos - dx / (cw * .9); st.target = st.pos;
     const now = performance.now(); d.samples.push({ t: now, p: st.pos }); while (d.samples.length > 2 && now - d.samples[0].t > 100) d.samples.shift();
     wake();
@@ -131,7 +133,7 @@ export function createDepthRibbon(root, opts = {}) {
     const d = st.drag; if (!d || d.id !== e.pointerId) return; st.drag = null; delete root.dataset.dragging;
     if (!d.moved) { const c = e.target.closest?.(".ribbon__card"); if (c) { const i = +c.dataset.i; if (i === st.active && Math.abs(st.pos - Math.round(st.pos)) < .35) o.onItemClick?.(items[i], i); else goTo(i); } return; }
     const a = d.samples[0], b = d.samples[d.samples.length - 1], v = a && b && b.t > a.t ? (b.p - a.p) / ((b.t - a.t) / 1000) : 0;
-    st.target = Math.round(st.pos + clamp(v, -6, 6) * .28); st.vel = v * .4; st.idleAt = performance.now() + 6000; wake();
+    st.target = N < 2 ? 0 : Math.round(st.pos + clamp(v, -6, 6) * .28); st.vel = N < 2 ? 0 : v * .4; st.idleAt = performance.now() + 6000; wake();
   };
   root.addEventListener("pointerup", up); root.addEventListener("pointercancel", up);
   root.addEventListener("click", e => { if (e.detail === 0) { const c = e.target.closest?.(".ribbon__card"); if (c) { const i = +c.dataset.i; i === st.active ? o.onItemClick?.(items[i], i) : goTo(i); } } }); // keyboard activation

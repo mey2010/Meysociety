@@ -29,12 +29,15 @@ export function readingStops(target, { centers, half, pager = false, active = ()
   let finger = false, fling = false, auto = false, dir = 0, lastY = getY(), anchor = getY(), idle = 0, lockUntil = 0, goal = null, userAt = -1e9;
   // only the reader's own gestures are guided: a jump from the menu or a link passes through untouched
   const byUser = () => fling || performance.now() - userAt < 700;
-  ["touchmove", "keydown", "pointerdown"].forEach(t => (t === "keydown" ? window : el).addEventListener(t, () => { userAt = performance.now(); }, { passive: true }));
+  // (a tap or a click is not a scroll: a menu link tapped here must not be taken for a swipe)
+  let moved = false;
+  el.addEventListener("touchmove", () => { userAt = performance.now(); moved = true; }, { passive: true });
+  window.addEventListener("keydown", e => { if (/^(Arrow(Up|Down)|Page(Up|Down)|Home|End| )$/.test(e.key)) userAt = performance.now(); });
   const go = y => { auto = true; goal = y; lockUntil = performance.now() + 650; anchor = y; el.scrollTo({ top: y, behavior: "smooth" }); };
   const inRange = (y, cs, h) => cs.length && y > cs[0] - vh() && y < cs[cs.length - 1] + h;
   const nextFrom = (cs, from, d) => d > 0 ? cs.find(c => c > from + 4) : [...cs].reverse().find(c => c < from - 4);
-  el.addEventListener("touchstart", () => { userAt = performance.now(); finger = true; fling = false; if (auto || !idle) anchor = getY(); auto = false; goal = null; }, { passive: true });   // (a glide caught mid-way starts the new gesture from where it is)
-  el.addEventListener("touchend", () => { finger = false; fling = true; clearTimeout(idle); idle = setTimeout(settle, 120); }, { passive: true });   // (a drag that stopped before the finger lifted is decided here)
+  el.addEventListener("touchstart", () => { moved = false; finger = true; fling = false; if (auto || !idle) anchor = getY(); auto = false; goal = null; }, { passive: true });   // (a glide caught mid-way starts the new gesture from where it is)
+  el.addEventListener("touchend", () => { finger = false; fling = moved; if (moved) { clearTimeout(idle); idle = setTimeout(settle, 120); } }, { passive: true });   // (a drag that stopped before the finger lifted is decided here)
   el.addEventListener("wheel", e => {
     if (!active()) return;
     if (pager && performance.now() < lockUntil && inRange(getY(), centers(), half())) { e.preventDefault(); return; }   // gliding: swallow inertia
