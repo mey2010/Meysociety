@@ -15,6 +15,11 @@ function loadGA(id) {
   script(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`);
 }
 
+/* One call for both tools. Before consent (or with nothing configured) the event is simply dropped. */
+export function track(name, params = {}) {
+  try { if (window.gtag) gtag("event", name, params); if (window.plausible) plausible(name, { props: params }); } catch {}
+}
+
 export function initConsent({ plausible = "", ga4 = "" } = {}) {
   if (plausible) script("https://plausible.io/js/script.js", { defer: true, data: { domain: plausible } });
   if (!ga4) return;

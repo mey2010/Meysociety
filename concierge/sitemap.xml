@@ -65,5 +65,6 @@
   </url>
   <url><loc>https://DOMINIO.example/legal/aviso-legal.html</loc><lastmod>2026-11-09</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
   <url><loc>https://DOMINIO.example/legal/privacidad.html</loc><lastmod>2026-11-09</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://DOMINIO.example/legal/terminos.html</loc><lastmod>2026-11-11</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
   <url><loc>https://DOMINIO.example/legal/cookies.html</loc><lastmod>2026-11-09</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
 </urlset>

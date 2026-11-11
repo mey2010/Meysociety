@@ -3,6 +3,7 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Términos y condiciones": ["Terms and conditions", "Termini e condizioni", "Conditions générales", "Allgemeine Geschäftsbedingungen"],
   "y más": ["and more", "e altri", "et plus", "und mehr"],
   "Recorrer Villa Cala Molí": ["Tour Villa Cala Molí", "Visita Villa Cala Molí", "Visiter la Villa Cala Molí", "Villa Cala Molí erkunden"],
   "Fotos facilitadas por los operadores. La disponibilidad depende de la fecha y se confirma con cada operador de chárter autorizado.": ["Photos provided by the operators. Availability depends on the date and is confirmed with each licensed charter operator.", "Foto fornite dagli operatori. La disponibilità dipende dalla data e viene confermata con ciascun operatore di charter autorizzato.", "Photos fournies par les opérateurs. La disponibilité dépend de la date et est confirmée avec chaque loueur agréé.", "Fotos von den Anbietern. Die Verfügbarkeit hängt vom Datum ab und wird mit jedem lizenzierten Charteranbieter bestätigt."],

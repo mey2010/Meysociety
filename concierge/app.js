@@ -3,14 +3,14 @@ import { ICONS } from "./icons.js";
 import { createCircularCarousel } from "./circular-carousel.js";
 import { createDepthRibbon } from "./depth-ribbon.js";
 import { FLEET, FLEET_TYPES, TYPE_NOTE } from "./fleet-data.js";
-import { initRoute3D } from "./route3d.js";
 import { initVillaTour } from "./villa-tour.js";
 import { holo } from "./holo.js";
 import { shatterType } from "./shatter.js";
 import { elasticLettering } from "./elastic.js";
 import { logoFlight } from "./logo-flight.js";
-import { initMap3D, MAPDATA } from "./map3d.js";
-import { initConsent } from "./consent.js";
+// the 3D engine (Three.js, ~680 KB) is loaded on demand, never on the critical path of the first paint
+const load3D = () => import("./map3d.js");
+import { initConsent, track } from "./consent.js";
 import "./drape-core.js"; // shared drawing code for the dot background (fallback path)
 import { LANGS, t, msg, venueInfo, translateTree, setLang, getLang, watchI18n, applyMeta } from "./i18n.js";
 import { TEMPLATES, fromTemplate, newCode, loadAll, saveAll, findForClient, timeline } from "./itineraries.js";
@@ -136,13 +136,13 @@ let mapStarted = false;
 function startMap() {
   if (mapStarted) return; mapStarted = true;
   const pct = loader.querySelector("b");
-  initMap3D(mapEl, {
+  load3D().then(m => m.initMap3D(mapEl, {
     venues: VENUES, mapJson: MAP,
     onPick: (v) => { closeList(); openPop(v); },
     onList: (list, anchor) => openList(list, anchor),
     onEmpty: () => { closePop(); closeList(); },
     onProgress: p => { pct.textContent = p; loader.setAttribute("aria-valuenow", p); },
-  }).then(m => {
+  })).then(m => {
     map3dReal = m; mapQueue.splice(0).forEach(([k, a]) => m[k](...a));
     pct.textContent = 100; loader.classList.add("is-done"); setTimeout(() => loader.remove(), 700);
   }).catch(err => { console.error(err); loader.classList.add("is-error"); });
@@ -216,7 +216,7 @@ document.getElementById("popBook").addEventListener("click", () => {
     // each letter strikes on at its own moment, stutters 2-4 times, then holds
     let done = 0;
     chars.forEach((c, i) => {
-      const start = 250 + Math.random() * 1100 + (i === chars.length - 1 ? 500 : 0); let t = start;
+      const start = 80 + Math.random() * 650 + (i === chars.length - 1 ? 300 : 0); // the name lights up quickly: it is the first thing people wait for let t = start;
       const flips = 2 + Math.floor(Math.random() * 3);
       for (let k = 0; k < flips; k++) {
         setTimeout(() => { c.classList.add("on"); c.classList.remove("dim"); }, t); t += 40 + Math.random() * 90;
@@ -247,7 +247,7 @@ document.getElementById("popBook").addEventListener("click", () => {
 // the name also shatters like glass (cursor cracks it, a click bursts it), and the tagline is an elastic band
 shatterType(document.getElementById("signal"));
 elasticLettering(document.getElementById("introLine"));
-logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.querySelector(".sm-logo-img"), headerLink: document.querySelector(".sm-logo"), src: "assets/logo-neon.webp", menu: document.querySelector(".staggered-menu-wrapper"), letters: document.getElementById("signal") });
+logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.querySelector(".sm-logo-img"), headerLink: document.querySelector(".sm-logo"), src: "assets/logo-neon-512.webp", menu: document.querySelector(".staggered-menu-wrapper"), letters: document.getElementById("signal") });
 
 /* =====================================================================
    SPECTRAL DRAPE — a sheet of glowing dots folding in 3D (page background)
@@ -452,7 +452,7 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
       if (!REDUCED) gsap.fromTo(list, { opacity: 0, y: -6, scale: .97 }, { opacity: 1, y: 0, scale: 1, duration: .28, ease: "power3.out" }); }
   }
   function choose(l) {
-    setLang(l); cur.textContent = LANGS[l]; btn.setAttribute("aria-label", LANGS[l]);
+    setLang(l); track("language_change", { language: l }); cur.textContent = LANGS[l]; btn.setAttribute("aria-label", LANGS[l]);
     opts.forEach(x => x.setAttribute("aria-selected", x.dataset.lang === l)); show(false); btn.focus();
   }
   btn.addEventListener("click", () => show(list.hidden));
@@ -490,6 +490,13 @@ const CONFIG = {
   const sync = () => fab.classList.toggle("is-on", scrollY > innerHeight * .5 && !document.querySelector(".staggered-menu-wrapper[data-open]"));
   addEventListener("scroll", sync, { passive: true }); sync(); }
 initConsent(CONFIG.analytics);
+/* what people do, for Analytics: contact taps, legal-free and anonymous (no personal data is sent) */
+document.addEventListener("click", e => {
+  const a = e.target.closest("a[href]"); if (!a) return; const h = a.getAttribute("href");
+  if (a.id === "fabContact") track("contact_click", { method: CONFIG.whatsapp ? "whatsapp" : "form", place: "boton_flotante" });
+  else if (h.startsWith("https://wa.me/")) track("contact_click", { method: "whatsapp", place: "enlace" });
+  else if (h.startsWith("mailto:")) track("contact_click", { method: "email", place: "enlace" });
+}, { capture: true, passive: true });
 const LOADED_AT = performance.now();
 const CHOICES = { yates: "Barco", motos: "Moto de agua", coches: "Coche", moto: "Moto", villas: "Villa", noche: "Clubs", transfers: "Transfer", dining: "Chef privado", beach: "Beach clubs" };
 const chips = document.getElementById("chips"), chosen = new Set();
@@ -541,6 +548,7 @@ document.getElementById("form").addEventListener("submit", e => {
   ].filter(Boolean).join("\n");
   const url = CONFIG.whatsapp ? `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(lines)}` : `mailto:${CONFIG.email}?subject=${encodeURIComponent("Mi estancia en Ibiza")}&body=${encodeURIComponent(lines)}`;
   window.open(url, "_blank", "noopener");
+  track("generate_lead", { method: CONFIG.whatsapp ? "whatsapp" : "email", language: getLang() });
   status.textContent = CONFIG.whatsapp ? msg("booked", "Abriendo WhatsApp con tu mensaje.") : msg("mailed", "Abriendo tu correo con el mensaje preparado. Si no se abre, escríbenos a meysociety@protonmail.com.");
 });
 
@@ -666,13 +674,13 @@ function showRoute3D(pts, opts) {
   // the flat route is on screen straight away; the 3D one is built off-screen and takes its place when ready
   // created only after the client area has painted: opening it never waits for the 3D canvas
   const afterPaint = new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
-  afterPaint.then(() => initRoute3D(el, { planeIcon: ICONS.plane })).then(api => {
+  afterPaint.then(() => import("./route3d.js")).then(m => m.initRoute3D(el, { planeIcon: ICONS.plane })).then(api => {
     route3d = api; api.setRoute(...route3dLast);
     el.hidden = false; el.classList.add("is-in"); svg.setAttribute("hidden", ""); // (SVG elements have no .hidden property)
   }).catch(err => { console.warn("route 3D unavailable, keeping the flat map", err); el.hidden = true; });
 }
 // start fetching the relief as soon as someone heads for the client area, so the 3D route is ready on arrival
-const prefetchRoute = () => { MAPDATA.sharedHeights(); MAPDATA.sharedMask(); };
+const prefetchRoute = () => load3D().then(m => { m.MAPDATA.sharedHeights(); m.MAPDATA.sharedMask(); });
 document.addEventListener("click", e => { if (e.target.closest("[data-login]")) prefetchRoute(); }, true);
 // the + / − / ⤢ buttons drive the 3D map once it is there
 document.querySelector(".routemap__zoom").addEventListener("click", e => {
@@ -1001,7 +1009,7 @@ function showShot(k) {
   sheet.querySelectorAll(".boat__thumbs button").forEach((x, i) => x.setAttribute("aria-current", i + 1 === shot));
 }
 function openBoat(b) {
-  if (!b) return; boatNow = b; shot = 1;
+  if (!b) return; if (b !== boatNow) track("view_item", { item_category: "barco", item_name: b.name || "" }); boatNow = b; shot = 1;
   const row = (label, v) => v ? `<div><dt>${t(label)}</dt><dd>${v}</dd></div>` : "";
   sheet.innerHTML = `<div class="boat__card">
     <button class="lightbox__close boat__close" type="button" data-close aria-label="${t("Cerrar")}">${ICONS.close}</button>
@@ -1268,5 +1276,5 @@ document.querySelectorAll(".stack__card").forEach(card => {
     select("villas", true); document.getElementById("f-notes").value = `${t("Me interesa")}: ${name}.`;
     document.getElementById("contacto").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth" });
   } });
-  document.addEventListener("click", e => { if (e.target.closest("[data-villa-tour]")) { e.preventDefault(); tour.open(); } });
+  document.addEventListener("click", e => { if (e.target.closest("[data-villa-tour]")) { e.preventDefault(); track("villa_tour_open", { villa: "Cala Molí" }); tour.open(); } });
 }

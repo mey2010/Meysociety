@@ -66,7 +66,7 @@ export function createCircularCarousel(root, opts = {}) {
   const cards = list.map((item, index) => {
     const card = el("div", "circular-carousel__card", { "data-cc-index": index, role: "group", "aria-roledescription": "slide", "aria-label": `${item.title || item.alt || "Imagen " + (index + 1)}, ${index + 1} / ${count}` });
     const isVideo = item.type === "video";
-    const vid = isVideo ? Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "auto", src: item.src, poster: item.poster || "" }) : null;
+    const vid = isVideo ? Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: item.src, poster: item.poster || "" }) : null;
     if (vid) { vid.setAttribute("muted", ""); vid.setAttribute("playsinline", ""); }
     const entry = vid ? { video: vid, canvases: [], card, index } : null;
     const tile = (t, back) => {
