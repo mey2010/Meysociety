@@ -254,6 +254,44 @@ shatterType(document.getElementById("signal"));
 elasticLettering(document.getElementById("introLine"));
 logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.querySelector(".sm-logo-img"), headerLink: document.querySelector(".sm-logo"), src: "assets/logo-neon-512.webp", menu: document.querySelector(".staggered-menu-wrapper"), letters: document.getElementById("signal") });
 
+/* ---------------- press and hold the big logo: "what is a concierge" ----------------
+   A glass card grows out of the logo while it is big on the first screen. It opens after a short hold
+   (finger or mouse), stays until a tap elsewhere, Esc or a scroll, and never steals the docked logo's click. */
+{
+  const fly = document.querySelector(".flylogo");
+  if (fly) {
+    const card = document.createElement("div");
+    card.className = "logo-note"; card.setAttribute("role", "dialog"); card.setAttribute("aria-label", t("Qué es un concierge")); card.hidden = true;
+    const fill = () => { card.innerHTML = `<p class="logo-note__k">${t("Qué es un concierge")}</p>
+      <p class="logo-note__q">${t("Un concierge es la persona que conoce la isla por dentro y la pone a tu servicio.")} <em>${t("Tú me dices lo que te apetece, yo sé dónde, con quién y cómo conseguirlo.")}</em></p>
+      <p class="logo-note__s">— Mey Society</p>`; };
+    fill(); document.addEventListener("langchange", fill);
+    document.body.appendChild(card);
+    let timer = 0, open = false, openedAt = 0, startY = 0;
+    const big = () => !fly.classList.contains("is-docked");
+    function show() {
+      if (open) return; open = true; openedAt = performance.now(); startY = scrollY;
+      const r = fly.getBoundingClientRect(), cx = r.left + r.width / 2, w = Math.min(380, innerWidth - 32);
+      const below = r.bottom + 14 + 210 < innerHeight;            // under the logo if it fits, otherwise over it
+      card.style.width = w + "px";
+      card.style.left = Math.round(Math.min(Math.max(16, cx - w / 2), innerWidth - w - 16)) + "px";
+      card.style.top = Math.round(below ? r.bottom + 14 : Math.max(16, r.top - 14)) + "px";
+      card.classList.toggle("is-above", !below);
+      card.style.setProperty("--ox", Math.round(cx - parseFloat(card.style.left)) + "px");
+      card.hidden = false; void card.offsetWidth; card.classList.add("is-on");
+      navigator.vibrate?.(8); track("logo_concierge_note");
+    }
+    function hide() { if (!open) return; open = false; card.classList.remove("is-on"); setTimeout(() => { if (!open) card.hidden = true; }, 380); }
+    fly.addEventListener("pointerdown", e => { if (!big() || e.button > 0) return; clearTimeout(timer); timer = setTimeout(show, 420); });
+    ["pointerup", "pointerleave", "pointercancel"].forEach(ev => fly.addEventListener(ev, () => clearTimeout(timer)));
+    fly.addEventListener("contextmenu", e => { if (big()) e.preventDefault(); });   // no system menu on a long press
+    document.addEventListener("pointerdown", e => { if (open && !card.contains(e.target) && !fly.contains(e.target)) hide(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") hide(); });
+    addEventListener("scroll", () => { if (open && Math.abs(scrollY - startY) > 40) hide(); }, { passive: true });
+    fly.addEventListener("click", () => { if (open && performance.now() - openedAt > 600) hide(); });
+  }
+}
+
 /* =====================================================================
    SPECTRAL DRAPE — a sheet of glowing dots folding in 3D (page background)
    ===================================================================== */
@@ -325,7 +363,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     const stack = cards[0].parentElement; let holdW = 0;
     const snaps = cards.map(() => { const n = document.createElement("i"); n.className = "stack__snap"; n.setAttribute("aria-hidden", "true"); stack.appendChild(n); return n; });
     function measure() {
-      if (innerWidth !== holdW) { holdW = innerWidth; stack.style.setProperty("--hold", Math.round(document.documentElement.clientHeight * (innerWidth <= 900 ? .36 : .42)) + "px"); }
+      if (innerWidth !== holdW) { holdW = innerWidth; stack.style.setProperty("--hold", Math.round(document.documentElement.clientHeight * (innerWidth <= 900 ? .22 : .3)) + "px"); }
       const hold = parseFloat(stack.style.getPropertyValue("--hold")) || 0;
       stuck = cards.map(c => parseFloat(getComputedStyle(c).top) || 0);
       // natural (un-stuck) position of each card: read once with sticky switched off for the measurement
@@ -357,7 +395,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
     onRealResize(measure); addEventListener("load", measure); measure();
     new ResizeObserver(() => measure()).observe(cards[0].parentElement);
-    readingStops(window, { centers: () => snaps.map(n => n.getBoundingClientRect().top + scrollY), half: () => (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2, complete: true,
+    readingStops(window, { centers: () => snaps.map(n => n.getBoundingClientRect().top + scrollY), half: () => (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2, pager: true,
       active: () => !document.documentElement.classList.contains("is-covered") });
   }
 }
