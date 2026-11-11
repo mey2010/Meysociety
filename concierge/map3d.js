@@ -329,7 +329,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     const R2 = 46 * 46, groups = []; // markers closer than 46 px share one bubble: two 44 px tap targets never overlap
     for (const q of pts) { const g = groups.find(g => (g.x - q.x) ** 2 + (g.y - q.y) ** 2 < R2); if (g) { g.items.push(q); g.x = (g.x * (g.items.length - 1) + q.x) / g.items.length; g.y = (g.y * (g.items.length - 1) + q.y) / g.items.length; } else groups.push({ x: q.x, y: q.y, items: [q] }); }
     const near = camera.position.distanceTo(controls.target) < 12;
-    let ci = 0;
+    let ci = 0; const placed = []; // label boxes already on screen: a name never overlaps another
     for (const g of groups) {
       if (g.items.length === 1) { const { p, x, y } = g.items[0]; p.btn.hidden = false; p.btn.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`; p.btn.classList.toggle("is-named", near); continue; }
       g.items.forEach(q => { q.p.btn.hidden = true; });
@@ -339,10 +339,14 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
           const d = camera.position.distanceTo(controls.target), want = Math.max(controls.minDistance, spread * 4.5, 1.6);
           if (d > want * 1.25) fly(target, Math.max(want, d * .3)); else onList(items.map(q => q.v), c); }); }
       c.hidden = false; c._items = g.items.map(q => q.p);
-      if (c.textContent !== String(g.items.length)) c.textContent = g.items.length;
+      const lead = g.items[0].p.v.name, txt = lead + " +";
+      if (c._txt !== txt) { c._txt = txt; c.innerHTML = `<span class="map3d__dot" aria-hidden="true"></span><span class="map3d__clabel">${lead}<i> ${el.dataset.more || "y más"}</i></span>`; }
       const lbl = `${g.items.length}: ${g.items.map(q => q.p.v.name).join(", ")}`; if (c.getAttribute("aria-label") !== lbl) c.setAttribute("aria-label", lbl);
       const kinds = new Set(g.items.map(q => q.p.v.type)); c.dataset.kind = kinds.size === 1 ? [...kinds][0] : "mix";
       c.style.transform = `translate(${g.x.toFixed(1)}px, ${g.y.toFixed(1)}px)`; ci++;
+      const box = { x0: g.x - 14, x1: g.x + 26 + (lead.length + 6) * 7.4, y0: g.y - 12, y1: g.y + 12 };
+      const clash = box.x1 > W - 6 || placed.some(q => box.x0 < q.x1 && box.x1 > q.x0 && box.y0 < q.y1 && box.y1 > q.y0);
+      c.classList.toggle("no-label", clash); placed.push(clash ? { x0: g.x - 14, x1: g.x + 14, y0: g.y - 12, y1: g.y + 12 } : box);
     }
     for (; ci < clusterEls.length; ci++) clusterEls[ci].hidden = true;
   }

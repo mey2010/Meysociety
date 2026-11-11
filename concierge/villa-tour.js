@@ -9,10 +9,10 @@ import { getLang } from "./i18n.js";
 // two packs of the same film: Full HD (1920x1080, AVIF) for laptops and tablets, and a tall 608x1080 WebP crop
 // for phones held upright (also the fallback for the rare browser that cannot decode AVIF)
 const PHONE = matchMedia("(max-width: 720px) and (orientation: portrait)").matches;
-let PACK = PHONE ? "m" : "fhd";
+let PACK = PHONE ? "p" : "fhd";
 const SRC = k => `data/villa/cala-moli-${PACK}-${k}.txt`;
 // a tiny AVIF made with the same encoder as the frames: if the browser decodes it, the Full HD pack can be used
-const AVIF_OK = PHONE ? Promise.resolve(false) : fetch("data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAAD5bWV0YQAAAAAAAAAvaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAFBpY3R1cmVIYW5kbGVyAAAAAA5waXRtAAAAAAABAAAAHmlsb2MAAAAARAAAAQABAAAAAQAAASEAAAAbAAAAKGlpbmYAAAAAAAEAAAAaaW5mZQIAAAAAAQAAYXYwMUNvbG9yAAAAAGppcHJwAAAAS2lwY28AAAAUaXNwZQAAAAAAAABAAAAAQAAAABBwaXhpAAAAAAMICAgAAAAMYXYxQ4EADAAAAAATY29scm5jbHgAAgACAAIAAAAAF2lwbWEAAAAAAAAAAQABBAECgwQAAAAjbWRhdAoKAAAAAq//jV8wCDINEAD1gj/+mkMAAAgAcA==")
+const AVIF_OK = fetch("data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAAD5bWV0YQAAAAAAAAAvaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAFBpY3R1cmVIYW5kbGVyAAAAAA5waXRtAAAAAAABAAAAHmlsb2MAAAAARAAAAQABAAAAAQAAASEAAAAbAAAAKGlpbmYAAAAAAAEAAAAaaW5mZQIAAAAAAQAAYXYwMUNvbG9yAAAAAGppcHJwAAAAS2lwY28AAAAUaXNwZQAAAAAAAABAAAAAQAAAABBwaXhpAAAAAAMICAgAAAAMYXYxQ4EADAAAAAATY29scm5jbHgAAgACAAIAAAAAF2lwbWEAAAAAAAAAAQABBAECgwQAAAAjbWRhdAoKAAAAAq//jV8wCDINEAD1gj/+mkMAAAgAcA==")
   .then(r => r.blob()).then(b => createImageBitmap(b)).then(() => true, () => false);
 let DOOR = { x0: .449, x1: .488, y0: .556, y1: .813 };     // the front door in the last frame of the "door" shot (each pack brings its own)
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -107,8 +107,8 @@ function createFrames(onProgress) {
   let head = null, failed = false, onHead = null, onFrame = null, focus = 0;
   const raw = [], cache = new Map(), pending = new Set(); let MAX = 56; // decoded frames kept in memory
   const ready = (async () => {
-    if (!PHONE && !(await AVIF_OK)) PACK = "m"; // very old browsers without AVIF: the universal WebP pack
-    MAX = PACK === "fhd" ? 30 : 56; // (a Full HD frame is ~8 MB once decoded)
+    if (!(await AVIF_OK)) throw new Error("no-avif");
+    MAX = PACK === "fhd" ? 30 : 44; // (a Full HD frame is ~8 MB once decoded)
     for (let part = 1; !head || part <= head.parts; part++) {
       const res = await fetch(SRC(part)); if (!res.ok) throw new Error("tour " + res.status);
       const reader = res.body.getReader(), dec = new TextDecoder(); let tail = "";
@@ -146,7 +146,7 @@ export function initVillaTour({ onAsk } = {}) {
   let root = null, api = null;
   function build() {
     const L = tx();
-    root = document.createElement("div"); root.className = "vt"; root.hidden = true; root.setAttribute("data-no-i18n", "");
+    root = document.createElement("div"); root.className = "vt" + (PHONE ? " vt--phone" : ""); root.hidden = true; root.setAttribute("data-no-i18n", "");
     root.setAttribute("role", "dialog"); root.setAttribute("aria-modal", "true"); root.setAttribute("aria-label", L.ui.name);
     root.innerHTML = `
       <div class="vt__scroll" tabindex="0">
@@ -199,7 +199,7 @@ export function initVillaTour({ onAsk } = {}) {
     // ---- drawing ----
     let W = 0, H = 0, dpr = 1, lastGood = null;
     function size() {
-      dpr = Math.min(2, devicePixelRatio || 1); W = stage.clientWidth; H = stage.clientHeight;
+      dpr = Math.min(PHONE ? 3 : 2, devicePixelRatio || 1); W = cv.clientWidth; H = cv.clientHeight;
       const k = Math.min(1, 2560 / (W * dpr)); cv.width = Math.round(W * dpr * k); cv.height = Math.round(H * dpr * k);
       ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high"; kick();
     }
@@ -223,8 +223,11 @@ export function initVillaTour({ onAsk } = {}) {
       const f = clamp(local / s.len, 0, 1) * (s.n - 1), i0 = Math.floor(f), frac = f - i0;
       // a slow push-in over each shot adds life; two neighbouring frames are blended for fluid motion
       const r = fit(1 + .03 * clamp(local / s.len)); // starts at 1:1 (no resampling blur), then a very slow push-in
+      // one crisp frame at a time; the hand-over to the next one is a short dissolve around the midpoint, so
+      // motion never shows as a double image and never as a hard step
+      const mix = smooth(clamp((frac - .3) / .4));
       const ok = drawFrame(s.first + i0, alpha, r);
-      if (ok && frac > .02 && i0 + 1 < s.n && frames.get(s.first + i0 + 1)) drawFrame(s.first + i0 + 1, alpha * frac, r);
+      if (ok && mix > .01 && i0 + 1 < s.n && frames.get(s.first + i0 + 1)) drawFrame(s.first + i0 + 1, alpha * mix, r);
       return ok;
     }
     function drawDoor(s, k) {
@@ -315,7 +318,7 @@ export function initVillaTour({ onAsk } = {}) {
     }
     const kick = () => { if (!raf && root && !root.hidden) raf = requestAnimationFrame(frame); };
     scroller.addEventListener("scroll", () => { lastScroll = performance.now(); kick(); }, { passive: true });
-    new ResizeObserver(size).observe(stage);
+    new ResizeObserver(size).observe(cv);
 
     function close() { root.hidden = true; document.body.style.overflow = ""; document.documentElement.classList.remove("is-covered"); document.dispatchEvent(new CustomEvent("coverchange", { detail: false })); }
     root.addEventListener("click", e => {

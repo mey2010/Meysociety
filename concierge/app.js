@@ -74,6 +74,10 @@ const SM = (() => {
     o ? playOpen() : playClose(); animateIcon(o); animateColor(o); animateText(o);
   }
   btn.addEventListener("click", () => set(!open));
+  // swipe right anywhere on the open menu to close it (no need to reach for the button)
+  { let sw = null;
+    root.addEventListener("touchstart", e => { sw = open && e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY, t: performance.now() } : null; }, { passive: true });
+    root.addEventListener("touchend", e => { if (!sw || !open) return; const t = e.changedTouches[0], dx = t.clientX - sw.x, dy = t.clientY - sw.y; sw = null; if (dx > 70 && Math.abs(dy) < Math.abs(dx) * .6) set(false); }, { passive: true }); }
   // over light sections the closed button and wordmark switch to midnight
   let onLight = false;
   function checkGround() {
@@ -119,7 +123,7 @@ let active = null;
 const mapEl = document.getElementById("map"), pop = document.getElementById("pop"), pickList = document.getElementById("pickList");
 const counts = { club: 0, beachclub: 0, beach: 0 }; VENUES.forEach(v => counts[v.type]++);
 document.querySelectorAll("[data-count]").forEach(b => b.textContent = counts[b.dataset.count]);
-const wheelHint = () => { mapEl.dataset.wheelHint = t(/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘ + rueda para acercar" : "Ctrl + rueda para acercar"); mapEl.dataset.touchHint = t("Usa dos dedos para mover el mapa"); };
+const wheelHint = () => { mapEl.dataset.wheelHint = t(/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘ + rueda para acercar" : "Ctrl + rueda para acercar"); mapEl.dataset.touchHint = t("Usa dos dedos para mover el mapa"); mapEl.dataset.more = t("y más"); };
 wheelHint(); document.addEventListener("langchange", wheelHint);
 // The 3D island loads in the background, only once the visitor heads towards it (or the page is idle),
 // so the rest of the page is ready at once. Calls made before it exists are queued.

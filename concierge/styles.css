@@ -1547,3 +1547,48 @@ main > .hero:has(+ :is(.sec--mist, .sec--night, .sec--light)) { padding-bottom: 
     @keyframes flap-in { from { transform: translateY(90px); border-radius: calc(var(--flap) * 2.2) calc(var(--flap) * 2.2) 0 0; } to { transform: none; border-radius: var(--flap) var(--flap) 0 0; } }
   }
 }
+
+/* Villa tour on phones: the film sits in a tall 4:5 window at the top (2x less enlargement than filling the whole
+   screen, so it stays sharp) and the copy lives on its own panel underneath */
+.vt--phone .vt__cv { top: calc(64px + env(safe-area-inset-top, 0px)); bottom: auto; height: min(125vw, calc(100dvh - 330px)); }
+.vt--phone .vt__shade { top: calc(64px + env(safe-area-inset-top, 0px)); bottom: auto; height: min(125vw, calc(100dvh - 330px));
+  background: linear-gradient(180deg, rgb(7 5 30 / .35), transparent 16%, transparent 80%, #07051e); }
+.vt--phone .vt__bars { display: none; }
+.vt--phone .vt__cap { top: calc(64px + env(safe-area-inset-top, 0px) + min(125vw, calc(100dvh - 330px)) + 6px); bottom: auto; left: 22px; right: 22px; }
+.vt--phone .vt__cap h2 { font-size: clamp(24px, 7vw, 32px); margin-bottom: 10px; text-shadow: none; }
+.vt--phone .vt__n { margin-bottom: 10px; }
+.vt--phone .vt__p { font-size: 14.5px; line-height: 1.5; text-shadow: none; }
+.vt--phone .vt__cap ul { margin-top: 12px; }
+
+/* ---------------- home map markers: clean location dots with a name, like the client-area route ---------------- */
+.map3d__pin { width: 44px; height: 44px; margin: -22px 0 0 -22px; }
+.map3d__pin::after { display: none; }
+.map3d__mark { left: 50%; top: 50%; bottom: auto; width: 16px; height: 16px; margin: -8px 0 0 -8px; rotate: none; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 0 2.5px var(--pin, #ab50db), 0 0 0 4.5px rgb(13 10 56 / .85), 0 6px 14px -3px rgb(0 0 0 / .6); transition: scale 200ms var(--ease), box-shadow 200ms; }
+.map3d__mark::after { inset: 4.5px; background: var(--pin, #ab50db); }
+.map3d__pin:hover .map3d__mark, .map3d__pin.is-active .map3d__mark { scale: 1.25; }
+.map3d__pin.is-active .map3d__mark { box-shadow: 0 0 0 2.5px var(--pin, #ab50db), 0 0 0 4.5px #fff, 0 0 0 9px rgb(200 86 230 / .4), 0 8px 18px -4px rgb(0 0 0 / .6); }
+.map3d__label { left: 34px; bottom: auto; top: 50%; transform: translateY(-50%); padding: 0; border-radius: 0; background: none; box-shadow: none;
+  color: #fff; font: 600 12.5px/1.2 var(--sans); text-shadow: 0 1px 3px #0d0a38, 0 0 8px #0d0a38, 0 0 2px #0d0a38; }
+.map3d__cluster { display: flex; align-items: center; gap: 7px; min-width: 0; height: 44px; margin: -22px 0 0 -22px; padding: 0 0 0 14px; border-radius: 0;
+  background: none !important; box-shadow: none; color: #fff; font: 600 12.5px/1.2 var(--sans); text-shadow: 0 1px 3px #0d0a38, 0 0 8px #0d0a38, 0 0 2px #0d0a38; }
+.map3d__dot { position: relative; flex: none; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2.5px #ab50db, 0 0 0 4.5px rgb(13 10 56 / .85), 0 6px 14px -3px rgb(0 0 0 / .6); }
+.map3d__dot::before { content: ""; position: absolute; inset: -9px; border-radius: 50%; box-shadow: 0 0 0 1.5px rgb(255 255 255 / .75); }  /* a second ring: several places here */
+.map3d__dot::after { content: ""; position: absolute; inset: 4.5px; border-radius: 50%; background: #ab50db; }
+.map3d__cluster[data-kind="beachclub"] .map3d__dot { box-shadow: 0 0 0 2.5px #2fa3d2, 0 0 0 4.5px rgb(13 10 56 / .85), 0 6px 14px -3px rgb(0 0 0 / .6); } .map3d__cluster[data-kind="beachclub"] .map3d__dot::after { background: #2fa3d2; }
+.map3d__cluster[data-kind="beach"] .map3d__dot { box-shadow: 0 0 0 2.5px #f2b632, 0 0 0 4.5px rgb(13 10 56 / .85), 0 6px 14px -3px rgb(0 0 0 / .6); } .map3d__cluster[data-kind="beach"] .map3d__dot::after { background: #f2b632; }
+.map3d__clabel { white-space: nowrap; padding-left: 6px; } .map3d__clabel i { font-style: normal; font-weight: 500; opacity: .8; }
+.map3d__cluster:hover .map3d__dot { scale: 1.2; } .map3d__cluster:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 12px; }
+
+/* Villa tour on larger screens: the film plays in a framed window sized so a Full HD frame is never enlarged much
+   (a smaller, denser picture reads far sharper than a stretched full-bleed one) */
+.vt:not(.vt--phone) .vt__cv, .vt:not(.vt--phone) .vt__shade { --vw: min(92vw, calc((100dvh - 150px) * 16 / 9), 1500px);
+  inset: auto; left: calc(50% - var(--vw) / 2); top: calc(50% - var(--vw) * 9 / 32 + 14px); width: var(--vw); height: calc(var(--vw) * 9 / 16); border-radius: 22px; }
+.vt:not(.vt--phone) .vt__cv { box-shadow: 0 40px 90px -30px #000, 0 0 0 1px rgb(255 255 255 / .1); }
+.vt:not(.vt--phone) .vt__shade { background: linear-gradient(180deg, rgb(7 5 30 / .25), transparent 20%, transparent 45%, rgb(7 5 30 / .78)); }
+.vt:not(.vt--phone) .vt__bars { display: none; }
+.vt:not(.vt--phone) .vt__cap { left: calc(50% - min(92vw, calc((100dvh - 150px) * 16 / 9), 1500px) / 2 + clamp(22px, 3vw, 48px)); right: auto;
+  bottom: calc(50% - min(92vw, calc((100dvh - 150px) * 16 / 9), 1500px) * 9 / 32 - 14px + clamp(22px, 4vh, 44px)); max-width: min(560px, 60vw); }
+.vt:not(.vt--phone) .vt__cap h2 { font-size: clamp(28px, 3.6vw, 52px); }
+.map3d__cluster.no-label .map3d__clabel { display: none; }
+.map3d__dot::before { inset: -7px; box-shadow: 0 0 0 1.5px rgb(255 255 255 / .6); }
