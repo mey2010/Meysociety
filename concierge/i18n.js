@@ -3,6 +3,11 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Las mejores calas de Ibiza no tienen carretera. Nosotros tenemos el barco, el patrón y la ruta que solo conocen los de aquí.": ["Ibiza's best coves have no road. We have the boat, the skipper and the route only locals know.", "Le calette più belle di Ibiza non hanno strada. Noi abbiamo la barca, lo skipper e la rotta che conoscono solo quelli del posto.", "Les plus belles criques d'Ibiza n'ont pas de route. Nous avons le bateau, le skipper et l'itinéraire que seuls les gens d'ici connaissent.", "Ibizas schönste Buchten haben keine Straße. Wir haben das Boot, den Skipper und die Route, die nur Einheimische kennen."],
+  "Quiero mi día en el mar": ["I want my day at sea", "Voglio la mia giornata in mare", "Je veux ma journée en mer", "Ich will meinen Tag auf dem Meer"],
+  "Escríbeme": ["Message me", "Scrivimi", "Écrivez-moi", "Schreib mir"],
+  "Escríbeme por WhatsApp": ["Message me on WhatsApp", "Scrivimi su WhatsApp", "Écrivez-moi sur WhatsApp", "Schreib mir auf WhatsApp"],
+  "Toda la flota": ["The whole fleet", "Tutta la flotta", "Toute la flotte", "Die ganze Flotte"],
   "Ver todos los servicios": ["See all services", "Vedi tutti i servizi", "Voir tous les services", "Alle Services ansehen"],
   "Qué es un concierge": ["What a concierge is", "Cos'è un concierge", "Qu'est-ce qu'un concierge", "Was ist ein Concierge"],
   "Un concierge es la persona que conoce la isla por dentro y la pone a tu servicio.": ["A concierge is the person who knows the island from the inside and puts it at your service.", "Un concierge è la persona che conosce l'isola dall'interno e la mette al tuo servizio.", "Un concierge, c'est la personne qui connaît l'île de l'intérieur et la met à votre service.", "Ein Concierge ist der Mensch, der die Insel von innen kennt und sie Ihnen zur Verfügung stellt."],

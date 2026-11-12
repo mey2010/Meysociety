@@ -1656,11 +1656,34 @@ html:not([data-theme="dark"]) .vt__end .btn--glass { color: var(--ink); backgrou
 .logo-note__k { margin: 0 0 10px; font: 600 11.5px/1 var(--sans); letter-spacing: .24em; text-transform: uppercase; color: #1e24bb; display: flex; align-items: center; gap: 10px; }
 .logo-note__k::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, #ab50db, transparent); }
 .logo-note__q { margin: 0; font: 500 16.5px/1.5 var(--sans); letter-spacing: -.005em; text-wrap: pretty; }
-.logo-note__q em { font-style: normal; color: #4d4f78; }
+.logo-note__q em { font-style: normal; color: #1e24bb; }   /* same blue as the "what is a concierge" line */
 .logo-note__s { margin: 12px 0 0; font-size: 12.5px; letter-spacing: .08em; color: #4d4f78; text-align: right; }
 html[data-theme="dark"] .logo-note { color: #eef0fb; background: linear-gradient(160deg, rgb(30 26 90 / .92), rgb(13 10 56 / .9)); box-shadow: inset 0 1px 0 rgb(255 255 255 / .14), 0 0 0 1px rgb(255 255 255 / .1), 0 30px 60px -24px #000, 0 0 40px -10px rgb(171 80 219 / .45); }
 html[data-theme="dark"] .logo-note::before { background: rgb(30 26 90 / .92); }
-html[data-theme="dark"] .logo-note__k { color: #a9a4ff; } html[data-theme="dark"] .logo-note__q em, html[data-theme="dark"] .logo-note__s { color: #b4b8dc; }
+html[data-theme="dark"] .logo-note__k { color: #a9a4ff; } html[data-theme="dark"] .logo-note__q em { color: #a9a4ff; } html[data-theme="dark"] .logo-note__s { color: #b4b8dc; }
 @media (prefers-reduced-motion: reduce) { .logo-note { transition: opacity 200ms; transform: none; filter: none; } }
 
 .fleet__nav.is-single .fleet__arrow { visibility: hidden; }
+
+/* villa tour: no "preparing the tour" line (only a real problem is ever shown there) */
+.vt__load:not(.is-err) { display: none; }
+/* villa tour copy under the film: a deeper black for the small lines */
+html:not([data-theme="dark"]) .vt--phone .vt__p { color: #1f1d3a; }
+
+/* ---------------- jet ski: it rises out of its card in 3D (only this card lets content past its edge) ---------------- */
+.stack__card:has(.stack__media--product) { overflow: visible; contain: layout; }
+.stack__media--product { overflow: visible; border-radius: inherit; }
+.stack__media--product img { position: relative; z-index: 3; width: 104%; max-width: none; max-height: 92%; margin-top: -9%;
+  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translate3d(0, 0, 60px) scale(1.04);
+  /* it rises past the card's top edge in 3D; the source photo crops the stern, so that edge fades out */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%); mask-image: linear-gradient(90deg, transparent, #000 9%);
+  filter: drop-shadow(0 26px 18px rgb(0 0 0 / .5)) drop-shadow(0 0 18px rgb(171 80 219 / .3)); }
+.stack__media--product img { translate: 0 -16%; }   /* the top of the jet ski rises past the card's upper edge */
+@media (max-width: 900px) { .stack__media--product img { width: 100%; max-width: none; max-height: 54%; margin-top: -15%; translate: 0 -14%; } }
+
+/* ---------------- service cards at rest: 3D, following the phone's tilt (or the mouse) ---------------- */
+.stack__card .stack__media > img:not(.stack__media-bg), .stack__card .stack__body { transition: transform 420ms cubic-bezier(.2, .8, .2, 1); }
+.stack__card.is-tilt .stack__media:not(.stack__media--product) > img:not(.stack__media-bg) { transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(40px); }
+.stack__card.is-tilt .stack__body { transform: perspective(1000px) rotateX(calc(var(--rx) * .6)) rotateY(calc(var(--ry) * .6)) translateZ(18px); }
+@media (prefers-reduced-motion: reduce) { .stack__card.is-tilt .stack__media > img, .stack__card.is-tilt .stack__body { transform: none !important; } }
+.stack__media--product::before, .stack__media--product::after { border-radius: inherit; }

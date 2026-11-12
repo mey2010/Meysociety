@@ -254,9 +254,9 @@ shatterType(document.getElementById("signal"));
 elasticLettering(document.getElementById("introLine"));
 logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.querySelector(".sm-logo-img"), headerLink: document.querySelector(".sm-logo"), src: "assets/logo-neon-512.webp", menu: document.querySelector(".staggered-menu-wrapper"), letters: document.getElementById("signal") });
 
-/* ---------------- press and hold the big logo: "what is a concierge" ----------------
-   A glass card grows out of the logo while it is big on the first screen. It opens after a short hold
-   (finger or mouse), stays until a tap elsewhere, Esc or a scroll, and never steals the docked logo's click. */
+/* ---------------- tap the big logo: "what is a concierge" ----------------
+   A glass card grows out of the logo while it is big on the first screen. It opens on a tap, stays until
+   a tap elsewhere, Esc or a scroll, and never steals the docked logo's click. */
 {
   const fly = document.querySelector(".flylogo");
   if (fly) {
@@ -282,13 +282,11 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
       navigator.vibrate?.(8); track("logo_concierge_note");
     }
     function hide() { if (!open) return; open = false; card.classList.remove("is-on"); setTimeout(() => { if (!open) card.hidden = true; }, 380); }
-    fly.addEventListener("pointerdown", e => { if (!big() || e.button > 0) return; clearTimeout(timer); timer = setTimeout(show, 420); });
-    ["pointerup", "pointerleave", "pointercancel"].forEach(ev => fly.addEventListener(ev, () => clearTimeout(timer)));
-    fly.addEventListener("contextmenu", e => { if (big()) e.preventDefault(); });   // no system menu on a long press
+    // a tap on the big logo opens it (a second tap closes it); the docked logo keeps its normal link
+    fly.addEventListener("click", () => { if (!big()) return; open ? hide() : show(); });
     document.addEventListener("pointerdown", e => { if (open && !card.contains(e.target) && !fly.contains(e.target)) hide(); });
     document.addEventListener("keydown", e => { if (e.key === "Escape") hide(); });
     addEventListener("scroll", () => { if (open && Math.abs(scrollY - startY) > 40) hide(); }, { passive: true });
-    fly.addEventListener("click", () => { if (open && performance.now() - openedAt > 600) hide(); });
   }
 }
 
@@ -350,6 +348,11 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
 {
   const cards = [...document.querySelectorAll(".stack__card")];
   cards.forEach((c, i) => c.style.setProperty("--i", i));
+  // every service photo is fetched and decoded in the background as soon as the first screen has loaded, so
+  // a card is already painted while it slides in (not when it stops)
+  { const warm = () => cards.forEach(c => c.querySelectorAll("img").forEach(im => { im.loading = "eager"; im.decode?.().catch(() => {}); }));
+    const later = () => (window.requestIdleCallback || (f => setTimeout(f, 300)))(warm, { timeout: 2500 });
+    document.readyState === "complete" ? later() : addEventListener("load", later, { once: true }); }
   document.querySelectorAll(".stack__card [data-svc]").forEach(b => b.addEventListener("click", () => select(b.dataset.svc, true)));
   if (!REDUCED) {
     let ticking = false, stuck = [], tops = [];
@@ -360,7 +363,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     // where each card sticks and where it sits in the page: measured on resize, not on every scroll frame
     /* reading pause: once a card has settled, the next one waits for an extra stretch of scroll (the "hold"),
        and the page snaps to the middle of that stretch, so every service stops on screen going down or up */
-    const stack = cards[0].parentElement; let holdW = 0;
+    const stack = cards[0].parentElement; let holdW = 0, snapY = [];
     const snaps = cards.map(() => { const n = document.createElement("i"); n.className = "stack__snap"; n.setAttribute("aria-hidden", "true"); stack.appendChild(n); return n; });
     function measure() {
       if (innerWidth !== holdW) { holdW = innerWidth; stack.style.setProperty("--hold", Math.round(document.documentElement.clientHeight * (innerWidth <= 900 ? .22 : .3)) + "px"); }
@@ -372,6 +375,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
       cards.forEach(c => c.style.position = "");
       let sTop = 0; for (let el = stack; el; el = el.offsetParent) sTop += el.offsetTop;
       snaps.forEach((n, i) => { n.style.top = (tops[i] - stuck[i] + hold / 2 - sTop).toFixed(0) + "px"; });
+      snapY = snaps.map((n, i) => tops[i] - stuck[i] + hold / 2);   // the same stops in page coordinates (no layout reads on scroll)
       update();
     }
     function update() {
@@ -395,6 +399,30 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
     onRealResize(measure); addEventListener("load", measure); measure();
     new ResizeObserver(() => measure()).observe(cards[0].parentElement);
+    /* 3D at rest: the card that is paused tilts with the phone (gyroscope) or the mouse; the photo sits in
+       front of the panel, so they part a little like layers. Movement is eased in a single rAF loop. */
+    { let restI = -1, tx = 0, ty = 0, cx = 0, cy = 0, b0 = null, g0 = null, raf = 0, asked = false;
+      const loop = () => { raf = 0; cx += (tx - cx) * .12; cy += (ty - cy) * .12; const c = cards[restI];
+        if (c) { c.style.setProperty("--rx", cx.toFixed(2) + "deg"); c.style.setProperty("--ry", cy.toFixed(2) + "deg"); }
+        if (Math.abs(tx - cx) + Math.abs(ty - cy) > .02) raf = requestAnimationFrame(loop); };
+      const aim = (rx, ry) => { tx = Math.max(-9, Math.min(9, rx)); ty = Math.max(-11, Math.min(11, ry)); if (!raf) raf = requestAnimationFrame(loop); };
+      const setRest = i => { if (i === restI) return; cards[restI]?.classList.remove("is-tilt"); restI = i; b0 = g0 = null; tx = ty = cx = cy = 0; if (i >= 0) cards[i].classList.add("is-tilt"); };
+      addEventListener("scroll", () => {   // the paused card: its own hold zone contains the scroll position
+        const h = (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2;
+        setRest(snapY.findIndex(c => Math.abs(scrollY - c) <= h * .9));
+      }, { passive: true });
+      addEventListener("deviceorientation", e => {
+        if (restI < 0 || e.beta == null) return;
+        if (b0 === null) { b0 = e.beta; g0 = e.gamma; }
+        b0 += (e.beta - b0) * .01; g0 += (e.gamma - g0) * .01;   // the resting angle is whatever the hand holds: it recentres slowly
+        aim(-(e.beta - b0) * .45, (e.gamma - g0) * .55);
+      });
+      stack.addEventListener("pointermove", e => { if (e.pointerType !== "mouse" || restI < 0) return; const r = cards[restI].getBoundingClientRect();
+        aim(-((e.clientY - r.top) / r.height - .5) * 12, ((e.clientX - r.left) / r.width - .5) * 16); });
+      stack.addEventListener("pointerleave", () => aim(0, 0));
+      // iPhone asks once for motion access; it can only be asked from a tap, so the first tap on a card does it
+      stack.addEventListener("touchend", () => { if (asked) return; asked = true; window.DeviceOrientationEvent?.requestPermission?.().catch(() => {}); }, { passive: true });
+    }
     readingStops(window, { centers: () => snaps.map(n => n.getBoundingClientRect().top + scrollY), half: () => (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2, pager: true,
       active: () => !document.documentElement.classList.contains("is-covered") });
   }
@@ -458,9 +486,13 @@ function BranchedMenu(nav, { items, defaultOpen = 0, defaultActive = "", onSelec
 // The services tree inside the main menu.
 const SVC_TREE = [
   { label: "Ver todos los servicios", value: "todos", icon: "star" },
+  // boats: the same groups as the fleet, each one opens the fleet showing only its boats
   { label: "Barcos", svc: "yates", children: [
-    { value: "barcos-sin-licencia", label: "Sin licencia", icon: "badge" }, { value: "barcos-con-patron", label: "Con patrón", icon: "helm" },
-    { value: "barcos-lancha", label: "Lancha", icon: "boat" }, { value: "barcos-yate", label: "Yate", icon: "ship" } ] },
+    { value: "barcos-all", label: "Toda la flota", icon: "ship" },
+    { value: "barcos-sin-licencia", label: "Sin licencia", icon: "badge" }, { value: "barcos-lancha", label: "Lanchas", icon: "boat" },
+    { value: "barcos-open", label: "Open", icon: "boat" }, { value: "barcos-yate", label: "Yates", icon: "ship" },
+    { value: "barcos-gran-yate", label: "Grandes yates", icon: "helm" }, { value: "barcos-superyate", label: "Superyate", icon: "crown" },
+    { value: "barcos-catamaran", label: "Catamarán", icon: "helm" } ] },
   { label: "Motos de agua", svc: "motos", children: [
     { value: "motos-sin-licencia", label: "Sin licencia", icon: "badge" }, { value: "motos-seadoo", label: "Sea-Doo", icon: "jet" }, { value: "motos-yamaha", label: "Yamaha", icon: "jet" } ] },
   { label: "Villas", svc: "villas", children: [
@@ -479,9 +511,10 @@ const SVC_TREE = [
 const svcMenu = BranchedMenu(document.getElementById("bm"), {
   items: SVC_TREE, defaultOpen: -1, defaultActive: "__none__",
   color: "#0d0a38", accentColor: "#ab50db", lineColor: "#c9cce8", width: 340, rowHeight: 38, fontSize: 15, indent: 42,
-  onToggle: (i) => { if (SVC_TREE[i]?.label === "Barcos") { SM.set(false); setTimeout(() => openFleet("all"), 260); } }, // Barcos → the fleet ribbon
+
   onSelect: (value, item) => {
-    if (value.startsWith("barcos-")) { SM.set(false); setTimeout(() => openFleet(value.slice(7)), 260); return; }
+    if (value.startsWith("barcos-")) { SM.set(false); setTimeout(() => openFleet(value.slice(7)), 260); return; }   // ("all" or one fleet type)
+    if (value === "villa-aura") { SM.set(false); setTimeout(() => document.querySelector("[data-villa-tour]")?.click(), 300); return; }   // straight into the tour
     if (value === "todos") { SM.set(false); setTimeout(() => scrollToEl(document.getElementById("servicios")), 250); return; }   // the services section itself
     const sec = SVC_TREE.find(s => s.value === value || s.children?.some(k => k.value === value));
     select(sec.svc, true);
@@ -541,7 +574,7 @@ const CONFIG = {
 };
 // floating WhatsApp button: straight to a chat when the number is set, otherwise to the contact form
 { const fab = document.getElementById("fabContact"); if (CONFIG.whatsapp) { fab.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent("Hola Mey Society, me gustaría organizar mi estancia en Ibiza.")}`; fab.target = "_blank"; fab.rel = "noopener"; }
-  else fab.setAttribute("aria-label", "Escríbenos"), fab.addEventListener("click", e => { e.preventDefault(); scrollToEl(document.getElementById("contacto")); });
+  else fab.setAttribute("aria-label", "Escríbeme"), fab.addEventListener("click", e => { e.preventDefault(); scrollToEl(document.getElementById("contacto")); });
   const sync = () => fab.classList.toggle("is-on", scrollY > innerHeight * .5 && !document.querySelector(".staggered-menu-wrapper[data-open]"));
   addEventListener("scroll", sync, { passive: true }); sync(); }
 /* resize that ignores the phone's browser bars sliding in and out: on iPhone they reappear whenever you scroll
