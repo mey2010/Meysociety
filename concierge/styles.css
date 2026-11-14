@@ -1724,3 +1724,51 @@ html:not([data-theme="dark"]) .vt--phone .vt__p { color: #1f1d3a; }
   .sm-band { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
   .contact__form { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 }
+
+/* =====================================================================
+   DEPTH — the Claude app's floating controls: a hairline edge, a soft lit top and a wide, very soft shadow
+   that makes each button float; no dark bevels. Hover floats it a little higher, press shrinks it (iOS).
+   ===================================================================== */
+:root {
+  --hair-light: 0 0 0 .5px rgb(13 10 56 / .1);
+  --hair-dark: 0 0 0 .5px rgb(255 255 255 / .22);
+  --float-light: 0 1px 2px rgb(13 10 56 / .06), 0 4px 12px -2px rgb(13 10 56 / .09), 0 14px 34px -8px rgb(13 10 56 / .14);
+  --float-light-up: 0 2px 4px rgb(13 10 56 / .07), 0 8px 18px -4px rgb(13 10 56 / .11), 0 22px 46px -10px rgb(13 10 56 / .18);
+  --float-dark: 0 1px 2px rgb(0 0 0 / .22), 0 4px 12px -2px rgb(0 0 0 / .26), 0 14px 34px -8px rgb(0 0 0 / .36);
+  --float-dark-up: 0 2px 4px rgb(0 0 0 / .24), 0 8px 18px -4px rgb(0 0 0 / .3), 0 22px 46px -10px rgb(0 0 0 / .42);
+  --float-brand: 0 1px 2px rgb(13 10 56 / .14), 0 4px 12px -2px rgb(30 36 187 / .22), 0 14px 34px -8px rgb(171 80 219 / .34);
+  --float-brand-up: 0 2px 4px rgb(13 10 56 / .16), 0 8px 18px -4px rgb(30 36 187 / .26), 0 22px 46px -10px rgb(171 80 219 / .42);
+  --press: 0 1px 2px rgb(13 10 56 / .12), 0 2px 6px -2px rgb(13 10 56 / .12);
+}
+.btn, .chip, .filter, .fleet__chips button, .map__zoom button, .map__areas button, .fleet__arrow, .lightbox__close, .vt__x, .sm-toggle, .lang__btn, .bell__btn {
+  transition: transform 260ms cubic-bezier(.2, .8, .2, 1), box-shadow 260ms cubic-bezier(.2, .8, .2, 1), background-color 260ms, filter 260ms; }
+/* main actions (tinted glass) */
+.btn--primary, .btn--ink, .btn--liquid { box-shadow: inset 0 1px 0 rgb(255 255 255 / .55), var(--hair-dark), var(--float-brand); }
+.btn--primary:hover, .btn--ink:hover, .btn--liquid:hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / .65), var(--hair-dark), var(--float-brand-up); }
+/* white glass on light backgrounds: exactly the Claude-app pill */
+.btn--ghost { background: rgb(255 255 255 / .9); box-shadow: inset 0 1px 0 #fff, var(--hair-light), var(--float-light); }
+.btn--ghost:hover { box-shadow: inset 0 1px 0 #fff, var(--hair-light), var(--float-light-up); }
+/* clear glass on dark backgrounds */
+.btn--glass, .btn--glass.btn--onDark { box-shadow: inset 0 1px 0 rgb(255 255 255 / .35), var(--hair-dark), var(--float-dark); }
+.btn--glass:hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / .45), var(--hair-dark), var(--float-dark-up); }
+/* press: a slight shrink with the shadow tucking in, like iOS */
+.btn:active, .chip:active, .filter:active, .fleet__chips button:active, .map__zoom button:active, .map__areas button:active,
+.fleet__arrow:active, .lightbox__close:active, .vt__x:active, .sm-toggle:active, .lang__btn:active, .bell__btn:active { transform: scale(.96); }
+.btn--primary:active, .btn--ink:active, .btn--liquid:active { box-shadow: inset 0 1px 0 rgb(255 255 255 / .4), var(--hair-dark), var(--press); }
+.btn--ghost:active { box-shadow: inset 0 1px 0 #fff, var(--hair-light), var(--press); }
+.btn--glass:active { box-shadow: inset 0 1px 0 rgb(255 255 255 / .3), var(--hair-dark), var(--press); }
+
+/* pills and round controls on dark surfaces */
+.chip, .fleet__chips button, .filter, .map__zoom button, .map__areas button, .fleet__arrow, .lightbox__close {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), var(--hair-dark), var(--float-dark); }
+.chip:hover, .fleet__chips button:hover, .filter:hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / .3), var(--hair-dark), var(--float-dark-up); }
+.chip[aria-pressed="true"], .fleet__chips button[aria-pressed="true"] { box-shadow: inset 0 1px 0 rgb(255 255 255 / .4), var(--hair-dark), var(--float-brand); }
+/* on light surfaces: white pills, navy hairline and shadow */
+.sec--light .chip, .sec--mist .chip, .sec--light .filter, .sec--mist .filter, .map3d .map__zoom button, html:not([data-theme="dark"]) .vt__x {
+  box-shadow: inset 0 1px 0 #fff, var(--hair-light), var(--float-light); }
+html:not([data-theme="dark"]) .vt__x { box-shadow: inset 0 1px 0 rgb(255 255 255 / .2), var(--hair-light), var(--float-light-up); }
+/* the round header controls */
+.sm-toggle, .lang__btn, .bell__btn { box-shadow: inset 0 1px 0 rgb(255 255 255 / .5), var(--hair-light), var(--float-light); }
+.sm-on-light:not([data-open]) .sm-toggle, .sm-on-light .lang__btn, [data-open] .lang__btn { box-shadow: inset 0 1px 0 #fff, var(--hair-light), var(--float-light); }
+.staggered-menu-wrapper[data-open] .sm-toggle { box-shadow: var(--hair-light), var(--press); }
+@media (prefers-reduced-motion: reduce) { .btn:active, .chip:active, .filter:active { transform: none; } }
