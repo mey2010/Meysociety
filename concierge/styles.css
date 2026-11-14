@@ -1786,3 +1786,7 @@ p:is(.reviews__note, .fleet__note, .lightbox__cap) { text-align-last: center; }
 
 /* service cards keep centred copy (not justified) */
 .stack__body p, .stack__body li { text-align: center; text-align-last: auto; hyphens: manual; -webkit-hyphens: manual; word-spacing: normal; }
+/* card first lines stay on one line; the services intro reads ragged-right, not justified */
+.stack__body .nw { white-space: nowrap; }
+#servicios .sec__head .lede { text-align: start; hyphens: manual; -webkit-hyphens: manual; word-spacing: normal; }
+@media (max-width: 380px) { .stack__body > p:not(.stack__place) { font-size: 13px; } }
