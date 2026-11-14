@@ -1772,3 +1772,7 @@ html:not([data-theme="dark"]) .vt__x { box-shadow: inset 0 1px 0 rgb(255 255 255
 .sm-on-light:not([data-open]) .sm-toggle, .sm-on-light .lang__btn, [data-open] .lang__btn { box-shadow: inset 0 1px 0 #fff, var(--hair-light), var(--float-light); }
 .staggered-menu-wrapper[data-open] .sm-toggle { box-shadow: var(--hair-light), var(--press); }
 @media (prefers-reduced-motion: reduce) { .btn:active, .chip:active, .filter:active { transform: none; } }
+
+/* map: the Clubs / Beach clubs / Playas filters sit centred */
+.hero__copy > .filters { justify-self: stretch; justify-content: center; }
+@media (max-width: 600px) { .hero .filter { padding: 0 10px; } .hero .filters { gap: 5px; } }
