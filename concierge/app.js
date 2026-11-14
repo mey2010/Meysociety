@@ -377,8 +377,13 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     (function loop(now) { if (!document.hidden) { if (fx.scrolling(now)) fx.rest(); else if (now - lastDraw > 32) { lastDraw = now; fx.draw(now); } } requestAnimationFrame(loop); })(performance.now());
   };
   // the worker must say hello before the canvas is handed over, so a blocked or broken worker never costs the background
+  /* Apple's engine (every browser on iPhone and iPad, the Claude app, Safari on the Mac) is kept on the in-page
+     canvas: a canvas handed to a worker there loses its picture while the page scrolls and shows black until the
+     worker paints again, and the worker deliberately rests during a scroll, so whole screens behind the service
+     cards came up black. The in-page canvas keeps its last picture through any scroll. */
+  const APPLE = /AppleWebKit/.test(navigator.userAgent) && !/Chrome\/|Chromium|Edg\/|Android/.test(navigator.userAgent);
   try {
-    if (!cv.transferControlToOffscreen || typeof Worker === "undefined") throw 0;
+    if (APPLE || !cv.transferControlToOffscreen || typeof Worker === "undefined") throw 0;
     const worker = new Worker("drape-worker.js"); let done = false;
     const giveUp = () => { if (done) return; done = true; worker.terminate(); fallback(); };
     const timer = setTimeout(giveUp, 2000);
