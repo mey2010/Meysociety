@@ -1427,7 +1427,7 @@ document.querySelectorAll(".stack__card").forEach(card => {
   if (!media.classList.contains("stack__media--product")) {
     // the backdrop is a tiny pre-blurred copy taken from one shared sprite (all seven in one small file): the
     // browser just scales it up, nothing to blur on every frame
-    const BG = ["aeropuerto", "coches", "dalt-vila", "hi-ibiza", "sa-trinxa", "villa-privada", "yates"];
+    const BG = ["transfers", "coches", "dalt-vila", "hi-ibiza", "sa-trinxa", "villa-privada", "yates"];
     const k = BG.indexOf(img.getAttribute("src").split("/").pop().replace(/\.(webp|jpe?g|png)$/i, ""));
     const bg = document.createElement("div"); bg.className = "stack__media-bg"; bg.setAttribute("aria-hidden", "true");
     if (k >= 0) bg.style.cssText = `background: url("data/services/bg-sprite.webp") ${(k / (BG.length - 1) * 100).toFixed(4)}% 50% / ${BG.length * 100}% 100% no-repeat`;
