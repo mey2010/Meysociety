@@ -1790,3 +1790,14 @@ p:is(.reviews__note, .fleet__note, .lightbox__cap) { text-align-last: center; }
 .stack__body .nw { white-space: nowrap; }
 #servicios .sec__head .lede { text-align: start; hyphens: manual; -webkit-hyphens: manual; word-spacing: normal; }
 @media (max-width: 380px) { .stack__body > p:not(.stack__place) { font-size: 13px; } }
+
+/* contact intro and the "Así de sencillo" steps read ragged-right (no justification gaps) */
+.contact .lede, #contacto .lede, .how__steps p { text-align: start; hyphens: manual; -webkit-hyphens: manual; word-spacing: normal; }
+/* phone: map section reads text → map → filters → "Diseña tu estancia", with air after the button */
+@media (max-width: 900px) {
+  .hero__copy { display: contents; }
+  .hero__copy > * { order: 0; position: relative; z-index: 2; }
+  .hero > .map { order: 1; }
+  .hero__copy > .filters { order: 2; justify-self: stretch; }
+  .hero__copy > .btn { order: 3; justify-self: center; margin-bottom: 36px; }
+}

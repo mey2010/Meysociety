@@ -477,41 +477,33 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
     onRealResize(measure); addEventListener("load", measure); measure();
     new ResizeObserver(() => measure()).observe(cards[0].parentElement);
-    /* 3D at rest: the paused card tilts as a whole with the phone (gyroscope) or the mouse, and inside it the
-       photo and the panel part a little like layers. Where no motion sensor is available (a page shown inside
-       another site, a laptop) it sways gently on its own, so the card still reads as an object. One rAF loop. */
-    { let restI = -1, tx = 0, ty = 0, cx = 0, cy = 0, b0 = null, g0 = null, raf = 0, asked = false, inputAt = 0, movedAt = 0;
+    /* 3D on touch: a card tilts only while a finger (or the mouse button) presses one of its corners: the pressed
+       corner sinks and the card follows the finger; lifting it, or starting to scroll, eases it back flat. */
+    { let on = -1, tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
       const put = (i, x, y) => { tilt[i].x = x; tilt[i].y = y; paintCard(i); };
-      const loop = now => {
-        raf = 0; if (restI < 0) return;
-        if (now - movedAt < 350) { tx = ty = 0; }   // while the page scrolls the card holds still
-        else if (!REDUCED && now - inputAt > 1400) { tx = Math.sin(now / 1500) * 3; ty = Math.cos(now / 1150) * 4.5; }   // no sensor, no mouse: a slow sway
-        cx += (tx - cx) * .1; cy += (ty - cy) * .1;
-        put(restI, cx * .7, cy * .7);
-        raf = requestAnimationFrame(loop);
+      const loop = () => {
+        raf = 0; if (on < 0) return;
+        cx += (tx - cx) * .18; cy += (ty - cy) * .18;
+        const done = !tx && !ty && Math.abs(cx) < .05 && Math.abs(cy) < .05;
+        if (done) { put(on, 0, 0); cards[on].classList.remove("is-tilt"); on = -1; return; }
+        put(on, cx, cy); raf = requestAnimationFrame(loop);
       };
-      const aim = (rx, ry) => { inputAt = performance.now(); tx = Math.max(-12, Math.min(12, rx)); ty = Math.max(-14, Math.min(14, ry)); if (!raf && restI >= 0) raf = requestAnimationFrame(loop); };
-      const setRest = i => {
-        if (i === restI) return;
-        if (restI >= 0) { cards[restI].classList.remove("is-tilt"); put(restI, 0, 0); }
-        restI = i; b0 = g0 = null; tx = ty = cx = cy = 0;
-        if (i >= 0) { cards[i].classList.add("is-tilt"); if (!raf) raf = requestAnimationFrame(loop); } else { cancelAnimationFrame(raf); raf = 0; }
-      };
-      addEventListener("scroll", () => { movedAt = performance.now(); }, { passive: true });
-      addEventListener("scroll", () => {   // the paused card: its own hold zone contains the scroll position
-        const h = (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2;
-        setRest(snapY.findIndex(c => Math.abs(scrollY - c) <= h * .9));
-      }, { passive: true });
-      addEventListener("deviceorientation", e => {
-        if (restI < 0 || e.beta == null) return;
-        if (b0 === null) { b0 = e.beta; g0 = e.gamma; }
-        b0 += (e.beta - b0) * .01; g0 += (e.gamma - g0) * .01;   // the resting angle is whatever the hand holds: it recentres slowly
-        aim(-(e.beta - b0) * .7, (e.gamma - g0) * .8);
+      const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
+      const at = (i, e) => { const r = cards[i].getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; };
+      const aim = (nx, ny) => { tx = (.5 - ny) * 20; ty = (nx - .5) * 24; kick(); };
+      const release = () => { tx = ty = 0; kick(); };
+      cards.forEach((c, i) => {
+        c.addEventListener("pointerdown", e => {
+          if (REDUCED || e.button > 0 || e.target.closest("a, button")) return;
+          const [nx, ny] = at(i, e);
+          if (!((nx < .3 || nx > .7) && (ny < .3 || ny > .7))) return;   // corners only
+          if (on >= 0 && on !== i) { put(on, 0, 0); cards[on].classList.remove("is-tilt"); }
+          on = i; cx = tilt[i].x; cy = tilt[i].y; c.classList.add("is-tilt"); aim(nx, ny);
+        });
+        c.addEventListener("pointermove", e => { if (on !== i || (!tx && !ty)) return; const [nx, ny] = at(i, e); aim(Math.min(1, Math.max(0, nx)), Math.min(1, Math.max(0, ny))); });
       });
-      stack.addEventListener("pointermove", e => { if (e.pointerType !== "mouse" || restI < 0) return; const r = cards[restI].getBoundingClientRect();
-        aim(-((e.clientY - r.top) / r.height - .5) * 14, ((e.clientX - r.left) / r.width - .5) * 18); });
-      // iPhone asks once for motion access, and only from a tap: the first tap anywhere on the page does it
-      addEventListener("touchend", () => { if (asked) return; asked = true; window.DeviceOrientationEvent?.requestPermission?.().catch(() => {}); }, { passive: true });
+      addEventListener("pointerup", release); addEventListener("pointercancel", release);
+      addEventListener("scroll", () => { if (on >= 0 && (tx || ty)) release(); }, { passive: true });
     }
     readingStops(window, { centers: () => snaps.map(n => n.getBoundingClientRect().top + scrollY), half: () => (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2, pager: true,
       active: () => !document.documentElement.classList.contains("is-covered") });
@@ -584,7 +576,7 @@ const SVC_TREE = [
     { value: "barcos-gran-yate", label: "Grandes yates", icon: "helm" }, { value: "barcos-superyate", label: "Superyate", icon: "crown" },
     { value: "barcos-catamaran", label: "Catamarán", icon: "helm" } ] },
   { label: "Motos de agua", svc: "motos", children: [
-    { value: "motos-sin-licencia", label: "Sin licencia", icon: "badge" }, { value: "motos-seadoo", label: "Sea-Doo", icon: "jet" }, { value: "motos-yamaha", label: "Yamaha", icon: "jet" } ] },
+    { value: "motos-sin-licencia", label: "Sin licencia", icon: "badge" }, { value: "motos-seadoo", label: "Sea-Doo", icon: "jetski" }, { value: "motos-yamaha", label: "Yamaha", icon: "jetski" } ] },
   { label: "Villas", svc: "villas", children: [
     { value: "villa-aura", label: "Villa Aura", icon: "villa" }, { value: "villa-moli", label: "Villa Molí", icon: "villa2" } ] },
   { label: "Coches y motos", svc: "coches", children: [

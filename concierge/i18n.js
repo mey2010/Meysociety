@@ -3,6 +3,9 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Tu Ibiza,": ["Your Ibiza,", "La tua Ibiza,", "Votre Ibiza,", "Dein Ibiza,"],
+  "El paraíso no se visita, se navega. Tu verano merece un barco.": ["Paradise isn't visited, it's sailed. Your summer deserves a boat.", "Il paradiso non si visita, si naviga. La tua estate merita una barca.", "Le paradis ne se visite pas, il se navigue. Votre été mérite un bateau.", "Das Paradies besucht man nicht, man befährt es. Dein Sommer verdient ein Boot."],
+  "Tours guiados o alquiler para titulados. Vive la emoción de pilotar una moto de agua.": ["Guided tours, or rental for licence holders. Feel the thrill of riding a jet ski.", "Tour guidati o noleggio per chi ha la patente. Vivi l'emozione di guidare una moto d'acqua.", "Tours guidés ou location pour les titulaires du permis. Vivez le frisson de piloter un jet-ski.", "Geführte Touren oder Verleih für Führerscheininhaber. Erlebe den Nervenkitzel, einen Jetski zu fahren."],
   "Mesas, entradas, descuentos y Guestlists": ["Tables, tickets, discounts and guest lists", "Tavoli, biglietti, sconti e guest list", "Tables, entrées, réductions et guest lists", "Tische, Tickets, Rabatte und Gästelisten"],
   "gestionadas directamente con cada club.": ["handled directly with each club.", "gestiti direttamente con ogni club.", "gérées directement avec chaque club.", "direkt mit jedem Club organisiert."],
   "Consultar clubs y VIP": ["Ask about clubs & VIP", "Chiedi dei club e VIP", "Demander les clubs et VIP", "Clubs & VIP anfragen"],
