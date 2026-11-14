@@ -627,6 +627,43 @@ document.querySelectorAll("[data-pack]").forEach(b => b.addEventListener("click"
   document.getElementById("f-notes").value = `${t("Me interesa")}: ${t("plan")} ${b.dataset.pack}.`;
   const t = document.getElementById("contacto"); scrollToEl(t);
 }));
+/* ---------------- vertical wheel picker (number of people) ----------------
+   A drum of numbers like the iPhone picker: the one in the middle band is the value. Native scrolling with
+   snap points (so it feels right under the finger), a 3D curve on the rows, wheel, keys and tap to pick.
+   The hidden input keeps the value, so the form and its WhatsApp message read it as before. */
+function wheelPicker(input) {
+  const min = +input.dataset.min || 1, max = +input.dataset.max || 40, ROW = 44;
+  const box = document.createElement("div"); box.className = "wheel"; box.tabIndex = 0;
+  box.setAttribute("role", "spinbutton"); box.setAttribute("aria-valuemin", min); box.setAttribute("aria-valuemax", max);
+  const lab = input.dataset.label || input.id + "-l"; if (document.getElementById(lab)) box.setAttribute("aria-labelledby", lab);
+  box.innerHTML = `<div class="wheel__band" aria-hidden="true" data-unit="${t("pers.")}"></div><div class="wheel__list" aria-hidden="true">${
+    Array.from({ length: max - min + 1 }, (_, i) => `<div class="wheel__item" data-v="${min + i}">${min + i}</div>`).join("")}</div>`;
+  input.after(box);
+  const list = box.querySelector(".wheel__list"), items = [...list.children];
+  let raf = 0, cur = -1, idle = 0;
+  const set = v => { v = Math.max(min, Math.min(max, v)); if (v === cur) return; cur = v; input.value = v; box.setAttribute("aria-valuenow", v);
+    box.setAttribute("aria-valuetext", `${v}`); input.dispatchEvent(new Event("change", { bubbles: true })); };
+  function paint() {
+    raf = 0; const pos = list.scrollTop / ROW;
+    set(min + Math.round(pos));
+    const first = Math.max(0, Math.floor(pos) - 3), last = Math.min(items.length - 1, Math.ceil(pos) + 3);
+    for (let i = first; i <= last; i++) { const d = i - pos, s = items[i].style;
+      s.transform = `rotateX(${(-d * 22).toFixed(1)}deg) translateZ(0)`; s.opacity = Math.max(.12, 1 - Math.abs(d) * .32).toFixed(2); }
+  }
+  const go = (v, smooth = true) => list.scrollTo({ top: (v - min) * ROW, behavior: smooth && !REDUCED ? "smooth" : "auto" });
+  list.addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(paint);
+    clearTimeout(idle); idle = setTimeout(() => navigator.vibrate?.(4), 140); }, { passive: true });
+  list.addEventListener("click", e => { const it = e.target.closest(".wheel__item"); if (it) go(+it.dataset.v); });
+  box.addEventListener("keydown", e => {
+    const step = { ArrowUp: -1, ArrowDown: 1, PageUp: -5, PageDown: 5 }[e.key];
+    if (step) { e.preventDefault(); go(cur + step); } else if (e.key === "Home") { e.preventDefault(); go(min); } else if (e.key === "End") { e.preventDefault(); go(max); }
+  });
+  requestAnimationFrame(() => { go(+input.value || min, false); paint(); });
+  return { set: v => go(v) };
+}
+document.querySelectorAll("input[data-wheel]").forEach(wheelPicker);
+document.addEventListener("langchange", () => document.querySelectorAll(".wheel__band").forEach(b => { b.dataset.unit = t("pers."); }));
+
 document.getElementById("form").addEventListener("submit", e => {
   e.preventDefault();
   const v = id => document.getElementById(id).value.trim(); const status = document.getElementById("formStatus");

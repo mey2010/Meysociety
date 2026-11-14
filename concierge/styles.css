@@ -1687,3 +1687,21 @@ html:not([data-theme="dark"]) .vt--phone .vt__p { color: #1f1d3a; }
 .stack__card.is-tilt .stack__body { transform: perspective(1000px) rotateX(calc(var(--rx) * .6)) rotateY(calc(var(--ry) * .6)) translateZ(18px); }
 @media (prefers-reduced-motion: reduce) { .stack__card.is-tilt .stack__media > img, .stack__card.is-tilt .stack__body { transform: none !important; } }
 .stack__media--product::before, .stack__media--product::after { border-radius: inherit; }
+
+/* ---------------- wheel picker ---------------- */
+.field-wheel { display: grid; gap: 8px; }
+.wheel { position: relative; height: 132px; border-radius: 18px; outline: none; perspective: 520px;
+  background: linear-gradient(180deg, rgb(255 255 255 / .06), rgb(255 255 255 / .02)); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .16); }
+.wheel:focus-visible { box-shadow: inset 0 0 0 1px rgb(255 255 255 / .16), 0 0 0 3px rgb(171 80 219 / .55); }
+.wheel__list { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; scroll-snap-type: y mandatory; scrollbar-width: none;
+  padding: 44px 0; transform-style: preserve-3d; touch-action: pan-y;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 28%, #000 72%, transparent); mask-image: linear-gradient(180deg, transparent, #000 28%, #000 72%, transparent); }
+.wheel__list::-webkit-scrollbar { display: none; }
+.wheel__item { height: 44px; display: grid; place-items: center; scroll-snap-align: center; font: 600 22px/1 var(--sans);
+  font-variant-numeric: tabular-nums; cursor: pointer; user-select: none; -webkit-user-select: none; backface-visibility: hidden; }
+.wheel__band { position: absolute; left: 10px; right: 10px; top: 44px; height: 44px; border-radius: 12px; pointer-events: none;
+  background: linear-gradient(135deg, rgb(171 80 219 / .28), rgb(30 36 187 / .22)); box-shadow: inset 0 0 0 1px rgb(200 86 230 / .55); }
+.wheel__band::after { content: attr(data-unit); position: absolute; right: 14px; top: 50%; translate: 0 -50%; font-size: 12.5px; letter-spacing: .06em; opacity: .7; }
+@media (prefers-reduced-motion: reduce) { .wheel__item { transform: none !important; } }
+.field-wheel { gap: 6px; } .field-wheel__l { font-size: 13px; color: var(--on-dark-soft); }
+.grid2 > label { align-content: start; }   /* a tall neighbour (the wheel) must not stretch the input beside it */

@@ -3,6 +3,7 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "pers.": ["ppl", "pers.", "pers.", "Pers."],
   "Las mejores calas de Ibiza no tienen carretera. Nosotros tenemos el barco, el patrón y la ruta que solo conocen los de aquí.": ["Ibiza's best coves have no road. We have the boat, the skipper and the route only locals know.", "Le calette più belle di Ibiza non hanno strada. Noi abbiamo la barca, lo skipper e la rotta che conoscono solo quelli del posto.", "Les plus belles criques d'Ibiza n'ont pas de route. Nous avons le bateau, le skipper et l'itinéraire que seuls les gens d'ici connaissent.", "Ibizas schönste Buchten haben keine Straße. Wir haben das Boot, den Skipper und die Route, die nur Einheimische kennen."],
   "Quiero mi día en el mar": ["I want my day at sea", "Voglio la mia giornata in mare", "Je veux ma journée en mer", "Ich will meinen Tag auf dem Meer"],
   "Escríbeme": ["Message me", "Scrivimi", "Écrivez-moi", "Schreib mir"],
