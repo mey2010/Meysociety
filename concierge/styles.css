@@ -1844,3 +1844,7 @@ p:is(.reviews__note, .fleet__note, .lightbox__cap) { text-align-last: center; }
 .stack__card { transition: transform 420ms cubic-bezier(.22, .8, .24, 1); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .stack__card.is-tilt { transition: none; }
 .stack__veil { display: none !important; }
+
+/* touch screens: native one-card-per-swipe snapping inside the services stack only (see app.js) */
+html.snap-stack { scroll-snap-type: y mandatory; }
+html.snap-stack .stack__snap { scroll-snap-align: start; scroll-snap-stop: always; }

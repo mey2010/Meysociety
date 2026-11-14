@@ -470,11 +470,8 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
         if (L.s !== s) { L.s = s; paintCard(i); }
         if (L.o !== o) { c.style.opacity = o; L.o = o; }
         if (L.v !== v) { veils[i].style.opacity = v; veils[i].style.display = +v ? "" : "none"; L.v = v; }
-        // overdraw: a card that is fully covered is not drawn at all, and one that the next card has fully slid
-        // over only draws the strip that still peeks out at the top (the GPU blends far fewer layers per frame)
-        const hide = +o < .04, strip = !hide && i + 1 < cards.length && cover[i + 1] >= .999;
-        if (L.h !== hide) { c.style.visibility = hide ? "hidden" : ""; L.h = hide; }
-        if (L.c !== strip) { c.style.clipPath = strip ? "inset(0 0 calc(100% - 90px) 0 round 34px 34px 0 0)" : ""; L.c = strip; }
+        /* (no visibility or clip-path switching here: either one made Safari repaint a whole card, photo included,
+           the moment it came back into view, which is the hitch that was felt most when scrolling up) */
       });
     }
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
@@ -508,8 +505,33 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
       addEventListener("pointerup", release); addEventListener("pointercancel", release);
       addEventListener("scroll", () => { if (on >= 0 && (tx || ty)) release(); }, { passive: true });
     }
+    /* Touch screens: the one-card-per-swipe stops are the browser's own scroll snapping (it runs on the compositor
+       with the finger's real momentum, so a swipe flows straight into the stop, up or down, with no pause and no
+       second motion). Snapping is switched on only while the page is inside the stack, between a stop at the top of
+       the section and one at the start of the next, so the rest of the page scrolls freely.
+       Mouse wheel and trackpad keep the scripted pager below (snapping fights a wheel). */
+    const COARSE = matchMedia("(pointer: coarse)").matches;
+    if (COARSE && !REDUCED) {
+      const root = document.documentElement, sec = stack.closest("section"), next = sec?.nextElementSibling;
+      const edge = [document.createElement("i"), document.createElement("i")];
+      edge.forEach(n => { n.className = "stack__snap stack__snap--edge"; n.setAttribute("aria-hidden", "true"); stack.appendChild(n); });
+      let lo = 0, hi = 0;
+      const pageTop = el => { let y = 0; for (let n = el; n; n = n.offsetParent) y += n.offsetTop; return y; };
+      const place = () => {
+        if (!sec || !next) return;
+        let sTop = pageTop(stack);
+        lo = pageTop(sec); hi = pageTop(next);
+        edge[0].style.top = (lo - sTop) + "px"; edge[1].style.top = (hi - sTop) + "px";
+        onScrollSnap();
+      };
+      const onScrollSnap = () => { const y = scrollY, on = y > lo + 2 && y < hi - 2; if (on !== root.classList.contains("snap-stack")) root.classList.toggle("snap-stack", on); };
+      addEventListener("scroll", onScrollSnap, { passive: true });
+      onRealResize(place); addEventListener("load", place); new ResizeObserver(place).observe(stack); place();
+    }
     readingStops(window, { centers: () => snaps.map(n => n.getBoundingClientRect().top + scrollY), half: () => (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2, pager: true,
-      active: () => !document.documentElement.classList.contains("is-covered") });
+      touch: !COARSE || REDUCED, active: () => !document.documentElement.classList.contains("is-covered") });
+    /* every card photo is decoded ahead of time, once the page has loaded, so none is decoded mid-swipe */
+    addEventListener("load", () => (window.requestIdleCallback || setTimeout)(() => cards.forEach(c => c.querySelectorAll("img").forEach(im => { im.loading = "eager"; im.decode?.().catch(() => {}); }))), { once: true });
   }
 }
 
@@ -695,55 +717,6 @@ function scrollToEl(el, smooth = !REDUCED) {
   if (!el) return; let y = 0; for (let n = el; n; n = n.offsetParent) y += n.offsetTop;
   scrollTo({ top: Math.max(0, y - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0)), behavior: smooth ? "smooth" : "auto" });
 }
-/* ---------------- a pause at the start of every home section ----------------
-   Scrolling by hand (finger, wheel, trackpad, keys) stops once at the top of each section it enters, in either
-   direction; the next gesture carries on. Inertia that would run past the stop is held for a moment. Jumps from
-   the menu or a link pass straight through. The services stack has its own one-card-per-swipe pager. */
-(() => {
-  if (REDUCED) return;
-  const secs = ["mapa", "paquetes", "ejemplos", "reviews", "como", "faq", "contacto"].map(id => document.getElementById(id)).filter(Boolean);
-  if (!secs.length) return;
-  const topOf = el => { let y = 0; for (let n = el; n; n = n.offsetParent) y += n.offsetTop; return Math.max(0, y - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0)); };
-  let tops = [], userAt = -1e9, finger = false, moved = false, auto = false, goal = null, holdUntil = 0, lastY = scrollY, startY = scrollY, idle = 0;
-  const measure = () => { tops = secs.map(topOf); }; measure(); addEventListener("load", measure); onRealResize(measure);
-  new ResizeObserver(measure).observe(document.body);
-  const live = () => !document.documentElement.classList.contains("is-covered") && !document.body.style.overflow;
-  // the latest intent decides: a wheel, a swipe or a scroll key is the reader scrolling; a click (a menu entry,
-  // a link, a button) that comes after it is a jump and passes through
-  let clickAt = -1e9; addEventListener("click", () => { clickAt = performance.now(); }, true);
-  const byUser = () => userAt > clickAt && performance.now() - userAt < 2000;
-  let holdCap = 0;
-  const stop = y => { auto = true; goal = y; holdUntil = performance.now() + 450; holdCap = performance.now() + 1400; scrollTo({ top: y, behavior: "smooth" }); };
-  // the section boundary crossed going from a to b (the first one met in that direction)
-  const crossed = (a, b) => b > a ? tops.find(t => a < t - 2 && b >= t - 2) : [...tops].reverse().find(t => a > t + 2 && b <= t + 2);
-  addEventListener("touchstart", () => { finger = true; moved = false; auto = false; goal = null; startY = scrollY; }, { passive: true });
-  addEventListener("touchmove", () => { moved = true; userAt = performance.now(); }, { passive: true });
-  addEventListener("touchend", () => { finger = false; if (moved) userAt = performance.now(); }, { passive: true });
-  addEventListener("keydown", e => { if (/^(Arrow(Up|Down)|Page(Up|Down)| )$/.test(e.key)) { userAt = performance.now(); if (!auto) startY = scrollY; } });
-  addEventListener("wheel", e => {
-    if (!live()) return;
-    const now = performance.now();
-    // paused at a section: the rest of this wheel/trackpad stream (its inertia) is held until it goes quiet
-    // for a moment; a wheel that keeps spinning is let go after 1.4 s
-    if (now < holdUntil && now < holdCap) { e.preventDefault(); holdUntil = Math.max(holdUntil, now + 220); return; }
-    if (!byUser() && !auto) startY = scrollY;
-    userAt = performance.now(); auto = false; goal = null;
-  }, { passive: false, capture: true });   // (capture: the map stops wheel events from bubbling)
-  addEventListener("scroll", () => {
-    const y = scrollY, from = lastY; lastY = y;
-    clearTimeout(idle); idle = setTimeout(settle, 140);
-    if (auto || finger || !live() || !byUser()) return;
-    const t = crossed(from, y); if (t !== undefined) stop(t);   // a flick or a wheel run reaches a section: stop there
-  }, { passive: true });
-  function settle() {
-    if (auto) { auto = false; if (goal !== null && Math.abs(scrollY - goal) > 2) scrollTo({ top: goal }); goal = null; startY = scrollY; return; }
-    if (finger || !live() || !byUser()) { startY = scrollY; return; }
-    // a slow drag that ended just past a section start (in this gesture) settles onto it
-    const y = scrollY, t = crossed(startY, y);
-    if (t !== undefined && Math.abs(y - t) < innerHeight * .2) stop(t);
-    startY = scrollY;
-  }
-})();
 initConsent(CONFIG.analytics);
 /* what people do, for Analytics: contact taps, legal-free and anonymous (no personal data is sent) */
 document.addEventListener("click", e => {
