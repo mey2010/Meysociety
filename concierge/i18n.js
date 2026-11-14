@@ -3,6 +3,8 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Descapotables, SUV y deportivos": ["Convertibles, SUVs and sports cars", "Cabriolet, SUV e sportive", "Cabriolets, SUV et sportives", "Cabrios, SUVs und Sportwagen"],
+  "entregados donde estés.": ["delivered wherever you are.", "consegnate dove sei.", "livrés où vous êtes.", "geliefert, wo du bist."],
   "Elige lo que te interesa y te respondo personalmente. Sin bots y sin esperas.": ["Choose what interests you and I will reply personally. No bots, no waiting.", "Scegli ciò che ti interessa e ti rispondo personalmente. Niente bot, niente attese.", "Choisissez ce qui vous intéresse et je vous réponds personnellement. Sans robots ni attente.", "Wähle, was dich interessiert, und ich antworte dir persönlich. Ohne Bots, ohne Warten."],
   "pers.": ["ppl", "pers.", "pers.", "Pers."],
   "Las mejores calas de Ibiza no tienen carretera. Nosotros tenemos el barco, el patrón y la ruta que solo conocen los de aquí.": ["Ibiza's best coves have no road. We have the boat, the skipper and the route only locals know.", "Le calette più belle di Ibiza non hanno strada. Noi abbiamo la barca, lo skipper e la rotta che conoscono solo quelli del posto.", "Les plus belles criques d'Ibiza n'ont pas de route. Nous avons le bateau, le skipper et l'itinéraire que seuls les gens d'ici connaissent.", "Ibizas schönste Buchten haben keine Straße. Wir haben das Boot, den Skipper und die Route, die nur Einheimische kennen."],

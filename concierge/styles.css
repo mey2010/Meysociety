@@ -1670,23 +1670,21 @@ html[data-theme="dark"] .logo-note__k { color: #a9a4ff; } html[data-theme="dark"
 /* villa tour copy under the film: a deeper black for the small lines */
 html:not([data-theme="dark"]) .vt--phone .vt__p { color: #1f1d3a; }
 
-/* ---------------- jet ski: it rises out of its card in 3D (only this card lets content past its edge) ---------------- */
+/* ---------------- jet ski: centred in its space, a little larger than its frame so it stands out in 3D ---------------- */
 .stack__card:has(.stack__media--product) { overflow: visible; contain: layout; }
-.stack__media--product { overflow: visible; border-radius: inherit; }
-.stack__media--product img { position: relative; z-index: 3; width: 104%; max-width: none; max-height: 92%; margin-top: -9%;
-  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translate3d(0, 0, 60px) scale(1.04);
-  /* it rises past the card's top edge in 3D; the source photo crops the stern, so that edge fades out */
+.stack__media--product { overflow: visible; border-radius: inherit; place-items: center !important; padding: 0 !important; }
+.stack__media--product img { position: relative; z-index: 3; width: 100%; max-width: none; max-height: 80%; margin: 0; translate: none;
+  transform: translateZ(0) scale(1.1);   /* a static 3D lift: it does not move while the page scrolls */
+  /* the source photo crops the stern, so that edge fades out */
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%); mask-image: linear-gradient(90deg, transparent, #000 9%);
   filter: drop-shadow(0 26px 18px rgb(0 0 0 / .5)) drop-shadow(0 0 18px rgb(171 80 219 / .3)); }
-.stack__media--product img { translate: 0 -16%; }   /* the top of the jet ski rises past the card's upper edge */
-@media (max-width: 900px) { .stack__media--product img { width: 100%; max-width: none; max-height: 54%; margin-top: -15%; translate: 0 -14%; } }
+/* phone: the photo area is what is left above the glass panel, and the jet ski sits in the middle of it */
+@media (max-width: 900px) {
+  .stack__media--product { padding: 0 0 var(--panel-h, 46%) !important; }
+  .stack__media--product img { width: 100%; max-height: 82%; }
+}
 
 /* ---------------- service cards at rest: 3D, following the phone's tilt (or the mouse) ---------------- */
-.stack__card:not(.is-tilt) .stack__media > img:not(.stack__media-bg), .stack__card:not(.is-tilt) .stack__body { transition: transform 420ms cubic-bezier(.2, .8, .2, 1); }
-.stack__card.is-tilt .stack__media > img:not(.stack__media-bg), .stack__card.is-tilt .stack__body { will-change: transform; }   /* own layers while tilting: no repaint per frame */
-.stack__card.is-tilt .stack__media:not(.stack__media--product) > img:not(.stack__media-bg) { transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(40px); }
-.stack__card.is-tilt .stack__body { transform: perspective(1000px) rotateX(calc(var(--rx) * .6)) rotateY(calc(var(--ry) * .6)) translateZ(18px); }
-@media (prefers-reduced-motion: reduce) { .stack__card.is-tilt .stack__media > img, .stack__card.is-tilt .stack__body { transform: none !important; } }
 .stack__media--product::before, .stack__media--product::after { border-radius: inherit; }
 
 /* ---------------- wheel picker ---------------- */
@@ -1712,5 +1710,17 @@ html:not([data-theme="dark"]) .vt--phone .vt__p { color: #1f1d3a; }
   box-shadow: 0 30px 60px -30px rgb(13 10 56 / .6); }
 
 /* service cards: scale (from the stack) and the whole-card 3D tilt at rest share one transform */
-.stack__card { transform: perspective(1400px) scale(var(--s, 1)) rotateX(var(--crx, 0deg)) rotateY(var(--cry, 0deg)); }
-@media (prefers-reduced-motion: reduce) { .stack__card { transform: none; } }
+
+/* ---------------- fewer composited layers while scrolling ----------------
+   Every element with its own layer costs a little on every frame of scroll; the browser was keeping ~270.
+   These only get one while they are actually animating or on screen. */
+.circular-carousel[data-off] > * { visibility: hidden; }
+.elastic__ch { will-change: auto; }
+.shatter.is-rest .shatter__shard { will-change: auto; }
+.staggered-menu-wrapper:not([data-open]) .sm-panel-itemLabel { will-change: auto; }
+/* phones: no live blur behind the fixed header band or the contact form while scrolling (it is redone on every
+   frame); their own translucent backgrounds carry the look */
+@media (hover: none) {
+  .sm-band { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .contact__form { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+}

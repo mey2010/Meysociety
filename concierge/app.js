@@ -363,7 +363,12 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     // a dark veil per card stands in for the old brightness() filter: only its opacity changes, which the
     // compositor does on its own without repainting the card (photo, blurred backdrop and glass panel)
     const veils = cards.map(c => { const v = document.createElement("span"); v.className = "stack__veil"; v.setAttribute("aria-hidden", "true"); c.appendChild(v); return v; });
-    const last = cards.map(() => ({ s: "", o: "", v: "" }));
+    const last = cards.map(() => ({ s: "1", o: "", v: "" }));
+    // one transform per card: the stack's scale plus the 3D tilt of the paused card (written straight to
+    // style.transform: a CSS variable here would restyle everything inside the card on every frame)
+    const tilt = cards.map(() => ({ x: 0, y: 0 }));
+    const paintCard = i => { const T = tilt[i], s = last[i].s || "1";
+      cards[i].style.transform = T.x || T.y ? `perspective(1400px) scale(${s}) rotateX(${T.x.toFixed(2)}deg) rotateY(${T.y.toFixed(2)}deg)` : `scale(${s})`; };
     // where each card sticks and where it sits in the page: measured on resize, not on every scroll frame
     /* reading pause: once a card has settled, the next one waits for an extra stretch of scroll (the "hold"),
        and the page snaps to the middle of that stretch, so every service stops on screen going down or up */
@@ -390,7 +395,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
         let k = 0; for (let j = i + 1; j < cards.length; j++) k += cover[j];
         const s = (1 - Math.min(k, 4) * .05).toFixed(4), o = (1 - clamp(k * .55 - .1, 0, .95)).toFixed(3), v = (Math.min(k, 2) * .2).toFixed(3);
         const L = last[i];
-        if (L.s !== s) { c.style.setProperty("--s", s); L.s = s; }
+        if (L.s !== s) { L.s = s; paintCard(i); }
         if (L.o !== o) { c.style.opacity = o; L.o = o; }
         if (L.v !== v) { veils[i].style.opacity = v; veils[i].style.display = +v ? "" : "none"; L.v = v; }
         // overdraw: a card that is fully covered is not drawn at all, and one that the next card has fully slid
@@ -406,23 +411,24 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     /* 3D at rest: the paused card tilts as a whole with the phone (gyroscope) or the mouse, and inside it the
        photo and the panel part a little like layers. Where no motion sensor is available (a page shown inside
        another site, a laptop) it sways gently on its own, so the card still reads as an object. One rAF loop. */
-    { let restI = -1, tx = 0, ty = 0, cx = 0, cy = 0, b0 = null, g0 = null, raf = 0, asked = false, inputAt = 0;
-      const put = (c, x, y) => { c.style.setProperty("--crx", (x * .6).toFixed(2) + "deg"); c.style.setProperty("--cry", (y * .6).toFixed(2) + "deg");
-        c.style.setProperty("--rx", x.toFixed(2) + "deg"); c.style.setProperty("--ry", y.toFixed(2) + "deg"); };
+    { let restI = -1, tx = 0, ty = 0, cx = 0, cy = 0, b0 = null, g0 = null, raf = 0, asked = false, inputAt = 0, movedAt = 0;
+      const put = (i, x, y) => { tilt[i].x = x; tilt[i].y = y; paintCard(i); };
       const loop = now => {
-        raf = 0; const c = cards[restI];
-        if (c && !REDUCED && now - inputAt > 1400) { tx = Math.sin(now / 1500) * 4; ty = Math.cos(now / 1150) * 6; }   // no sensor, no mouse: a slow sway
+        raf = 0; if (restI < 0) return;
+        if (now - movedAt < 350) { tx = ty = 0; }   // while the page scrolls the card holds still
+        else if (!REDUCED && now - inputAt > 1400) { tx = Math.sin(now / 1500) * 3; ty = Math.cos(now / 1150) * 4.5; }   // no sensor, no mouse: a slow sway
         cx += (tx - cx) * .1; cy += (ty - cy) * .1;
-        if (c) put(c, cx, cy);
-        if (c || Math.abs(tx - cx) + Math.abs(ty - cy) > .02) raf = requestAnimationFrame(loop);
+        put(restI, cx * .7, cy * .7);
+        raf = requestAnimationFrame(loop);
       };
-      const aim = (rx, ry) => { inputAt = performance.now(); tx = Math.max(-12, Math.min(12, rx)); ty = Math.max(-14, Math.min(14, ry)); if (!raf) raf = requestAnimationFrame(loop); };
+      const aim = (rx, ry) => { inputAt = performance.now(); tx = Math.max(-12, Math.min(12, rx)); ty = Math.max(-14, Math.min(14, ry)); if (!raf && restI >= 0) raf = requestAnimationFrame(loop); };
       const setRest = i => {
         if (i === restI) return;
-        const old = cards[restI]; if (old) { old.classList.remove("is-tilt"); put(old, 0, 0); }
+        if (restI >= 0) { cards[restI].classList.remove("is-tilt"); put(restI, 0, 0); }
         restI = i; b0 = g0 = null; tx = ty = cx = cy = 0;
-        if (i >= 0) { cards[i].classList.add("is-tilt"); if (!raf) raf = requestAnimationFrame(loop); }
+        if (i >= 0) { cards[i].classList.add("is-tilt"); if (!raf) raf = requestAnimationFrame(loop); } else { cancelAnimationFrame(raf); raf = 0; }
       };
+      addEventListener("scroll", () => { movedAt = performance.now(); }, { passive: true });
       addEventListener("scroll", () => {   // the paused card: its own hold zone contains the scroll position
         const h = (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2;
         setRest(snapY.findIndex(c => Math.abs(scrollY - c) <= h * .9));

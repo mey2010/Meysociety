@@ -299,6 +299,7 @@ export function createCircularCarousel(root, opts = {}) {
   new ResizeObserver(() => { measure(); wake(); }).observe(root);
   new IntersectionObserver(([en]) => {
     visible = en.isIntersecting;
+    root.toggleAttribute("data-off", !visible);   // off screen: its 3D tiles are not drawn at all (no layers to composite)
     if (visible) { wake(); const a = active; active = -1; if (a >= 0) setActive(a); }
     else { cancelAnimationFrame(raf); raf = 0; state.last = 0; videos.forEach(v => v.video.pause()); }
   }).observe(root);
