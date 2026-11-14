@@ -645,7 +645,8 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
   document.addEventListener("mousedown", e => { if (!box.contains(e.target)) show(false); });
   cur.textContent = LANGS[getLang()]; opts.forEach(x => x.setAttribute("aria-selected", x.dataset.lang === getLang()));
   // translate once everything on the page has been built
-  if (getLang() !== "es") { document.documentElement.lang = getLang(); setTimeout(() => translateTree(document.body), 0); applyMeta(); }
+  document.documentElement.lang = getLang(); /* also "es": the artifact shell drops <html lang>, and hyphenation needs it */
+  if (getLang() !== "es") { setTimeout(() => translateTree(document.body), 0); applyMeta(); }
   setTimeout(watchI18n, 0);
 }
 

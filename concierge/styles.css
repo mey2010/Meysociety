@@ -11,7 +11,7 @@
   --silver:   #f4f5fb;   /* chrome ring */
   --chrome:   #d9dcef;
   --ink:      #12102e;
-  --ink-soft: #4d4f78;
+  --ink-soft: #000;
   --on-dark:  #f4f5fb;
   --on-dark-soft: #b9bde0;
   --serif: "Geist", system-ui, -apple-system, sans-serif; /* one family across the site: no serif anywhere */
@@ -1657,7 +1657,7 @@ html:not([data-theme="dark"]) .vt__end .btn--glass { color: var(--ink); backgrou
 .logo-note__k::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, #ab50db, transparent); }
 .logo-note__q { margin: 0; font: 500 16.5px/1.5 var(--sans); letter-spacing: -.005em; text-wrap: pretty; }
 .logo-note__q em { font-style: normal; color: #1e24bb; }   /* same blue as the "what is a concierge" line */
-.logo-note__s { margin: 12px 0 0; font-size: 12.5px; letter-spacing: .08em; color: #4d4f78; text-align: right; }
+.logo-note__s { margin: 12px 0 0; font-size: 12.5px; letter-spacing: .08em; color: #000; text-align: right; }
 html[data-theme="dark"] .logo-note { color: #eef0fb; background: linear-gradient(160deg, rgb(30 26 90 / .92), rgb(13 10 56 / .9)); box-shadow: inset 0 1px 0 rgb(255 255 255 / .14), 0 0 0 1px rgb(255 255 255 / .1), 0 30px 60px -24px #000, 0 0 40px -10px rgb(171 80 219 / .45); }
 html[data-theme="dark"] .logo-note::before { background: rgb(30 26 90 / .92); }
 html[data-theme="dark"] .logo-note__k { color: #a9a4ff; } html[data-theme="dark"] .logo-note__q em { color: #a9a4ff; } html[data-theme="dark"] .logo-note__s { color: #b4b8dc; }
@@ -1783,3 +1783,6 @@ html:not([data-theme="dark"]) .vt__x { box-shadow: inset 0 1px 0 rgb(255 255 255
 /* centred blocks keep their last line centred so the shape stays symmetric */
 :is(.stack__body, .intro, .vt__end, .fleet__info, .circular-carousel__caption, .lightbox__cap, .reviews__note, .fleet__note) :is(p, .vt__p),
 p:is(.reviews__note, .fleet__note, .lightbox__cap) { text-align-last: center; }
+
+/* service cards keep centred copy (not justified) */
+.stack__body p, .stack__body li { text-align: center; text-align-last: auto; hyphens: manual; -webkit-hyphens: manual; word-spacing: normal; }
