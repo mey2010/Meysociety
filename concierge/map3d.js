@@ -248,6 +248,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
 
   // ---- camera & mouse controls ----
   const controls = new OrbitControls(camera, renderer.domElement);
+  renderer.domElement.style.touchAction = "pan-y";   // OrbitControls sets "none", which stopped one finger from scrolling the page
   controls.enableDamping = true; controls.dampingFactor = .09; controls.rotateSpeed = .55; controls.panSpeed = .9; controls.zoomSpeed = 1.1;
   controls.minDistance = 1.2; controls.maxDistance = 110; controls.maxPolarAngle = 1.2; controls.minPolarAngle = .05;
   controls.screenSpacePanning = false; controls.zoomToCursor = true; controls.autoRotate = !reduced; controls.autoRotateSpeed = .3;

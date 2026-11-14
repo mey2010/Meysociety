@@ -99,7 +99,7 @@ const SM = (() => {
   panel.addEventListener("click", e => {
     const a = e.target.closest("a"); if (!a) return;
     if (a.hasAttribute("data-login")) { e.preventDefault(); set(false); openLogin(); return; }
-    const h = a.getAttribute("href"); if (h && h.startsWith("#")) { e.preventDefault(); set(false); setTimeout(() => scrollToEl(document.querySelector(h)), 250); }
+    const h = a.getAttribute("href"); if (h && h.startsWith("#")) { e.preventDefault(); set(false); scrollToEl(document.querySelector(h)); }
   });
   return { set };
 })();
@@ -622,7 +622,7 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
   onSelect: (value, item) => {
     if (value.startsWith("barcos-")) { SM.set(false); setTimeout(() => openFleet(value.slice(7)), 260); return; }   // ("all" or one fleet type)
     if (value === "villa-aura") { SM.set(false); setTimeout(() => document.querySelector("[data-villa-tour]")?.click(), 300); return; }   // straight into the tour
-    if (value === "todos") { SM.set(false); setTimeout(() => scrollToEl(document.getElementById("servicios")), 250); return; }   // the services section itself
+    if (value === "todos") { SM.set(false); scrollToEl(document.getElementById("servicios")); return; }   // the services section itself
     const sec = SVC_TREE.find(s => s.value === value || s.children?.some(k => k.value === value));
     select(sec.svc, true);
     if (value === "motos-scooter") select("moto", true);
@@ -715,7 +715,22 @@ function onRealResize(cb) {
    is drawn mid-animation (the flap sections slide up 90px as they arrive) and land 90px too far */
 function scrollToEl(el, smooth = !REDUCED) {
   if (!el) return; let y = 0; for (let n = el; n; n = n.offsetParent) y += n.offsetTop;
-  scrollTo({ top: Math.max(0, y - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0)), behavior: smooth ? "smooth" : "auto" });
+  const top = Math.max(0, y - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0));
+  if (smooth) fastScroll(top); else scrollTo({ top, behavior: "auto" });
+}
+/* a quick, even glide to a section: about half a second whatever the distance (the browser's own smooth scroll
+   takes longer the further it goes). Snapping is paused for the trip; a touch or a wheel takes over at once. */
+let jump = 0;
+function fastScroll(to) {
+  cancelAnimationFrame(jump); const root = document.documentElement;
+  const from = scrollY, d = to - from; if (Math.abs(d) < 2) return;
+  const dur = Math.min(820, 420 + Math.abs(d) * .025), t0 = performance.now();
+  const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  // (snapping is dropped before the jump flag: left on, the services snap would pull the page back to the stack)
+  const stop = () => { cancelAnimationFrame(jump); jump = 0; if (Math.abs(scrollY - to) < 2) root.classList.remove("snap-stack"); root.classList.remove("is-jumping"); removeEventListener("wheel", stop); removeEventListener("touchstart", stop); };
+  root.classList.add("is-jumping"); addEventListener("wheel", stop, { passive: true }); addEventListener("touchstart", stop, { passive: true });
+  const step = now => { const k = Math.min(1, (now - t0) / dur); scrollTo(0, from + d * ease(k)); if (k < 1) jump = requestAnimationFrame(step); else stop(); };
+  jump = requestAnimationFrame(step);
 }
 initConsent(CONFIG.analytics);
 /* what people do, for Analytics: contact taps, legal-free and anonymous (no personal data is sent) */
@@ -1411,8 +1426,19 @@ function renderBell() {
 const markSeen = () => { if (!viewing) return; const st = nGet(viewing.code); if (!st.on) return; st.seen = Math.max(st.seen, viewing.rev || 0); nSet(viewing.code, st); };
 bellBtn.addEventListener("click", e => {
   e.stopPropagation(); const open = bellPanel.hidden; bellPanel.hidden = !open; bellBtn.setAttribute("aria-expanded", open);
+  if (open) placeBell();
   if (!open) { markSeen(); renderBell(); }
 });
+/* the panel opens under the bell but always fully on screen: centred on the bell where it fits, otherwise
+   kept 16 px from the edges (anchored to the bell's right edge it used to open off the left of a phone) */
+function placeBell() {
+  const r = bellBtn.getBoundingClientRect(), vw = document.documentElement.clientWidth, w = Math.min(380, vw - 32);
+  const left = Math.max(16, Math.min(vw - 16 - w, r.left + r.width / 2 - w / 2));
+  Object.assign(bellPanel.style, { position: "fixed", width: w + "px", left: left + "px", right: "auto", top: (r.bottom + 10) + "px" });
+  bellPanel.style.setProperty("--tip", (r.left + r.width / 2 - left) + "px");
+}
+addEventListener("resize", () => { if (!bellPanel.hidden) placeBell(); });
+document.addEventListener("scroll", () => { if (!bellPanel.hidden) placeBell(); }, { capture: true, passive: true });
 bellPanel.addEventListener("change", async e => {
   if (e.target.id !== "bellToggle" || !viewing) return;
   const st = nGet(viewing.code); st.on = e.target.checked; if (st.on) st.seen = viewing.rev || 0; nSet(viewing.code, st);

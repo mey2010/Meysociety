@@ -68,6 +68,7 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
 
   // ---- camera & controls (same feel as the home map) ----
   const controls = new OrbitControls(camera, renderer.domElement);
+  renderer.domElement.style.touchAction = "pan-y";   // OrbitControls sets "none", which stopped one finger from scrolling the page
   controls.enableDamping = true; controls.dampingFactor = .1; controls.rotateSpeed = .55; controls.panSpeed = .9; controls.zoomSpeed = 1.1;
   controls.minDistance = 1.2; controls.maxDistance = 90; controls.maxPolarAngle = 1.2; controls.minPolarAngle = .05;
   controls.screenSpacePanning = false; controls.zoomToCursor = true;
