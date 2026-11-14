@@ -1682,7 +1682,8 @@ html:not([data-theme="dark"]) .vt--phone .vt__p { color: #1f1d3a; }
 @media (max-width: 900px) { .stack__media--product img { width: 100%; max-width: none; max-height: 54%; margin-top: -15%; translate: 0 -14%; } }
 
 /* ---------------- service cards at rest: 3D, following the phone's tilt (or the mouse) ---------------- */
-.stack__card .stack__media > img:not(.stack__media-bg), .stack__card .stack__body { transition: transform 420ms cubic-bezier(.2, .8, .2, 1); }
+.stack__card:not(.is-tilt) .stack__media > img:not(.stack__media-bg), .stack__card:not(.is-tilt) .stack__body { transition: transform 420ms cubic-bezier(.2, .8, .2, 1); }
+.stack__card.is-tilt .stack__media > img:not(.stack__media-bg), .stack__card.is-tilt .stack__body { will-change: transform; }   /* own layers while tilting: no repaint per frame */
 .stack__card.is-tilt .stack__media:not(.stack__media--product) > img:not(.stack__media-bg) { transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(40px); }
 .stack__card.is-tilt .stack__body { transform: perspective(1000px) rotateX(calc(var(--rx) * .6)) rotateY(calc(var(--ry) * .6)) translateZ(18px); }
 @media (prefers-reduced-motion: reduce) { .stack__card.is-tilt .stack__media > img, .stack__card.is-tilt .stack__body { transform: none !important; } }
@@ -1705,3 +1706,11 @@ html:not([data-theme="dark"]) .vt--phone .vt__p { color: #1f1d3a; }
 @media (prefers-reduced-motion: reduce) { .wheel__item { transform: none !important; } }
 .field-wheel { gap: 6px; } .field-wheel__l { font-size: 13px; color: var(--on-dark-soft); }
 .grid2 > label { align-content: start; }   /* a tall neighbour (the wheel) must not stretch the input beside it */
+
+/* villa tour: the full film at the end */
+.vt__film { width: min(100%, 880px); aspect-ratio: 16 / 9; border-radius: 18px; background: #0d0a38; margin: 6px 0 4px;
+  box-shadow: 0 30px 60px -30px rgb(13 10 56 / .6); }
+
+/* service cards: scale (from the stack) and the whole-card 3D tilt at rest share one transform */
+.stack__card { transform: perspective(1400px) scale(var(--s, 1)) rotateX(var(--crx, 0deg)) rotateY(var(--cry, 0deg)); }
+@media (prefers-reduced-motion: reduce) { .stack__card { transform: none; } }

@@ -3,6 +3,7 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Elige lo que te interesa y te respondo personalmente. Sin bots y sin esperas.": ["Choose what interests you and I will reply personally. No bots, no waiting.", "Scegli ciò che ti interessa e ti rispondo personalmente. Niente bot, niente attese.", "Choisissez ce qui vous intéresse et je vous réponds personnellement. Sans robots ni attente.", "Wähle, was dich interessiert, und ich antworte dir persönlich. Ohne Bots, ohne Warten."],
   "pers.": ["ppl", "pers.", "pers.", "Pers."],
   "Las mejores calas de Ibiza no tienen carretera. Nosotros tenemos el barco, el patrón y la ruta que solo conocen los de aquí.": ["Ibiza's best coves have no road. We have the boat, the skipper and the route only locals know.", "Le calette più belle di Ibiza non hanno strada. Noi abbiamo la barca, lo skipper e la rotta che conoscono solo quelli del posto.", "Les plus belles criques d'Ibiza n'ont pas de route. Nous avons le bateau, le skipper et l'itinéraire que seuls les gens d'ici connaissent.", "Ibizas schönste Buchten haben keine Straße. Wir haben das Boot, den Skipper und die Route, die nur Einheimische kennen."],
   "Quiero mi día en el mar": ["I want my day at sea", "Voglio la mia giornata in mare", "Je veux ma journée en mer", "Ich will meinen Tag auf dem Meer"],
@@ -505,7 +506,7 @@ const GEN = { // templates for venues without a custom description
 };
 const MSG = {
   booked: ["Opening WhatsApp with your message.", "Apriamo WhatsApp con il tuo messaggio.", "Ouverture de WhatsApp avec votre message.", "WhatsApp wird mit deiner Nachricht geöffnet."],
-  mailed: ["Opening your email with the message ready. If it doesn't open, write to meysociety@protonmail.com.", "Apriamo la tua email con il messaggio pronto. Se non si apre, scrivi a meysociety@protonmail.com.", "Ouverture de votre messagerie avec le message prêt. Si elle ne s'ouvre pas, écrivez à meysociety@protonmail.com.", "Dein E-Mail-Programm öffnet sich mit der fertigen Nachricht. Falls nicht, schreib an meysociety@protonmail.com."],
+  mailed: ["Opening your email with the message ready. If it doesn't open, write to Mey.society@protonmail.com.", "Apriamo la tua email con il messaggio pronto. Se non si apre, scrivi a Mey.society@protonmail.com.", "Ouverture de votre messagerie avec le message prêt. Si elle ne s'ouvre pas, écrivez à Mey.society@protonmail.com.", "Dein E-Mail-Programm öffnet sich mit der fertigen Nachricht. Falls nicht, schreib an Mey.society@protonmail.com."],
   name: ["Write your name so we know who to reply to.", "Scrivi il tuo nome così sappiamo a chi rispondere.", "Indiquez votre nom pour que nous sachions à qui répondre.", "Schreib deinen Namen, damit wir wissen, wem wir antworten."],
   hello: ["Hello", "Ciao", "Bonjour", "Hallo"],
 };

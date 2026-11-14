@@ -204,6 +204,7 @@ pop.querySelector(".pop__x").addEventListener("click", closePop);
 addEventListener("keydown", e => { if (e.key === "Escape") { closePop(); closeList(); } });
 document.getElementById("popBook").addEventListener("click", () => {
   if (!active) return; const v = active; select(v.type === "club" ? "noche" : "beach", true);
+  if (openWA(`${v.name} (${v.area})`, "mapa")) { closePop(); return; }
   document.getElementById("f-notes").value = `${t("Me interesa")}: ${v.name} (${v.area}).`; closePop();
   scrollToEl(document.getElementById("contacto"));
 });
@@ -353,7 +354,10 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
   { const warm = () => cards.forEach(c => c.querySelectorAll("img").forEach(im => { im.loading = "eager"; im.decode?.().catch(() => {}); }));
     const later = () => (window.requestIdleCallback || (f => setTimeout(f, 300)))(warm, { timeout: 2500 });
     document.readyState === "complete" ? later() : addEventListener("load", later, { once: true }); }
-  document.querySelectorAll(".stack__card [data-svc]").forEach(b => b.addEventListener("click", () => select(b.dataset.svc, true)));
+  document.querySelectorAll(".stack__card [data-svc]").forEach(b => b.addEventListener("click", e => {
+    select(b.dataset.svc, true);
+    if (openWA(b.closest(".stack__card").querySelector("h3")?.textContent.trim(), "tarjeta_" + b.dataset.svc)) e.preventDefault();
+  }));
   if (!REDUCED) {
     let ticking = false, stuck = [], tops = [];
     // a dark veil per card stands in for the old brightness() filter: only its opacity changes, which the
@@ -386,7 +390,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
         let k = 0; for (let j = i + 1; j < cards.length; j++) k += cover[j];
         const s = (1 - Math.min(k, 4) * .05).toFixed(4), o = (1 - clamp(k * .55 - .1, 0, .95)).toFixed(3), v = (Math.min(k, 2) * .2).toFixed(3);
         const L = last[i];
-        if (L.s !== s) { c.style.transform = `scale(${s})`; L.s = s; }
+        if (L.s !== s) { c.style.setProperty("--s", s); L.s = s; }
         if (L.o !== o) { c.style.opacity = o; L.o = o; }
         if (L.v !== v) { veils[i].style.opacity = v; veils[i].style.display = +v ? "" : "none"; L.v = v; }
         // overdraw: a card that is fully covered is not drawn at all, and one that the next card has fully slid
@@ -399,14 +403,26 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
     onRealResize(measure); addEventListener("load", measure); measure();
     new ResizeObserver(() => measure()).observe(cards[0].parentElement);
-    /* 3D at rest: the card that is paused tilts with the phone (gyroscope) or the mouse; the photo sits in
-       front of the panel, so they part a little like layers. Movement is eased in a single rAF loop. */
-    { let restI = -1, tx = 0, ty = 0, cx = 0, cy = 0, b0 = null, g0 = null, raf = 0, asked = false;
-      const loop = () => { raf = 0; cx += (tx - cx) * .12; cy += (ty - cy) * .12; const c = cards[restI];
-        if (c) { c.style.setProperty("--rx", cx.toFixed(2) + "deg"); c.style.setProperty("--ry", cy.toFixed(2) + "deg"); }
-        if (Math.abs(tx - cx) + Math.abs(ty - cy) > .02) raf = requestAnimationFrame(loop); };
-      const aim = (rx, ry) => { tx = Math.max(-9, Math.min(9, rx)); ty = Math.max(-11, Math.min(11, ry)); if (!raf) raf = requestAnimationFrame(loop); };
-      const setRest = i => { if (i === restI) return; cards[restI]?.classList.remove("is-tilt"); restI = i; b0 = g0 = null; tx = ty = cx = cy = 0; if (i >= 0) cards[i].classList.add("is-tilt"); };
+    /* 3D at rest: the paused card tilts as a whole with the phone (gyroscope) or the mouse, and inside it the
+       photo and the panel part a little like layers. Where no motion sensor is available (a page shown inside
+       another site, a laptop) it sways gently on its own, so the card still reads as an object. One rAF loop. */
+    { let restI = -1, tx = 0, ty = 0, cx = 0, cy = 0, b0 = null, g0 = null, raf = 0, asked = false, inputAt = 0;
+      const put = (c, x, y) => { c.style.setProperty("--crx", (x * .6).toFixed(2) + "deg"); c.style.setProperty("--cry", (y * .6).toFixed(2) + "deg");
+        c.style.setProperty("--rx", x.toFixed(2) + "deg"); c.style.setProperty("--ry", y.toFixed(2) + "deg"); };
+      const loop = now => {
+        raf = 0; const c = cards[restI];
+        if (c && !REDUCED && now - inputAt > 1400) { tx = Math.sin(now / 1500) * 4; ty = Math.cos(now / 1150) * 6; }   // no sensor, no mouse: a slow sway
+        cx += (tx - cx) * .1; cy += (ty - cy) * .1;
+        if (c) put(c, cx, cy);
+        if (c || Math.abs(tx - cx) + Math.abs(ty - cy) > .02) raf = requestAnimationFrame(loop);
+      };
+      const aim = (rx, ry) => { inputAt = performance.now(); tx = Math.max(-12, Math.min(12, rx)); ty = Math.max(-14, Math.min(14, ry)); if (!raf) raf = requestAnimationFrame(loop); };
+      const setRest = i => {
+        if (i === restI) return;
+        const old = cards[restI]; if (old) { old.classList.remove("is-tilt"); put(old, 0, 0); }
+        restI = i; b0 = g0 = null; tx = ty = cx = cy = 0;
+        if (i >= 0) { cards[i].classList.add("is-tilt"); if (!raf) raf = requestAnimationFrame(loop); }
+      };
       addEventListener("scroll", () => {   // the paused card: its own hold zone contains the scroll position
         const h = (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2;
         setRest(snapY.findIndex(c => Math.abs(scrollY - c) <= h * .9));
@@ -415,13 +431,12 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
         if (restI < 0 || e.beta == null) return;
         if (b0 === null) { b0 = e.beta; g0 = e.gamma; }
         b0 += (e.beta - b0) * .01; g0 += (e.gamma - g0) * .01;   // the resting angle is whatever the hand holds: it recentres slowly
-        aim(-(e.beta - b0) * .45, (e.gamma - g0) * .55);
+        aim(-(e.beta - b0) * .7, (e.gamma - g0) * .8);
       });
       stack.addEventListener("pointermove", e => { if (e.pointerType !== "mouse" || restI < 0) return; const r = cards[restI].getBoundingClientRect();
-        aim(-((e.clientY - r.top) / r.height - .5) * 12, ((e.clientX - r.left) / r.width - .5) * 16); });
-      stack.addEventListener("pointerleave", () => aim(0, 0));
-      // iPhone asks once for motion access; it can only be asked from a tap, so the first tap on a card does it
-      stack.addEventListener("touchend", () => { if (asked) return; asked = true; window.DeviceOrientationEvent?.requestPermission?.().catch(() => {}); }, { passive: true });
+        aim(-((e.clientY - r.top) / r.height - .5) * 14, ((e.clientX - r.left) / r.width - .5) * 18); });
+      // iPhone asks once for motion access, and only from a tap: the first tap anywhere on the page does it
+      addEventListener("touchend", () => { if (asked) return; asked = true; window.DeviceOrientationEvent?.requestPermission?.().catch(() => {}); }, { passive: true });
     }
     readingStops(window, { centers: () => snaps.map(n => n.getBoundingClientRect().top + scrollY), half: () => (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2, pager: true,
       active: () => !document.documentElement.classList.contains("is-covered") });
@@ -562,21 +577,41 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
 // glass highlight follows the pointer on primary buttons
 addEventListener("pointermove", e => { const el = e.target.closest?.(".btn--primary"); if (!el) return; const r = el.getBoundingClientRect(); el.style.setProperty("--mx", ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%"); el.style.setProperty("--my", ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%"); }, { passive: true });
 // smooth in-page anchors
-document.querySelectorAll('a[href^="#"]').forEach(a => { if (a.closest("#sm")) return; a.addEventListener("click", e => { const t = a.getAttribute("href").length > 1 && document.querySelector(a.getAttribute("href")); if (!t) return; e.preventDefault(); scrollToEl(t); }); });
+document.querySelectorAll('a[href^="#"]').forEach(a => { if (a.closest("#sm")) return; a.addEventListener("click", e => { if (CONFIG.whatsapp && a.matches("[data-svc], [data-wa]")) return; const t = a.getAttribute("href").length > 1 && document.querySelector(a.getAttribute("href")); if (!t) return; e.preventDefault(); scrollToEl(t); }); });
 
 /* =====================================================================
    CONTACT
    ===================================================================== */
 const CONFIG = {
   whatsapp: "",                       // international digits, no "+" (e.g. "34600111222")
-  email: "meysociety@protonmail.com",
+  email: "Mey.society@protonmail.com",
   analytics: { plausible: "", ga4: "" }, // plausible: your domain (cookieless); ga4: "G-XXXXXXX" (asks for consent first)
 };
-// floating WhatsApp button: straight to a chat when the number is set, otherwise to the contact form
-{ const fab = document.getElementById("fabContact"); if (CONFIG.whatsapp) { fab.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent("Hola Mey Society, me gustaría organizar mi estancia en Ibiza.")}`; fab.target = "_blank"; fab.rel = "noopener"; }
-  else fab.setAttribute("aria-label", "Escríbeme"), fab.addEventListener("click", e => { e.preventDefault(); scrollToEl(document.getElementById("contacto")); });
-  const sync = () => fab.classList.toggle("is-on", scrollY > innerHeight * .5 && !document.querySelector(".staggered-menu-wrapper[data-open]"));
-  addEventListener("scroll", sync, { passive: true }); sync(); }
+/* ---------------- WhatsApp Business: every contact button opens a chat with the message already written ----------------
+   The message says exactly what the visitor was looking at (the boat, the villa, the club, the service, the plan) and is
+   written in the visitor's language, so they only press send. Without a number set, the button falls back to the
+   contact form with the same interest filled in. */
+const WA_TXT = {
+  es: { hi: "Hola Mey Society", want: "me interesa", ask: "¿Me pasas disponibilidad y lo que necesitas saber?", stay: "quiero organizar mi estancia en Ibiza. ¿Me ayudas?" },
+  en: { hi: "Hi Mey Society", want: "I'm interested in", ask: "Could you send me availability and what you need from me?", stay: "I'd like to plan my stay in Ibiza. Can you help?" },
+  it: { hi: "Ciao Mey Society", want: "mi interessa", ask: "Mi mandi la disponibilità e cosa ti serve sapere?", stay: "vorrei organizzare il mio soggiorno a Ibiza. Mi aiuti?" },
+  fr: { hi: "Bonjour Mey Society", want: "je suis intéressé(e) par", ask: "Pouvez-vous m'envoyer les disponibilités et ce dont vous avez besoin ?", stay: "je voudrais organiser mon séjour à Ibiza. Vous m'aidez ?" },
+  de: { hi: "Hallo Mey Society", want: "ich interessiere mich für", ask: "Kannst du mir die Verfügbarkeit schicken und sagen, was du brauchst?", stay: "ich möchte meinen Aufenthalt auf Ibiza planen. Hilfst du mir?" },
+};
+const waText = product => { const w = WA_TXT[getLang()] || WA_TXT.es; return product ? `${w.hi}, ${w.want}: ${product}. ${w.ask}` : `${w.hi}, ${w.stay}`; };
+// opens the chat (true) or, with no number configured yet, runs the form fallback (false)
+function openWA(product, place, fallback) {
+  if (!CONFIG.whatsapp) { fallback?.(); return false; }
+  window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(waText(product))}`, "_blank", "noopener");
+  track("contact_click", { method: "whatsapp", place, item_name: product || "general" });
+  return true;
+}
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-wa]"); if (!el) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  const inMenu = el.closest("#sm"); if (inMenu) SM.set(false);
+  openWA("", el.dataset.wa, () => setTimeout(() => scrollToEl(document.getElementById("contacto")), inMenu ? 250 : 0));
+}, true);
 /* resize that ignores the phone's browser bars sliding in and out: on iPhone they reappear whenever you scroll
    up, and re-measuring the page at that moment was a hitch felt only when scrolling up */
 function onRealResize(cb) {
@@ -593,8 +628,7 @@ initConsent(CONFIG.analytics);
 /* what people do, for Analytics: contact taps, legal-free and anonymous (no personal data is sent) */
 document.addEventListener("click", e => {
   const a = e.target.closest("a[href]"); if (!a) return; const h = a.getAttribute("href");
-  if (a.id === "fabContact") track("contact_click", { method: CONFIG.whatsapp ? "whatsapp" : "form", place: "boton_flotante" });
-  else if (h.startsWith("https://wa.me/")) track("contact_click", { method: "whatsapp", place: "enlace" });
+  if (h.startsWith("https://wa.me/")) track("contact_click", { method: "whatsapp", place: "enlace" });
   else if (h.startsWith("mailto:")) track("contact_click", { method: "email", place: "enlace" });
 }, { capture: true, passive: true });
 const LOADED_AT = performance.now();
@@ -622,10 +656,11 @@ clubChips.addEventListener("click", e => {
 });
 chips.addEventListener("click", e => { const c = e.target.closest(".chip"); if (c) select(c.dataset.c, !chosen.has(c.dataset.c)); });
 document.querySelectorAll("[data-pack]").forEach(b => b.addEventListener("click", () => {
+  if (openWA(`${t("plan")} ${b.dataset.pack}`, "paquete")) return;
   const map = { "Arrival": ["transfers", "villas", "dining"], "Sea & Sun": ["yates", "motos", "beach", "dining"], "Night Edition": ["noche", "transfers"] };
   (map[b.dataset.pack] || []).forEach(id => select(id, true));
   document.getElementById("f-notes").value = `${t("Me interesa")}: ${t("plan")} ${b.dataset.pack}.`;
-  const t = document.getElementById("contacto"); scrollToEl(t);
+  scrollToEl(document.getElementById("contacto"));   // (a local "t" here used to shadow the translator and break the button)
 }));
 /* ---------------- vertical wheel picker (number of people) ----------------
    A drum of numbers like the iPhone picker: the one in the middle band is the value. Native scrolling with
@@ -686,7 +721,7 @@ document.getElementById("form").addEventListener("submit", e => {
   const url = CONFIG.whatsapp ? `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(lines)}` : `mailto:${CONFIG.email}?subject=${encodeURIComponent("Mi estancia en Ibiza")}&body=${encodeURIComponent(lines)}`;
   window.open(url, "_blank", "noopener");
   track("generate_lead", { method: CONFIG.whatsapp ? "whatsapp" : "email", language: getLang() });
-  status.textContent = CONFIG.whatsapp ? msg("booked", "Abriendo WhatsApp con tu mensaje.") : msg("mailed", "Abriendo tu correo con el mensaje preparado. Si no se abre, escríbenos a meysociety@protonmail.com.");
+  status.textContent = CONFIG.whatsapp ? msg("booked", "Abriendo WhatsApp con tu mensaje.") : msg("mailed", "Abriendo tu correo con el mensaje preparado. Si no se abre, escríbenos a Mey.society@protonmail.com.");
 });
 
 /* =====================================================================
@@ -864,7 +899,7 @@ async function downloadPDF() {
     const footer = () => {
       doc.setDrawColor(...LINE); doc.setLineWidth(.3); doc.line(M, H - 14, W - M, H - 14);
       doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...SOFT);
-      doc.text(pdfTxt(`Mey Society · Private concierge Ibiza · meysociety@protonmail.com`), M, H - 9);
+      doc.text(pdfTxt(`Mey Society · Private concierge Ibiza · Mey.society@protonmail.com`), M, H - 9);
       doc.text(pdfTxt(`${rec.code} · ${page}`), W - M, H - 9, { align: "right" });
     };
     const header = (big) => {
@@ -1128,6 +1163,7 @@ function openFleet(cat = "all") {
 }
 function closeFleet() { fleet.hidden = true; document.body.style.overflow = ""; }
 function askFleet(b) {
+  if (openWA([b.name, t(CAT_LABEL[b.type]), b.len, b.pax ? paxText(b) : ""].filter(Boolean).join(" · "), "flota")) return;
   closeBoat(); closeFleet(); select("yates", true);
   document.getElementById("f-notes").value = `${t("Me interesa")}: ${b.name}${b.len ? " · " + b.len : ""} (${t(CAT_LABEL[b.type])}).`;
   scrollToEl(document.getElementById("contacto"));
@@ -1413,6 +1449,7 @@ document.querySelectorAll(".stack__card").forEach(card => {
 /* ---------------- Villa Aura: the scroll-driven film (loaded only when opened) ---------------- */
 {
   const tour = initVillaTour({ onAsk: name => {
+    if (openWA(name, "villa")) return;
     select("villas", true); document.getElementById("f-notes").value = `${t("Me interesa")}: ${name}.`;
     scrollToEl(document.getElementById("contacto"));
   } });

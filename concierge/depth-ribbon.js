@@ -48,7 +48,7 @@ export function createDepthRibbon(root, opts = {}) {
     stage.style.perspective = P + "px";
     cards.forEach(c => { c.style.width = cw + "px"; c.style.height = ch + "px"; c.style.marginLeft = -cw / 2 + "px"; c.style.marginTop = -ch / 2 + "px"; });
   }
-  const rel = i => { let u = (i - st.pos) % N; if (u < -1.5) u += N; if (u > N - 1.5) u -= N; return u; };
+  const rel = i => { if (N < 2) return i - st.pos; let u = (i - st.pos) % N; if (u < -1.5) u += N; if (u > N - 1.5) u -= N; return u; };   // (one boat: no wrap-around, it sits in front)
 
   function drawBand() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
@@ -65,7 +65,7 @@ export function createDepthRibbon(root, opts = {}) {
   function layout() {
     if (!N) return;
     cards.forEach((c, i) => {
-      const u = rel(i), e = st.enter, uu = u + (1 - e) * 3.5; // entrance: cards glide forward along the ribbon
+      const u = rel(i), e = st.enter, uu = u + (1 - e) * 1.2; // entrance: a short glide forward along the ribbon (the boat is there at once)
       const p = path(uu), d = .02, q = path(uu + d);
       const away = Math.min(1, Math.abs(uu) * 1.4); // the card in focus faces you squarely
       const yaw = Math.atan2(q.x - p.x, -(q.z - p.z)) * 180 / Math.PI * .55 * away;
@@ -73,7 +73,7 @@ export function createDepthRibbon(root, opts = {}) {
       // cards that have passed slide out to the side and fade instead of swelling toward the camera
       let x = p.x, y = p.y, z = p.z;
       if (uu < 0) { const k = -uu; x = -k * cw * .95; y = k * ch * .1; z = k * cw * .25; }
-      const op = clamp((uu + .75) / .6, 0, 1) * clamp((N >= 4 ? N - 1.5 - uu : N - .6 - uu) / 1.1, 0, 1) * clamp(1.15 - uu * .12, 0, 1) * e;
+      const op = clamp((uu + .75) / .6, 0, 1) * (N < 2 ? 1 : clamp((N >= 4 ? N - 1.5 - uu : N - .6 - uu) / 1.1, 0, 1)) * clamp(1.15 - uu * .12, 0, 1) * e;   // (a single boat is never faded as "the last one")
       // only touch what changed, and take invisible cards out of compositing altogether
       const L = c._last, on = op > .002;
       if (L.on !== on) { c.style.visibility = on ? "" : "hidden"; L.on = on; }
@@ -97,7 +97,7 @@ export function createDepthRibbon(root, opts = {}) {
   function frame(now) {
     raf = 0; const dt = st.last ? Math.min((now - st.last) / 1000, .1) : 1 / 60; st.last = now;
     let busy = false;
-    if (st.enter < 1) { const k = clamp((now - st.enterAt) / 1100, 0, 1); st.enter = 1 - Math.pow(1 - k, 3); busy = true; }
+    if (st.enter < 1) { const k = clamp((now - st.enterAt) / 480, 0, 1); st.enter = 1 - Math.pow(1 - k, 3); busy = true; }
     if (N < 2) { st.pos = st.target = 0; st.vel = 0; }   // one boat: held still in front
     if (!st.drag) {
       const cruise = o.autoplay && N >= 4 && !reduced && !st.hover && now > st.idleAt;

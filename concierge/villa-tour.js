@@ -74,11 +74,11 @@ export function readingStops(target, { centers, half, pager = false, active = ()
 const ORDER = ["cala", "villa", "gate", "door", "salon", "cocina", "piscina", "suite", "terraza", "suites", "jacuzzi", "fin"];
 const T = {
   es: {
-    ui: { name: "Villa Aura", place: "Recorrido privado", scroll: "Desliza para entrar", close: "Cerrar", loading: "Preparando el recorrido", fail: "Este navegador no puede mostrar el recorrido. Pídenos el dossier de la villa", ask: "Pedir disponibilidad", again: "Ver de nuevo", facts: ["5 suites con baño", "6 baños", "Piscina infinita", "Jacuzzi privado", "Acceso directo al mar"], fine: "Precio según fechas: te lo enviamos al pedir disponibilidad. Guestlist de cortesía sujeta a disponibilidad del club." },
-    cala: ["La cala", "Antes de la villa, su secreto.", "Agua turquesa a tus pies y acceso directo al mar. Hay quien cruza la isla buscando una cala así; tú te despiertas encima.", ["Acceso directo al mar"]],
+    ui: { name: "Villa Aura", place: "Recorrido privado", scroll: "Desliza para entrar", close: "Cerrar", loading: "Preparando el recorrido", fail: "Este navegador no puede mostrar el recorrido. Pídenos el dossier de la villa", ask: "Pedir disponibilidad", again: "Ver de nuevo", facts: ["5 suites con baño", "6 baños", "Piscina infinita", "Jacuzzi privado", "Acceso directo al mar"], fine: "Precio según fechas: te lo enviamos al pedir disponibilidad.<br>Guestlist de cortesía sujeta a disponibilidad del club." },
+    cala: ["La cala privada", "Antes de la villa, su secreto.", "Agua turquesa a tus pies y acceso directo al mar. Hay quien cruza la isla buscando una cala así; tú te despiertas encima.", ["Acceso directo al mar"]],
     villa: ["La villa", "Arquitectura que mira al mar.", "Líneas blancas sobre el pinar y una piscina suspendida sobre el horizonte. Desde el aire impresiona. Desde dentro, más.", ["Diseño contemporáneo", "Vistas a la bahía"]],
     gate: ["La llegada", "La puerta se abre. Ibiza se queda fuera.", "Entrada privada, sin recepción y sin vecinos a la vista. Aquí nadie te pide la pulsera.", ["Acceso privado", "Aparcamiento"]],
-    door: ["Bienvenido", "Lo que hay detrás de esta puerta no sale en ningún catálogo.", "Ni en Google ni en las revistas. Sigue bajando: estás a punto de entrar.", []],
+    door: ["Bienvenido", "Lo que hay detrás de esta puerta no sale en ningún catálogo.", "Sigue bajando: estás a punto de entrar.", []],
     salon: ["El salón", "Un salón sin paredes al paisaje.", "Ventanales de suelo a techo: el mar y el pinar forman parte de la decoración.", ["Ventanales panorámicos", "Salida directa a la piscina"]],
     cocina: ["Comedor y cocina", "Cenas que se alargan solas.", "Mesa para todos y cocina equipada. ¿No te apetece cocinar? Te ponemos chef privado y tú solo eliges el vino.", ["Cocina equipada", "Chef privado opcional"]],
     piscina: ["La piscina", "El agua termina donde empieza el mar.", "Piscina infinita frente a la bahía. La foto que todos tus amigos te van a pedir.", ["Piscina infinita", "Solárium"]],
@@ -89,11 +89,11 @@ const T = {
     fin: ["Tu semana en Villa Aura", "Empieza con un mensaje.", "Villa, chef, barco en la cala y mesa en el club: lo coordinamos todo. Y por reservar con nosotros, guestlist de cortesía.", []],
   },
   en: {
-    ui: { name: "Villa Aura", place: "Private tour", scroll: "Scroll to step inside", close: "Close", loading: "Preparing the tour", fail: "This browser cannot show the tour. Ask us for the villa dossier", ask: "Check availability", again: "Watch again", facts: ["5 en-suite bedrooms", "6 bathrooms", "Infinity pool", "Private jacuzzi", "Direct access to the sea"], fine: "Price depends on dates: we send it when you ask for availability. Complimentary guest list subject to club availability." },
-    cala: ["The cove", "Before the villa, its secret.", "Turquoise water at your feet and direct access to the sea. Some people cross the island looking for a cove like this; you wake up above it.", ["Direct access to the sea"]],
+    ui: { name: "Villa Aura", place: "Private tour", scroll: "Scroll to step inside", close: "Close", loading: "Preparing the tour", fail: "This browser cannot show the tour. Ask us for the villa dossier", ask: "Check availability", again: "Watch again", facts: ["5 en-suite bedrooms", "6 bathrooms", "Infinity pool", "Private jacuzzi", "Direct access to the sea"], fine: "Price depends on dates: we send it when you ask for availability.<br>Complimentary guest list subject to club availability." },
+    cala: ["The private cove", "Before the villa, its secret.", "Turquoise water at your feet and direct access to the sea. Some people cross the island looking for a cove like this; you wake up above it.", ["Direct access to the sea"]],
     villa: ["The villa", "Architecture that faces the sea.", "White lines above the pines and a pool hanging over the horizon. Impressive from the air. Even more from inside.", ["Contemporary design", "Bay views"]],
     gate: ["The arrival", "The gate opens. Ibiza stays outside.", "A private entrance, no front desk, no neighbours in sight. Nobody asks for your wristband here.", ["Private access", "Parking"]],
-    door: ["Welcome", "What lies behind this door is in no catalogue.", "Not on Google, not in the magazines. Keep scrolling: you are about to walk in.", []],
+    door: ["Welcome", "What lies behind this door is in no catalogue.", "Keep scrolling: you are about to walk in.", []],
     salon: ["The living room", "A living room with no walls to the view.", "Floor-to-ceiling glass: the sea and the pines are part of the décor.", ["Panoramic windows", "Straight out to the pool"]],
     cocina: ["Dining and kitchen", "Dinners that run long on their own.", "A table for everyone and a fully equipped kitchen. Don't feel like cooking? We bring a private chef and you just pick the wine.", ["Equipped kitchen", "Optional private chef"]],
     piscina: ["The pool", "The water ends where the sea begins.", "An infinity pool facing the bay. The photo all your friends will ask you for.", ["Infinity pool", "Sun deck"]],
@@ -104,11 +104,11 @@ const T = {
     fin: ["Your week at Villa Aura", "It starts with one message.", "Villa, chef, a boat in the cove and a table at the club: we coordinate it all. And when you book with us, a complimentary guest list.", []],
   },
   it: {
-    ui: { name: "Villa Aura", place: "Tour privato", scroll: "Scorri per entrare", close: "Chiudi", loading: "Preparazione del tour", fail: "Questo browser non può mostrare il tour. Chiedici il dossier della villa", ask: "Chiedi disponibilità", again: "Rivedi", facts: ["5 suite con bagno", "6 bagni", "Piscina a sfioro", "Jacuzzi privata", "Accesso diretto al mare"], fine: "Prezzo in base alle date: te lo inviamo quando chiedi la disponibilità. Guest list in omaggio secondo disponibilità del club." },
-    cala: ["La cala", "Prima della villa, il suo segreto.", "Acqua turchese ai tuoi piedi e accesso diretto al mare. C'è chi attraversa l'isola per una cala così; tu ti svegli sopra.", ["Accesso diretto al mare"]],
+    ui: { name: "Villa Aura", place: "Tour privato", scroll: "Scorri per entrare", close: "Chiudi", loading: "Preparazione del tour", fail: "Questo browser non può mostrare il tour. Chiedici il dossier della villa", ask: "Chiedi disponibilità", again: "Rivedi", facts: ["5 suite con bagno", "6 bagni", "Piscina a sfioro", "Jacuzzi privata", "Accesso diretto al mare"], fine: "Prezzo in base alle date: te lo inviamo quando chiedi la disponibilità.<br>Guest list in omaggio secondo disponibilità del club." },
+    cala: ["La caletta privata", "Prima della villa, il suo segreto.", "Acqua turchese ai tuoi piedi e accesso diretto al mare. C'è chi attraversa l'isola per una cala così; tu ti svegli sopra.", ["Accesso diretto al mare"]],
     villa: ["La villa", "Architettura che guarda il mare.", "Linee bianche sulla pineta e una piscina sospesa sull'orizzonte. Dall'alto colpisce. Da dentro, di più.", ["Design contemporaneo", "Vista sulla baia"]],
     gate: ["L'arrivo", "Il cancello si apre. Ibiza resta fuori.", "Ingresso privato, niente reception e nessun vicino in vista. Qui nessuno ti chiede il braccialetto.", ["Accesso privato", "Parcheggio"]],
-    door: ["Benvenuto", "Quello che c'è dietro questa porta non è in nessun catalogo.", "Né su Google né sulle riviste. Continua a scorrere: stai per entrare.", []],
+    door: ["Benvenuto", "Quello che c'è dietro questa porta non è in nessun catalogo.", "Continua a scorrere: stai per entrare.", []],
     salon: ["Il salone", "Un salone senza pareti sul paesaggio.", "Vetrate dal pavimento al soffitto: il mare e la pineta fanno parte dell'arredo.", ["Vetrate panoramiche", "Uscita diretta in piscina"]],
     cocina: ["Sala da pranzo e cucina", "Cene che si allungano da sole.", "Un tavolo per tutti e cucina attrezzata. Non ti va di cucinare? Ti portiamo uno chef privato e tu scegli solo il vino.", ["Cucina attrezzata", "Chef privato opzionale"]],
     piscina: ["La piscina", "L'acqua finisce dove inizia il mare.", "Piscina a sfioro davanti alla baia. La foto che tutti i tuoi amici ti chiederanno.", ["Piscina a sfioro", "Solarium"]],
@@ -119,11 +119,11 @@ const T = {
     fin: ["La tua settimana a Villa Aura", "Inizia con un messaggio.", "Villa, chef, barca nella cala e tavolo al club: coordiniamo tutto noi. E prenotando con noi, guest list in omaggio.", []],
   },
   fr: {
-    ui: { name: "Villa Aura", place: "Visite privée", scroll: "Faites défiler pour entrer", close: "Fermer", loading: "Préparation de la visite", fail: "Ce navigateur ne peut pas afficher la visite. Demandez-nous le dossier de la villa", ask: "Demander la disponibilité", again: "Revoir", facts: ["5 suites avec salle de bain", "6 salles de bain", "Piscine à débordement", "Jacuzzi privé", "Accès direct à la mer"], fine: "Prix selon les dates : nous vous l'envoyons lors de la demande de disponibilité. Guest list offerte selon disponibilité du club." },
-    cala: ["La crique", "Avant la villa, son secret.", "Une eau turquoise à vos pieds et un accès direct à la mer. Certains traversent l'île pour une crique pareille ; vous vous réveillez au-dessus.", ["Accès direct à la mer"]],
+    ui: { name: "Villa Aura", place: "Visite privée", scroll: "Faites défiler pour entrer", close: "Fermer", loading: "Préparation de la visite", fail: "Ce navigateur ne peut pas afficher la visite. Demandez-nous le dossier de la villa", ask: "Demander la disponibilité", again: "Revoir", facts: ["5 suites avec salle de bain", "6 salles de bain", "Piscine à débordement", "Jacuzzi privé", "Accès direct à la mer"], fine: "Prix selon les dates : nous vous l'envoyons lors de la demande de disponibilité.<br>Guest list offerte selon disponibilité du club." },
+    cala: ["La crique privée", "Avant la villa, son secret.", "Une eau turquoise à vos pieds et un accès direct à la mer. Certains traversent l'île pour une crique pareille ; vous vous réveillez au-dessus.", ["Accès direct à la mer"]],
     villa: ["La villa", "Une architecture tournée vers la mer.", "Des lignes blanches sur la pinède et une piscine suspendue sur l'horizon. Impressionnante vue du ciel. Plus encore de l'intérieur.", ["Design contemporain", "Vue sur la baie"]],
     gate: ["L'arrivée", "Le portail s'ouvre. Ibiza reste dehors.", "Entrée privée, pas de réception, aucun voisin en vue. Ici, personne ne vous demande votre bracelet.", ["Accès privé", "Parking"]],
-    door: ["Bienvenue", "Ce qui se cache derrière cette porte n'est dans aucun catalogue.", "Ni sur Google ni dans les magazines. Continuez : vous êtes sur le point d'entrer.", []],
+    door: ["Bienvenue", "Ce qui se cache derrière cette porte n'est dans aucun catalogue.", "Continuez : vous êtes sur le point d'entrer.", []],
     salon: ["Le salon", "Un salon sans murs sur le paysage.", "Des baies vitrées du sol au plafond : la mer et la pinède font partie du décor.", ["Baies panoramiques", "Accès direct à la piscine"]],
     cocina: ["Salle à manger et cuisine", "Des dîners qui s'éternisent tout seuls.", "Une table pour tous et une cuisine équipée. Pas envie de cuisiner ? Nous envoyons un chef privé, vous choisissez le vin.", ["Cuisine équipée", "Chef privé en option"]],
     piscina: ["La piscine", "L'eau s'arrête là où la mer commence.", "Une piscine à débordement face à la baie. La photo que tous vos amis vous demanderont.", ["Piscine à débordement", "Solarium"]],
@@ -134,11 +134,11 @@ const T = {
     fin: ["Votre semaine à la Villa Aura", "Elle commence par un message.", "Villa, chef, bateau dans la crique et table au club : nous coordonnons tout. Et en réservant avec nous, guest list offerte.", []],
   },
   de: {
-    ui: { name: "Villa Aura", place: "Private Tour", scroll: "Scrollen und eintreten", close: "Schließen", loading: "Tour wird vorbereitet", fail: "Dieser Browser kann die Tour nicht anzeigen. Fragen Sie uns nach dem Exposé der Villa", ask: "Verfügbarkeit anfragen", again: "Noch einmal ansehen", facts: ["5 Suiten mit Bad", "6 Bäder", "Infinity-Pool", "Privater Jacuzzi", "Direkter Zugang zum Meer"], fine: "Preis je nach Datum: Wir senden ihn dir mit der Verfügbarkeitsanfrage. Gästeliste als Geschenk, je nach Verfügbarkeit des Clubs." },
-    cala: ["Die Bucht", "Vor der Villa: ihr Geheimnis.", "Türkises Wasser zu deinen Füßen und direkter Zugang zum Meer. Manche durchqueren die Insel für so eine Bucht; du wachst darüber auf.", ["Direkter Zugang zum Meer"]],
+    ui: { name: "Villa Aura", place: "Private Tour", scroll: "Scrollen und eintreten", close: "Schließen", loading: "Tour wird vorbereitet", fail: "Dieser Browser kann die Tour nicht anzeigen. Fragen Sie uns nach dem Exposé der Villa", ask: "Verfügbarkeit anfragen", again: "Noch einmal ansehen", facts: ["5 Suiten mit Bad", "6 Bäder", "Infinity-Pool", "Privater Jacuzzi", "Direkter Zugang zum Meer"], fine: "Preis je nach Datum: Wir senden ihn dir mit der Verfügbarkeitsanfrage.<br>Gästeliste als Geschenk, je nach Verfügbarkeit des Clubs." },
+    cala: ["Die private Bucht", "Vor der Villa: ihr Geheimnis.", "Türkises Wasser zu deinen Füßen und direkter Zugang zum Meer. Manche durchqueren die Insel für so eine Bucht; du wachst darüber auf.", ["Direkter Zugang zum Meer"]],
     villa: ["Die Villa", "Architektur mit Blick aufs Meer.", "Weiße Linien über dem Pinienwald und ein Pool, der über dem Horizont schwebt. Aus der Luft beeindruckend. Von innen noch mehr.", ["Zeitgenössisches Design", "Blick auf die Bucht"]],
     gate: ["Die Ankunft", "Das Tor öffnet sich. Ibiza bleibt draußen.", "Privater Eingang, keine Rezeption, keine Nachbarn in Sicht. Hier fragt niemand nach deinem Armband.", ["Privater Zugang", "Parkplatz"]],
-    door: ["Willkommen", "Was hinter dieser Tür liegt, steht in keinem Katalog.", "Nicht bei Google, nicht in den Magazinen. Scroll weiter: Gleich trittst du ein.", []],
+    door: ["Willkommen", "Was hinter dieser Tür liegt, steht in keinem Katalog.", "Scroll weiter: Gleich trittst du ein.", []],
     salon: ["Das Wohnzimmer", "Ein Wohnzimmer ohne Wände zur Landschaft.", "Bodentiefe Fenster: Meer und Pinien gehören zur Einrichtung.", ["Panoramafenster", "Direkt hinaus zum Pool"]],
     cocina: ["Essbereich und Küche", "Abendessen, die von selbst länger werden.", "Ein Tisch für alle und eine voll ausgestattete Küche. Keine Lust zu kochen? Wir schicken einen Privatkoch, du wählst nur den Wein.", ["Ausgestattete Küche", "Privatkoch optional"]],
     piscina: ["Der Pool", "Das Wasser endet, wo das Meer beginnt.", "Infinity-Pool mit Blick auf die Bucht. Das Foto, nach dem dich alle Freunde fragen werden.", ["Infinity-Pool", "Sonnendeck"]],
@@ -257,6 +257,7 @@ export function initVillaTour({ onAsk } = {}) {
         </div></div>
         <section class="vt__end">
           <p class="vt__k">${L.ui.place}</p><h3>${L.ui.name}</h3>
+          <video class="vt__film" src="data/villa/aura-film.mp4#t=24" controls playsinline preload="metadata" aria-label="${L.ui.name}"></video>
           <ul class="vt__facts">${L.ui.facts.map(f => `<li>${f}</li>`).join("")}</ul>
           <div class="vt__cta"><button class="btn btn--primary btn--lg" type="button" data-ask>${L.ui.ask}</button><button class="btn btn--glass btn--onDark" type="button" data-again>${L.ui.again}</button></div>
           <p class="vt__fine">${L.ui.fine}</p>
@@ -275,7 +276,7 @@ export function initVillaTour({ onAsk } = {}) {
     /* reading pauses: in every chapter the film stops for a stretch of scroll while its text is fully shown,
        and the scroll snaps there, so each room holds still long enough to read (going down or back up) */
     let holds = [], S = 0;
-    const HOLD = 3.2;                                   // length of each pause, in film seconds of scroll
+    const HOLD = 0;                                     // no reading pauses: the film runs straight through (owner's choice)
     const toT = s => { let acc = 0; for (const h of holds) { if (s < h.at + acc) return s - acc; if (s < h.at + acc + HOLD) return h.at; acc += HOLD; } return s - acc; };
     const toS = t => { let acc = 0; for (const h of holds) { if (t <= h.at) return t + acc; acc += HOLD; } return t + acc; };
     const frames = createFrames(f => { load.style.setProperty("--p", f.toFixed(3)); if (f >= 1) load.classList.add("is-done"); kick(); });
@@ -431,10 +432,10 @@ export function initVillaTour({ onAsk } = {}) {
     }
     const kick = () => { if (!raf && root && !root.hidden) raf = requestAnimationFrame(frame); };
     scroller.addEventListener("scroll", () => { lastScroll = performance.now(); kick(); }, { passive: true });
-    readingStops(scroller, { centers: () => [...track.querySelectorAll(".vt__snap")].map(n => n.offsetTop), half: () => HOLD * (innerWidth < 900 ? 25 : 28) * innerHeight / 200 });
+    // (no reading stops in the tour: one continuous, light scroll)
     new ResizeObserver(size).observe(cv);
 
-    function close() { root.hidden = true; document.body.style.overflow = ""; document.documentElement.classList.remove("is-covered"); document.dispatchEvent(new CustomEvent("coverchange", { detail: false })); }
+    function close() { root.querySelector(".vt__film")?.pause(); root.hidden = true; document.body.style.overflow = ""; document.documentElement.classList.remove("is-covered"); document.dispatchEvent(new CustomEvent("coverchange", { detail: false })); }
     root.addEventListener("click", e => {
       if (e.target.closest("[data-close]")) close();
       else if (e.target.closest("[data-ask]")) { close(); onAsk?.(tx().ui.name); }
