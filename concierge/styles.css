@@ -1776,3 +1776,10 @@ html:not([data-theme="dark"]) .vt__x { box-shadow: inset 0 1px 0 rgb(255 255 255
 /* map: the Clubs / Beach clubs / Playas filters sit centred */
 .hero__copy > .filters { justify-self: stretch; justify-content: center; }
 @media (max-width: 600px) { .hero .filter { padding: 0 10px; } .hero .filters { gap: 5px; } }
+
+/* ---------------- justified body copy: every multi-line paragraph runs flush on both edges ---------------- */
+:where(p, .vt__p, .vt__cap, li:not([class])):where(:not(.eyebrow, .form__status, .pop__coord, .pop__kind, .intro__line, .pack__days, .dash__dates, .fleet__count, .logo-note__s, .contact__direct)) {
+  text-align: justify; text-align-last: start; hyphens: auto; -webkit-hyphens: auto; hyphenate-limit-chars: 6 2 3; word-spacing: -.01em; text-wrap: pretty; }
+/* centred blocks keep their last line centred so the shape stays symmetric */
+:is(.stack__body, .intro, .vt__end, .fleet__info, .circular-carousel__caption, .lightbox__cap, .reviews__note, .fleet__note) :is(p, .vt__p),
+p:is(.reviews__note, .fleet__note, .lightbox__cap) { text-align-last: center; }
