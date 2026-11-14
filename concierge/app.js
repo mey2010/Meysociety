@@ -462,7 +462,10 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
       const cover = cards.map((c, i) => clamp((vh - Math.max(tops[i] - sy, stuck[i])) / Math.max(1, vh - stuck[i])));
       cards.forEach((c, i) => {
         let k = 0; for (let j = i + 1; j < cards.length; j++) k += cover[j];
-        const s = (1 - Math.min(k, 4) * .05).toFixed(4), o = (1 - clamp(k * .55 - .1, 0, .95)).toFixed(3), v = (Math.min(k, 2) * .2).toFixed(3);
+        /* depth: the scale steps by whole cards and the change is eased by a CSS transition on the compositor, so
+           Safari never re-rasterizes the card photos mid-scroll (a scale written on every frame did, and stuttered);
+           covered cards fade toward the page instead of being darkened (no black veil) */
+        const s = (1 - Math.min(Math.round(k * 2) / 2, 4) * .05).toFixed(3), o = (1 - clamp(k * .55 - .1, 0, .95)).toFixed(3), v = "0";
         const L = last[i];
         if (L.s !== s) { L.s = s; paintCard(i); }
         if (L.o !== o) { c.style.opacity = o; L.o = o; }
@@ -692,6 +695,55 @@ function scrollToEl(el, smooth = !REDUCED) {
   if (!el) return; let y = 0; for (let n = el; n; n = n.offsetParent) y += n.offsetTop;
   scrollTo({ top: Math.max(0, y - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0)), behavior: smooth ? "smooth" : "auto" });
 }
+/* ---------------- a pause at the start of every home section ----------------
+   Scrolling by hand (finger, wheel, trackpad, keys) stops once at the top of each section it enters, in either
+   direction; the next gesture carries on. Inertia that would run past the stop is held for a moment. Jumps from
+   the menu or a link pass straight through. The services stack has its own one-card-per-swipe pager. */
+(() => {
+  if (REDUCED) return;
+  const secs = ["mapa", "paquetes", "ejemplos", "reviews", "como", "faq", "contacto"].map(id => document.getElementById(id)).filter(Boolean);
+  if (!secs.length) return;
+  const topOf = el => { let y = 0; for (let n = el; n; n = n.offsetParent) y += n.offsetTop; return Math.max(0, y - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0)); };
+  let tops = [], userAt = -1e9, finger = false, moved = false, auto = false, goal = null, holdUntil = 0, lastY = scrollY, startY = scrollY, idle = 0;
+  const measure = () => { tops = secs.map(topOf); }; measure(); addEventListener("load", measure); onRealResize(measure);
+  new ResizeObserver(measure).observe(document.body);
+  const live = () => !document.documentElement.classList.contains("is-covered") && !document.body.style.overflow;
+  // the latest intent decides: a wheel, a swipe or a scroll key is the reader scrolling; a click (a menu entry,
+  // a link, a button) that comes after it is a jump and passes through
+  let clickAt = -1e9; addEventListener("click", () => { clickAt = performance.now(); }, true);
+  const byUser = () => userAt > clickAt && performance.now() - userAt < 2000;
+  let holdCap = 0;
+  const stop = y => { auto = true; goal = y; holdUntil = performance.now() + 450; holdCap = performance.now() + 1400; scrollTo({ top: y, behavior: "smooth" }); };
+  // the section boundary crossed going from a to b (the first one met in that direction)
+  const crossed = (a, b) => b > a ? tops.find(t => a < t - 2 && b >= t - 2) : [...tops].reverse().find(t => a > t + 2 && b <= t + 2);
+  addEventListener("touchstart", () => { finger = true; moved = false; auto = false; goal = null; startY = scrollY; }, { passive: true });
+  addEventListener("touchmove", () => { moved = true; userAt = performance.now(); }, { passive: true });
+  addEventListener("touchend", () => { finger = false; if (moved) userAt = performance.now(); }, { passive: true });
+  addEventListener("keydown", e => { if (/^(Arrow(Up|Down)|Page(Up|Down)| )$/.test(e.key)) { userAt = performance.now(); if (!auto) startY = scrollY; } });
+  addEventListener("wheel", e => {
+    if (!live()) return;
+    const now = performance.now();
+    // paused at a section: the rest of this wheel/trackpad stream (its inertia) is held until it goes quiet
+    // for a moment; a wheel that keeps spinning is let go after 1.4 s
+    if (now < holdUntil && now < holdCap) { e.preventDefault(); holdUntil = Math.max(holdUntil, now + 220); return; }
+    if (!byUser() && !auto) startY = scrollY;
+    userAt = performance.now(); auto = false; goal = null;
+  }, { passive: false, capture: true });   // (capture: the map stops wheel events from bubbling)
+  addEventListener("scroll", () => {
+    const y = scrollY, from = lastY; lastY = y;
+    clearTimeout(idle); idle = setTimeout(settle, 140);
+    if (auto || finger || !live() || !byUser()) return;
+    const t = crossed(from, y); if (t !== undefined) stop(t);   // a flick or a wheel run reaches a section: stop there
+  }, { passive: true });
+  function settle() {
+    if (auto) { auto = false; if (goal !== null && Math.abs(scrollY - goal) > 2) scrollTo({ top: goal }); goal = null; startY = scrollY; return; }
+    if (finger || !live() || !byUser()) { startY = scrollY; return; }
+    // a slow drag that ended just past a section start (in this gesture) settles onto it
+    const y = scrollY, t = crossed(startY, y);
+    if (t !== undefined && Math.abs(y - t) < innerHeight * .2) stop(t);
+    startY = scrollY;
+  }
+})();
 initConsent(CONFIG.analytics);
 /* what people do, for Analytics: contact taps, legal-free and anonymous (no personal data is sent) */
 document.addEventListener("click", e => {
@@ -1199,29 +1251,32 @@ const CAT_LABEL = Object.fromEntries(FLEET_TYPES);
 const fleet = document.getElementById("fleet"), fleetInfo = document.getElementById("fleetInfo"), fleetChips = document.getElementById("fleetChips");
 document.getElementById("fleetClose").innerHTML = ICONS.close;
 document.getElementById("fleetPrev").innerHTML = ICONS.left; document.getElementById("fleetNext").innerHTML = ICONS.right;
-const cardSrc = b => `data/fleet/card/${b.id}.webp`, fullSrc = (b, k) => `data/fleet/4k/${b.id}-${k}.webp`;
-let ribbon = null, fleetCat = "all", fleetList = FLEET;
+const cardSrc = b => b.img || `data/fleet/card/${b.id}.webp`, fullSrc = (b, k) => `data/fleet/4k/${b.id}-${k}.webp`;
+const JET = "moto-agua", BOATS = FLEET.filter(b => b.type !== JET), JETS = FLEET.filter(b => b.type === JET);
+let ribbon = null, fleetCat = "all", fleetBase = BOATS, fleetList = BOATS;   // boats and jet skis are shown as separate fleets
 const fleetItems = () => fleetList.map(b => ({ ...b, src: cardSrc(b), title: t(b.name), tag: t(CAT_LABEL[b.type]) }));
 const paxText = b => b.pax ? `${t("Hasta")} ${b.pax} ${t("personas")}` : "";
 function renderFleetInfo(b, i) {
   if (!b) return;
   fleetInfo.innerHTML = `<h3>${b.name}</h3>
-    <ul class="fleet__specs"><li>${ICONS.boat}${t(CAT_LABEL[b.type])}</li>${b.len ? `<li>${ICONS.ruler}${b.len}</li>` : ""}${b.pax ? `<li>${ICONS.users2}${paxText(b)}</li>` : ""}${b.crew ? `<li>${ICONS.helm}${t(b.crew)}</li>` : ""}</ul>
+    <ul class="fleet__specs"><li>${b.type === JET ? ICONS.jetski : ICONS.boat}${t(CAT_LABEL[b.type])}</li>${b.len ? `<li>${ICONS.ruler}${b.len}</li>` : ""}${b.pax ? `<li>${ICONS.users2}${paxText(b)}</li>` : ""}${b.crew ? `<li>${ICONS.helm}${t(b.crew)}</li>` : ""}</ul>
     <div class="fleet__actions"><button class="btn btn--glass btn--onDark btn--sm" type="button" data-sheet>${t("Ver ficha")}</button><button class="btn btn--primary btn--sm" type="button" data-ask>${t("Pedir disponibilidad")}</button></div>`;
   fleetInfo.classList.remove("is-swap"); void fleetInfo.offsetWidth; fleetInfo.classList.add("is-swap");
   document.getElementById("fleetCount").textContent = `${String(i + 1).padStart(2, "0")} / ${String(fleetList.length).padStart(2, "0")}`;
 }
 function setFleetCat(cat) {
-  fleetCat = FLEET_TYPES.some(([k]) => k === cat) ? cat : "all"; fleetList = fleetCat === "all" ? FLEET : FLEET.filter(b => b.type === fleetCat);
+  fleetCat = FLEET_TYPES.some(([k]) => k === cat) ? cat : "all"; fleetList = fleetCat === "all" ? fleetBase : fleetBase.filter(b => b.type === fleetCat);
   fleetChips.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === fleetCat));
   ribbon.setItems(fleetItems());
   document.querySelector(".fleet__nav").classList.toggle("is-single", fleetList.length < 2);   // one boat: nothing to step through
 }
 function openFleet(cat = "all") {
   fleet.hidden = false; document.body.style.overflow = "hidden";
-  // only the types that have boats, each with its count
-  fleetChips.innerHTML = FLEET_TYPES.filter(([k]) => k === "all" || FLEET.some(b => b.type === k))
-    .map(([k, l]) => `<button type="button" data-cat="${k}" aria-pressed="${k === cat}">${t(l)} <small>${k === "all" ? FLEET.length : FLEET.filter(b => b.type === k).length}</small></button>`).join("");
+  fleetBase = cat === JET ? JETS : BOATS; if (cat === JET) cat = "all";
+  // only the types that have boats, each with its count (the jet ski fleet is one group: no chips)
+  fleetChips.hidden = fleetBase === JETS;
+  fleetChips.innerHTML = FLEET_TYPES.filter(([k]) => k === "all" || fleetBase.some(b => b.type === k))
+    .map(([k, l]) => `<button type="button" data-cat="${k}" aria-pressed="${k === cat}">${t(l)} <small>${k === "all" ? fleetBase.length : fleetBase.filter(b => b.type === k).length}</small></button>`).join("");
   if (!ribbon) ribbon = createDepthRibbon(document.getElementById("fleetRibbon").appendChild(document.createElement("div")), {
     items: [], label: t("Nuestra flota"),
     onChange: (b, i) => renderFleetInfo(fleetList[i], i),
@@ -1233,7 +1288,7 @@ function openFleet(cat = "all") {
 function closeFleet() { fleet.hidden = true; document.body.style.overflow = ""; }
 function askFleet(b) {
   if (openWA([b.name, t(CAT_LABEL[b.type]), b.len, b.pax ? paxText(b) : ""].filter(Boolean).join(" · "), "flota")) return;
-  closeBoat(); closeFleet(); select("yates", true);
+  closeBoat(); closeFleet(); select(b.type === JET ? "motos" : "yates", true);
   document.getElementById("f-notes").value = `${t("Me interesa")}: ${b.name}${b.len ? " · " + b.len : ""} (${t(CAT_LABEL[b.type])}).`;
   scrollToEl(document.getElementById("contacto"));
 }

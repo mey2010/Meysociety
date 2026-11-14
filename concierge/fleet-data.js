@@ -11,6 +11,7 @@ export const FLEET_TYPES = [
   ["gran-yate", "Grandes yates"],
   ["superyate", "Superyate"],
   ["catamaran", "Catamarán"],
+  ["moto-agua", "Motos de agua"],
 ];
 
 // what each type means, shown in the detail sheet
@@ -22,6 +23,7 @@ export const TYPE_NOTE = {
   "gran-yate": "Yate de gran eslora con tripulación profesional.",
   "superyate": "Superyate con tripulación completa, para el día o para dormir a bordo.",
   "catamaran": "Catamarán a vela: estable, espacioso y tranquilo.",
+  "moto-agua": "Moto de agua: tour guiado con monitor, o alquiler si tienes titulación.",
 };
 
 const BOTAFOCH = "Marina Botafoch", SANT_ANTONI = "Club Náutico de Sant Antoni";
@@ -61,4 +63,6 @@ export const FLEET = [
   { id: "guy-couach-98", type: "superyate", name: "Guy Couach 98", len: "30 m", pax: 12, night: 10, cabins: "4 camarotes", port: BOTAFOCH, crew: "3 tripulantes", incl: ["Tripulación", "Bebidas y hielo", "Toallas", "Equipo de snorkel", "Paddle surf", "Música"], photos: 4 },
   // ---- catamarán ----
   { id: "catamaran-vela", type: "catamaran", name: "Catamarán a vela", photos: 4 },
+  // ---- motos de agua (shown on their own from the jet ski card; the boats fleet leaves them out) ----
+  { id: "sea-doo-rxt-x-300", type: "moto-agua", name: "Sea-Doo RXT-X 300", crew: "Guiada o con titulación", photos: 1, img: "data/services/moto-de-agua.webp" },
 ];

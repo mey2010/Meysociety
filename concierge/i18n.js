@@ -3,6 +3,12 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "El paraíso no se visita, se navega.": ["Paradise isn't visited, it's sailed.", "Il paradiso non si visita, si naviga.", "Le paradis ne se visite pas, il se navigue.", "Das Paradies besucht man nicht, man befährt es."],
+  "Tu verano merece un barco.": ["Your summer deserves a boat.", "La tua estate merita una barca.", "Votre été mérite un bateau.", "Dein Sommer verdient ein Boot."],
+  "Ver flota": ["See the fleet", "Vedi la flotta", "Voir la flotte", "Flotte ansehen"],
+  "Ver Villa Aura": ["See Villa Aura", "Vedi Villa Aura", "Voir la Villa Aura", "Villa Aura ansehen"],
+  "Guiada o con titulación": ["Guided, or with a licence", "Guidata o con patente", "Guidée ou avec permis", "Geführt oder mit Führerschein"],
+  "Moto de agua: tour guiado con monitor, o alquiler si tienes titulación.": ["Jet ski: a guided tour with an instructor, or rental if you hold a licence.", "Moto d'acqua: tour guidato con istruttore, o noleggio se hai la patente.", "Jet-ski : tour guidé avec moniteur, ou location si vous avez le permis.", "Jetski: geführte Tour mit Guide oder Verleih, wenn du einen Führerschein hast."],
   "Tu Ibiza,": ["Your Ibiza,", "La tua Ibiza,", "Votre Ibiza,", "Dein Ibiza,"],
   "El paraíso no se visita, se navega. Tu verano merece un barco.": ["Paradise isn't visited, it's sailed. Your summer deserves a boat.", "Il paradiso non si visita, si naviga. La tua estate merita una barca.", "Le paradis ne se visite pas, il se navigue. Votre été mérite un bateau.", "Das Paradies besucht man nicht, man befährt es. Dein Sommer verdient ein Boot."],
   "Tours guiados o alquiler para titulados. Vive la emoción de pilotar una moto de agua.": ["Guided tours, or rental for licence holders. Feel the thrill of riding a jet ski.", "Tour guidati o noleggio per chi ha la patente. Vivi l'emozione di guidare una moto d'acqua.", "Tours guidés ou location pour les titulaires du permis. Vivez le frisson de piloter un jet-ski.", "Geführte Touren oder Verleih für Führerscheininhaber. Erlebe den Nervenkitzel, einen Jetski zu fahren."],

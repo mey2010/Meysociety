@@ -1778,7 +1778,7 @@ html:not([data-theme="dark"]) .vt__x { box-shadow: inset 0 1px 0 rgb(255 255 255
 @media (max-width: 600px) { .hero .filter { padding: 0 10px; } .hero .filters { gap: 5px; } }
 
 /* ---------------- justified body copy: every multi-line paragraph runs flush on both edges ---------------- */
-:where(p, .vt__p, .vt__cap, li:not([class])):where(:not(.eyebrow, .form__status, .pop__coord, .pop__kind, .intro__line, .pack__days, .dash__dates, .fleet__count, .logo-note__s, .contact__direct)) {
+:where(p, li:not([class])):where(:not(.vt *, .eyebrow, .form__status, .pop__coord, .pop__kind, .intro__line, .pack__days, .dash__dates, .fleet__count, .logo-note__s, .contact__direct)) {
   text-align: justify; text-align-last: start; hyphens: auto; -webkit-hyphens: auto; hyphenate-limit-chars: 6 2 3; word-spacing: -.01em; text-wrap: pretty; }
 /* centred blocks keep their last line centred so the shape stays symmetric */
 :is(.stack__body, .intro, .vt__end, .fleet__info, .circular-carousel__caption, .lightbox__cap, .reviews__note, .fleet__note) :is(p, .vt__p),
@@ -1801,3 +1801,46 @@ p:is(.reviews__note, .fleet__note, .lightbox__cap) { text-align-last: center; }
   .hero__copy > .filters { order: 2; justify-self: stretch; }
   .hero__copy > .btn { order: 3; justify-self: center; margin-bottom: 36px; }
 }
+
+/* the coin's raised centre exists on the back too: relief on both faces */
+.flylogo__back { overflow: visible; }
+.flylogo__back .flylogo__socket { z-index: 2; }
+.flylogo__core--back { translate: 0 0 calc((var(--t) + var(--d)) * -1); transform: rotateY(180deg); }
+.flylogo__core--back img { filter: brightness(.9) saturate(1.1); }
+
+/* service cards: tidy rhythm — title, text close under it, then the actions with a clear step before them;
+   two actions share one width so the pair reads as a block, and the buttons are a touch smaller */
+.stack__body { gap: 8px; }
+.stack__body > .btn, .stack__btns { margin-top: 8px; }
+.stack__body .btn { --h: 44px; padding: 0 22px; font-size: 15px; }
+@media (max-width: 900px) {
+  .stack__body { gap: 6px; padding: 18px 16px 18px; }
+  .stack__body h3 { line-height: 1.05; }
+  .stack__body > .btn, .stack__btns { margin-top: 10px; }
+  .stack__body .btn { --h: 42px; padding: 0 18px; font-size: 14.5px; }
+  .stack__btns { display: grid; grid-auto-flow: row; gap: 8px; justify-items: stretch; width: min(100%, 270px); }
+  .stack__btns .btn { width: 100%; }
+}
+
+/* ---------------- packages: centred copy; on phones a horizontal row you swipe through ---------------- */
+.pack { text-align: center; align-items: center; }
+.pack ul { justify-items: center; width: 100%; }
+.pack ul li, .pack p { text-align: center; text-align-last: center; hyphens: manual; -webkit-hyphens: manual; word-spacing: normal; }
+.pack .btn { align-self: center; }
+@media (max-width: 900px) {
+  .packs { display: grid; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: min(82%, 340px); gap: 14px;
+    overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    margin-inline: calc(var(--gutter, 20px) * -1); padding: 8px var(--gutter, 20px) 22px; scroll-padding-inline: var(--gutter, 20px); }
+  .packs::-webkit-scrollbar { display: none; }
+  .pack { scroll-snap-align: center; scroll-snap-stop: always; }
+}
+
+/* ---------------- map controls: three round buttons in one row ---------------- */
+.map__zoom, .routemap__zoom { display: flex; flex-direction: row; gap: 8px; }
+.map__zoom button, .routemap__zoom button { width: 40px; height: 40px; min-height: 0; padding: 0; border-radius: 50%; display: grid; place-items: center; }
+
+/* service stack: smooth, no dark flashes — the depth scale eases on the compositor, covered cards fade to the page
+   (the dark veil is gone), and the cards keep one stable layer each */
+.stack__card { transition: transform 420ms cubic-bezier(.22, .8, .24, 1); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.stack__card.is-tilt { transition: none; }
+.stack__veil { display: none !important; }

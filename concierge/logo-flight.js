@@ -14,9 +14,9 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
   fly.className = "flylogo"; fly.href = headerLink.getAttribute("href") || "#top";
   fly.setAttribute("aria-label", headerLink.getAttribute("aria-label") || "Mey Society");
   const EDGES = 12; // discs stacked through the coin's thickness: they are its edge when it tilts or spins
-  fly.innerHTML = `<span class="flylogo__shadow" aria-hidden="true"></span><span class="flylogo__spin">${'<span class="flylogo__edge" aria-hidden="true"></span>'.repeat(EDGES)}<span class="flylogo__coin"><img src="${src}" alt="" draggable="false" decoding="async"><span class="flylogo__socket" aria-hidden="true"></span><span class="flylogo__shine" aria-hidden="true"></span><span class="flylogo__glint" aria-hidden="true"></span></span>${'<span class="flylogo__core-edge" aria-hidden="true"></span>'.repeat(4)}<span class="flylogo__core" aria-hidden="true"><span class="flylogo__core-drop"></span><img src="${src}" alt="" draggable="false" decoding="async"><span class="flylogo__core-bevel"></span><span class="flylogo__shine"></span><span class="flylogo__glint"></span></span><span class="flylogo__back" aria-hidden="true"><img src="${src}" alt="" draggable="false" decoding="async"></span></span>`;
+  fly.innerHTML = `<span class="flylogo__shadow" aria-hidden="true"></span><span class="flylogo__spin">${'<span class="flylogo__edge" aria-hidden="true"></span>'.repeat(EDGES)}<span class="flylogo__coin"><img src="${src}" alt="" draggable="false" decoding="async"><span class="flylogo__socket" aria-hidden="true"></span><span class="flylogo__shine" aria-hidden="true"></span><span class="flylogo__glint" aria-hidden="true"></span></span>${'<span class="flylogo__core-edge" aria-hidden="true"></span>'.repeat(4)}<span class="flylogo__core" aria-hidden="true"><span class="flylogo__core-drop"></span><img src="${src}" alt="" draggable="false" decoding="async"><span class="flylogo__core-bevel"></span><span class="flylogo__shine"></span><span class="flylogo__glint"></span></span><span class="flylogo__back" aria-hidden="true"><img src="${src}" alt="" draggable="false" decoding="async"><span class="flylogo__socket" aria-hidden="true"></span></span>${'<span class="flylogo__core-edge flylogo__core-edge--back" aria-hidden="true"></span>'.repeat(4)}<span class="flylogo__core flylogo__core--back" aria-hidden="true"><span class="flylogo__core-drop"></span><img src="${src}" alt="" draggable="false" decoding="async"><span class="flylogo__core-bevel"></span></span></span>`;
   document.body.appendChild(fly);
-  const spinEl = fly.querySelector(".flylogo__spin"), coin = fly.querySelector(".flylogo__coin"), core = fly.querySelector(".flylogo__core");
+  const spinEl = fly.querySelector(".flylogo__spin"), coin = fly.querySelector(".flylogo__coin"), core = fly.querySelector(".flylogo__core:not(.flylogo__core--back)");
   headerImg.classList.add("is-flown"); // the flying coin takes its place
 
   // the neon trail is drawn on one fixed canvas under the coin
@@ -36,7 +36,9 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
     fly.querySelectorAll(".flylogo__edge").forEach((e, i, all) => { e.style.transform = `translateZ(${(-t + 2 * t * (i + .5) / all.length).toFixed(2)}px)`; });
     // the centre is its own piece, seated proud of the ring
     const d = start.size * .032; fly.style.setProperty("--d", d.toFixed(2) + "px");
-    fly.querySelectorAll(".flylogo__core-edge").forEach((e, i, all) => { e.style.transform = `translateZ(${(t + d * (i + .5) / all.length).toFixed(2)}px)`; });
+    fly.querySelectorAll(".flylogo__core-edge:not(.flylogo__core-edge--back)").forEach((e, i, all) => { e.style.transform = `translateZ(${(t + d * (i + .5) / all.length).toFixed(2)}px)`; });
+    // and the same raised centre on the back, so the coin has relief on both faces
+    fly.querySelectorAll(".flylogo__core-edge--back").forEach((e, i, all) => { e.style.transform = `translateZ(${(-t - d * (i + .5) / all.length).toFixed(2)}px)`; });
     sizeCanvas(); measureChars(); wake(true);
   }
 
