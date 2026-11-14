@@ -462,16 +462,17 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
       const cover = cards.map((c, i) => clamp((vh - Math.max(tops[i] - sy, stuck[i])) / Math.max(1, vh - stuck[i])));
       cards.forEach((c, i) => {
         let k = 0; for (let j = i + 1; j < cards.length; j++) k += cover[j];
-        /* depth: the scale steps by whole cards and the change is eased by a CSS transition on the compositor, so
-           Safari never re-rasterizes the card photos mid-scroll (a scale written on every frame did, and stuttered);
-           covered cards fade toward the page instead of being darkened (no black veil) */
-        const s = (1 - Math.min(Math.round(k * 2) / 2, 4) * .05).toFixed(3), o = (1 - clamp(k * .55 - .1, 0, .95)).toFixed(3), v = "0";
+        /* The front card is always fully opaque: nothing ever shows through it (a card fading as the next one
+           approached let the whole deck behind show through on phones whose visible height differs from the
+           layout's). Depth is the stepped scale alone, eased by a CSS transition on the compositor.
+           Memory: only the cards that can be seen get a GPU layer and are drawn. A card buried three deep behind
+           the front one, or still more than a screen below, is not drawn at all; on iPhone too many large layers at
+           once run out of tile memory and come up as black areas. */
+        const level = Math.min(Math.round(k * 2) / 2, 4), s = (1 - level * .05).toFixed(3);
+        const far = tops[i] - sy > vh * 1.6, buried = k >= 3.2, live = !far && !buried;
         const L = last[i];
         if (L.s !== s) { L.s = s; paintCard(i); }
-        if (L.o !== o) { c.style.opacity = o; L.o = o; }
-        if (L.v !== v) { veils[i].style.opacity = v; veils[i].style.display = +v ? "" : "none"; L.v = v; }
-        /* (no visibility or clip-path switching here: either one made Safari repaint a whole card, photo included,
-           the moment it came back into view, which is the hitch that was felt most when scrolling up) */
+        if (L.live !== live) { L.live = live; c.classList.toggle("is-live", live); c.style.visibility = buried ? "hidden" : ""; }
       });
     }
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
@@ -530,8 +531,9 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     }
     readingStops(window, { centers: () => snaps.map(n => n.getBoundingClientRect().top + scrollY), half: () => (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2, pager: true,
       touch: !COARSE || REDUCED, active: () => !document.documentElement.classList.contains("is-covered") });
-    /* every card photo is decoded ahead of time, once the page has loaded, so none is decoded mid-swipe */
-    addEventListener("load", () => (window.requestIdleCallback || setTimeout)(() => cards.forEach(c => c.querySelectorAll("img").forEach(im => { im.loading = "eager"; im.decode?.().catch(() => {}); }))), { once: true });
+    /* the next card's photos are fetched and decoded while the reader is still on the one before (not all at once:
+       eight decoded photos together are a lot of memory for a phone) */
+    { const warm = new Set(); addEventListener("scroll", () => { const i = snapY.findIndex(y => y > scrollY - 4); [i, i + 1].forEach(j => { const c = cards[j]; if (!c || warm.has(j)) return; warm.add(j); c.querySelectorAll("img").forEach(im => { im.loading = "eager"; im.decode?.().catch(() => {}); }); }); }, { passive: true }); }
   }
 }
 

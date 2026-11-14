@@ -1299,7 +1299,8 @@ body:has(.fleet:not([hidden])) .fab-wa, body:has(.dash:not([hidden])) .fab-wa, b
 
 /* ================= performance: smooth on every device ================= */
 /* service cards: each card is its own GPU layer; the veil darkens it without repainting anything */
-.stack__card { will-change: transform, opacity; contain: layout paint; }
+.stack__card { contain: layout paint; }
+.stack__card.is-live { will-change: transform; }   /* a GPU layer only for the cards that can be seen (see app.js) */
 .stack__veil { position: absolute; inset: 0; z-index: 6; border-radius: inherit; background: #07051e; opacity: 0; pointer-events: none; will-change: opacity; }
 .stack__media-bg { will-change: auto; } /* painted once into the card, not blurred again on every frame */
 /* the slow float of the glass buttons only runs while a button is on screen (set by JS) */
@@ -1841,7 +1842,7 @@ p:is(.reviews__note, .fleet__note, .lightbox__cap) { text-align-last: center; }
 
 /* service stack: smooth, no dark flashes — the depth scale eases on the compositor, covered cards fade to the page
    (the dark veil is gone), and the cards keep one stable layer each */
-.stack__card { transition: transform 420ms cubic-bezier(.22, .8, .24, 1); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.stack__card { transition: transform 420ms cubic-bezier(.22, .8, .24, 1); }
 .stack__card.is-tilt { transition: none; }
 .stack__veil { display: none !important; }
 
