@@ -192,7 +192,9 @@ let raf = 0, last = 0;
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const spring = (value, velocity, target, k, d, dt) => { const n = velocity + ((target - value) * k - velocity * d) * dt; return [value + n * dt, n]; };
 function tick(now) {
-  raf = 0; const dt = Math.min(1 / 30, Math.max(1 / 240, (now - last) / 1000)); last = now;
+  raf = 0;
+  if (now - (window.__scrolledAt || -1e9) < 260) { last = now; if (!document.hidden) raf = requestAnimationFrame(tick); return; }
+  const dt = Math.min(1 / 30, Math.max(1 / 240, (now - last) / 1000)); last = now;
   let any = false;
   for (const c of cards) {
     if (!c.el.isConnected) { cards.delete(c); io.unobserve(c.el); continue; }

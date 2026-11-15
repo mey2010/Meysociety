@@ -55,7 +55,7 @@ const SM = (() => {
     closeTween = gsap.to([...layers, panel], { xPercent: offscreen, duration: .32, ease: "power3.in", overwrite: "auto", onComplete: () => {
       gsap.set(panel.querySelectorAll(".sm-panel-itemLabel"), { yPercent: 140, rotate: 10 });
       gsap.set(panel.querySelectorAll(".sm-panel-list[data-numbering] .sm-panel-item"), { "--sm-num-opacity": 0 });
-      busy = false;
+      busy = false; if (!open) root.classList.add("sm-parked");
     } });
   }
   function animateIcon(o) { spin?.kill(); spin = o ? gsap.to(icon, { rotate: 225, duration: .8, ease: "power4.out", overwrite: "auto" }) : gsap.to(icon, { rotate: 0, duration: .35, ease: "power3.inOut", overwrite: "auto" }); }
@@ -69,6 +69,7 @@ const SM = (() => {
   }
   function set(o) {
     if (o === open) return; open = o;
+    if (o) root.classList.remove("sm-parked");
     root.toggleAttribute("data-open", o); btn.setAttribute("aria-expanded", o); btn.setAttribute("aria-label", o ? "Cerrar menú" : "Abrir menú"); panel.setAttribute("aria-hidden", !o);
     o ? playOpen() : playClose(); animateIcon(o); animateColor(o); animateText(o);
   }
@@ -79,20 +80,26 @@ const SM = (() => {
     root.addEventListener("touchend", e => { if (!sw || !open) return; const t = e.changedTouches[0], dx = t.clientX - sw.x, dy = t.clientY - sw.y; sw = null; if (dx > 70 && Math.abs(dy) < Math.abs(dx) * .6) set(false); }, { passive: true }); }
   // over light sections the closed button and wordmark switch to midnight
   let onLight = false;
+  // which section sits under the button: a 1px observer line at y=44, so scrolling costs no hit-tests on the main thread
+  let groundEl = null;
   function checkGround() {
-    const el = document.elementsFromPoint(innerWidth / 2, 44).find(n => n.matches?.("section"));
+    const el = groundEl;
     const light = !!el && !el.classList.contains("sec--night") && document.documentElement.dataset.theme !== "dark";
     if (light === onLight) return; onLight = light; root.classList.toggle("sm-on-light", light);
     if (!open) gsap.to(btn, { color: light ? "#0d0a38" : "#ffffff", duration: .3, overwrite: "auto" });
   }
+  let gio = null;
+  const watchGround = () => {
+    gio?.disconnect();
+    gio = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) groundEl = e.target; else if (groundEl === e.target) groundEl = null; checkGround(); },
+      { rootMargin: `-44px 0px ${-(innerHeight - 45)}px 0px` });
+    document.querySelectorAll("section").forEach(s => gio.observe(s));
+  };
   const band = () => root.classList.toggle("sm-scrolled", scrollY > 40);
-  let groundTick = false;
-  let groundAt = 0, groundEnd = 0;   // the hit-test runs at most every 120 ms while scrolling, and once when it stops
-  addEventListener("scroll", () => {
-    clearTimeout(groundEnd); groundEnd = setTimeout(() => { checkGround(); band(); }, 120);
-    if (groundTick) return; groundTick = true;
-    requestAnimationFrame(now => { groundTick = false; band(); if (now - groundAt > 120) { groundAt = now; checkGround(); } });
-  }, { passive: true }); checkGround(); band();
+  let bandTick = false;
+  addEventListener("scroll", () => { if (bandTick) return; bandTick = true; requestAnimationFrame(() => { bandTick = false; band(); }); }, { passive: true });
+  { let rz = 0; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(watchGround, 200); }); }
+  watchGround(); band();
   document.addEventListener("themechange", () => { onLight = null; checkGround(); });
   document.addEventListener("mousedown", e => { if (open && !panel.contains(e.target) && !btn.contains(e.target)) set(false); });
   addEventListener("keydown", e => { if (e.key === "Escape") set(false); });
@@ -383,6 +390,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     let lastDraw = 0;
     (function loop(now) { if (!document.hidden && fx.state.visible !== false) { if (fx.scrolling(now)) fx.rest(); else if (now - lastDraw > 32) { lastDraw = now; fx.draw(now); } } requestAnimationFrame(loop); })(performance.now());
   };
+  let past = null;   // below the first screen (see further down)
   // the worker must say hello before the canvas is handed over, so a blocked or broken worker never costs the background
   /* Apple's engine (every browser on iPhone and iPad, the Claude app, Safari on the Mac) is kept on the in-page
      canvas: a canvas handed to a worker there loses its picture while the page scrolls and shows black until the
@@ -403,7 +411,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     };
   } catch { fallback(); }
   onRealResize(() => post({ type: "size", ...state() }));
-  addEventListener("scroll", () => post({ type: "scroll", scrollY }), { passive: true });
+  addEventListener("scroll", () => { if (!past) post({ type: "scroll", scrollY }); }, { passive: true });   // below the first screen the dots are off: nothing to tell them
   addEventListener("pointermove", e => post({ type: "pointer", x: e.clientX / innerWidth - .5, y: e.clientY / innerHeight - .5 }), { passive: true });
   addEventListener("pointerdown", e => {
     if (e.target.closest("a, button, input, textarea, .map, .pop, .staggered-menu-panel, .modal, .dash")) return;
@@ -412,10 +420,10 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
   document.addEventListener("themechange", e => post({ type: "theme", theme: e.detail }));
   /* below the first screen the dots have faded to almost nothing: there the canvas stops drawing and is taken out
      of the page altogether, so a phone has one less full-screen layer to keep painted while scrolling fast */
-  const root = document.documentElement; let past = null;
+  const root = document.documentElement;
   const vis = () => post({ type: "visible", visible: !document.hidden && !root.classList.contains("is-covered") && !past });
   const checkPast = () => { const p = scrollY > innerHeight * 1.05; if (p !== past) { past = p; root.classList.toggle("past-intro", p); vis(); } };
-  addEventListener("scroll", checkPast, { passive: true }); checkPast();
+  { let pt = false; addEventListener("scroll", () => { if (pt) return; pt = true; requestAnimationFrame(() => { pt = false; checkPast(); }); }, { passive: true }); } checkPast();
   document.addEventListener("visibilitychange", vis); document.addEventListener("coverchange", vis);
 }
 
@@ -458,7 +466,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     // where each card sticks and where it sits in the page: measured on resize, not on every scroll frame
     /* reading pause: once a card has settled, the next one waits for an extra stretch of scroll (the "hold"),
        and the page snaps to the middle of that stretch, so every service stops on screen going down or up */
-    const stack = cards[0].parentElement; let holdW = 0, snapY = [];
+    const stack = cards[0].parentElement; let holdW = 0, snapY = [], stackEnd = Infinity;
     const snaps = cards.map(() => { const n = document.createElement("i"); n.className = "stack__snap"; n.setAttribute("aria-hidden", "true"); stack.appendChild(n); return n; });
     function measure() {
       if (innerWidth !== holdW) { holdW = innerWidth; stack.style.setProperty("--hold", Math.round(document.documentElement.clientHeight * (innerWidth <= 900 ? .22 : .3)) + "px"); }
@@ -470,6 +478,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
       cards.forEach(c => c.style.position = "");
       let sTop = 0; for (let el = stack; el; el = el.offsetParent) sTop += el.offsetTop;
       snaps.forEach((n, i) => { n.style.top = (tops[i] - stuck[i] + hold / 2 - sTop).toFixed(0) + "px"; });
+      stackEnd = sTop + stack.offsetHeight;   // once the page is past this line, every card has gone off the top
       snapY = snaps.map((n, i) => tops[i] - stuck[i] + hold / 2);   // the same stops in page coordinates (no layout reads on scroll)
       update();
     }
@@ -486,10 +495,10 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
            the front one, or still more than a screen below, is not drawn at all; on iPhone too many large layers at
            once run out of tile memory and come up as black areas. */
         const level = Math.min(Math.round(k * 2) / 2, 4), s = (1 - level * .05).toFixed(3);
-        const far = tops[i] - sy > vh * 1.6, buried = k >= 3.2, live = !far && !buried;
+        const far = tops[i] - sy > vh * 2.2 || stackEnd < sy - vh * .5, buried = k >= 3.2, live = !far && !buried;
         const L = last[i];
         if (L.s !== s) { L.s = s; paintCard(i); }
-        if (L.live !== live) { L.live = live; c.classList.toggle("is-live", live); c.style.visibility = buried ? "hidden" : ""; }
+        if (L.live !== live) { L.live = live; c.classList.toggle("is-live", live); c.style.visibility = live ? "" : "hidden"; }
       });
     }
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
@@ -1655,3 +1664,9 @@ document.querySelectorAll(".stack__card").forEach(card => {
   } });
   document.addEventListener("click", e => { if (e.target.closest("[data-villa-tour]")) { e.preventDefault(); track("villa_tour_open", { villa: "Aura" }); tour.open(); } });
 }
+
+/* sections well off screen stop their endless little animations (spinners, blinking dots): a running animation
+   keeps a GPU layer alive, and everything drawn above it in the section gets promoted too, which on iPhone uses up
+   the tile memory the page needs while scrolling */
+{ const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle("is-off", !e.isIntersecting)), { rootMargin: "30% 0px" });
+  document.querySelectorAll("main > section").forEach(s => io.observe(s)); }
