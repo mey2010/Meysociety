@@ -74,11 +74,20 @@ const sharedHeights = onBytes => heightsP || (heightsP = loadHeights("data/heigh
 const sharedMask = () => maskP || (maskP = loadGray("data/mask1024.png"));
 export const MAPDATA = { A, B, EXAG, ISLE, LIMIT, toXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow, nextFrame };
 
+/* The photographed sea, as it really is: the aerial photo's own water colours (turquoise over sand, deep blue
+   over seagrass, the dark of deep water) are kept near the coast and lifted a little, because under the sun and
+   the tone curve the raw photo of open water reads almost black. */
+const REALWATER_GLSL = `vec3 REALWATER(vec3 c) {
+  float l = dot(c, vec3(.299, .587, .114));
+  vec3 vivid = mix(vec3(l), c, 1.3) * 1.2 + vec3(.0, .015, .03);   // shallow water over sand: its own turquoise, a little richer
+  vivid = mix(vec3(.03, .19, .34), vivid, smoothstep(.05, .16, l));  // the photo's near-black deep water reads as deep sea blue
+  return mix(vivid, c, smoothstep(.45, .7, l));                     // salt pans, foam, sand: left as photographed
+}`;
 export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgress }) {
   const prog = { h: 0, o: 0, build: 0 }, report = () => onProgress?.(Math.round(prog.h * 30 + prog.o * 45 + prog.build * 25));
   const small = matchMedia("(max-width: 900px)").matches, reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance", premultipliedAlpha: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5)); // sharp on retina, ~44% fewer pixels than 2x renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); // full retina sharpness (1.5 left a 3x phone drawing at half its resolution, upscaled and soft) renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12; renderer.setClearColor(0x000000, 0);
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   // the sun and the island never move: the shadow map is drawn once, not on every frame
@@ -95,7 +104,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
 
   // the base photo: 3072x4096 is plenty for the whole-island view (the detail tiles take over when zooming in);
   // the 5120x6144 version cost a long freeze to upload for no visible gain at that distance
-  const orthoUrl = renderer.capabilities.maxTextureSize >= 4096 && !small ? "data/ortho_hi.jpg" : "data/ortho_lo.jpg";
+  const orthoUrl = renderer.capabilities.maxTextureSize >= 4096 && !small ? "data/ortho_hi.jpg" : "data/ortho_lo.jpg";   // (a phone sees the whole island in ~600 px: the 1536 px photo is already finer than that; zoomed in, the sharp tiles take over)
   const orthoBlob = fetchBlob(orthoUrl, f => { prog.o = f; report(); });     // downloads in parallel with the relief
   const [H, M] = await Promise.all([sharedHeights(f => { prog.h = f; report(); }), sharedMask()]);
   const hAt = (x, z) => { const [u, v] = uvOf(x, z); return bilinear(H.a, H.w, H.h, u, v, -30); };
@@ -107,7 +116,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   try { await ortho.image.decode?.(); } catch {} // decoded off the main thread, not at upload time
   prog.build = .25; report(); await nextFrame();
   ortho.colorSpace = THREE.SRGBColorSpace; ortho.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
-  const nrm = await normalTexture(H, small ? .45 : .62);
+  const nrm = await normalTexture(H, .62);
   // each big texture goes to the graphics card in its own moment, not all together on the first frame
   try { renderer.initTexture(ortho); await yieldNow(); renderer.initTexture(nrm); await yieldNow(); } catch {}
   prog.build = .6; report(); await nextFrame();
@@ -116,7 +125,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
 
   // ---- terrain ----
   {
-    const NX = small ? 300 : 560, NZ = Math.round(NX * (B.z - A.z) / (B.x - A.x));
+    const NX = small ? 440 : 560, NZ = Math.round(NX * (B.z - A.z) / (B.x - A.x));
     const g = new THREE.PlaneGeometry(B.x - A.x, B.z - A.z, NX - 1, NZ - 1).rotateX(-Math.PI / 2);
     g.translate((A.x + B.x) / 2, 0, (A.z + B.z) / 2);
     const pos = g.attributes.position;
@@ -130,19 +139,22 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
       sh.uniforms.uNrm = { value: nrm }; sh.uniforms.uIsle = isleU.uIsle; sh.uniforms.uMaskT = { value: maskTex };
       sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWp;")
         .replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.)).xyz;");
-      sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uNrm, uMaskT; uniform vec4 uIsle; varying vec3 vWp;")
+      sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uNrm, uMaskT; uniform vec4 uIsle; varying vec3 vWp;\n" + REALWATER_GLSL)
         .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>
-          { if (vWp.y < -.005 && texture2D(uMaskT, vMapUv).r < .06) discard; }  // open-sea floor is never drawn: the water (or the page) is there`)
+          { float landM = texture2D(uMaskT, vMapUv).r;
+            if (vWp.y < -.005 && landM < .06) discard; }  // open sea: the water shader is there`)
         .replace("#include <map_fragment>", `#include <map_fragment>
           { vec3 c = diffuseColor.rgb; float l = dot(c, vec3(.299, .587, .114));
-            c = mix(vec3(l), c, 1.18); c = (c - .5) * 1.06 + .5; diffuseColor.rgb = clamp(c, 0., 1.); }`)  // a touch of grade: richer, crisper
+            c = mix(vec3(l), c, 1.18); c = (c - .5) * 1.06 + .5;
+            if (vWp.y < -.005) c = REALWATER(c);
+            diffuseColor.rgb = clamp(c, 0., 1.); }`)  // a touch of grade: richer, crisper
         .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
           { vec3 wn = texture2D(uNrm, vMapUv).xyz * 2. - 1.; normal = normalize(mat3(viewMatrix) * vec3(wn.x, wn.y, wn.z)); }`);
     };
     const mesh = new THREE.Mesh(g, mat); mesh.castShadow = mesh.receiveShadow = true; scene.add(mesh);
   }
   // ---- detail tiles: ~2.7 m/px aerial photo, loaded only around the focus when zoomed in ----
-  const detail = { index: null, live: new Map(), last: 0, max: small ? 14 : 28 };
+  const detail = { index: null, live: new Map(), last: 0, max: small ? 18 : 30 };
   detail.index = TILE_INDEX;   // (the tile index ships inside this file: one request and one published file fewer)
   const tileMat = tex => {
     const m = new THREE.MeshStandardMaterial({ map: tex, roughness: .93, metalness: 0, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
@@ -150,12 +162,14 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
       sh.uniforms.uNrm = { value: nrm }; sh.uniforms.uMaskT = { value: maskTex }; sh.uniforms.uA2 = { value: new THREE.Vector4(A.x, A.z, B.x - A.x, B.z - A.z) };
       sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWp;")
         .replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.)).xyz;");
-      sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uNrm, uMaskT; uniform vec4 uA2; varying vec3 vWp;")
+      sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uNrm, uMaskT; uniform vec4 uA2; varying vec3 vWp;\n" + REALWATER_GLSL)
         .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>
           vec2 wuv = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w);
-          if (vWp.y < -.005 && texture2D(uMaskT, wuv).r < .06) discard;`)
+          if (vWp.y < -.004) discard;`)   // tiles end exactly at the shoreline of the relief (smooth, not the land mask's stair-steps): beyond it is the sea, coloured from the photo
         .replace("#include <map_fragment>", `#include <map_fragment>
-          { vec3 c = diffuseColor.rgb; float l = dot(c, vec3(.299, .587, .114)); c = mix(vec3(l), c, 1.1); c = (c - .5) * 1.04 + .5; diffuseColor.rgb = clamp(c, 0., 1.); }`)
+          { vec3 c = diffuseColor.rgb; float l = dot(c, vec3(.299, .587, .114)); c = mix(vec3(l), c, 1.1); c = (c - .5) * 1.04 + .5;
+            if (vWp.y < -.005) c = REALWATER(c);
+            diffuseColor.rgb = clamp(c, 0., 1.); }`)
         .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
           { vec3 wn = texture2D(uNrm, wuv).xyz * 2. - 1.; normal = normalize(mat3(viewMatrix) * wn); }`);
     };
@@ -171,7 +185,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   }
   function updateDetail(now) {
     if (!detail.index || now - detail.last < 250) return; detail.last = now;
-    const tgt = controls.target, dist = camera.position.distanceTo(tgt), show = dist < 17;
+    const tgt = controls.target, dist = camera.position.distanceTo(tgt), show = dist < 26;   // the sharp aerial tiles take over from the second zoom step
     detail.live.forEach(t => { if (t.mesh) t.mesh.visible = show; });
     if (!show) return;
     const ix = detail.index, R = Math.max(2.6, dist * 1.35), want = [];
@@ -183,7 +197,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     for (const w of want.slice(0, detail.max)) {
       if (detail.live.has(w.key)) { detail.live.get(w.key).used = now; continue; }
       const entry = { used: now, mesh: null, tex: null }; detail.live.set(w.key, entry);
-      new THREE.TextureLoader().load(`data/tiles/${w.key}.jpg`, tex => {
+      new THREE.TextureLoader().load(`data/tiles/${w.key}.webp`, tex => {
         if (!detail.live.has(w.key)) { tex.dispose(); return; }
         tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
         entry.tex = tex; entry.mesh = tileMesh(w.i, w.j, tex); scene.add(entry.mesh);
@@ -199,14 +213,14 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   // ---- the sea: sky reflections, sun glints, see-through shallows, feathered into the page ----
   const seaU = {
     uTime: { value: 0 }, uMask: { value: maskTex }, uA: { value: new THREE.Vector2(A.x, A.z) }, uB: { value: new THREE.Vector2(B.x, B.z) },
-    uSun: { value: sun.position.clone().normalize() }, uFogColor: { value: PAGE_NOW }, uFogNear: { value: 80 }, uFogFar: { value: 210 }, uIsle: isleU.uIsle,
+    uSun: { value: sun.position.clone().normalize() }, uOrtho: { value: ortho }, uFogColor: { value: PAGE_NOW }, uFogNear: { value: 80 }, uFogFar: { value: 210 }, uIsle: isleU.uIsle,
   };
   {
     const sea = new THREE.Mesh(new THREE.CircleGeometry(60, 160).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
       uniforms: seaU, transparent: true, depthWrite: false,
       vertexShader: `varying vec3 vW; varying float vDepth;
         void main(){ vec4 w = modelMatrix * vec4(position,1.); vW = w.xyz; vec4 mv = viewMatrix * w; vDepth = -mv.z; gl_Position = projectionMatrix * mv; }`,
-      fragmentShader: `uniform float uTime; uniform sampler2D uMask; uniform vec2 uA, uB; uniform vec3 uSun, uFogColor; uniform float uFogNear, uFogFar; uniform vec4 uIsle;
+      fragmentShader: `uniform float uTime; uniform sampler2D uMask, uOrtho; uniform vec2 uA, uB; uniform vec3 uSun, uFogColor; uniform float uFogNear, uFogFar; uniform vec4 uIsle;
         varying vec3 vW; varying float vDepth;
         void main(){
           vec2 uv = (vW.xz - uA) / (uB - uA);
@@ -219,10 +233,16 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
           vec3 n = normalize(vec3(-g.x * .14, 1., -g.y * .14)), V = normalize(cameraPosition - vW);
           float fres = pow(1. - max(dot(n, V), 0.), 4.);
           vec3 col = mix(vec3(.02, .14, .27), vec3(.05, .29, .45), smoothstep(0., 1., m * 2.));
+          // the real sea: along the coast the water takes its colour from the aerial photo itself (turquoise over sand,
+          // emerald over seagrass, deep blue further out), so each cove can be told apart; waves and sun stay on top
+          vec3 ph = (uv.x < 0. || uv.y < 0. || uv.x > 1. || uv.y > 1.) ? vec3(0.) : texture2D(uOrtho, vec2(uv.x, 1. - uv.y)).rgb;
+          float pl = dot(ph, vec3(.299, .587, .114));
+          vec3 real = mix(vec3(pl), ph, 1.35) * 1.3 + vec3(0., .006, .014);
+          col = mix(col, real, smoothstep(.0, .4, m) * smoothstep(.045, .11, ph.g));   // only water whose bottom shows (turquoise, emerald: its green is high); dark navy shore water keeps the sea's blue, no dark rim   // fades in towards the shore, no edge offshore; dark water keeps the sea's own blue
           col = mix(col, vec3(.72, .83, .94), clamp(fres * .85, 0., .7));
           vec3 Hh = normalize(uSun + V); float spec = pow(max(dot(n, Hh), 0.), 300.) * 2.6;
           col += vec3(1., .88, .7) * spec;
-          float alpha = mix(1., .55, smoothstep(.78, 1., m));
+          float alpha = 1.;   // the sea itself carries the photographed colour now, so it no longer needs to be see-through at the shore (that showed a dark rim)
           alpha = max(alpha, min(1., spec));
           float fog = smoothstep(uFogNear, uFogFar, vDepth); col = mix(col, uFogColor, fog);
           float r = length((vW.xz - uIsle.xy) / uIsle.zw);
