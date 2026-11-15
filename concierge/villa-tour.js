@@ -86,7 +86,7 @@ const T = {
     terraza: ["La terraza", "El mejor atardecer es privado.", "Dos sillas, una copa y la bahía entera. Sin reserva y sin consumición mínima.", ["Vistas al mar", "Puesta de sol"]],
     suites: ["Las suites", "Cinco suites. Cero discusiones.", "Cada dormitorio con su propio baño: todos duermen como invitados de honor.", ["5 suites", "6 baños"]],
     jacuzzi: ["El jacuzzi", "Burbujas entre pinos.", "Jacuzzi privado al aire libre. Perfecto para cerrar el día, o para empezarlo.", ["Jacuzzi privado", "Rodeado de pinar"]],
-    fin: ["Tu semana en Villa Aura", "Empieza con un mensaje.", "Villa, chef, barco en la cala y mesa en el club: lo coordinamos todo. Y por reservar con nosotros, guestlist de cortesía.", []],
+    fin: ["Tu semana en Villa Aura", "Empieza con un mensaje.", "Villa, chef, barco en la cala y mesa en el club: lo coordinamos todo. Y por reservar con nosotros,<br>guestlist de cortesía.", []],
   },
   en: {
     ui: { name: "Villa Aura", place: "Private tour", scroll: "Scroll down slowly", close: "Close", loading: "Preparing the tour", fail: "This browser cannot show the tour. Ask us for the villa dossier", ask: "Check availability", again: "Watch again", facts: ["5 en-suite bedrooms", "6 bathrooms", "Infinity pool", "Private jacuzzi", "Direct access to the sea"], fine: "Price depends on dates: we send it when you ask for availability.<br>Complimentary guestlist subject to club availability." },
@@ -101,7 +101,7 @@ const T = {
     terraza: ["The terrace", "The best sunset is a private one.", "Two chairs, one glass and the whole bay. No booking, no minimum spend.", ["Sea views", "Sunset"]],
     suites: ["The suites", "Five suites. Zero arguments.", "Every bedroom has its own bathroom: everyone sleeps like the guest of honour.", ["5 suites", "6 bathrooms"]],
     jacuzzi: ["The jacuzzi", "Bubbles among the pines.", "A private open-air jacuzzi. Perfect to end the day, or to start it.", ["Private jacuzzi", "Surrounded by pines"]],
-    fin: ["Your week at Villa Aura", "It starts with one message.", "Villa, chef, a boat in the cove and a table at the club: we coordinate it all. And when you book with us, a complimentary guestlist.", []],
+    fin: ["Your week at Villa Aura", "It starts with one message.", "Villa, chef, a boat in the cove and a table at the club: we coordinate it all. And when you book with us,<br>a complimentary guestlist.", []],
   },
   it: {
     ui: { name: "Villa Aura", place: "Tour privato", scroll: "Scorri lentamente verso il basso", close: "Chiudi", loading: "Preparazione del tour", fail: "Questo browser non può mostrare il tour. Chiedici il dossier della villa", ask: "Chiedi disponibilità", again: "Rivedi", facts: ["5 suite con bagno", "6 bagni", "Piscina a sfioro", "Jacuzzi privata", "Accesso diretto al mare"], fine: "Prezzo in base alle date: te lo inviamo quando chiedi la disponibilità.<br>Guestlist in omaggio secondo disponibilità del club." },
@@ -116,7 +116,7 @@ const T = {
     terraza: ["La terrazza", "Il tramonto migliore è privato.", "Due sedie, un bicchiere e tutta la baia. Senza prenotazione e senza consumazione minima.", ["Vista mare", "Tramonto"]],
     suites: ["Le suite", "Cinque suite. Zero discussioni.", "Ogni camera ha il suo bagno: tutti dormono da ospiti d'onore.", ["5 suite", "6 bagni"]],
     jacuzzi: ["La jacuzzi", "Bollicine tra i pini.", "Jacuzzi privata all'aperto. Perfetta per chiudere la giornata, o per iniziarla.", ["Jacuzzi privata", "Immersa nella pineta"]],
-    fin: ["La tua settimana a Villa Aura", "Inizia con un messaggio.", "Villa, chef, barca nella cala e tavolo al club: coordiniamo tutto noi. E prenotando con noi, guestlist in omaggio.", []],
+    fin: ["La tua settimana a Villa Aura", "Inizia con un messaggio.", "Villa, chef, barca nella cala e tavolo al club: coordiniamo tutto noi. E prenotando con noi,<br>guestlist in omaggio.", []],
   },
   fr: {
     ui: { name: "Villa Aura", place: "Visite privée", scroll: "Faites défiler lentement vers le bas", close: "Fermer", loading: "Préparation de la visite", fail: "Ce navigateur ne peut pas afficher la visite. Demandez-nous le dossier de la villa", ask: "Demander la disponibilité", again: "Revoir", facts: ["5 suites avec salle de bain", "6 salles de bain", "Piscine à débordement", "Jacuzzi privé", "Accès direct à la mer"], fine: "Prix selon les dates : nous vous l'envoyons lors de la demande de disponibilité.<br>Guestlist offerte selon disponibilité du club." },
@@ -131,7 +131,7 @@ const T = {
     terraza: ["La terrasse", "Le plus beau coucher de soleil est privé.", "Deux chaises, un verre et toute la baie. Sans réservation ni minimum de consommation.", ["Vue mer", "Coucher de soleil"]],
     suites: ["Les suites", "Cinq suites. Zéro dispute.", "Chaque chambre a sa salle de bain : tout le monde dort en invité d'honneur.", ["5 suites", "6 salles de bain"]],
     jacuzzi: ["Le jacuzzi", "Des bulles parmi les pins.", "Un jacuzzi privé en plein air. Parfait pour finir la journée, ou pour la commencer.", ["Jacuzzi privé", "Entouré de pins"]],
-    fin: ["Votre semaine à la Villa Aura", "Elle commence par un message.", "Villa, chef, bateau dans la crique et table au club : nous coordonnons tout. Et en réservant avec nous, guestlist offerte.", []],
+    fin: ["Votre semaine à la Villa Aura", "Elle commence par un message.", "Villa, chef, bateau dans la crique et table au club : nous coordonnons tout. Et en réservant avec nous,<br>guestlist offerte.", []],
   },
   de: {
     ui: { name: "Villa Aura", place: "Private Tour", scroll: "Langsam nach unten scrollen", close: "Schließen", loading: "Tour wird vorbereitet", fail: "Dieser Browser kann die Tour nicht anzeigen. Fragen Sie uns nach dem Exposé der Villa", ask: "Verfügbarkeit anfragen", again: "Noch einmal ansehen", facts: ["5 Suiten mit Bad", "6 Bäder", "Infinity-Pool", "Privater Jacuzzi", "Direkter Zugang zum Meer"], fine: "Preis je nach Datum: Wir senden ihn dir mit der Verfügbarkeitsanfrage.<br>Gästeliste als Geschenk, je nach Verfügbarkeit des Clubs." },
@@ -146,7 +146,7 @@ const T = {
     terraza: ["Die Terrasse", "Der schönste Sonnenuntergang ist privat.", "Zwei Stühle, ein Glas und die ganze Bucht. Ohne Reservierung, ohne Mindestverzehr.", ["Meerblick", "Sonnenuntergang"]],
     suites: ["Die Suiten", "Fünf Suiten. Null Diskussionen.", "Jedes Schlafzimmer hat sein eigenes Bad: Alle schlafen wie Ehrengäste.", ["5 Suiten", "6 Bäder"]],
     jacuzzi: ["Der Jacuzzi", "Blubbern zwischen Pinien.", "Privater Jacuzzi unter freiem Himmel. Perfekt, um den Tag zu beenden – oder zu beginnen.", ["Privater Jacuzzi", "Umgeben von Pinien"]],
-    fin: ["Deine Woche in der Villa Aura", "Sie beginnt mit einer Nachricht.", "Villa, Koch, Boot in der Bucht und Tisch im Club: Wir koordinieren alles. Und wenn du bei uns buchst, gibt es die Gästeliste dazu.", []],
+    fin: ["Deine Woche in der Villa Aura", "Sie beginnt mit einer Nachricht.", "Villa, Koch, Boot in der Bucht und Tisch im Club: Wir koordinieren alles. Und wenn du bei uns buchst,<br>gibt es die Gästeliste dazu.", []],
   },
 };
 const tx = () => T[getLang()] || T.es;
