@@ -1240,9 +1240,11 @@ document.getElementById("adminOut").addEventListener("click", () => { try { sess
 const REVIEWS = [
   { type: "video", src: "data/reviews/moto-atardecer.mp4", ringSrc: "data/reviews/moto-atardecer-ring.mp4", poster: "data/reviews/moto-atardecer.webp", posterThumb: "data/reviews/moto-atardecer.webp", title: "Moto de agua al atardecer", subtitle: "" },
   { src: "data/reviews/barco-cala.webp", thumb: "data/reviews/barco-cala.webp", title: "Fondeo en aguas turquesa", subtitle: "" },
+  { src: "data/reviews/pool-sol.webp", thumb: "data/reviews/pool-sol.webp", title: "Tarde de sol en la piscina", subtitle: "" },
   { src: "data/reviews/paella-paseo.webp", thumb: "data/reviews/paella-paseo.webp", title: "Paella frente al mar", subtitle: "" },
   { src: "data/reviews/barco-relax.webp", thumb: "data/reviews/barco-relax.webp", title: "Relax a bordo", subtitle: "" },
   { src: "data/reviews/pool-show.webp", thumb: "data/reviews/pool-show.webp", title: "Show en el pool club", subtitle: "" },
+  { src: "data/reviews/ushuaia-escenario.webp", thumb: "data/reviews/ushuaia-escenario.webp", title: "Frente al escenario", subtitle: "" },
   { src: "data/reviews/snorkel-cueva.webp", thumb: "data/reviews/snorkel-cueva.webp", title: "Snorkel junto a la cueva", subtitle: "" },
   { src: "data/reviews/transfer-pinar.webp", thumb: "data/reviews/transfer-pinar.webp", title: "Transfer privado al pinar", subtitle: "" },
   { src: "data/reviews/moto-tarde.webp", thumb: "data/reviews/moto-tarde.webp", title: "Paseo en moto de agua", subtitle: "" },
