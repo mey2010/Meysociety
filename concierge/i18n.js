@@ -3,6 +3,7 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Hamacas, mesas y camas reservadas en los beach clubs que elijas, sin esperas.": ["Loungers, tables and daybeds booked at the beach clubs you choose, no waiting.", "Lettini, tavoli e daybed prenotati nei beach club che scegli, senza attese.", "Transats, tables et lits réservés dans les beach clubs de votre choix, sans attente.", "Liegen, Tische und Daybeds in den Beach Clubs deiner Wahl reserviert, ohne Warten."],
   "Fotos y vídeos de algunas estancias reales, compartidos por quienes ya han vivido Ibiza con nosotros.": ["Photos and videos from some real stays, shared by those who have already lived Ibiza with us.", "Foto e video di alcuni soggiorni reali, condivisi da chi ha già vissuto Ibiza con noi.", "Photos et vidéos de quelques vrais séjours, partagées par ceux qui ont déjà vécu Ibiza avec nous.", "Fotos und Videos einiger echter Aufenthalte, geteilt von Gästen, die Ibiza schon mit uns erlebt haben."],
   "Chófer privado para llegadas,": ["Private driver for arrivals,", "Autista privato per arrivi,", "Chauffeur privé pour les arrivées,", "Privater Fahrer für Ankünfte,"],
   "salidas y noches de club.": ["departures and club nights.", "partenze e serate in club.", "les départs et les soirées en club.", "Abreisen und Clubnächte."],
