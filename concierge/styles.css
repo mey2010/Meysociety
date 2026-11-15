@@ -1950,3 +1950,12 @@ html.is-jumping, html.is-jumping.snap-stack { scroll-snap-type: none !important;
   .stack__card { box-shadow: 0 18px 30px -22px rgb(13 10 56 / .6); }
 }
 .wheel[data-off] .wheel__list { visibility: hidden; }
+/* guestlist terms window (from "Ver condiciones" in the form) */
+.terms-modal { z-index: 95; }
+.terms-modal .modal__card { position: relative; width: min(620px, 100%); max-height: min(82svh, 760px); overflow-y: auto; overscroll-behavior: contain; padding: 30px 26px 26px; text-align: left; }
+.terms-modal__body h2 { margin: 0 40px 10px 0; font-size: clamp(20px, 5vw, 26px); line-height: 1.2; }
+.terms-modal__body p, .terms-modal__body li { font-size: 14.5px; line-height: 1.55; color: rgb(244 245 251 / .86); text-align: left; hyphens: none; }
+.terms-modal__body ul { margin: 8px 0 12px; padding-left: 18px; display: grid; gap: 6px; }
+.terms-modal__body b { color: #fff; }
+.terms-modal { padding-top: max(96px, calc(env(safe-area-inset-top, 0px) + 90px)); align-items: start; background: rgb(6 4 30 / .78); }
+.terms-modal .modal__card { max-height: calc(100svh - 120px); background: linear-gradient(160deg, #2a2580, #0d0a38); }

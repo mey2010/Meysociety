@@ -1658,3 +1658,26 @@ document.querySelectorAll(".stack__card").forEach(card => {
   } });
   document.addEventListener("click", e => { if (e.target.closest("[data-villa-tour]")) { e.preventDefault(); track("villa_tour_open", { villa: "Aura" }); tour.open(); } });
 }
+
+/* "Ver condiciones" under the gift ladder: the guestlist terms open in a window over the form (a new tab is blocked
+   inside embedded viewers, and leaving the page would lose what the visitor typed) */
+document.addEventListener("click", async e => {
+  const a = e.target.closest?.('a[href*="terminos.html#guestlists"]'); if (!a) return;
+  e.preventDefault();
+  let html = "";
+  try {
+    const doc = new DOMParser().parseFromString(await (await fetch(a.getAttribute("href").split("#")[0])).text(), "text/html");
+    const h = doc.getElementById("guestlists");
+    if (h) { const parts = [h.outerHTML]; for (let n = h.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) parts.push(n.outerHTML); html = parts.join(""); }
+  } catch {}
+  if (!html) { location.href = a.href; return; }
+  let m = document.getElementById("termsModal");
+  if (!m) {
+    m = document.createElement("div"); m.className = "modal terms-modal"; m.id = "termsModal";
+    m.innerHTML = `<div class="modal__card lg lg--panel" role="dialog" aria-modal="true"><button class="modal__x" type="button" data-close aria-label="${t("Cerrar")}">×</button><div class="terms-modal__body"></div></div>`;
+    m.addEventListener("click", ev => { if (ev.target === m || ev.target.closest("[data-close]")) m.hidden = true; });
+    addEventListener("keydown", ev => { if (ev.key === "Escape") m.hidden = true; });
+    document.body.appendChild(m);
+  }
+  m.querySelector(".terms-modal__body").innerHTML = html; m.hidden = false; m.querySelector(".modal__x").focus();
+});
