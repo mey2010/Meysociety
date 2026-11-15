@@ -109,8 +109,7 @@ export function createCircularCarousel(root, opts = {}) {
   videos.forEach(v => {
     const poster = list[v.index].poster;
     if (poster) { const im = new Image(); im.onload = () => paintVideo(v, im); im.src = poster; }
-    const loop = () => { if (!v.video.paused && v.video.readyState >= 2 && performance.now() - (window.__scrolledAt || 0) > 260) paintVideo(v, v.video);   // (not while the page scrolls)
-      v.raf = v.video.requestVideoFrameCallback ? v.video.requestVideoFrameCallback(loop) : requestAnimationFrame(loop); };
+    const loop = () => { if (!v.video.paused && v.video.readyState >= 2) paintVideo(v, v.video); v.raf = v.video.requestVideoFrameCallback ? v.video.requestVideoFrameCallback(loop) : requestAnimationFrame(loop); };
     v.video.addEventListener("playing", () => { if (!v.looping) { v.looping = true; loop(); } }, { once: true });
   });
 
@@ -233,8 +232,6 @@ export function createCircularCarousel(root, opts = {}) {
   };
   const frame = now => {
     raf = 0; if (document.documentElement.classList.contains("is-covered")) { state.last = 0; return; } // a full-screen panel is open
-    // the page is being scrolled: the ring holds still and checks again shortly (the phone paints the page first)
-    if (!state.drag && now - (window.__scrolledAt || 0) < 260) { state.last = 0; raf = requestAnimationFrame(frame); return; }
     const dt = state.last ? Math.min((now - state.last) / 1000, .1) : 1 / 60; state.last = now;
     const busy = advance(dt, now); render(now);
     if (busy && visible && !document.hidden) raf = requestAnimationFrame(frame); else state.last = 0;

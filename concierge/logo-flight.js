@@ -20,7 +20,7 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
   headerImg.classList.add("is-flown"); // the flying coin takes its place
 
   // the neon trail is drawn on one fixed canvas under the coin
-  const cv = document.createElement("canvas"); cv.className = "flylogo__trail"; cv.setAttribute("aria-hidden", "true"); document.body.appendChild(cv); cv.style.display = "none";
+  const cv = document.createElement("canvas"); cv.className = "flylogo__trail"; cv.setAttribute("aria-hidden", "true"); document.body.appendChild(cv);
   const ctx = cv.getContext("2d"); let dpr = 1;
   const sizeCanvas = () => { dpr = Math.min(2, devicePixelRatio || 1); cv.width = Math.round(innerWidth * dpr); cv.height = Math.round(innerHeight * dpr); };
   sizeCanvas();
@@ -127,10 +127,7 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
     const pts = S.trail; while (pts.length && now - pts[0].t > LIFE) pts.shift();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (S.box) { const b = S.box; ctx.clearRect(b[0] - 2, b[1] - 2, b[2] - b[0] + 4, b[3] - b[1] + 4); S.box = null; } // only what was painted
-    // the full-screen canvas exists only while there is a trail to show: hidden, the phone keeps no
-    // screen-sized GPU layer for it (iOS runs out of tile memory and shows blank areas when scrolling)
-    if (!pts.length) { if (S.cvOn) { S.cvOn = false; cv.style.display = "none"; } return false; }
-    if (!S.cvOn) { S.cvOn = true; cv.style.display = ""; }
+    if (!pts.length) return false;
     const box = S.box = [1e9, 1e9, -1e9, -1e9];
     const n = pts.length;
     for (let i = 0; i < n; i++) {

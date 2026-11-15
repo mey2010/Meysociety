@@ -371,22 +371,11 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     }
     for (; ci < clusterEls.length; ci++) clusterEls[ci].hidden = true;
   }
-  let pinsVer = 0;
   const off = new THREE.Vector3();
   // shaders compile in parallel (where the browser supports it) instead of stalling the first frame
   try { await renderer.compileAsync(scene, camera); } catch {}
-  /* The page scroll comes first: while it moves (and for a moment after) the island is not redrawn at all, so the
-     phone spends that time painting the page instead of a full-screen WebGL frame every 16 ms. At rest the sea
-     ripples at 30 fps on touch screens; any touch on the map or a flight draws at full rate. Pins are only
-     re-placed when the camera has actually moved. */
-  const touch = matchMedia("(pointer: coarse)").matches; let userAt = 0, lastDraw = 0, projKey = "";
-  ["pointerdown", "touchstart", "wheel"].forEach(ev => el.addEventListener(ev, () => { userAt = performance.now(); }, { passive: true }));
   (function loop(now) {
     requestAnimationFrame(loop); if (!visible || document.hidden || document.documentElement.classList.contains("is-covered")) { last = now; return; }
-    const interacting = flight || now - userAt < 1500;
-    if (!interacting && now - (window.__scrolledAt || 0) < 260) { last = now; return; }
-    if (!interacting && touch && now - lastDraw < 31) return;
-    lastDraw = now;
     const dt = Math.min(.05, (now - last) / 1000); last = now; t += dt; seaU.uTime.value = t;
     if (flight) {
       const k = Math.min(1, (now - flight.t0) / flight.dur), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
@@ -402,9 +391,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     if (!tgt.equals(before)) { off.copy(tgt).sub(before); camera.position.add(off); }
     const floor = Math.max(0, groundY(camera.position.x, camera.position.z)) + .3;
     if (camera.position.y < floor) camera.position.y = floor;
-    updateDetail(now); renderer.render(scene, camera);
-    const e = camera.matrixWorld.elements, key = e[12].toFixed(3) + e[13].toFixed(3) + e[14].toFixed(3) + e[0].toFixed(4) + e[2].toFixed(4) + e[9].toFixed(4) + W + "x" + Hh + pinsVer;
-    if (key !== projKey) { projKey = key; project(); }
+    updateDetail(now); renderer.render(scene, camera); project();
   })(performance.now());
 
   prog.build = 1; report();
@@ -413,7 +400,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   return {
     screenOf: v => screen.get(v),
     setTheme(dark) { PAGE_NOW.set(dark ? "#0b0930" : "#f3f4fa"); scene.fog.color.copy(PAGE_NOW); },
-    setFilter(type, on) { pins.forEach(p => { if (p.v.type === type) p.on = on; }); pinsVer++; },
+    setFilter(type, on) { pins.forEach(p => { if (p.v.type === type) p.on = on; }); },
     setActive(v) { pins.forEach(p => p.btn.classList.toggle("is-active", p.v === v)); },
     flyToArea([lo0, lo1, la0, la1]) { const a = toXZ(lo0, la1), b = toXZ(lo1, la0); fly(new THREE.Vector3((a.x + b.x) / 2, 0, (a.z + b.z) / 2), Math.max(7, Math.hypot(b.x - a.x, b.z - a.z) * 1.1)); },
     flyToVenue(v) { const p = toXZ(v.lon, v.lat); fly(new THREE.Vector3(p.x, 0, p.z), 3); },
