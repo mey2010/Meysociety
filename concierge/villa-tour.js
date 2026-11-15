@@ -435,6 +435,8 @@ export function initVillaTour({ onAsk } = {}) {
     // (no reading stops in the tour: one continuous, light scroll)
     new ResizeObserver(size).observe(cv);
 
+    // the film shows its 24 s frame as a preview, but plays from the very start (the soundtrack begins at 0)
+    root.addEventListener("play", e => { const v = e.target; if (!v.classList?.contains("vt__film") || v.dataset.started) return; v.dataset.started = "1"; if (v.currentTime > 20) v.currentTime = 0; }, true);
     function close() { root.querySelector(".vt__film")?.pause(); root.hidden = true; document.body.style.overflow = ""; document.documentElement.classList.remove("is-covered"); document.dispatchEvent(new CustomEvent("coverchange", { detail: false })); }
     root.addEventListener("click", e => {
       if (e.target.closest("[data-close]")) close();
