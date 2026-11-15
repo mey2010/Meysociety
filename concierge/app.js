@@ -159,6 +159,13 @@ new IntersectionObserver((es, io) => { if (es.some(e => e.isIntersecting)) { io.
 // warm the map up in the background, but only during a pause: never while the visitor is scrolling
 { const later = () => performance.now() - (window.__scrolledAt || 0) < 400 ? setTimeout(later, 600) : startMap();
   (window.requestIdleCallback || (f => setTimeout(f, 2500)))(() => setTimeout(later, 1500), { timeout: 4000 }); }
+/* "Ver clubs" / "Ver beach clubs" on the service cards: straight to the map, showing only that kind of place */
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-map-only]"); if (!b) return; e.preventDefault();
+  const kind = b.dataset.mapOnly; closePop(); closeList();
+  document.querySelectorAll(".filter").forEach(f => { const on = f.dataset.kind === kind; f.setAttribute("aria-pressed", on); map3d.setFilter(f.dataset.kind, on); });
+  startMap(); scrollToEl(innerWidth <= 900 ? mapEl : document.getElementById("mapa"));   // on a phone, the island itself (it sits under the text)
+});
 document.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
   const on = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", on); map3d.setFilter(b.dataset.kind, on);
   if (!on && active && active.type === b.dataset.kind) closePop();
@@ -1247,14 +1254,16 @@ const fleet = document.getElementById("fleet"), fleetInfo = document.getElementB
 document.getElementById("fleetClose").innerHTML = ICONS.close;
 document.getElementById("fleetPrev").innerHTML = ICONS.left; document.getElementById("fleetNext").innerHTML = ICONS.right;
 const cardSrc = b => b.img || `data/fleet/card/${b.id}.webp`, fullSrc = (b, k) => `data/fleet/4k/${b.id}-${k}.webp`;
-const JET = "moto-agua", BOATS = FLEET.filter(b => b.type !== JET), JETS = FLEET.filter(b => b.type === JET);
-let ribbon = null, fleetCat = "all", fleetBase = BOATS, fleetList = BOATS;   // boats and jet skis are shown as separate fleets
+const JET = "moto-agua", SOLO = [JET, "coche", "transfer"];   // groups shown as their own fleet, apart from the boats
+const BOATS = FLEET.filter(b => !SOLO.includes(b.type)), JETS = FLEET.filter(b => b.type === JET);
+const typeIcon = ty => ty === JET ? ICONS.jetski : ty === "coche" ? ICONS.car : ty === "transfer" ? ICONS.van : ICONS.boat;
+let ribbon = null, fleetCat = "all", fleetBase = BOATS, fleetList = BOATS;
 const fleetItems = () => fleetList.map(b => ({ ...b, src: cardSrc(b), title: t(b.name), tag: t(CAT_LABEL[b.type]) }));
 const paxText = b => b.pax ? `${t("Hasta")} ${b.pax} ${t("personas")}` : "";
 function renderFleetInfo(b, i) {
   if (!b) return;
   fleetInfo.innerHTML = `<h3>${b.name}</h3>
-    <ul class="fleet__specs"><li>${b.type === JET ? ICONS.jetski : ICONS.boat}${t(CAT_LABEL[b.type])}</li>${b.len ? `<li>${ICONS.ruler}${b.len}</li>` : ""}${b.pax ? `<li>${ICONS.users2}${paxText(b)}</li>` : ""}${b.crew ? `<li>${ICONS.helm}${t(b.crew)}</li>` : ""}</ul>
+    <ul class="fleet__specs"><li>${typeIcon(b.type)}${t(CAT_LABEL[b.type])}</li>${b.len ? `<li>${ICONS.ruler}${b.len}</li>` : ""}${b.pax ? `<li>${ICONS.users2}${paxText(b)}</li>` : ""}${b.crew ? `<li>${ICONS.helm}${t(b.crew)}</li>` : ""}</ul>
     <div class="fleet__actions"><button class="btn btn--glass btn--onDark btn--sm" type="button" data-sheet>${t("Ver ficha")}</button><button class="btn btn--primary btn--sm" type="button" data-ask>${t("Pedir disponibilidad")}</button></div>`;
   fleetInfo.classList.remove("is-swap"); void fleetInfo.offsetWidth; fleetInfo.classList.add("is-swap");
   document.getElementById("fleetCount").textContent = `${String(i + 1).padStart(2, "0")} / ${String(fleetList.length).padStart(2, "0")}`;
@@ -1267,9 +1276,9 @@ function setFleetCat(cat) {
 }
 function openFleet(cat = "all") {
   fleet.hidden = false; document.body.style.overflow = "hidden";
-  fleetBase = cat === JET ? JETS : BOATS; if (cat === JET) cat = "all";
-  // only the types that have boats, each with its count (the jet ski fleet is one group: no chips)
-  fleetChips.hidden = fleetBase === JETS;
+  const solo = SOLO.includes(cat); fleetBase = solo ? FLEET.filter(b => b.type === cat) : BOATS; if (solo) cat = "all";
+  // only the types that have boats, each with its count (jet skis, cars and transfers are one group each: no chips)
+  fleetChips.hidden = solo;
   fleetChips.innerHTML = FLEET_TYPES.filter(([k]) => k === "all" || fleetBase.some(b => b.type === k))
     .map(([k, l]) => `<button type="button" data-cat="${k}" aria-pressed="${k === cat}">${t(l)} <small>${k === "all" ? fleetBase.length : fleetBase.filter(b => b.type === k).length}</small></button>`).join("");
   if (!ribbon) ribbon = createDepthRibbon(document.getElementById("fleetRibbon").appendChild(document.createElement("div")), {
@@ -1283,7 +1292,7 @@ function openFleet(cat = "all") {
 function closeFleet() { fleet.hidden = true; document.body.style.overflow = ""; }
 function askFleet(b) {
   if (openWA([b.name, t(CAT_LABEL[b.type]), b.len, b.pax ? paxText(b) : ""].filter(Boolean).join(" · "), "flota")) return;
-  closeBoat(); closeFleet(); select(b.type === JET ? "motos" : "yates", true);
+  closeBoat(); closeFleet(); select({ [JET]: "motos", coche: "coches", transfer: "transfers" }[b.type] || "yates", true);
   document.getElementById("f-notes").value = `${t("Me interesa")}: ${b.name}${b.len ? " · " + b.len : ""} (${t(CAT_LABEL[b.type])}).`;
   scrollToEl(document.getElementById("contacto"));
 }

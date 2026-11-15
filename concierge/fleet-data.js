@@ -12,6 +12,8 @@ export const FLEET_TYPES = [
   ["superyate", "Superyate"],
   ["catamaran", "Catamarán"],
   ["moto-agua", "Motos de agua"],
+  ["coche", "Coches"],
+  ["transfer", "Transfers"],
 ];
 
 // what each type means, shown in the detail sheet
@@ -24,6 +26,8 @@ export const TYPE_NOTE = {
   "superyate": "Superyate con tripulación completa, para el día o para dormir a bordo.",
   "catamaran": "Catamarán a vela: estable, espacioso y tranquilo.",
   "moto-agua": "Moto de agua: tour guiado con monitor, o alquiler si tienes titulación.",
+  "coche": "Coche de alquiler entregado donde estés, por días o por semanas.",
+  "transfer": "Vehículo con chófer privado para llegadas, salidas y noches de club.",
 };
 
 const BOTAFOCH = "Marina Botafoch", SANT_ANTONI = "Club Náutico de Sant Antoni";
@@ -65,4 +69,7 @@ export const FLEET = [
   { id: "catamaran-vela", type: "catamaran", name: "Catamarán a vela", photos: 4 },
   // ---- motos de agua (shown on their own from the jet ski card; the boats fleet leaves them out) ----
   { id: "sea-doo-rxt-x-300", type: "moto-agua", name: "Sea-Doo RXT-X 300", crew: "Guiada o con titulación", photos: 1, img: "data/services/moto-de-agua.webp" },
+  // ---- coches y transfers (each shown on its own from its card; photos from the service cards) ----
+  { id: "lamborghini-huracan", type: "coche", name: "Lamborghini Huracán", photos: 1, img: "data/services/coches.webp" },
+  { id: "mercedes-clase-v", type: "transfer", name: "Mercedes-Benz Clase V", photos: 1, img: "data/services/transfers.webp" },
 ];
