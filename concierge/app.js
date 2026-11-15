@@ -1246,7 +1246,7 @@ function openLightbox(it) {
     : `<img class="lightbox__media" src="${it.src}" alt="${t(it.title)}">`;
   lbCap.innerHTML = `${t(it.title)}<small>${t(it.subtitle || "")}</small>`;
   const frame = lbMedia.querySelector(".lightbox__media"); const wrap = document.createElement("div"); wrap.className = "lightbox__frame";
-  frame.replaceWith(wrap); wrap.appendChild(frame); holo(wrap, { tiltMax: 8, hoverScale: 1.02, shadow: true });
+  frame.replaceWith(wrap); wrap.appendChild(frame); holo(wrap, { tiltMax: 8, hoverScale: 1.02, shadow: true, glare: 0, intensity: 0, edgeSparkle: 0, frame: 0 });   // the 3D tilt stays; no glare or sheen over the photo
   lb.hidden = false; document.body.style.overflow = "hidden"; document.getElementById("lbClose").focus();
 }
 function closeLightbox() { lb.hidden = true; lbMedia.innerHTML = ""; document.body.style.overflow = ""; }
