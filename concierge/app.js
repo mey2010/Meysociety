@@ -1237,6 +1237,12 @@ const REVIEWS = [
   { src: "data/reviews/barco-cala.webp", title: "Fondeo en aguas turquesa", subtitle: "" },
   { src: "data/reviews/snorkel-cueva.webp", title: "Snorkel junto a la cueva", subtitle: "" },
   { src: "data/reviews/pool-party.webp", title: "Pool party de día", subtitle: "" },
+  { src: "data/reviews/paella-mediodia.webp", thumb: "data/reviews/paella-mediodia.webp", title: "Paella con vistas al mar", subtitle: "" },
+  { src: "data/reviews/moto-tarde.webp", thumb: "data/reviews/moto-tarde.webp", title: "Paseo en moto de agua", subtitle: "" },
+  { src: "data/reviews/pool-show.webp", thumb: "data/reviews/pool-show.webp", title: "Show en el pool club", subtitle: "" },
+  { src: "data/reviews/villa-infinity.webp", thumb: "data/reviews/villa-infinity.webp", title: "Piscina infinita en la villa", subtitle: "" },
+  { src: "data/reviews/barco-relax.webp", thumb: "data/reviews/barco-relax.webp", title: "Relax a bordo", subtitle: "" },
+  { src: "data/reviews/ushuaia-noche.webp", thumb: "data/reviews/ushuaia-noche.webp", title: "Noche en Ushuaïa", subtitle: "" },
 ];
 const lb = document.getElementById("lightbox"), lbMedia = document.getElementById("lbMedia"), lbCap = document.getElementById("lbCap");
 document.getElementById("lbClose").innerHTML = ICONS.close;
@@ -1254,7 +1260,7 @@ document.getElementById("lbClose").addEventListener("click", closeLightbox);
 lb.addEventListener("click", e => { if (e.target === lb) closeLightbox(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !lb.hidden) closeLightbox(); });
 const thumbOf = (p, r = "-r") => p ? "data/thumbs/" + p.split("/").pop().replace(/\.(jpe?g|png|webp)$/i, "") + r + ".webp" : p;
-const reviewsItems = () => REVIEWS.map(r => ({ ...r, src: r.type === "video" ? r.src : thumbOf(r.src), poster: r.poster && thumbOf(r.poster), title: t(r.title), subtitle: t(r.subtitle), alt: t(r.title) }));
+const reviewsItems = () => REVIEWS.map(r => ({ ...r, src: r.type === "video" ? r.src : (r.thumb || thumbOf(r.src)), poster: r.poster && thumbOf(r.poster), title: t(r.title), subtitle: t(r.subtitle), alt: t(r.title) }));
 const ringEl = document.getElementById("reviewsRing");
 /* With only a few real clips the turning ring would look empty: they stand side by side as framed videos that play
    silently in place (a tap opens them full size). From three items on, the 3D ring takes over again. */

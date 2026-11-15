@@ -3,6 +3,12 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Paella con vistas al mar": ["Paella with a sea view", "Paella vista mare", "Paella avec vue sur la mer", "Paella mit Meerblick"],
+  "Paseo en moto de agua": ["Jet ski ride", "Giro in moto d'acqua", "Balade en jet-ski", "Jetski-Tour"],
+  "Show en el pool club": ["Pool club show", "Show al pool club", "Show au pool club", "Show im Pool Club"],
+  "Piscina infinita en la villa": ["Infinity pool at the villa", "Piscina a sfioro in villa", "Piscine à débordement de la villa", "Infinity-Pool in der Villa"],
+  "Relax a bordo": ["Unwinding on board", "Relax a bordo", "Détente à bord", "Entspannen an Bord"],
+  "Noche en Ushuaïa": ["Night at Ushuaïa", "Serata all'Ushuaïa", "Soirée à l'Ushuaïa", "Abend im Ushuaïa"],
   "Fondeo en aguas turquesa": ["Anchored in turquoise water", "All'ancora in acque turchesi", "Au mouillage dans une eau turquoise", "Vor Anker in türkisem Wasser"],
   "Snorkel junto a la cueva": ["Snorkelling by the cave", "Snorkeling vicino alla grotta", "Snorkeling près de la grotte", "Schnorcheln an der Höhle"],
   "Pool party de día": ["Daytime pool party", "Pool party di giorno", "Pool party en journée", "Poolparty am Tag"],
