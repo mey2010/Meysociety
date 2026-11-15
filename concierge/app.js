@@ -381,7 +381,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     const fx = globalThis.makeDrape(cv.getContext("2d"), () => document.createElement("canvas"));
     fx.set(state()); post = m => fx.message(m);
     let lastDraw = 0;
-    (function loop(now) { if (!document.hidden) { if (fx.scrolling(now)) fx.rest(); else if (now - lastDraw > 32) { lastDraw = now; fx.draw(now); } } requestAnimationFrame(loop); })(performance.now());
+    (function loop(now) { if (!document.hidden && fx.state.visible !== false) { if (fx.scrolling(now)) fx.rest(); else if (now - lastDraw > 32) { lastDraw = now; fx.draw(now); } } requestAnimationFrame(loop); })(performance.now());
   };
   // the worker must say hello before the canvas is handed over, so a blocked or broken worker never costs the background
   /* Apple's engine (every browser on iPhone and iPad, the Claude app, Safari on the Mac) is kept on the in-page
@@ -410,7 +410,12 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     post({ type: "ripple", x: e.clientX, y: e.clientY });
   }, { passive: true });
   document.addEventListener("themechange", e => post({ type: "theme", theme: e.detail }));
-  const vis = () => post({ type: "visible", visible: !document.hidden && !document.documentElement.classList.contains("is-covered") });
+  /* below the first screen the dots have faded to almost nothing: there the canvas stops drawing and is taken out
+     of the page altogether, so a phone has one less full-screen layer to keep painted while scrolling fast */
+  const root = document.documentElement; let past = null;
+  const vis = () => post({ type: "visible", visible: !document.hidden && !root.classList.contains("is-covered") && !past });
+  const checkPast = () => { const p = scrollY > innerHeight * 1.05; if (p !== past) { past = p; root.classList.toggle("past-intro", p); vis(); } };
+  addEventListener("scroll", checkPast, { passive: true }); checkPast();
   document.addEventListener("visibilitychange", vis); document.addEventListener("coverchange", vis);
 }
 
@@ -815,6 +820,7 @@ document.querySelectorAll("[data-pack]").forEach(b => b.addEventListener("click"
 function wheelPicker(input) {
   const min = +input.dataset.min || 1, max = +input.dataset.max || 40, ROW = 44;
   const box = document.createElement("div"); box.className = "wheel"; box.tabIndex = 0;
+  new IntersectionObserver(([e]) => box.toggleAttribute("data-off", !e.isIntersecting), { rootMargin: "400px 0px" }).observe(box);   // off screen: its 3D rows hold no layers
   box.setAttribute("role", "spinbutton"); box.setAttribute("aria-valuemin", min); box.setAttribute("aria-valuemax", max);
   const lab = input.dataset.label || input.id + "-l"; if (document.getElementById(lab)) box.setAttribute("aria-labelledby", lab);
   box.innerHTML = `<div class="wheel__band" aria-hidden="true" data-unit="${t("pers.")}"></div><div class="wheel__list" aria-hidden="true">${

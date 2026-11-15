@@ -1932,3 +1932,21 @@ html.is-jumping, html.is-jumping.snap-stack { scroll-snap-type: none !important;
 @media (prefers-reduced-motion: reduce) { .lightbox__frame.is-in-next, .lightbox__frame.is-in-prev { animation: none; } }
 
 .ladder__fine a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
+/* ================= phones and tablets: fast scrolling without unpainted (black) areas =================
+   iOS paints the page in tiles while it scrolls; anything slow to paint arrives late and shows as a dark block.
+   So on touch screens the page keeps only cheap-to-paint content in motion:
+   - no live background blur anywhere in the page content (each one re-reads and blurs what is behind it),
+   - no endless "float" animations on every button (each kept its own layer busy all the time),
+   - no scroll-driven rise on the big sections (it turned whole sections into moving layers several screens tall),
+   - the dotted background canvas only exists on the first screen,
+   - no blurred drop shadow on the jet ski cut-out. */
+@media (pointer: coarse), (hover: none) {
+  main *, main *::before, main *::after, .sm-band { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .btn, .sm-toggle, .lang__btn, .fleet__arrow, .bell__btn, .lightbox__close, .map__zoom button, .btn__liquid { animation: none !important; }
+  main > .sec--mist, main > .sec--night, main > .sec--light { animation: none !important; transform: none !important; }
+  html.past-intro .drape { visibility: hidden; }
+  .stack__media--product img { filter: none !important; }
+  .stack__card { box-shadow: 0 18px 30px -22px rgb(13 10 56 / .6); }
+}
+.wheel[data-off] .wheel__list { visibility: hidden; }
