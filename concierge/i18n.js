@@ -3,6 +3,20 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Desbloqueado": ["Unlocked", "Sbloccato", "Débloqué", "Freigeschaltet"],
+  "Elige 2 servicios y te regalamos una guestlist.": ["Pick 2 services and a guestlist is on us.", "Scegli 2 servizi e la guestlist te la regaliamo noi.", "Choisissez 2 services et la guestlist vous est offerte.", "Wähle 2 Services und die Guestlist geht auf uns."],
+  "Añade": ["Add", "Aggiungi", "Ajoutez", "Füge"],
+  "servicio más para conseguir": ["more service to get", "servizio in più per ottenere", "service de plus pour obtenir", "weiteren Service hinzu für"],
+  "servicios más para conseguir": ["more services to get", "servizi in più per ottenere", "services de plus pour obtenir", "weitere Services hinzu für"],
+  "Has desbloqueado todos los regalos.": ["You've unlocked every gift.", "Hai sbloccato tutti i regali.", "Vous avez débloqué tous les cadeaux.", "Du hast alle Geschenke freigeschaltet."],
+  "servicios": ["services", "servizi", "services", "Services"],
+  "Guestlist 1 noche": ["Guestlist 1 night", "Guestlist 1 notte", "Guestlist 1 nuit", "Guestlist 1 Nacht"],
+  "Guestlist 2 noches + chófer": ["Guestlist 2 nights + driver", "Guestlist 2 notti + autista", "Guestlist 2 nuits + chauffeur", "Guestlist 2 Nächte + Fahrer"],
+  "Guestlist toda la estancia + mesa + botella": ["Guestlist all stay + table + bottle", "Guestlist tutto il soggiorno + tavolo + bottiglia", "Guestlist tout le séjour + table + bouteille", "Guestlist ganzer Aufenthalt + Tisch + Flasche"],
+  "Guestlist de cortesía para 1 noche": ["Complimentary guestlist for 1 night", "Guestlist in omaggio per 1 notte", "Guestlist offerte pour 1 nuit", "Kostenlose Guestlist für 1 Nacht"],
+  "Guestlist 2 noches y chófer de vuelta del club la primera noche": ["Guestlist for 2 nights and a driver back from the club on the first night", "Guestlist per 2 notti e autista di ritorno dal club la prima notte", "Guestlist 2 nuits et chauffeur au retour du club la première nuit", "Guestlist für 2 Nächte und Fahrer zurück vom Club in der ersten Nacht"],
+  "Guestlist toda la estancia, mesa en club con condiciones preferentes y botella de bienvenida en la villa": ["Guestlist for your whole stay, a club table on preferential terms and a welcome bottle at the villa", "Guestlist per tutto il soggiorno, tavolo in club a condizioni preferenziali e bottiglia di benvenuto in villa", "Guestlist pour tout le séjour, table en club à conditions préférentielles et bouteille de bienvenue à la villa", "Guestlist für den ganzen Aufenthalt, Clubtisch zu Vorzugskonditionen und Willkommensflasche in der Villa"],
+  "Regalos de cortesía, sujetos a disponibilidad del club. Guestlist solo para mayores de 18.": ["Complimentary gifts, subject to club availability. Guestlist for over-18s only.", "Regali di cortesia, soggetti alla disponibilità del club. Guestlist solo per maggiorenni.", "Cadeaux offerts, sous réserve de disponibilité du club. Guestlist réservée aux plus de 18 ans.", "Kostenlose Extras, je nach Verfügbarkeit des Clubs. Guestlist nur ab 18 Jahren."],
   "Ver beach clubs": ["See beach clubs", "Vedi i beach club", "Voir les beach clubs", "Beach Clubs ansehen"],
   "Ver clubs": ["See clubs", "Vedi i club", "Voir les clubs", "Clubs ansehen"],
   "Coche de alquiler entregado donde estés, por días o por semanas.": ["Rental car delivered wherever you are, by the day or by the week.", "Auto a noleggio consegnata dove sei, a giorni o a settimane.", "Voiture de location livrée où vous êtes, à la journée ou à la semaine.", "Mietwagen, geliefert wo du bist, tage- oder wochenweise."],

@@ -1870,3 +1870,25 @@ html.is-jumping, html.is-jumping.snap-stack { scroll-snap-type: none !important;
 .vt__hint em { white-space: nowrap; }
 .vt__hint { width: max-content; max-width: calc(100vw - 24px); }
 @media (max-width: 420px) { .vt__hint { font-size: clamp(9.5px, 2.95vw, 12px); letter-spacing: .14em; } }
+
+/* ---------------- gift ladder in the contact form ---------------- */
+.ladder { margin-top: 16px; padding: 16px 16px 14px; border-radius: 18px; background: linear-gradient(160deg, rgb(200 86 230 / .16), rgb(120 199 228 / .08)); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .14); }
+.ladder__bar { position: relative; height: 6px; margin: 10px 12px 26px; border-radius: 99px; background: rgb(255 255 255 / .14); }
+.ladder__bar > i { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: linear-gradient(90deg, #78c7e4, #c856e6); box-shadow: 0 0 14px rgb(200 86 230 / .6); transition: width 520ms cubic-bezier(.22, .8, .24, 1); }
+.ladder__step { position: absolute; top: 50%; translate: -50% -50%; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: #1f1a6b; box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / .3); transition: background 300ms, box-shadow 300ms, scale 300ms; }
+.ladder__step b { font: 700 11px/1 var(--sans); color: rgb(244 245 251 / .8); }
+.ladder__step.is-on { background: linear-gradient(140deg, #c856e6, #6a2f85); box-shadow: 0 0 0 3px rgb(200 86 230 / .25), 0 0 16px rgb(200 86 230 / .7); scale: 1.08; }
+.ladder__step.is-on b { color: #fff; }
+.ladder__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.ladder__list li { display: grid; gap: 3px; padding: 9px 10px; border-radius: 12px; font-size: 12.5px; line-height: 1.3; color: rgb(244 245 251 / .62); background: rgb(255 255 255 / .04); text-align: center; transition: color 300ms, background 300ms; }
+.ladder__list li span { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: rgb(244 245 251 / .5); }
+.ladder__list li.is-on { color: #fff; background: rgb(200 86 230 / .18); box-shadow: inset 0 0 0 1px rgb(200 86 230 / .45); }
+.ladder__list li.is-on span { color: #e9b8f7; }
+.ladder p { text-align: start; hyphens: manual; -webkit-hyphens: manual; word-spacing: normal; }
+.ladder__msg { margin: 12px 2px 0; font-size: 14px; line-height: 1.45; color: rgb(244 245 251 / .92); }
+.ladder__msg b { color: #fff; font-weight: 650; }
+.ladder__msg span { color: rgb(244 245 251 / .7); font-size: 13px; }
+.ladder__fine { margin: 8px 2px 0; font-size: 11.5px; line-height: 1.4; color: rgb(244 245 251 / .5); }
+.ladder.is-pop .ladder__list li.is-on:last-of-type, .ladder.is-pop .ladder__msg b { animation: ladder-pop 620ms cubic-bezier(.3, 1.5, .5, 1); }
+@keyframes ladder-pop { 0% { scale: 1; } 40% { scale: 1.06; } 100% { scale: 1; } }
+@media (prefers-reduced-motion: reduce) { .ladder.is-pop * { animation: none !important; } .ladder__bar > i { transition: none; } }
