@@ -1892,3 +1892,15 @@ html.is-jumping, html.is-jumping.snap-stack { scroll-snap-type: none !important;
 .ladder.is-pop .ladder__list li.is-on:last-of-type, .ladder.is-pop .ladder__msg b { animation: ladder-pop 620ms cubic-bezier(.3, 1.5, .5, 1); }
 @keyframes ladder-pop { 0% { scale: 1; } 40% { scale: 1.06; } 100% { scale: 1; } }
 @media (prefers-reduced-motion: reduce) { .ladder.is-pop * { animation: none !important; } .ladder__bar > i { transition: none; } }
+
+/* Dayclubs: a sunset coral beside the nightclub violet, beach club blue and beach gold */
+.dot--dayclub { background: #ff7a59; }
+.map3d__pin--dayclub { --pin: #ff7a59; }
+.map3d__cluster[data-kind="dayclub"] .map3d__dot { box-shadow: 0 0 0 2.5px #ff7a59, 0 0 0 4.5px rgb(13 10 56 / .85), 0 6px 14px -3px rgb(0 0 0 / .6); } .map3d__cluster[data-kind="dayclub"] .map3d__dot::after { background: #ff7a59; }
+/* four map filters: one row on wide screens, two neat rows on phones */
+.hero .filters { flex-wrap: wrap; }
+@media (max-width: 600px) { .hero__copy > .filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .hero .filter { justify-content: center; } }
+
+/* places without an aerial photo yet: the popup is just its text */
+.pop__img[hidden] { display: none; }
+.pop:has(.pop__img[hidden]) { grid-template-columns: 1fr; }

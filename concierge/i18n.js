@@ -3,6 +3,10 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Dayclubs": ["Dayclubs", "Dayclub", "Dayclubs", "Dayclubs"],
+  "Nightclubs": ["Nightclubs", "Nightclub", "Nightclubs", "Nightclubs"],
+  "Dayclub": ["Day club", "Day club", "Day club", "Day Club"],
+  "Nightclub": ["Nightclub", "Nightclub", "Nightclub", "Nightclub"],
   "3 guestlists": ["3 guestlists", "3 guestlist", "3 guestlists", "3 Guestlists"],
   "4 guestlists o más": ["4 guestlists or more", "4 guestlist o più", "4 guestlists ou plus", "4 Guestlists oder mehr"],
   "3 guestlists de cortesía en beach clubs o clubs": ["3 complimentary guestlists at beach clubs or clubs", "3 guestlist in omaggio in beach club o club", "3 guestlists offertes dans des beach clubs ou des clubs", "3 kostenlose Guestlists in Beach Clubs oder Clubs"],
@@ -531,6 +535,15 @@ const D = {
 };
 // venue descriptions
 const INFO = {
+  "Recinto al aire libre en las colinas de Benimussa, junto a Sant Antoni, con fiestas que empiezan de día y siguen de noche.": ["Open-air venue in the Benimussa hills by Sant Antoni, with parties that start in daylight and carry on into the night.", "Spazio all'aperto sulle colline di Benimussa, vicino a Sant Antoni, con feste che iniziano di giorno e continuano di notte.", "Lieu en plein air sur les collines de Benimussa, près de Sant Antoni, avec des fêtes qui commencent le jour et continuent la nuit.", "Open-Air-Gelände in den Hügeln von Benimussa bei Sant Antoni, mit Partys, die tagsüber beginnen und bis in die Nacht gehen."],
+  "Pool club sobre los acantilados de Cap Martinet, frente a Talamanca.": ["Pool club on the cliffs of Cap Martinet, facing Talamanca.", "Pool club sulle scogliere di Cap Martinet, di fronte a Talamanca.", "Pool club sur les falaises de Cap Martinet, face à Talamanca.", "Pool Club auf den Klippen von Cap Martinet, gegenüber von Talamanca."],
+  "Pool club en Sant Antoni, junto a O Beach y del mismo equipo.": ["Pool club in Sant Antoni, next to O Beach and run by the same team.", "Pool club a Sant Antoni, accanto a O Beach e dello stesso team.", "Pool club à Sant Antoni, à côté d'O Beach et tenu par la même équipe.", "Pool Club in Sant Antoni, neben dem O Beach und vom selben Team."],
+  "Hotel mítico en las colinas de Sant Antoni, famoso por sus fiestas.": ["Legendary hotel in the hills of Sant Antoni, famous for its parties.", "Hotel mitico sulle colline di Sant Antoni, famoso per le sue feste.", "Hôtel mythique sur les collines de Sant Antoni, célèbre pour ses fêtes.", "Legendäres Hotel in den Hügeln von Sant Antoni, berühmt für seine Partys."],
+  "En Sant Carles: el mercadillo hippie de Las Dalias y Akasha, su club íntimo.": ["In Sant Carles: the Las Dalias hippie market and Akasha, its intimate club.", "A Sant Carles: il mercatino hippie di Las Dalias e Akasha, il suo club intimo.", "À Sant Carles : le marché hippie de Las Dalias et Akasha, son club intimiste.", "In Sant Carles: der Hippiemarkt Las Dalias und Akasha, sein kleiner Club."],
+  "Club en Marina Botafoch, en Eivissa.": ["Club at Marina Botafoch, in Ibiza Town.", "Club a Marina Botafoch, a Eivissa.", "Club à Marina Botafoch, à Ibiza-ville.", "Club in der Marina Botafoch, in Ibiza-Stadt."],
+  "Uno de los clubs más antiguos de la isla, en el centro de Eivissa.": ["One of the island's oldest clubs, in the centre of Ibiza Town.", "Uno dei club più antichi dell'isola, nel centro di Eivissa.", "L'un des plus anciens clubs de l'île, au centre d'Ibiza-ville.", "Einer der ältesten Clubs der Insel, im Zentrum von Ibiza-Stadt."],
+  "Cala de aguas turquesa entre pinos, al norte de Sant Antoni.": ["Turquoise cove among the pines, north of Sant Antoni.", "Cala dalle acque turchesi tra i pini, a nord di Sant Antoni.", "Crique aux eaux turquoise entre les pins, au nord de Sant Antoni.", "Türkisfarbene Bucht zwischen Pinien, nördlich von Sant Antoni."],
+  "Pequeña cala vecina de Cala Salada, a la que se llega a pie.": ["Small cove next to Cala Salada, reached on foot.", "Piccola cala vicina a Cala Salada, raggiungibile a piedi.", "Petite crique voisine de Cala Salada, accessible à pied.", "Kleine Nachbarbucht der Cala Salada, zu Fuß erreichbar."],
   "Restaurante de playa en Platja d'en Bossa.": ["Beach restaurant in Platja d'en Bossa.", "Ristorante sulla spiaggia a Platja d'en Bossa.", "Restaurant de plage à Platja d'en Bossa.", "Strandrestaurant in Platja d'en Bossa."],
   "Club en el Passeig Joan Carles I de Eivissa, frente a Marina Botafoch.": ["Club on Passeig Joan Carles I in Ibiza Town, facing Marina Botafoch.", "Club sul Passeig Joan Carles I di Eivissa, di fronte a Marina Botafoch.", "Club sur le Passeig Joan Carles I à Eivissa, face à Marina Botafoch.", "Club am Passeig Joan Carles I in Eivissa, gegenüber der Marina Botafoch."],
   "Restaurante, cabaret y club en Marina Botafoch, con vistas a Dalt Vila.": ["Restaurant, cabaret and club at Marina Botafoch, looking onto Dalt Vila.", "Ristorante, cabaret e club a Marina Botafoch, con vista su Dalt Vila.", "Restaurant, cabaret et club à Marina Botafoch, avec vue sur Dalt Vila.", "Restaurant, Cabaret und Club in der Marina Botafoch mit Blick auf Dalt Vila."],
@@ -557,6 +570,7 @@ const INFO = {
   "La gran playa de Formentera: arena blanca y agua cristalina entre dos mares.": ["Formentera's great beach: white sand and crystal-clear water between two seas.", "La grande spiaggia di Formentera: sabbia bianca e acqua cristallina tra due mari.", "La grande plage de Formentera : sable blanc et eau cristalline entre deux mers.", "Formenteras großer Strand: weißer Sand und kristallklares Wasser zwischen zwei Meeren."],
 };
 const GEN = { // templates for venues without a custom description
+  dayclub: ["Day club in {a}.", "Day club a {a}.", "Day club à {a}.", "Day Club in {a}."],
   club: ["Club in {a}.", "Club a {a}.", "Club à {a}.", "Club in {a}."],
   beachclub: ["Beach club in {a}, with sunbeds, restaurant and music.", "Beach club a {a}, con lettini, ristorante e musica.", "Beach club à {a}, avec transats, restaurant et musique.", "Beach Club in {a} mit Liegen, Restaurant und Musik."],
   beach: ["Beach in {a}.", "Spiaggia a {a}.", "Plage à {a}.", "Strand in {a}."],
