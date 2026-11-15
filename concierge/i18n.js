@@ -3,6 +3,10 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "3 guestlists": ["3 guestlists", "3 guestlist", "3 guestlists", "3 Guestlists"],
+  "4 guestlists o más": ["4 guestlists or more", "4 guestlist o più", "4 guestlists ou plus", "4 Guestlists oder mehr"],
+  "3 guestlists de cortesía en beach clubs o clubs": ["3 complimentary guestlists at beach clubs or clubs", "3 guestlist in omaggio in beach club o club", "3 guestlists offertes dans des beach clubs ou des clubs", "3 kostenlose Guestlists in Beach Clubs oder Clubs"],
+  "4 guestlists de cortesía o más en beach clubs o clubs": ["4 or more complimentary guestlists at beach clubs or clubs", "4 o più guestlist in omaggio in beach club o club", "4 guestlists offertes ou plus dans des beach clubs ou des clubs", "4 oder mehr kostenlose Guestlists in Beach Clubs oder Clubs"],
   "1 guestlist": ["1 guestlist", "1 guestlist", "1 guestlist", "1 Guestlist"],
   "2 guestlists": ["2 guestlists", "2 guestlist", "2 guestlists", "2 Guestlists"],
   "3 guestlists o más": ["3 guestlists or more", "3 guestlist o più", "3 guestlists ou plus", "3 Guestlists oder mehr"],

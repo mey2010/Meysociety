@@ -759,12 +759,12 @@ const chips = document.getElementById("chips"), chosen = new Set();
 for (const [id, n] of Object.entries(CHOICES)) chips.insertAdjacentHTML("beforeend", `<button type="button" class="chip" data-c="${id}" aria-pressed="false">${n}</button>`);
 function select(id, on) { if (!CHOICES[id]) return; on ? chosen.add(id) : chosen.delete(id); chips.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", chosen.has(c.dataset.c))); paintLadder(); }
 /* ---------------- gift ladder: the more services in the plan, the more is unlocked ----------------
-   1 service, 2 services, 3 or more: one complimentary guestlist (beach club or club) per service. A bar fills as services are picked, each step lights up when reached,
+   1 service: 1 complimentary guestlist (beach club or club); 2 services: 3; 3 or more services: 4 or more. A bar fills as services are picked, each step lights up when reached,
    and a line says what is unlocked and what one more service would add. The gift reached goes in the message. */
 const LADDER = [
   { n: 1, short: "1 guestlist", gift: "1 guestlist de cortesía en beach club o club" },
-  { n: 2, short: "2 guestlists", gift: "2 guestlists de cortesía en beach clubs o clubs" },
-  { n: 3, short: "3 guestlists o más", gift: "3 guestlists de cortesía o más en beach clubs o clubs" },
+  { n: 2, short: "3 guestlists", gift: "3 guestlists de cortesía en beach clubs o clubs" },
+  { n: 3, short: "4 guestlists o más", gift: "4 guestlists de cortesía o más en beach clubs o clubs" },
 ];
 const ladderEl = document.getElementById("ladder");
 const giftNow = () => [...LADDER].reverse().find(s => chosen.size >= s.n);
