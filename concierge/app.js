@@ -759,23 +759,23 @@ const chips = document.getElementById("chips"), chosen = new Set();
 for (const [id, n] of Object.entries(CHOICES)) chips.insertAdjacentHTML("beforeend", `<button type="button" class="chip" data-c="${id}" aria-pressed="false">${n}</button>`);
 function select(id, on) { if (!CHOICES[id]) return; on ? chosen.add(id) : chosen.delete(id); chips.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", chosen.has(c.dataset.c))); paintLadder(); }
 /* ---------------- gift ladder: the more services in the plan, the more is unlocked ----------------
-   2 services, 3 services, 4 or more. A bar fills as services are picked, each step lights up when reached,
+   1 service, 2 services, 3 or more: one complimentary guestlist (beach club or club) per service. A bar fills as services are picked, each step lights up when reached,
    and a line says what is unlocked and what one more service would add. The gift reached goes in the message. */
 const LADDER = [
-  { n: 2, short: "Guestlist 1 noche", gift: "Guestlist de cortesía para 1 noche" },
-  { n: 3, short: "Guestlist 2 noches + chófer", gift: "Guestlist 2 noches y chófer de vuelta del club la primera noche" },
-  { n: 4, short: "Guestlist toda la estancia + mesa + botella", gift: "Guestlist toda la estancia, mesa en club con condiciones preferentes y botella de bienvenida en la villa" },
+  { n: 1, short: "1 guestlist", gift: "1 guestlist de cortesía en beach club o club" },
+  { n: 2, short: "2 guestlists", gift: "2 guestlists de cortesía en beach clubs o clubs" },
+  { n: 3, short: "3 guestlists o más", gift: "3 guestlists de cortesía o más en beach clubs o clubs" },
 ];
 const ladderEl = document.getElementById("ladder");
 const giftNow = () => [...LADDER].reverse().find(s => chosen.size >= s.n);
 function paintLadder() {
   if (!ladderEl) return;
-  const k = chosen.size, got = giftNow(), next = LADDER.find(s => k < s.n), fill = Math.min(1, Math.max(0, (k - 1) / 3));
-  const head = got ? `${t("Desbloqueado")}: <b>${t(got.gift)}</b>` : `${t("Elige 2 servicios y te regalamos una guestlist.")}`;
+  const k = chosen.size, got = giftNow(), next = LADDER.find(s => k < s.n), fill = Math.min(1, k / 3);
+  const head = got ? `${t("Desbloqueado")}: <b>${t(got.gift)}</b>` : `${t("Elige un servicio y te regalamos una guestlist de beach club o club.")}`;
   const more = next ? (got ? `${t("Añade")} ${next.n - k} ${t(next.n - k === 1 ? "servicio más para conseguir" : "servicios más para conseguir")}: ${t(next.short)}.` : "") : t("Has desbloqueado todos los regalos.");
-  ladderEl.innerHTML = `<div class="ladder__bar" role="progressbar" aria-valuemin="0" aria-valuemax="4" aria-valuenow="${Math.min(k, 4)}"><i style="width:${(fill * 100).toFixed(0)}%"></i>
-      ${LADDER.map((s, i) => `<span class="ladder__step${k >= s.n ? " is-on" : ""}" style="left:${(i + 1) / 3 * 100}%"><b>${s.n}${s.n === 4 ? "+" : ""}</b></span>`).join("")}</div>
-    <ol class="ladder__list">${LADDER.map(s => `<li class="${k >= s.n ? "is-on" : ""}"><span>${s.n}${s.n === 4 ? "+" : ""} ${t("servicios")}</span>${t(s.short)}</li>`).join("")}</ol>
+  ladderEl.innerHTML = `<div class="ladder__bar" role="progressbar" aria-valuemin="0" aria-valuemax="3" aria-valuenow="${Math.min(k, 3)}"><i style="width:${(fill * 100).toFixed(0)}%"></i>
+      ${LADDER.map((s, i) => `<span class="ladder__step${k >= s.n ? " is-on" : ""}" style="left:${(i + 1) / 3 * 100}%"><b>${s.n}${s.n === 3 ? "+" : ""}</b></span>`).join("")}</div>
+    <ol class="ladder__list">${LADDER.map(s => `<li class="${k >= s.n ? "is-on" : ""}"><span>${s.n}${s.n === 3 ? "+" : ""} ${t(s.n === 1 ? "servicio" : "servicios")}</span>${t(s.short)}</li>`).join("")}</ol>
     <p class="ladder__msg">${head}${more ? `<br><span>${more}</span>` : ""}</p>
     <p class="ladder__fine">${t("Regalos de cortesía, sujetos a disponibilidad del club. Guestlist solo para mayores de 18.")}</p>`;
   if (got && ladderEl.dataset.got !== String(got.n)) { ladderEl.classList.remove("is-pop"); void ladderEl.offsetWidth; ladderEl.classList.add("is-pop"); }

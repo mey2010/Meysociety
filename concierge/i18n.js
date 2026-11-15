@@ -3,6 +3,14 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "1 guestlist": ["1 guestlist", "1 guestlist", "1 guestlist", "1 Guestlist"],
+  "2 guestlists": ["2 guestlists", "2 guestlist", "2 guestlists", "2 Guestlists"],
+  "3 guestlists o más": ["3 guestlists or more", "3 guestlist o più", "3 guestlists ou plus", "3 Guestlists oder mehr"],
+  "1 guestlist de cortesía en beach club o club": ["1 complimentary guestlist at a beach club or club", "1 guestlist in omaggio in un beach club o club", "1 guestlist offerte dans un beach club ou un club", "1 kostenlose Guestlist in einem Beach Club oder Club"],
+  "2 guestlists de cortesía en beach clubs o clubs": ["2 complimentary guestlists at beach clubs or clubs", "2 guestlist in omaggio in beach club o club", "2 guestlists offertes dans des beach clubs ou des clubs", "2 kostenlose Guestlists in Beach Clubs oder Clubs"],
+  "3 guestlists de cortesía o más en beach clubs o clubs": ["3 or more complimentary guestlists at beach clubs or clubs", "3 o più guestlist in omaggio in beach club o club", "3 guestlists offertes ou plus dans des beach clubs ou des clubs", "3 oder mehr kostenlose Guestlists in Beach Clubs oder Clubs"],
+  "Elige un servicio y te regalamos una guestlist de beach club o club.": ["Pick a service and we'll give you a guestlist for a beach club or club.", "Scegli un servizio e ti regaliamo una guestlist per un beach club o club.", "Choisissez un service et nous vous offrons une guestlist pour un beach club ou un club.", "Wähle einen Service und wir schenken dir eine Guestlist für einen Beach Club oder Club."],
+  "servicio": ["service", "servizio", "service", "Service"],
   "Desbloqueado": ["Unlocked", "Sbloccato", "Débloqué", "Freigeschaltet"],
   "Elige 2 servicios y te regalamos una guestlist.": ["Pick 2 services and a guestlist is on us.", "Scegli 2 servizi e la guestlist te la regaliamo noi.", "Choisissez 2 services et la guestlist vous est offerte.", "Wähle 2 Services und die Guestlist geht auf uns."],
   "Añade": ["Add", "Aggiungi", "Ajoutez", "Füge"],
