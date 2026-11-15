@@ -79,20 +79,27 @@ const SM = (() => {
     root.addEventListener("touchend", e => { if (!sw || !open) return; const t = e.changedTouches[0], dx = t.clientX - sw.x, dy = t.clientY - sw.y; sw = null; if (dx > 70 && Math.abs(dy) < Math.abs(dx) * .6) set(false); }, { passive: true }); }
   // over light sections the closed button and wordmark switch to midnight
   let onLight = false;
+  // which section sits under the button: a 1px observer line at y=44 (no hit-tests on the main thread while scrolling)
+  let groundEl = null;
   function checkGround() {
-    const el = document.elementsFromPoint(innerWidth / 2, 44).find(n => n.matches?.("section"));
+    const el = groundEl;
     const light = !!el && !el.classList.contains("sec--night") && document.documentElement.dataset.theme !== "dark";
     if (light === onLight) return; onLight = light; root.classList.toggle("sm-on-light", light);
     if (!open) gsap.to(btn, { color: light ? "#0d0a38" : "#ffffff", duration: .3, overwrite: "auto" });
   }
-  const band = () => root.classList.toggle("sm-scrolled", scrollY > 40);
-  let groundTick = false;
-  let groundAt = 0, groundEnd = 0;   // the hit-test runs at most every 120 ms while scrolling, and once when it stops
-  addEventListener("scroll", () => {
-    clearTimeout(groundEnd); groundEnd = setTimeout(() => { checkGround(); band(); }, 120);
-    if (groundTick) return; groundTick = true;
-    requestAnimationFrame(now => { groundTick = false; band(); if (now - groundAt > 120) { groundAt = now; checkGround(); } });
-  }, { passive: true }); checkGround(); band();
+  let gio = null;
+  const watchGround = () => {
+    gio?.disconnect();
+    gio = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) groundEl = e.target; else if (groundEl === e.target) groundEl = null; checkGround(); },
+      { rootMargin: `-44px 0px ${-(innerHeight - 45)}px 0px` });
+    document.querySelectorAll("section").forEach(s => gio.observe(s));
+  };
+  let banded = null;
+  const band = () => { const b = scrollY > 40; if (b !== banded) { banded = b; root.classList.toggle("sm-scrolled", b); } };
+  let bandTick = false;
+  addEventListener("scroll", () => { if (bandTick) return; bandTick = true; requestAnimationFrame(() => { bandTick = false; band(); }); }, { passive: true });
+  { let rz = 0; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(watchGround, 200); }); }
+  watchGround(); band();
   document.addEventListener("themechange", () => { onLight = null; checkGround(); });
   document.addEventListener("mousedown", e => { if (open && !panel.contains(e.target) && !btn.contains(e.target)) set(false); });
   addEventListener("keydown", e => { if (e.key === "Escape") set(false); });
@@ -403,7 +410,7 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
     };
   } catch { fallback(); }
   onRealResize(() => post({ type: "size", ...state() }));
-  addEventListener("scroll", () => post({ type: "scroll", scrollY }), { passive: true });
+  addEventListener("scroll", () => { if (!past) post({ type: "scroll", scrollY }); }, { passive: true });   // past the first screen the dots are hidden: nothing to move
   addEventListener("pointermove", e => post({ type: "pointer", x: e.clientX / innerWidth - .5, y: e.clientY / innerHeight - .5 }), { passive: true });
   addEventListener("pointerdown", e => {
     if (e.target.closest("a, button, input, textarea, .map, .pop, .staggered-menu-panel, .modal, .dash")) return;

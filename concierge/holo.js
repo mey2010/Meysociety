@@ -192,7 +192,11 @@ let raf = 0, last = 0;
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const spring = (value, velocity, target, k, d, dt) => { const n = velocity + ((target - value) * k - velocity * d) * dt; return [value + n * dt, n]; };
 function tick(now) {
-  raf = 0; const dt = Math.min(1 / 30, Math.max(1 / 240, (now - last) / 1000)); last = now;
+  raf = 0;
+  // while the page scrolls the glare is not redrawn (a WebGL render + copy per frame competes with the scroll);
+  // it picks up again right after
+  if (now - (window.__scrolledAt || -1e9) < 200) { last = now; clearTimeout(tick.t); tick.t = setTimeout(() => { if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); } }, 220); return; }
+  const dt = Math.min(1 / 30, Math.max(1 / 240, (now - last) / 1000)); last = now;
   let any = false;
   for (const c of cards) {
     if (!c.el.isConnected) { cards.delete(c); io.unobserve(c.el); continue; }
@@ -212,7 +216,9 @@ function tick(now) {
     c.el.style.rotate = ang > .001 ? `${s.tiltX.toFixed(4)} ${s.tiltY.toFixed(4)} 0 ${ang.toFixed(3)}deg` : "none";
     c.el.style.scale = s.lift.toFixed(4);
     if (c.shadow) c.el.style.setProperty("--holo-sx", `${(-s.tiltY * .7).toFixed(1)}px`), c.el.style.setProperty("--holo-sy", `${(s.tiltX * .7 + 18).toFixed(1)}px`);
-    paint(c, s);
+    // redraw the glare only when it would look different (same tilt and light = same picture)
+    const key = `${s.tiltX.toFixed(2)}|${s.tiltY.toFixed(2)}|${s.lightX.toFixed(3)}|${s.lightY.toFixed(3)}`;
+    if (key !== c.painted) { c.painted = key; paint(c, s); }
     const motion = Math.abs(s.tiltVX) + Math.abs(s.tiltVY) + Math.abs(s.liftV) * 40 + (Math.abs(s.lightVX) + Math.abs(s.lightVY)) * 60 + Math.abs(s.tiltX - tx) + Math.abs(s.tiltY - ty);
     c.calm = motion > .02 ? 0 : c.calm + dt;
     if (drifting || p.inside || c.calm < .3) any = true;

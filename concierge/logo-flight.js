@@ -107,7 +107,7 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
     const mx = x + size / 2, my = y + size / 2, lp = S.lastPt, speed = lp ? Math.hypot(mx - lp.x, my - lp.y) / Math.max(dt, 1e-3) : 0;
     if (!reduced && lp && speed > 40 && (k > .002 && k < .998 || lp.k > .002 && lp.k < .998)) {
       // fill in the curve between frames so the trail stays a smooth ribbon even on a slow device
-      const n = Math.min(48, Math.ceil(Math.hypot(mx - lp.x, my - lp.y) / 3.5)), a = Math.min(1, speed / 700);
+      const n = Math.min(96, Math.ceil(Math.hypot(mx - lp.x, my - lp.y) / 3.5)), a = Math.min(1, speed / 700);
       const added = [];
       for (let i = 1; i <= n; i++) { const q = at(lp.k + (k - lp.k) * i / n); added.push({ x: q.x + q.size / 2, y: q.y + q.size / 2, r: q.size / 2, t: lp.t + (now - lp.t) * i / n, a }); }
       S.trail.push(...added); lightLetters(added);
@@ -120,9 +120,13 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
 
   const LIFE = 520;
   // pre-rendered soft glow dots, one per colour: stamping them densely along the path gives a seamless ribbon
-  const sprite = col => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d"), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-    r.addColorStop(0, `rgba(${col},1)`); r.addColorStop(.35, `rgba(${col},.55)`); r.addColorStop(1, `rgba(${col},0)`); g.fillStyle = r; g.fillRect(0, 0, 64, 64); return c; };
-  const SPR = TRAIL.map(sprite), CORE = sprite("255,255,255");
+  const sprite = col => { const c = document.createElement("canvas"); c.width = c.height = 128; const g = c.getContext("2d"), r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    r.addColorStop(0, `rgba(${col},1)`); r.addColorStop(.35, `rgba(${col},.55)`); r.addColorStop(1, `rgba(${col},0)`); g.fillStyle = r; g.fillRect(0, 0, 128, 128); return c; };   // 128 px: crisp even when a dot is drawn large on a sharp screen
+  // a 24-step ramp through the trail colours, pre-rendered once: each dot is one stamp in its exact colour
+  // (instead of two blended stamps), so the ribbon is smoother and costs half the drawing
+  const RAMP = 24, rgb = TRAIL.map(c => c.split(",").map(Number));
+  const SPR = Array.from({ length: RAMP }, (_, i) => { const f = i / (RAMP - 1) * (rgb.length - 1), a = Math.floor(f), b = Math.min(rgb.length - 1, a + 1), m = f - a;
+    return sprite(rgb[a].map((v, j) => Math.round(v + (rgb[b][j] - v) * m)).join(",")); }), CORE = sprite("255,255,255");
   function drawTrail(now) {
     const pts = S.trail; while (pts.length && now - pts[0].t > LIFE) pts.shift();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -136,8 +140,7 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
       // dots overlap by about R / spacing, so each one is faint: the ribbon keeps its colour instead of burning to white
       const R = q.r * (.22 + .4 * life); box[0] = Math.min(box[0], q.x - R); box[1] = Math.min(box[1], q.y - R); box[2] = Math.max(box[2], q.x + R); box[3] = Math.max(box[3], q.y + R);
       const A = Math.min(.28, 2.3 * 3.5 / R) * life * q.a;
-      ctx.globalAlpha = A * (1 - mix); ctx.drawImage(SPR[k0], q.x - R, q.y - R, 2 * R, 2 * R);
-      ctx.globalAlpha = A * mix; ctx.drawImage(SPR[k1], q.x - R, q.y - R, 2 * R, 2 * R);
+      ctx.globalAlpha = A; ctx.drawImage(SPR[Math.round(f / (TRAIL.length - 1) * (RAMP - 1))], q.x - R, q.y - R, 2 * R, 2 * R);
       const r2 = q.r * .09 * life + 1; ctx.globalAlpha = Math.min(.25, 1.2 * 3.5 / r2) * life * life * q.a; ctx.drawImage(CORE, q.x - r2, q.y - r2, 2 * r2, 2 * r2);
     }
     ctx.globalAlpha = 1;
