@@ -1303,7 +1303,7 @@ const mountReviews = () => {
   }
   ringEl.className = "reviews__ring";
   createCircularCarousel(ringEl, {
-    items: reviewsItems(), preset: "cylinder", intro: "rise", cardWidth: innerWidth < 600 ? 170 : 230, aspectRatio: 1, speed: 20, captions: true, tilt: -7,
+    items: reviewsItems(), preset: "cylinder", intro: "rise", cardWidth: innerWidth < 600 ? Math.round(Math.min(innerWidth * .6, 250)) : 300, aspectRatio: 1.22, overflow: innerWidth < 600 ? .78 : .9, speed: 20, captions: true, tilt: -7,
     interval: 7.5, parallax: .36, cornerRadius: 19, fadeColor: "#1d1a5c", label: "Reviews",
     onItemClick: (it, i, front) => { if (front) openLightbox(REVIEWS[i]); },
   });

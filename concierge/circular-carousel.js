@@ -158,7 +158,8 @@ export function createCircularCarousel(root, opts = {}) {
         const k = P / (P - p[2]); minX = Math.min(minX, p[0] * k); maxX = Math.max(maxX, p[0] * k); minY = Math.min(minY, p[1] * k); maxY = Math.max(maxY, p[1] * k);
       }
     }
-    const fit = Math.min(1, width / Math.max(maxX - minX, 1), height / Math.max(maxY - minY, 1));
+    // overflow: the ring may run past the sides of the screen (cards stay big; the far ones are cut by the edges)
+    const fit = Math.min(1, o.overflow ? Math.max(width / Math.max(maxX - minX, 1), o.overflow) : width / Math.max(maxX - minX, 1), height / Math.max(maxY - minY, 1));
     state.fit = fit; state.shift = -((minY + maxY) / 2) * fit - room / 2;
     state.drop = S.axis === "x" ? (rect.width / fit) * .55 + S.cardW : (rect.height / fit) * .55 + S.cardH;
     stage.style.perspective = `${P}px`; stage.style.transform = `translate3d(0, ${state.shift}px, 0) scale(${fit})`;
