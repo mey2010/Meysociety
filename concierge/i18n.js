@@ -3,6 +3,7 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Paella frente al mar": ["Paella by the sea", "Paella in riva al mare", "Paella face à la mer", "Paella am Meer"],
   "Moto de agua al atardecer": ["Jet ski at sunset", "Moto d'acqua al tramonto", "Jet-ski au coucher du soleil", "Jetski bei Sonnenuntergang"],
   "Dayclubs": ["Dayclubs", "Dayclub", "Dayclubs", "Dayclubs"],
   "Nightclubs": ["Nightclubs", "Nightclub", "Nightclubs", "Nightclubs"],

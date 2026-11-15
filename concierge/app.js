@@ -1233,6 +1233,7 @@ document.getElementById("adminOut").addEventListener("click", () => { try { sess
 // Swap these for real client media: { src, title, subtitle } for a photo, { type: "video", src, poster, title, subtitle } for a video.
 const REVIEWS = [
   { type: "video", src: "data/reviews/moto-atardecer.mp4", poster: "data/reviews/moto-atardecer.webp", title: "Moto de agua al atardecer", subtitle: "" },
+  { src: "data/reviews/paella-paseo.webp", title: "Paella frente al mar", subtitle: "" },
 ];
 const lb = document.getElementById("lightbox"), lbMedia = document.getElementById("lbMedia"), lbCap = document.getElementById("lbCap");
 document.getElementById("lbClose").innerHTML = ICONS.close;
