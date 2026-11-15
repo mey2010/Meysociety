@@ -173,6 +173,18 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
   // a press sends a fine reflection across the face
   const shine = () => { [coin, core].forEach(el => el.classList.remove("is-shining")); void coin.offsetWidth; [coin, core].forEach(el => el.classList.add("is-shining")); };
   fly.addEventListener("pointerdown", shine);
+  /* an invitation to tap: right after the page opens the coin presses itself (a dip, a reflection, a ring of
+     light), then again every few seconds while it rests in place, until the visitor presses it for real */
+  { let touched = false, n = 0;
+    const ping = document.createElement("span"); ping.className = "flylogo__ping"; ping.setAttribute("aria-hidden", "true"); fly.prepend(ping);
+    fly.addEventListener("pointerdown", () => { touched = true; }, { once: true });
+    const invite = () => {
+      if (touched || reduced || document.hidden || S.kd > .03 || ++n > 5) return;
+      fly.classList.remove("is-invite"); void fly.offsetWidth; fly.classList.add("is-invite"); shine();
+      setTimeout(invite, 6500);
+    };
+    setTimeout(invite, 1300);
+  }
   fly.addEventListener("click", e => { if (!fly.classList.contains("is-docked")) e.preventDefault(); }); // only the docked logo navigates
   return { measure };
 }
