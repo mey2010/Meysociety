@@ -1238,16 +1238,16 @@ document.getElementById("adminOut").addEventListener("click", () => { try { sess
 /* ---------------- REVIEWS: CircularCarousel of client photos and videos ---------------- */
 // Swap these for real client media: { src, title, subtitle } for a photo, { type: "video", src, poster, title, subtitle } for a video.
 const REVIEWS = [
-  { type: "video", src: "data/reviews/moto-atardecer.mp4", ringSrc: "data/reviews/moto-atardecer-ring.mp4", poster: "data/reviews/moto-atardecer.webp", title: "Moto de agua al atardecer", subtitle: "" },
-  { src: "data/reviews/barco-cala.webp", title: "Fondeo en aguas turquesa", subtitle: "" },
-  { src: "data/reviews/paella-paseo.webp", title: "Paella frente al mar", subtitle: "" },
+  { type: "video", src: "data/reviews/moto-atardecer.mp4", ringSrc: "data/reviews/moto-atardecer-ring.mp4", poster: "data/reviews/moto-atardecer.webp", posterThumb: "data/reviews/moto-atardecer.webp", title: "Moto de agua al atardecer", subtitle: "" },
+  { src: "data/reviews/barco-cala.webp", thumb: "data/reviews/barco-cala.webp", title: "Fondeo en aguas turquesa", subtitle: "" },
+  { src: "data/reviews/paella-paseo.webp", thumb: "data/reviews/paella-paseo.webp", title: "Paella frente al mar", subtitle: "" },
   { src: "data/reviews/barco-relax.webp", thumb: "data/reviews/barco-relax.webp", title: "Relax a bordo", subtitle: "" },
   { src: "data/reviews/pool-show.webp", thumb: "data/reviews/pool-show.webp", title: "Show en el pool club", subtitle: "" },
-  { src: "data/reviews/snorkel-cueva.webp", title: "Snorkel junto a la cueva", subtitle: "" },
+  { src: "data/reviews/snorkel-cueva.webp", thumb: "data/reviews/snorkel-cueva.webp", title: "Snorkel junto a la cueva", subtitle: "" },
   { src: "data/reviews/transfer-pinar.webp", thumb: "data/reviews/transfer-pinar.webp", title: "Transfer privado al pinar", subtitle: "" },
   { src: "data/reviews/moto-tarde.webp", thumb: "data/reviews/moto-tarde.webp", title: "Paseo en moto de agua", subtitle: "" },
   { src: "data/reviews/paella-mediodia.webp", thumb: "data/reviews/paella-mediodia.webp", title: "Paella con vistas al mar", subtitle: "" },
-  { src: "data/reviews/pool-party.webp", title: "Pool party de día", subtitle: "" },
+  { src: "data/reviews/pool-party.webp", thumb: "data/reviews/pool-party.webp", title: "Pool party de día", subtitle: "" },
   { type: "video", src: "data/reviews/cueva-barco.mp4", ringSrc: "data/reviews/cueva-barco-ring.mp4", poster: "data/reviews/cueva-barco.webp", posterThumb: "data/reviews/cueva-barco.webp", title: "En barco hasta la cueva", subtitle: "" },
   { src: "data/reviews/villa-infinity.webp", thumb: "data/reviews/villa-infinity.webp", title: "Piscina infinita en la villa", subtitle: "" },
   { src: "data/reviews/ushuaia-noche.webp", thumb: "data/reviews/ushuaia-noche.webp", title: "Noche en Ushuaïa", subtitle: "" },
