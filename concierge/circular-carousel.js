@@ -66,7 +66,7 @@ export function createCircularCarousel(root, opts = {}) {
   const cards = list.map((item, index) => {
     const card = el("div", "circular-carousel__card", { "data-cc-index": index, role: "group", "aria-roledescription": "slide", "aria-label": `${item.title || item.alt || "Imagen " + (index + 1)}, ${index + 1} / ${count}` });
     const isVideo = item.type === "video";
-    const vid = isVideo ? Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "none", src: item.src, poster: item.poster || "" }) : null;
+    const vid = isVideo ? Object.assign(document.createElement("video"), { muted: true, loop: true, playsInline: true, preload: "auto", src: item.src, poster: item.poster || "" }) : null;
     if (vid) { vid.setAttribute("muted", ""); vid.setAttribute("playsinline", ""); }
     const entry = vid ? { video: vid, canvases: [], card, index } : null;
     const tile = (t, back) => {
@@ -308,6 +308,8 @@ export function createCircularCarousel(root, opts = {}) {
   const srcOf = it => it.type === "video" ? it.poster : it.src, front = [0, 1, count - 1, 2, count - 2].filter((v, k, a) => v >= 0 && v < count && a.indexOf(v) === k);
   const load = src => new Promise(r => { const im = new Image(); im.decoding = "async"; im.onload = () => (im.decode ? im.decode().then(r, r) : r()); im.onerror = r; im.src = src; });
   list.forEach(it => { const s = srcOf(it); if (s) load(s); });
+  // the videos download together with the photos (light versions made for the ring), so they are ready to play
+  videos.forEach(v => { try { v.video.load(); } catch {} });
   Promise.race([Promise.all(front.map(i => srcOf(list[i])).filter(Boolean).map(load)), new Promise(r => setTimeout(r, 700))]).then(() => { ready = true; root.dataset.ready = ""; state.introDone = false; state.intro = null; wake(); });
   measure(); render(performance.now()); wake();
   return { focus: focusIndex, step: stepBy, get active() { return active; } };
