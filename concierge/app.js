@@ -1246,13 +1246,25 @@ const REVIEWS = [
 ];
 const lb = document.getElementById("lightbox"), lbMedia = document.getElementById("lbMedia"), lbCap = document.getElementById("lbCap");
 document.getElementById("lbClose").innerHTML = ICONS.close;
-function openLightbox(it) {
+/* the viewer steps through every review: arrows, keyboard and a swipe, so nobody has to close it to see the next */
+let lbIdx = -1;
+document.getElementById("lbPrev").innerHTML = ICONS.left; document.getElementById("lbNext").innerHTML = ICONS.right;
+const lbStep = d => { if (lbIdx < 0) return; lbIdx = (lbIdx + d + REVIEWS.length) % REVIEWS.length; openLightbox(REVIEWS[lbIdx], d); };
+document.getElementById("lbPrev").addEventListener("click", e => { e.stopPropagation(); lbStep(-1); });
+document.getElementById("lbNext").addEventListener("click", e => { e.stopPropagation(); lbStep(1); });
+document.addEventListener("keydown", e => { if (lb.hidden) return; if (e.key === "ArrowRight") lbStep(1); else if (e.key === "ArrowLeft") lbStep(-1); });
+{ let x0 = null, y0 = 0;
+  lb.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  lb.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.3) lbStep(dx < 0 ? 1 : -1); }, { passive: true }); }
+function openLightbox(it, dir = 0) {
+  lbIdx = REVIEWS.indexOf(it);
   lbMedia.innerHTML = it.type === "video"
     ? `<video class="lightbox__media" src="${it.src}" poster="${it.poster || ""}" controls autoplay playsinline loop></video>`
     : `<img class="lightbox__media" src="${it.src}" alt="${t(it.title)}">`;
-  lbCap.innerHTML = `${t(it.title)}<small>${t(it.subtitle || "")}</small>`;
+  lbCap.innerHTML = `${t(it.title)}<small>${t(it.subtitle || "")}${lbIdx >= 0 ? `<span class="lightbox__count">${lbIdx + 1} / ${REVIEWS.length}</span>` : ""}</small>`;
   const frame = lbMedia.querySelector(".lightbox__media"); const wrap = document.createElement("div"); wrap.className = "lightbox__frame";
-  frame.replaceWith(wrap); wrap.appendChild(frame); holo(wrap, { tiltMax: 8, hoverScale: 1.02, shadow: true, glare: 0, intensity: 0, edgeSparkle: 0, frame: 0 });   // the 3D tilt stays; no glare or sheen over the photo
+  frame.replaceWith(wrap); wrap.appendChild(frame); if (dir) wrap.classList.add(dir > 0 ? "is-in-next" : "is-in-prev"); holo(wrap, { tiltMax: 8, hoverScale: 1.02, shadow: true, glare: 0, intensity: 0, edgeSparkle: 0, frame: 0 });   // the 3D tilt stays; no glare or sheen over the photo
   lb.hidden = false; document.body.style.overflow = "hidden"; document.getElementById("lbClose").focus();
 }
 function closeLightbox() { lb.hidden = true; lbMedia.innerHTML = ""; document.body.style.overflow = ""; }
