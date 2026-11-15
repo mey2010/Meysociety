@@ -1234,6 +1234,9 @@ document.getElementById("adminOut").addEventListener("click", () => { try { sess
 const REVIEWS = [
   { type: "video", src: "data/reviews/moto-atardecer.mp4", poster: "data/reviews/moto-atardecer.webp", title: "Moto de agua al atardecer", subtitle: "" },
   { src: "data/reviews/paella-paseo.webp", title: "Paella frente al mar", subtitle: "" },
+  { src: "data/reviews/barco-cala.webp", title: "Fondeo en aguas turquesa", subtitle: "" },
+  { src: "data/reviews/snorkel-cueva.webp", title: "Snorkel junto a la cueva", subtitle: "" },
+  { src: "data/reviews/pool-party.webp", title: "Pool party de día", subtitle: "" },
 ];
 const lb = document.getElementById("lightbox"), lbMedia = document.getElementById("lbMedia"), lbCap = document.getElementById("lbCap");
 document.getElementById("lbClose").innerHTML = ICONS.close;
@@ -1250,7 +1253,7 @@ function closeLightbox() { lb.hidden = true; lbMedia.innerHTML = ""; document.bo
 document.getElementById("lbClose").addEventListener("click", closeLightbox);
 lb.addEventListener("click", e => { if (e.target === lb) closeLightbox(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !lb.hidden) closeLightbox(); });
-const thumbOf = (p, r = "-r") => p ? "data/thumbs/" + p.split("/").pop().replace(/\.(jpe?g|png)$/i, "") + r + ".webp" : p;
+const thumbOf = (p, r = "-r") => p ? "data/thumbs/" + p.split("/").pop().replace(/\.(jpe?g|png|webp)$/i, "") + r + ".webp" : p;
 const reviewsItems = () => REVIEWS.map(r => ({ ...r, src: r.type === "video" ? r.src : thumbOf(r.src), poster: r.poster && thumbOf(r.poster), title: t(r.title), subtitle: t(r.subtitle), alt: t(r.title) }));
 const ringEl = document.getElementById("reviewsRing");
 /* With only a few real clips the turning ring would look empty: they stand side by side as framed videos that play

@@ -3,6 +3,9 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Fondeo en aguas turquesa": ["Anchored in turquoise water", "All'ancora in acque turchesi", "Au mouillage dans une eau turquoise", "Vor Anker in türkisem Wasser"],
+  "Snorkel junto a la cueva": ["Snorkelling by the cave", "Snorkeling vicino alla grotta", "Snorkeling près de la grotte", "Schnorcheln an der Höhle"],
+  "Pool party de día": ["Daytime pool party", "Pool party di giorno", "Pool party en journée", "Poolparty am Tag"],
   "Paella frente al mar": ["Paella by the sea", "Paella in riva al mare", "Paella face à la mer", "Paella am Meer"],
   "Moto de agua al atardecer": ["Jet ski at sunset", "Moto d'acqua al tramonto", "Jet-ski au coucher du soleil", "Jetski bei Sonnenuntergang"],
   "Dayclubs": ["Dayclubs", "Dayclub", "Dayclubs", "Dayclubs"],
