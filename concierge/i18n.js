@@ -3,6 +3,7 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Moto de agua al atardecer": ["Jet ski at sunset", "Moto d'acqua al tramonto", "Jet-ski au coucher du soleil", "Jetski bei Sonnenuntergang"],
   "Dayclubs": ["Dayclubs", "Dayclub", "Dayclubs", "Dayclubs"],
   "Nightclubs": ["Nightclubs", "Nightclub", "Nightclubs", "Nightclubs"],
   "Dayclub": ["Day club", "Day club", "Day club", "Day Club"],

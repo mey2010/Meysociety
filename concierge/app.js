@@ -1232,16 +1232,7 @@ document.getElementById("adminOut").addEventListener("click", () => { try { sess
 /* ---------------- REVIEWS: CircularCarousel of client photos and videos ---------------- */
 // Swap these for real client media: { src, title, subtitle } for a photo, { type: "video", src, poster, title, subtitle } for a video.
 const REVIEWS = [
-  { src: "data/reviews/brindis-a-bordo.jpg", title: "Atardecer a bordo", subtitle: "Foto de ejemplo" },
-  { type: "video", src: "data/reviews/video-yate.mp4", poster: "data/reviews/video-yate.jpg", title: "Día de yate", subtitle: "Vídeo de ejemplo" },
-  { src: "data/reviews/cena-villa.jpg", title: "Cena en la villa", subtitle: "Foto de ejemplo" },
-  { src: "data/reviews/motos-de-agua.jpg", title: "Motos de agua", subtitle: "Foto de ejemplo" },
-  { src: "data/reviews/villa-piscina.jpg", title: "Mañana en la villa", subtitle: "Foto de ejemplo" },
-  { type: "video", src: "data/reviews/video-lancha.mp4", poster: "data/reviews/video-lancha.jpg", title: "Ruta en lancha", subtitle: "Vídeo de ejemplo" },
-  { src: "data/reviews/chef-privado.jpg", title: "Chef privado", subtitle: "Foto de ejemplo" },
-  { src: "data/boats/velero-clasico.jpg", title: "Velero al atardecer", subtitle: "Foto de ejemplo" },
-  { src: "data/boats/cruiser-12m.jpg", title: "Fondeo en Es Vedrà", subtitle: "Foto de ejemplo" },
-  { src: "data/photos/cala-d-hort.jpg", title: "Cala d'Hort", subtitle: "Foto de ejemplo" },
+  { type: "video", src: "data/reviews/moto-atardecer.mp4", poster: "data/reviews/moto-atardecer.webp", title: "Moto de agua al atardecer", subtitle: "" },
 ];
 const lb = document.getElementById("lightbox"), lbMedia = document.getElementById("lbMedia"), lbCap = document.getElementById("lbCap");
 document.getElementById("lbClose").innerHTML = ICONS.close;
@@ -1261,8 +1252,23 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && !lb.hidden
 const thumbOf = (p, r = "-r") => p ? "data/thumbs/" + p.split("/").pop().replace(/\.(jpe?g|png)$/i, "") + r + ".webp" : p;
 const reviewsItems = () => REVIEWS.map(r => ({ ...r, src: r.type === "video" ? r.src : thumbOf(r.src), poster: r.poster && thumbOf(r.poster), title: t(r.title), subtitle: t(r.subtitle), alt: t(r.title) }));
 const ringEl = document.getElementById("reviewsRing");
+/* With only a few real clips the turning ring would look empty: they stand side by side as framed videos that play
+   silently in place (a tap opens them full size). From three items on, the 3D ring takes over again. */
 const mountReviews = () => {
   ringEl.replaceChildren();
+  if (REVIEWS.length < 3) {
+    ringEl.className = "reviews__ring reviews__ring--feature";
+    REVIEWS.forEach((r, i) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "reviews__item"; b.setAttribute("aria-label", t(r.title));
+      b.innerHTML = r.type === "video"
+        ? `<video src="${r.src}" poster="${r.poster}" muted loop playsinline autoplay preload="metadata"></video>`
+        : `<img src="${r.src}" alt="${t(r.title)}" loading="lazy">`;
+      b.insertAdjacentHTML("beforeend", `<span class="reviews__cap">${t(r.title)}</span>`);
+      b.addEventListener("click", () => openLightbox(r)); ringEl.append(b);
+    });
+    return;
+  }
+  ringEl.className = "reviews__ring";
   createCircularCarousel(ringEl, {
     items: reviewsItems(), preset: "cylinder", intro: "rise", cardWidth: innerWidth < 600 ? 170 : 230, aspectRatio: 1, speed: 20, captions: true, tilt: -7,
     interval: 7.5, parallax: .36, cornerRadius: 19, fadeColor: "#1d1a5c", label: "Reviews",
