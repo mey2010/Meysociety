@@ -633,6 +633,7 @@ const SVC_TREE = [
   { label: "Clubs", svc: "noche", children: [
     { value: "clubs-vip", label: "Mesas VIP", icon: "star" }, { value: "clubs-guestlist", label: "Guestlist", icon: "users" } ] },
   { label: "Chefs", value: "chefs", svc: "dining", icon: "chef" },
+  { label: "DJ", value: "dj", svc: "dj", icon: "dj" },
 ];
 const svcMenu = BranchedMenu(document.getElementById("bm"), {
   items: SVC_TREE, defaultOpen: -1, defaultActive: "__none__",
@@ -759,7 +760,10 @@ document.addEventListener("click", e => {
   else if (h.startsWith("mailto:")) track("contact_click", { method: "email", place: "enlace" });
 }, { capture: true, passive: true });
 const LOADED_AT = performance.now();
-const CHOICES = { yates: "Barco", motos: "Moto de agua", coches: "Coche", moto: "Moto", villas: "Villa", noche: "Clubs", transfers: "Transfer", dining: "Chef privado", beach: "Beach clubs" };
+const CHOICES = { yates: "Barco", motos: "Moto de agua", coches: "Coche", moto: "Moto", villas: "Villa", noche: "Clubs", transfers: "Transfer", dining: "Chef privado", beach: "Beach clubs", dj: "DJ" };
+// the services that unlock the guestlist gifts (clubs and beach clubs do not count: the gift is a guestlist to them)
+const GIFT_SVC = new Set(["yates", "motos", "moto", "coches", "villas", "dining", "transfers", "dj"]);
+const giftCount = () => [...chosen].filter(c => GIFT_SVC.has(c)).length;
 const chips = document.getElementById("chips"), chosen = new Set();
 for (const [id, n] of Object.entries(CHOICES)) chips.insertAdjacentHTML("beforeend", `<button type="button" class="chip" data-c="${id}" aria-pressed="false">${n}</button>`);
 function select(id, on) { if (!CHOICES[id]) return; on ? chosen.add(id) : chosen.delete(id); chips.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", chosen.has(c.dataset.c))); paintLadder(); }
@@ -772,17 +776,17 @@ const LADDER = [
   { n: 3, short: "4 guestlists o más", gift: "4 guestlists de cortesía o más en beach clubs o clubs" },
 ];
 const ladderEl = document.getElementById("ladder");
-const giftNow = () => [...LADDER].reverse().find(s => chosen.size >= s.n);
+const giftNow = () => [...LADDER].reverse().find(s => giftCount() >= s.n);
 function paintLadder() {
   if (!ladderEl) return;
-  const k = chosen.size, got = giftNow(), next = LADDER.find(s => k < s.n), fill = Math.min(1, k / 3);
+  const k = giftCount(), got = giftNow(), next = LADDER.find(s => k < s.n), fill = Math.min(1, k / 3);
   const head = got ? `${t("Desbloqueado")}: <b>${t(got.gift)}</b>` : `${t("Elige un servicio y te regalamos una guestlist de beach club o club.")}`;
   const more = next ? (got ? `${t("Añade")} ${next.n - k} ${t(next.n - k === 1 ? "servicio más para conseguir" : "servicios más para conseguir")}: ${t(next.short)}.` : "") : t("Has desbloqueado todos los regalos.");
   ladderEl.innerHTML = `<div class="ladder__bar" role="progressbar" aria-valuemin="0" aria-valuemax="3" aria-valuenow="${Math.min(k, 3)}"><i style="width:${(fill * 100).toFixed(0)}%"></i>
       ${LADDER.map((s, i) => `<span class="ladder__step${k >= s.n ? " is-on" : ""}" style="left:${(i + 1) / 3 * 100}%"><b>${s.n}${s.n === 3 ? "+" : ""}</b></span>`).join("")}</div>
     <ol class="ladder__list">${LADDER.map(s => `<li class="${k >= s.n ? "is-on" : ""}"><span>${s.n}${s.n === 3 ? "+" : ""} ${t(s.n === 1 ? "servicio" : "servicios")}</span>${t(s.short)}</li>`).join("")}</ol>
     <p class="ladder__msg">${head}${more ? `<br><span>${more}</span>` : ""}</p>
-    <p class="ladder__fine">${t("Regalos de cortesía, sujetos a disponibilidad del club. Guestlist solo para mayores de 18.")} <a href="legal/terminos.html#guestlists" target="_blank" rel="noopener">${t("Ver condiciones")}</a></p>`;
+    <p class="ladder__fine">${t("Cuentan barco, moto de agua, moto, coche, villa, chef, transfer y DJ.")} ${t("Regalos de cortesía, sujetos a disponibilidad del club. Guestlist solo para mayores de 18.")} <a href="legal/terminos.html#guestlists" target="_blank" rel="noopener">${t("Ver condiciones")}</a></p>`;
   if (got && ladderEl.dataset.got !== String(got.n)) { ladderEl.classList.remove("is-pop"); void ladderEl.offsetWidth; ladderEl.classList.add("is-pop"); }
   ladderEl.dataset.got = got ? got.n : "";
 }
@@ -1624,7 +1628,7 @@ document.querySelectorAll(".stack__card").forEach(card => {
   if (!media.classList.contains("stack__media--product")) {
     // the backdrop is a tiny pre-blurred copy taken from one shared sprite (all seven in one small file): the
     // browser just scales it up, nothing to blur on every frame
-    const BG = ["transfers", "coches", "dining", "clubs", "beach", "villa-privada", "yates"];
+    const BG = ["transfers", "coches", "dining", "clubs", "beach", "villa-privada", "yates", "dj"];
     const k = BG.indexOf(img.getAttribute("src").split("/").pop().replace(/\.(webp|jpe?g|png)$/i, ""));
     const bg = document.createElement("div"); bg.className = "stack__media-bg"; bg.setAttribute("aria-hidden", "true");
     if (k >= 0) bg.style.cssText = `background: url("data/services/bg-sprite.webp") ${(k / (BG.length - 1) * 100).toFixed(4)}% 50% / ${BG.length * 100}% 100% no-repeat`;
