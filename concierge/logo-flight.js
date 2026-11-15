@@ -173,17 +173,23 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
   // a press sends a fine reflection across the face
   const shine = () => { [coin, core].forEach(el => el.classList.remove("is-shining")); void coin.offsetWidth; [coin, core].forEach(el => el.classList.add("is-shining")); };
   fly.addEventListener("pointerdown", shine);
-  /* an invitation to tap: right after the page opens the coin presses itself (a dip, a reflection, a ring of
-     light), then again every few seconds while it rests in place, until the visitor presses it for real */
+  /* an invitation to tap: right after the page opens the coin is pressed exactly as a finger presses it (the same
+     tilt towards the touch, the same dip and the same reflection), then again every few seconds while it rests in
+     place, until the visitor presses it for real. Only a press is played, never a click, so the note stays shut. */
   { let touched = false, n = 0;
-    const ping = document.createElement("span"); ping.className = "flylogo__ping"; ping.setAttribute("aria-hidden", "true"); fly.prepend(ping);
-    fly.addEventListener("pointerdown", () => { touched = true; }, { once: true });
+    fly.addEventListener("pointerdown", e => { if (e.isTrusted) touched = true; });
+    const press = (x, y, type) => spinEl.dispatchEvent(new PointerEvent(type, { bubbles: true, clientX: x, clientY: y, pointerType: "mouse", isPrimary: true }));
     const invite = () => {
       if (touched || reduced || document.hidden || S.kd > .03 || ++n > 5) return;
-      fly.classList.remove("is-invite"); void fly.offsetWidth; fly.classList.add("is-invite"); shine();
+      const r = spinEl.getBoundingClientRect(), x = r.left + r.width * .68, y = r.top + r.height * .34;   // a thumb on the upper right
+      press(x, y, "pointerenter"); press(x, y, "pointerdown");
+      setTimeout(() => press(x, y, "pointerleave"), 420);
       setTimeout(invite, 6500);
     };
-    setTimeout(invite, 1300);
+    // first press once the coin has actually appeared (it fades in with the intro), and a beat after that
+    const start = () => setTimeout(invite, 1100), intro = document.querySelector(".intro");
+    if (!intro || intro.classList.contains("is-lit")) start();
+    else { const mo = new MutationObserver(() => { if (intro.classList.contains("is-lit")) { mo.disconnect(); start(); } }); mo.observe(intro, { attributes: true, attributeFilter: ["class"] }); }
   }
   fly.addEventListener("click", e => { if (!fly.classList.contains("is-docked")) e.preventDefault(); }); // only the docked logo navigates
   return { measure };

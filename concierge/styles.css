@@ -1870,11 +1870,3 @@ html.is-jumping, html.is-jumping.snap-stack { scroll-snap-type: none !important;
 .vt__hint em { white-space: nowrap; }
 .vt__hint { width: max-content; max-width: calc(100vw - 24px); }
 @media (max-width: 420px) { .vt__hint { font-size: clamp(9.5px, 2.95vw, 12px); letter-spacing: .14em; } }
-
-/* the logo's self-press: the whole coin dips and springs back while a ring of light spreads from it */
-.flylogo__ping { position: absolute; inset: 4%; border-radius: 50%; pointer-events: none; opacity: 0; box-shadow: 0 0 0 2px rgb(200 86 230 / .7), 0 0 24px 4px rgb(120 199 228 / .45); }
-.flylogo.is-invite .flylogo__spin { animation: logo-invite 900ms cubic-bezier(.3, 1.4, .5, 1); }
-.flylogo.is-invite .flylogo__ping { animation: logo-ping 1300ms cubic-bezier(.2, .7, .3, 1) 120ms; }
-@keyframes logo-invite { 0% { scale: 1; } 22% { scale: .9; } 55% { scale: 1.04; } 100% { scale: 1; } }
-@keyframes logo-ping { 0% { opacity: .9; transform: scale(.96); } 100% { opacity: 0; transform: scale(1.45); } }
-@media (prefers-reduced-motion: reduce) { .flylogo.is-invite .flylogo__spin, .flylogo.is-invite .flylogo__ping { animation: none; } }
