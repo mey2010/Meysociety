@@ -1930,3 +1930,5 @@ html.is-jumping, html.is-jumping.snap-stack { scroll-snap-type: none !important;
 @keyframes lb-in-next { from { opacity: 0; transform: translateX(40px); } } @keyframes lb-in-prev { from { opacity: 0; transform: translateX(-40px); } }
 @media (max-width: 600px) { .lightbox__nav { top: auto; bottom: max(22px, env(safe-area-inset-bottom, 0px)); translate: none; width: 44px; height: 44px; } }
 @media (prefers-reduced-motion: reduce) { .lightbox__frame.is-in-next, .lightbox__frame.is-in-prev { animation: none; } }
+
+.ladder__fine a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }

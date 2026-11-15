@@ -777,7 +777,7 @@ function paintLadder() {
       ${LADDER.map((s, i) => `<span class="ladder__step${k >= s.n ? " is-on" : ""}" style="left:${(i + 1) / 3 * 100}%"><b>${s.n}${s.n === 3 ? "+" : ""}</b></span>`).join("")}</div>
     <ol class="ladder__list">${LADDER.map(s => `<li class="${k >= s.n ? "is-on" : ""}"><span>${s.n}${s.n === 3 ? "+" : ""} ${t(s.n === 1 ? "servicio" : "servicios")}</span>${t(s.short)}</li>`).join("")}</ol>
     <p class="ladder__msg">${head}${more ? `<br><span>${more}</span>` : ""}</p>
-    <p class="ladder__fine">${t("Regalos de cortesía, sujetos a disponibilidad del club. Guestlist solo para mayores de 18.")}</p>`;
+    <p class="ladder__fine">${t("Regalos de cortesía, sujetos a disponibilidad del club. Guestlist solo para mayores de 18.")} <a href="legal/terminos.html#guestlists" target="_blank" rel="noopener">${t("Ver condiciones")}</a></p>`;
   if (got && ladderEl.dataset.got !== String(got.n)) { ladderEl.classList.remove("is-pop"); void ladderEl.offsetWidth; ladderEl.classList.add("is-pop"); }
   ladderEl.dataset.got = got ? got.n : "";
 }
