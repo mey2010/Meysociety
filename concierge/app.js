@@ -1238,10 +1238,11 @@ const REVIEWS = [
   { src: "data/reviews/barco-relax.webp", thumb: "data/reviews/barco-relax.webp", title: "Relax a bordo", subtitle: "" },
   { src: "data/reviews/pool-show.webp", thumb: "data/reviews/pool-show.webp", title: "Show en el pool club", subtitle: "" },
   { src: "data/reviews/snorkel-cueva.webp", title: "Snorkel junto a la cueva", subtitle: "" },
+  { src: "data/reviews/transfer-pinar.webp", thumb: "data/reviews/transfer-pinar.webp", title: "Transfer privado al pinar", subtitle: "" },
   { src: "data/reviews/moto-tarde.webp", thumb: "data/reviews/moto-tarde.webp", title: "Paseo en moto de agua", subtitle: "" },
   { src: "data/reviews/paella-mediodia.webp", thumb: "data/reviews/paella-mediodia.webp", title: "Paella con vistas al mar", subtitle: "" },
-  { src: "data/reviews/villa-infinity.webp", thumb: "data/reviews/villa-infinity.webp", title: "Piscina infinita en la villa", subtitle: "" },
   { src: "data/reviews/pool-party.webp", title: "Pool party de día", subtitle: "" },
+  { src: "data/reviews/villa-infinity.webp", thumb: "data/reviews/villa-infinity.webp", title: "Piscina infinita en la villa", subtitle: "" },
   { src: "data/reviews/ushuaia-noche.webp", thumb: "data/reviews/ushuaia-noche.webp", title: "Noche en Ushuaïa", subtitle: "" },
 ];
 const lb = document.getElementById("lightbox"), lbMedia = document.getElementById("lbMedia"), lbCap = document.getElementById("lbCap");

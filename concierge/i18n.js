@@ -3,6 +3,7 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Transfer privado al pinar": ["Private transfer through the pines", "Transfer privato nella pineta", "Transfert privé dans la pinède", "Privattransfer durch den Pinienwald"],
   "Paella con vistas al mar": ["Paella with a sea view", "Paella vista mare", "Paella avec vue sur la mer", "Paella mit Meerblick"],
   "Paseo en moto de agua": ["Jet ski ride", "Giro in moto d'acqua", "Balade en jet-ski", "Jetski-Tour"],
   "Show en el pool club": ["Pool club show", "Show al pool club", "Show au pool club", "Show im Pool Club"],
