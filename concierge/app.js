@@ -746,19 +746,15 @@ function scrollToEl(el, smooth = !REDUCED) {
   const top = Math.max(0, y - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0));
   if (smooth) fastScroll(top); else scrollTo({ top, behavior: "auto" });
 }
-/* a quick, even glide to a section: about half a second whatever the distance (the browser's own smooth scroll
-   takes longer the further it goes). Snapping is paused for the trip; a touch or a wheel takes over at once. */
+/* a button that leads to another part of the page goes straight there: one instant jump, the page in between is
+   never scrolled through. Snapping is switched off for that one jump so the services snap cannot pull it back. */
 let jump = 0;
 function fastScroll(to) {
   cancelAnimationFrame(jump); const root = document.documentElement;
-  const from = scrollY, d = to - from; if (Math.abs(d) < 2) return;
-  const dur = Math.min(820, 420 + Math.abs(d) * .025), t0 = performance.now();
-  const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-  // (snapping is dropped before the jump flag: left on, the services snap would pull the page back to the stack)
-  const stop = () => { cancelAnimationFrame(jump); jump = 0; if (Math.abs(scrollY - to) < 2) root.classList.remove("snap-stack"); root.classList.remove("is-jumping"); removeEventListener("wheel", stop); removeEventListener("touchstart", stop); };
-  root.classList.add("is-jumping"); addEventListener("wheel", stop, { passive: true }); addEventListener("touchstart", stop, { passive: true });
-  const step = now => { const k = Math.min(1, (now - t0) / dur); scrollTo(0, from + d * ease(k)); if (k < 1) jump = requestAnimationFrame(step); else stop(); };
-  jump = requestAnimationFrame(step);
+  if (Math.abs(to - scrollY) < 2) return;
+  root.classList.add("is-jumping");
+  scrollTo({ top: to, behavior: "instant" });
+  jump = requestAnimationFrame(() => { jump = requestAnimationFrame(() => { jump = 0; root.classList.remove("is-jumping"); }); });
 }
 initConsent(CONFIG.analytics);
 /* what people do, for Analytics: contact taps, legal-free and anonymous (no personal data is sent) */
