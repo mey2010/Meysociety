@@ -653,6 +653,7 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
     const sec = SVC_TREE.find(s => s.value === value || s.children?.some(k => k.value === value));
     select(sec.svc, true);
     if (value === "motos-scooter") select("moto", true);
+    if (value === "clubs-vip") select("vip", true);
     document.getElementById("f-notes").value = item && sec.children ? `${t("Me interesa")}: ${t(sec.label)} · ${t(item.label)}.` : `${t("Me interesa")}: ${t(sec.label)}.`;
     setTimeout(() => { SM.set(false); setTimeout(() => scrollToEl(document.getElementById("contacto")), 250); }, 380);
   },
@@ -767,9 +768,9 @@ document.addEventListener("click", e => {
   else if (h.startsWith("mailto:")) track("contact_click", { method: "email", place: "enlace" });
 }, { capture: true, passive: true });
 const LOADED_AT = performance.now();
-const CHOICES = { yates: "Barco", motos: "Moto de agua", coches: "Coche", moto: "Moto", villas: "Villa", noche: "Clubs", transfers: "Transfer", dining: "Chef privado", beach: "Beach clubs", dj: "DJ" };
-// the services that unlock the guestlist gifts (clubs and beach clubs do not count: the gift is a guestlist to them)
-const GIFT_SVC = new Set(["yates", "motos", "moto", "coches", "villas", "dining", "transfers", "dj"]);
+const CHOICES = { yates: "Barco", motos: "Moto de agua", coches: "Coche", moto: "Moto", villas: "Villa", vip: "Mesas VIP en clubs", transfers: "Transfer", dining: "Chef privado", dj: "DJ" };
+// the services that unlock the guestlist gifts (every one in the list, club VIP tables included)
+const GIFT_SVC = new Set(["yates", "motos", "moto", "coches", "villas", "vip", "dining", "transfers", "dj"]);
 const giftCount = () => [...chosen].filter(c => GIFT_SVC.has(c)).length;
 const chips = document.getElementById("chips"), chosen = new Set();
 for (const [id, n] of Object.entries(CHOICES)) chips.insertAdjacentHTML("beforeend", `<button type="button" class="chip" data-c="${id}" aria-pressed="false">${n}</button>`);
@@ -793,7 +794,7 @@ function paintLadder() {
       ${LADDER.map((s, i) => `<span class="ladder__step${k >= s.n ? " is-on" : ""}" style="left:${(i + 1) / 3 * 100}%"><b>${s.n}${s.n === 3 ? "+" : ""}</b></span>`).join("")}</div>
     <ol class="ladder__list">${LADDER.map(s => `<li class="${k >= s.n ? "is-on" : ""}"><span>${s.n}${s.n === 3 ? "+" : ""} ${t(s.n === 1 ? "servicio" : "servicios")}</span>${t(s.short)}</li>`).join("")}</ol>
     <p class="ladder__msg">${head}${more ? `<br><span>${more}</span>` : ""}</p>
-    <p class="ladder__fine">${t("Cuentan barco, moto de agua, moto, coche, villa, chef, transfer y DJ.")} ${t("Regalos de cortesía, sujetos a disponibilidad del club. Guestlist solo para mayores de 18.")} <a href="legal/terminos.html#guestlists" target="_blank" rel="noopener">${t("Ver condiciones")}</a></p>`;
+    <p class="ladder__fine">${t("Cuentan barco, moto de agua, moto, coche, villa, chef, transfer, mesa VIP y DJ.")} ${t("Regalos de cortesía, sujetos a disponibilidad del club. Guestlist solo para mayores de 18.")} <a href="legal/terminos.html#guestlists" target="_blank" rel="noopener">${t("Ver condiciones")}</a></p>`;
   if (got && ladderEl.dataset.got !== String(got.n)) { ladderEl.classList.remove("is-pop"); void ladderEl.offsetWidth; ladderEl.classList.add("is-pop"); }
   ladderEl.dataset.got = got ? got.n : "";
 }
