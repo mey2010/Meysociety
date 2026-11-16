@@ -647,7 +647,7 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
   color: "#0d0a38", accentColor: "#ab50db", lineColor: "#c9cce8", width: 340, rowHeight: 38, fontSize: 15, indent: 42,
 
   onSelect: (value, item) => {
-    if (value.startsWith("barcos-")) { SM.set(false); setTimeout(() => openFleet(value.slice(7)), 260); return; }   // ("all" or one fleet type)
+    if (value.startsWith("barcos-")) { const k = value.slice(7); SM.set(false); setTimeout(() => openFleet(k === "all" ? "open" : k), 260); return; }   // "Toda la flota" opens on the open boats; the other tabs stay one tap away
     if (value === "villa-aura") { SM.set(false); setTimeout(() => document.querySelector("[data-villa-tour]")?.click(), 300); return; }   // straight into the tour
     if (value === "todos") { SM.set(false); scrollToEl(document.getElementById("servicios")); return; }   // the services section itself
     const sec = SVC_TREE.find(s => s.value === value || s.children?.some(k => k.value === value));
@@ -1332,7 +1332,7 @@ const JET = "moto-agua", SOLO = [JET, "coche", "transfer"];   // groups shown as
 const BOATS = FLEET.filter(b => !SOLO.includes(b.type)), JETS = FLEET.filter(b => b.type === JET);
 const typeIcon = ty => ty === JET ? ICONS.jetski : ty === "coche" ? ICONS.car : ty === "transfer" ? ICONS.van : ICONS.boat;
 let ribbon = null, fleetCat = "all", fleetBase = BOATS, fleetList = BOATS;
-const fleetItems = () => fleetList.map(b => ({ ...b, src: cardSrc(b), title: t(b.name), tag: t(CAT_LABEL[b.type]) }));
+const fleetItems = () => fleetList.map(b => ({ ...b, src: cardSrc(b), title: t(b.name), tag: t(CAT_LABEL[b.type]), whole: b.type === "moto-agua" }));   // jet skis are cut-outs: shown whole, not cropped
 const paxText = b => b.pax ? `${t("Hasta")} ${b.pax} ${t("personas")}` : "";
 function renderFleetInfo(b, i) {
   if (!b) return;
@@ -1385,7 +1385,7 @@ function showShot(k) {
   sheet.querySelectorAll(".boat__thumbs button").forEach((x, i) => x.setAttribute("aria-current", i + 1 === shot));
 }
 function openBoat(b) {
-  if (!b) return; if (b !== boatNow) track("view_item", { item_category: "barco", item_name: b.name || "" }); boatNow = b; shot = 1;
+  if (!b) return; if (b !== boatNow) track("view_item", { item_category: "barco", item_name: b.name || "" }); boatNow = b; shot = 1; sheet.classList.toggle("boat--whole", b.type === "moto-agua");
   const row = (label, v) => v ? `<div><dt>${t(label)}</dt><dd>${v}</dd></div>` : "";
   sheet.innerHTML = `<div class="boat__card">
     <button class="lightbox__close boat__close" type="button" data-close aria-label="${t("Cerrar")}">${ICONS.close}</button>

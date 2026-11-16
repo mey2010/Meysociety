@@ -79,9 +79,13 @@ export function createCircularCarousel(root, opts = {}) {
       const frame = el("div", "circular-carousel__frame"); frame.style.height = (axis === "x" ? size : cardH) + "px"; frame.style.borderRadius = frameRadius;
       const ps = axis === "x" ? { left: "0px", top: -offset + "px", width: cardW + "px", height: cardH + "px" } : { left: -offset + "px", top: "0px", width: cardW + "px", height: cardH + "px" };
       if (vid && !back) {
-        const cv = el("canvas", "circular-carousel__photo"); Object.assign(cv.style, ps);
-        const dpr = Math.min(1.5, devicePixelRatio || 1); cv.width = Math.round(cardW * dpr); cv.height = Math.round(cardH * dpr);
-        entry.canvases.push({ ctx: cv.getContext("2d"), w: cv.width, h: cv.height, poster: null });
+        // each strip canvas holds only its own slice of the picture (not the whole frame): a video frame costs one
+        // small copy per strip instead of a full-size one
+        const cv = el("canvas", "circular-carousel__photo");
+        Object.assign(cv.style, axis === "x" ? { left: "0px", top: "0px", width: cardW + "px", height: size + "px" } : { left: "0px", top: "0px", width: size + "px", height: cardH + "px" });
+        const dpr = Math.min(1.5, devicePixelRatio || 1), cw = axis === "x" ? cardW : size, chh = axis === "x" ? size : cardH;
+        cv.width = Math.round(cw * dpr); cv.height = Math.round(chh * dpr);
+        entry.canvases.push({ ctx: cv.getContext("2d", { alpha: false }), w: cv.width, h: cv.height, off: offset, len: size, dpr });
         frame.appendChild(cv);
       } else {
         const img = el("img", "circular-carousel__photo", { alt: "", draggable: "false", decoding: "async" }); img.src = isVideo ? (item.poster || "") : item.src; Object.assign(img.style, ps);
@@ -101,9 +105,16 @@ export function createCircularCarousel(root, opts = {}) {
   // video frames: cover-crop once per frame into every front strip canvas (they are already offset by their strip)
   const paintVideo = (v, src) => {
     const sw = src.videoWidth || src.naturalWidth, sh = src.videoHeight || src.naturalHeight; if (!sw || !sh) return;
+    // the whole card is a cover-crop of the frame; each strip copies just the part of the source that falls on it
+    // the frame is converted once into a card-sized canvas, and the strips copy their slice from it (canvas to canvas is
+    // cheap; reading a video frame is not)
+    const dpr = v.canvases[0]?.dpr || 1, W = Math.round(cardW * dpr), H = Math.round(cardH * dpr);
+    if (!v.full) { v.full = document.createElement("canvas"); v.full.width = W; v.full.height = H; v.fctx = v.full.getContext("2d", { alpha: false }); }
+    const k = Math.max(W / sw, H / sh); v.fctx.drawImage(src, (W - sw * k) / 2, (H - sh * k) / 2, sw * k, sh * k);
     for (const c of v.canvases) {
-      const k = Math.max(c.w / sw, c.h / sh), dw = sw * k, dh = sh * k;
-      c.ctx.drawImage(src, (c.w - dw) / 2, (c.h - dh) / 2, dw, dh);
+      const o = Math.round(c.off * dpr);
+      if (axis === "x") c.ctx.drawImage(v.full, 0, o, W, c.h, 0, 0, c.w, c.h);
+      else c.ctx.drawImage(v.full, o, 0, c.w, H, 0, 0, c.w, c.h);
     }
   };
   videos.forEach(v => {
@@ -133,7 +144,7 @@ export function createCircularCarousel(root, opts = {}) {
       String(i + 1).padStart(2, "0").split("").forEach((d, k) => reels[k].style.transform = `translateY(${-Number(d) * 10}%)`);
     }
     live.textContent = `${it.title || it.alt || ""}, ${i + 1} / ${count}`;
-    videos.forEach(v => { const near = Math.abs(wrap(v.index * step + state.angle)) < 100; if (near && visible) v.video.play().catch(() => {}); else v.video.pause(); });
+    videos.forEach(v => { const near = Math.abs(wrap(v.index * step + state.angle)) < 40; if (near && visible && !state.moving) v.video.play().catch(() => {}); else v.video.pause(); });   // only the video facing you plays
     o.onChange?.(i);
   };
 
@@ -226,7 +237,7 @@ export function createCircularCarousel(root, opts = {}) {
       if (card._tr !== tr) { card.style.transform = tr; card._tr = tr; }
       const world = wrap(base + angle), facing = Math.cos(world * TO_RAD);
       if (S.layout.inward) card.style.visibility = Math.abs(world) > 86 ? "hidden" : "";
-      const dep = (Math.round(S.depthFade * Math.pow((1 - facing) / 2, 1.25) * 200) / 200).toFixed(3);
+      const dep = (Math.round(S.depthFade * Math.pow((1 - facing) / 2, 1.25) * 20) / 20).toFixed(2);   // 5% steps: the shade of a card is restyled a few times per turn, not on every frame
       if (card._dep !== dep) { card.style.setProperty("--cc-depth", dep); card._dep = dep; }
     }
     setActive(((Math.round(-state.angle / S.step) % S.count) + S.count) % S.count || 0);
@@ -235,6 +246,10 @@ export function createCircularCarousel(root, opts = {}) {
     raf = 0; if (document.documentElement.classList.contains("is-covered")) { state.last = 0; return; } // a full-screen panel is open
     const dt = state.last ? Math.min((now - state.last) / 1000, .1) : 1 / 60; state.last = now;
     const busy = advance(dt, now); render(now);
+    // while the ring is being swiped or still spinning fast, the videos rest on their current picture (decoding and
+    // copying video frames is the heaviest thing here); they play again as soon as it settles
+    const moving = !!state.drag || Math.abs(state.velocity) > 40;
+    if (moving !== state.moving) { state.moving = moving; if (moving) videos.forEach(v => v.video.pause()); else { const a = active; active = -1; setActive(a); } }
     if (busy && visible && !document.hidden) raf = requestAnimationFrame(frame); else state.last = 0;
   };
   const wake = () => { if (!raf && visible && !document.hidden) raf = requestAnimationFrame(frame); };

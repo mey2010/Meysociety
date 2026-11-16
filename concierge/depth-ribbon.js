@@ -32,7 +32,7 @@ export function createDepthRibbon(root, opts = {}) {
   function build(list) {
     items = list; N = items.length; stage.replaceChildren(); st.active = -1;
     cards = items.map((it, i) => {
-      const c = document.createElement("button"); c.type = "button"; c.className = "ribbon__card"; c.dataset.i = i;
+      const c = document.createElement("button"); c.type = "button"; c.className = "ribbon__card" + (it.whole ? " ribbon__card--whole" : ""); c.dataset.i = i;
       c.setAttribute("aria-label", `${it.title}, ${i + 1} / ${N}`);
       c.innerHTML = `<img data-src="${it.src}" alt="" draggable="false" decoding="async"><span class="ribbon__shine"></span><span class="ribbon__tag">${it.tag || ""}</span>`;
       c._last = {};
@@ -79,9 +79,10 @@ export function createDepthRibbon(root, opts = {}) {
       if (L.on !== on) { c.style.visibility = on ? "" : "hidden"; L.on = on; }
       if (on) {
         c.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) rotateY(${(uu < 0 ? -uu * 28 : yaw).toFixed(2)}deg) rotateZ(${roll.toFixed(2)}deg)`;
-        const o = op.toFixed(2); if (L.o !== o) { c.style.opacity = o; L.o = o; }
+        // depth dimming is folded into the card's own opacity (the fleet sits on a dark background): an opacity change is
+        // done by the compositor, while a darkening layer inside the card had its photo repainted on every frame
+        const o = (op * (1 - clamp(Math.abs(uu) * .22, 0, .6) * .75)).toFixed(2); if (L.o !== o) { c.style.opacity = o; L.o = o; }
         const zi = String(1000 - Math.round(uu * 100)); if (L.z !== zi) { c.style.zIndex = zi; L.z = zi; }
-        const dm = clamp(Math.abs(uu) * .22, 0, .6).toFixed(2); if (L.d !== dm) { c.style.setProperty("--dim", dm); L.d = dm; }
       }
       const pe = op > .25 ? "auto" : "none"; if (L.pe !== pe) { c.style.pointerEvents = pe; L.pe = pe; }
       const ti = Math.round(u) === 0 ? 0 : -1; if (L.ti !== ti) { c.tabIndex = ti; L.ti = ti; }
