@@ -1967,3 +1967,40 @@ html.is-jumping, html.is-jumping.snap-stack { scroll-snap-type: none !important;
 .ribbon__card--whole { background: radial-gradient(120% 90% at 50% 60%, #2a2580 0%, #0d0a38 70%); }
 .boat--whole .boat__main { background: radial-gradient(120% 90% at 50% 60%, #2a2580 0%, #0d0a38 70%); }
 .boat--whole .boat__main img { object-fit: contain; padding: 4% 6%; box-sizing: border-box; }
+
+/* ---------------- search ---------------- */
+.qs-btn { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 78px); right: max(16px, env(safe-area-inset-right, 0px)); width: 44px; height: 44px; border-radius: 50%; border: 0;
+  display: grid; place-items: center; cursor: pointer; pointer-events: auto; color: var(--midnight); background: rgb(255 255 255 / .92); z-index: 3;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .5), 0 6px 18px -8px rgb(13 10 56 / .45); transition: opacity .25s, transform .25s; -webkit-tap-highlight-color: transparent; }
+.qs-btn svg { width: 19px; height: 19px; }
+.qs-btn:active { transform: scale(.94); }
+.staggered-menu-wrapper[data-open] .qs-btn { opacity: 0; pointer-events: none; }
+@media (min-width: 901px) { .qs-btn { right: max(28px, env(safe-area-inset-right, 0px)); } }
+.qs { position: fixed; inset: 0; z-index: 96; display: flex; justify-content: center; align-items: flex-start; padding: calc(env(safe-area-inset-top, 0px) + 18px) 14px 14px;
+  background: rgb(6 4 30 / .72); }
+.qs[hidden] { display: none; }
+.qs__card { width: min(620px, 100%); max-height: calc(100svh - 40px); display: flex; flex-direction: column; border-radius: 22px; overflow: hidden;
+  background: linear-gradient(160deg, #2a2580, #0d0a38); color: #fff; box-shadow: 0 30px 70px -20px rgb(0 0 0 / .7), inset 0 0 0 1px rgb(255 255 255 / .1); animation: qs-in .22s ease-out both; }
+@keyframes qs-in { from { opacity: 0; transform: translateY(-10px) scale(.98); } }
+.qs__bar { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-bottom: 1px solid rgb(255 255 255 / .1); }
+.qs__bar > svg { width: 20px; height: 20px; flex: none; opacity: .7; }
+.qs__input { flex: 1; min-width: 0; min-height: 48px; border: 0; padding: 0; background: none; color: #fff; font: 500 17px var(--sans); outline: none; -webkit-appearance: none; appearance: none; }
+.qs__input::placeholder { color: rgb(255 255 255 / .5); }
+.qs__input::-webkit-search-cancel-button { display: none; }
+.qs__x { width: 40px; height: 40px; flex: none; border: 0; border-radius: 50%; display: grid; place-items: center; background: rgb(255 255 255 / .1); color: #fff; cursor: pointer; }
+.qs__x svg { width: 16px; height: 16px; }
+.qs__chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 14px 16px 16px; }
+.qs__chips[hidden] { display: none; }
+.qs__chips span { width: 100%; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--cyan, #78c7e4); }
+.qs__chips button { border: 0; border-radius: 99px; padding: 8px 14px; background: rgb(255 255 255 / .1); color: #fff; font: 500 14px var(--sans); cursor: pointer; }
+.qs__hint { margin: 0; padding: 16px; color: rgb(255 255 255 / .7); font-size: 14.5px; }
+.qs__hint[hidden] { display: none; }
+.qs__list { list-style: none; margin: 0; padding: 6px; overflow-y: auto; overscroll-behavior: contain; }
+.qs__list:empty { display: none; }
+.qs__list button { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; border: 0; border-radius: 14px; background: none; color: #fff; text-align: left; cursor: pointer; font: 500 15.5px var(--sans); }
+.qs__list li[aria-selected="true"] button, .qs__list button:hover { background: rgb(255 255 255 / .09); }
+.qs__t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qs__k { flex: none; font-size: 12px; color: var(--cyan, #78c7e4); background: rgb(120 199 228 / .12); border-radius: 99px; padding: 4px 9px; }
+html.qs-open { overflow: hidden; }
+.qs .qs__input, .qs .qs__input:focus, .qs .qs__input:focus-visible { border: 0; background: none; box-shadow: none; outline: none; padding: 0; border-radius: 0; }
+.qs__bar:focus-within { background: rgb(255 255 255 / .03); }

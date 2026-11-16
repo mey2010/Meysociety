@@ -1691,3 +1691,70 @@ document.addEventListener("click", async e => {
   }
   m.querySelector(".terms-modal__body").innerHTML = html; m.hidden = false; m.querySelector(".modal__x").focus();
 });
+
+/* ---------------- search: a magnifier under the menu button finds anything on the page ----------------
+   Sections, services, every boat and jet ski, every place on the map, the FAQ and the packages, in the visitor's
+   language (the texts are read as they are shown). A result goes straight to its place: a boat opens its sheet,
+   a club or a beach flies the map there, a question opens its answer. */
+{
+  const fold = s => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const txt = el => (el?.textContent || "").replace(/\s+/g, " ").trim();
+  const wrap = document.getElementById("sm");
+  const btn = document.createElement("button"); btn.type = "button"; btn.className = "qs-btn"; btn.innerHTML = ICONS.search;
+  wrap.appendChild(btn);
+  const box = document.createElement("div"); box.className = "qs"; box.hidden = true; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true");
+  box.innerHTML = `<div class="qs__card"><label class="qs__bar">${ICONS.search}<input class="qs__input" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button type="button" class="qs__x" data-close>${ICONS.close}</button></label>
+    <p class="qs__hint"></p><div class="qs__chips"></div><ul class="qs__list" role="listbox"></ul></div>`;
+  document.body.appendChild(box);
+  const input = box.querySelector(".qs__input"), list = box.querySelector(".qs__list"), hint = box.querySelector(".qs__hint"), chips = box.querySelector(".qs__chips");
+  const label = () => { btn.setAttribute("aria-label", t("Buscar")); box.setAttribute("aria-label", t("Buscar")); box.querySelector(".qs__x").setAttribute("aria-label", t("Cerrar")); input.placeholder = t("Barcos, clubs, playas…"); };
+  label(); document.addEventListener("langchange", label);
+
+  // the index is built when the box opens, from what the page shows now (so it follows the language)
+  let index = [];
+  const build = () => {
+    const out = [], add = (kind, title, extra, go) => { if (title) out.push({ kind, title, hay: fold(title + " " + kind + " " + (extra || "")), t: fold(title), go }); };
+    document.querySelectorAll("main > section[id]").forEach(sec => { const h = sec.querySelector("h2, .display"); if (h) add(t("Sección"), txt(h), txt(sec.querySelector(".eyebrow")), () => scrollToEl(sec)); });
+    const snaps = [...document.querySelectorAll(".stack__snap:not(.stack__snap--edge)")];
+    document.querySelectorAll(".stack__card").forEach((c, i) => add(t("Servicio"), txt(c.querySelector("h3")), txt(c.querySelector(".stack__body")), () => scrollToEl(snaps[i] || c)));
+    FLEET.forEach(b => add(t(CAT_LABEL[b.type]), b.name, [b.len, b.cabins && t(b.cabins), b.extra, t("Flota")].join(" "), () => openBoat(b)));
+    VENUES.forEach(v => add(t(KIND[v.type] || "Mapa"), v.name, v.area, () => {
+      scrollToEl(document.getElementById("mapa")); startMap(); map3d.flyToVenue(v); setTimeout(() => openPop(v), 1100);
+    }));
+    document.querySelectorAll(".faq__list details").forEach(d => add(t("Pregunta"), txt(d.querySelector("summary")), txt(d.querySelector("p")), () => { d.open = true; scrollToEl(d); }));
+    document.querySelectorAll(".pack").forEach(p => { const h = p.querySelector("h3"); if (h) add(t("Paquete"), txt(h), txt(p), () => scrollToEl(p)); });
+    return out;
+  };
+  const SUGGEST = ["Yates", "Motos de agua", "Villas", "Pacha", "Cala Comte", "DJ"];
+  let shown = [], sel = 0;
+  const render = () => {
+    const q = fold(input.value).trim(), terms = q.split(/\s+/).filter(Boolean);
+    chips.hidden = !!q; hint.hidden = true;
+    if (!terms.length) { list.replaceChildren(); return; }
+    shown = index.filter(r => terms.every(w => r.hay.includes(w)))
+      .map(r => ({ r, s: (r.t.startsWith(q) ? 4 : 0) + (r.t.includes(q) ? 2 : 0) + (terms.every(w => r.t.includes(w)) ? 1 : 0) }))
+      .sort((a, b) => b.s - a.s || a.r.title.length - b.r.title.length).slice(0, 14).map(x => x.r);
+    sel = 0;
+    if (!shown.length) { list.replaceChildren(); hint.hidden = false; hint.textContent = `${t("Sin resultados para")} «${input.value.trim()}»`; return; }
+    list.innerHTML = shown.map((r, i) => `<li role="option" id="qs-${i}" aria-selected="${i === 0}"><button type="button" data-i="${i}"><span class="qs__t"></span><span class="qs__k"></span></button></li>`).join("");
+    list.querySelectorAll("li").forEach((li, i) => { li.querySelector(".qs__t").textContent = shown[i].title; li.querySelector(".qs__k").textContent = shown[i].kind; });
+  };
+  const open = () => {
+    index = build(); box.hidden = false; document.documentElement.classList.add("qs-open");
+    chips.innerHTML = `<span>${t("Sugerencias")}</span>` + SUGGEST.map(s => `<button type="button"></button>`).join("");
+    chips.querySelectorAll("button").forEach((b, i) => { b.textContent = t(SUGGEST[i]); b.onclick = () => { input.value = b.textContent; render(); input.focus(); }; });
+    input.value = ""; render(); requestAnimationFrame(() => input.focus());
+  };
+  const close = () => { box.hidden = true; document.documentElement.classList.remove("qs-open"); btn.focus({ preventScroll: true }); };
+  const pick = i => { const r = shown[i]; if (!r) return; close(); track("search", { search_term: input.value.trim().slice(0, 60) }); setTimeout(r.go, 60); };
+  btn.addEventListener("click", open);
+  input.addEventListener("input", render);
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); pick(sel); }
+    else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); if (!shown.length) return; sel = (sel + (e.key === "ArrowDown" ? 1 : -1) + shown.length) % shown.length;
+      list.querySelectorAll("li").forEach((li, i) => li.setAttribute("aria-selected", i === sel)); list.children[sel]?.scrollIntoView({ block: "nearest" }); }
+  });
+  list.addEventListener("click", e => { const b = e.target.closest("button[data-i]"); if (b) pick(+b.dataset.i); });
+  box.addEventListener("click", e => { if (e.target === box || e.target.closest("[data-close]")) close(); });
+  addEventListener("keydown", e => { if (e.key === "Escape" && !box.hidden) close(); });
+}
