@@ -1,6 +1,6 @@
 /* Villa Aura — a scroll-driven film. Scrolling flies a drone from the cove to the villa, through the
    gate, up to the front door (which opens on its own) and through every room; each chapter brings a short
-   line of copy and a reading pause. The film is 25 fps H.264, streamed as text lines (data/villa/aura-v-*.txt),
+   line of copy and a reading pause. The film is 25 fps H.264, stored as plain MP4 parts (data/villa/aura-v-*.mp4) read by a tiny box parser,
    decoded by the device's own video decoder (WebCodecs) and drawn on a canvas: scrubbing is frame-exact,
    every picture is a crisp real frame, and nothing is downloaded until the tour is opened. */
 import { getLang } from "./i18n.js";
@@ -8,7 +8,7 @@ import { getLang } from "./i18n.js";
 // two packs of the same film: 2560x1440 for laptops and tablets, a 1152x1440 (4:5) crop for phones held upright
 const PHONE = matchMedia("(max-width: 720px) and (orientation: portrait)").matches;
 let PACK = PHONE ? "p" : "d";
-const SRC = k => `data/villa/aura-v-${PACK}-${k}.txt`;
+const SRC = k => `data/villa/aura-v-${PACK}-${k}.mp4`, HEAD = () => `data/villa/aura-v-${PACK}.json`;
 let DOOR = { x0: .449, x1: .488, y0: .556, y1: .813 };     // the front door in the last frame of the "door" shot (each pack brings its own)
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -158,28 +158,51 @@ function createFrames(onProgress) {
   const raw = [], key = [], cache = new Map(); let MAX = 30;
   let dec = null, fedTo = -1, jobEnd = -1, inFlight = 0, keepLo = 0, keepHi = 30, keepX = new Set(), runStart = -1, outTo = -1;
   // the decoder runs through the film in order from a key frame: runStart (that key frame) .. fedTo (last fed) .. outTo (last out)
-  const cfg = () => ({ codec: head.codec, codedWidth: head.w, codedHeight: head.h, optimizeForLatency: true });
+  let desc = null;   // the avcC record from the MP4 (SPS/PPS): the frames are length-prefixed (AVCC)
+  const cfg = () => ({ codec: head.codec, codedWidth: head.w, codedHeight: head.h, optimizeForLatency: true, description: desc });
+  // the sample table of an MP4 part: where each frame sits in the file, its size, and which ones are key frames
+  function sampleTable(u) {
+    const dv = new DataView(u.buffer, u.byteOffset, u.byteLength);
+    const find = (from, to, type) => { for (let p = from; p + 8 <= to;) { let sz = dv.getUint32(p); const t = String.fromCharCode(u[p + 4], u[p + 5], u[p + 6], u[p + 7]); let h = 8;
+      if (sz === 1) { sz = Number(dv.getBigUint64(p + 8)); h = 16; } if (sz === 0) sz = to - p; if (t === type) return [p + h, p + sz]; p += sz; } return null; };
+    const path = (from, to, ...types) => { let r = [from, to]; for (const t of types) { r = find(r[0], r[1], t); if (!r) return null; } return r; };
+    const moov = find(0, u.length, "moov"); if (!moov || moov[1] > u.length) return null;   // index not complete yet
+    const stbl = path(moov[0], moov[1], "trak", "mdia", "minf", "stbl");
+    const stsd = find(stbl[0], stbl[1], "stsd"), avc1 = find(stsd[0] + 8, stsd[1], "avc1"), avcC = find(avc1[0] + 78, avc1[1], "avcC");
+    const sizes = [], offs = [], keys = new Set();
+    { const [a] = find(stbl[0], stbl[1], "stsz"), fixed = dv.getUint32(a + 4), n = dv.getUint32(a + 8); for (let k = 0; k < n; k++) sizes.push(fixed || dv.getUint32(a + 12 + k * 4)); }
+    const co = find(stbl[0], stbl[1], "stco"), co64 = co ? null : find(stbl[0], stbl[1], "co64"), chunks = [];
+    { const [a] = co || co64, n = dv.getUint32(a + 4); for (let k = 0; k < n; k++) chunks.push(co ? dv.getUint32(a + 8 + k * 4) : Number(dv.getBigUint64(a + 8 + k * 8))); }
+    { const [a] = find(stbl[0], stbl[1], "stsc"), n = dv.getUint32(a + 4), runs = []; for (let k = 0; k < n; k++) runs.push([dv.getUint32(a + 8 + k * 12) - 1, dv.getUint32(a + 12 + k * 12)]);
+      let s = 0; for (let c = 0; c < chunks.length; c++) { let per = 0; for (const [first, cnt] of runs) if (c >= first) per = cnt; let o = chunks[c]; for (let k = 0; k < per && s < sizes.length; k++, s++) { offs.push(o); o += sizes[s]; } } }
+    const ss = find(stbl[0], stbl[1], "stss");
+    if (ss) { const [a] = ss, n = dv.getUint32(a + 4); for (let k = 0; k < n; k++) keys.add(dv.getUint32(a + 8 + k * 4) - 1); } else sizes.forEach((_, k) => keys.add(k));
+    return { avcC: u.slice(avcC[0], avcC[1]), sizes, offs, keys };
+  }
   const ready = (async () => {
     if (typeof VideoDecoder !== "function") throw new Error("no-webcodecs");
-    for (let part = 1; !head || part <= head.parts; part++) {
+    head = await (await fetch(HEAD())).json();
+    for (let part = 1; part <= head.parts; part++) {
       const res = await fetch(SRC(part)); if (!res.ok) throw new Error("tour " + res.status);
-      const reader = res.body.getReader(), td = new TextDecoder(); let tail = "";
+      const total = +res.headers.get("content-length") || 0, reader = res.body.getReader();
+      let buf = new Uint8Array(total || 1 << 22), got = 0, tab = null, next = 0;
       for (;;) {
         const { done, value } = await reader.read(); if (done) break;
-        const lines = (tail + td.decode(value, { stream: true })).split("\n"); tail = lines.pop();
-        for (const ln of lines) {
-          if (!ln) continue;
-          if (!head) {
-            head = JSON.parse(ln);
-            const ok = await VideoDecoder.isConfigSupported({ codec: head.codec, codedWidth: head.w, codedHeight: head.h }).catch(() => ({ supported: false }));
+        if (got + value.length > buf.length) { const b = new Uint8Array(Math.max(buf.length * 2, got + value.length)); b.set(buf.subarray(0, got)); buf = b; }
+        buf.set(value, got); got += value.length;
+        if (!tab) {
+          tab = sampleTable(buf.subarray(0, got));   // the index sits at the front of each part (faststart)
+          if (tab && !desc) {
+            desc = tab.avcC;
+            const ok = await VideoDecoder.isConfigSupported(cfg()).catch(() => ({ supported: false }));
             if (!ok.supported) throw new Error("no-h264");
             MAX = PACK === "d" ? 30 : 40;            // a decoded 2560x1440 picture is ~15 MB, a phone one ~7 MB
-            onHead?.(head); continue;
+            onHead?.(head);
           }
-          const bin = atob(ln.slice(1)), u = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) u[k] = bin.charCodeAt(k);
-          key.push(ln[0] === "K"); raw.push(u);
         }
-        if (head) { onProgress?.(raw.length / head.frames); pump(); }
+        // every frame whose bytes have fully arrived can be decoded right away
+        if (tab) { while (next < tab.sizes.length && tab.offs[next] + tab.sizes[next] <= got) { raw.push(buf.slice(tab.offs[next], tab.offs[next] + tab.sizes[next])); key.push(tab.keys.has(next)); next++; }
+          onProgress?.(raw.length / head.frames); pump(); }
       }
     }
     onProgress?.(1);

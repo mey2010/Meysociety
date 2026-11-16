@@ -183,6 +183,22 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     for (let k = 0; k < pos.count; k++) { const x = pos.getX(k), z = pos.getZ(k), m = hAt(x, z); pos.setY(k, m > .4 ? m * EXAG / 1000 + .001 : -.025); }  // flat under the water: no walls at the shoreline
     const mesh = new THREE.Mesh(g, tileMat(tex)); mesh.receiveShadow = true; mesh.renderOrder = 0; return mesh;
   }
+  /* the aerial tiles travel four to a file (2x2 blocks of 2048 px, data/tiles/<bi>_<bj>.webp): each tile is cut out
+     of its block when it is needed; the last few blocks stay decoded so the neighbouring tiles come for free */
+  const blocks = new Map();
+  const blockOf = (bi, bj) => {
+    const k = bi + "_" + bj; let b = blocks.get(k);
+    if (!b) {
+      b = { used: 0, img: new Promise((ok, no) => { const im = new Image(); im.decoding = "async"; im.onload = () => ok(im); im.onerror = no; im.src = `data/tiles/${k}.webp`; }) };
+      blocks.set(k, b);
+      if (blocks.size > 6) { const old = [...blocks.entries()].sort((x, y) => x[1].used - y[1].used)[0]; blocks.delete(old[0]); }
+    }
+    b.used = performance.now(); return b.img;
+  };
+  const tileImage = (i, j) => blockOf(i >> 1, j >> 1).then(im => {
+    const c = document.createElement("canvas"); c.width = c.height = 1024;
+    c.getContext("2d").drawImage(im, (i & 1) * 1024, (j & 1) * 1024, 1024, 1024, 0, 0, 1024, 1024); return c;
+  });
   function updateDetail(now) {
     if (!detail.index || now - detail.last < 250) return; detail.last = now;
     const tgt = controls.target, dist = camera.position.distanceTo(tgt), show = dist < 26;   // the sharp aerial tiles take over from the second zoom step
@@ -197,11 +213,13 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     for (const w of want.slice(0, detail.max)) {
       if (detail.live.has(w.key)) { detail.live.get(w.key).used = now; continue; }
       const entry = { used: now, mesh: null, tex: null }; detail.live.set(w.key, entry);
-      new THREE.TextureLoader().load(`data/tiles/${w.key}.webp`, tex => {
-        if (!detail.live.has(w.key)) { tex.dispose(); return; }
+      tileImage(w.i, w.j).then(img => {
+        if (!detail.live.has(w.key)) { img.close?.(); return; }
+        const tex = new THREE.Texture(img); tex.needsUpdate = true; tex.flipY = true;
         tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
+        tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter;
         entry.tex = tex; entry.mesh = tileMesh(w.i, w.j, tex); scene.add(entry.mesh);
-      }, undefined, () => {});
+      }).catch(() => {});
     }
     // keep memory bounded: drop the tiles used longest ago
     if (detail.live.size > detail.max * 1.6) {
