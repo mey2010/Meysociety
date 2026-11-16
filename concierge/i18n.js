@@ -20,6 +20,8 @@ const D = {
   "Fondeo en aguas turquesa": ["Anchored in turquoise water", "All'ancora in acque turchesi", "Au mouillage dans une eau turquoise", "Vor Anker in türkisem Wasser"],
   "Snorkel junto a la cueva": ["Snorkelling by the cave", "Snorkeling vicino alla grotta", "Snorkeling près de la grotte", "Schnorcheln an der Höhle"],
   "Noche en [UNVRS]": ["A night at [UNVRS]", "Una notte al [UNVRS]", "Une nuit au [UNVRS]", "Eine Nacht im [UNVRS]"],
+  "En moto por la isla": ["Riding around the island", "In moto per l'isola", "À moto sur l'île", "Mit dem Roller über die Insel"],
+  "Al volante por Ibiza": ["Behind the wheel in Ibiza", "Al volante per Ibiza", "Au volant à Ibiza", "Am Steuer durch Ibiza"],
   "Frente al escenario": ["In front of the stage", "Davanti al palco", "Face à la scène", "Vor der Bühne"],
   "Tarde de sol en la piscina": ["A sunny afternoon by the pool", "Pomeriggio di sole in piscina", "Après-midi ensoleillé à la piscine", "Sonniger Nachmittag am Pool"],
   "Pool party de día": ["Daytime pool party", "Pool party di giorno", "Pool party en journée", "Poolparty am Tag"],
