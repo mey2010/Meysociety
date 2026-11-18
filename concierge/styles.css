@@ -2279,3 +2279,5 @@ html[data-theme="dark"] .sm-icon { color: #f4f5fb; background: rgb(244 245 251 /
 .social__btn--mail:hover, .social__btn--mail:focus-visible { background: linear-gradient(140deg, var(--violet), #1e24bb); }
 .contact__form > .contact__direct--form { margin-top: -8px; margin-bottom: 0; }
 .contact__form > .social__list--form { margin-top: -10px; }
+.contact__form > .social__list--form { margin-top: -4px; justify-content: center; }
+@media (max-width: 520px) { .contact__form > .social__list--form { display: flex; justify-content: center; } }
