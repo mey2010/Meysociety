@@ -2256,8 +2256,8 @@ html[data-theme="dark"] .pl__grid2 input::-webkit-calendar-picker-indicator { fi
 @media (prefers-reduced-motion: reduce) { .sig__glow { animation: none; } }
 
 /* lite tier (see theme.js): the same page, minus the costliest paint work on devices that can't keep up */
-html[data-perf="lite"] *, html[data-perf="lite"] *::before, html[data-perf="lite"] *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
-html[data-perf="lite"] .lg { background: linear-gradient(135deg, rgb(41 36 103 / .92), rgb(20 16 74 / .92)); }
+/* (only inside the page content: the header buttons, menu and search keep their exact look) */
+html[data-perf="lite"] main :is(.sig__side, .ag__tick, .social__btn) { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 html[data-perf="lite"] :is(.sig__glow, .ag__status i) { animation: none !important; }
 html[data-perf="lite"] .sig__glow { filter: none; opacity: .35; }
 .sig :is(.sig__kicker, .sig__h, .sig__steps span, li) { text-align: left; hyphens: manual; -webkit-hyphens: manual; word-spacing: normal; }
@@ -2269,15 +2269,16 @@ html[data-perf="lite"] .sig__glow { filter: none; opacity: .35; }
 .social__btn { width: 56px; height: 56px; min-height: 0; padding: 0; justify-content: center; border-radius: 50%; }
 @media (max-width: 520px) { .social__list { display: flex; } .social__btn { width: 56px; min-height: 0; padding: 0; border-radius: 50%; } }
 .sm-icons { list-style: none; margin: .4rem 0 0; padding: 0; display: flex; gap: .6rem; justify-content: flex-end; }
-.sm-icon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; color: var(--midnight); background: rgb(13 10 56 / .06); box-shadow: inset 0 0 0 1px rgb(81 92 159 / .22); transition: transform 250ms var(--ease), background 250ms, color 250ms; }
-.sm-icon:hover, .sm-icon:focus-visible { color: #fff; transform: translateY(-2px); }
-.sm-icon.social__btn--ig:hover, .sm-icon.social__btn--ig:focus-visible { background: linear-gradient(45deg, #f9a03f, #e1306c 45%, #833ab4); }
-.sm-icon.social__btn--tt:hover, .sm-icon.social__btn--tt:focus-visible { background: #010101; }
-.sm-icon.social__btn--wa:hover, .sm-icon.social__btn--wa:focus-visible { background: #1faa53; }
-html[data-theme="dark"] .sm-icon { color: #f4f5fb; background: rgb(244 245 251 / .08); }
+.sm-soc { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; color: var(--midnight); background: rgb(13 10 56 / .06); box-shadow: inset 0 0 0 1px rgb(81 92 159 / .22); transition: transform 250ms var(--ease), background 250ms, color 250ms; }
+.sm-soc:hover, .sm-soc:focus-visible { color: #fff; transform: translateY(-2px); }
+.sm-soc.social__btn--ig:hover, .sm-soc.social__btn--ig:focus-visible { background: linear-gradient(45deg, #f9a03f, #e1306c 45%, #833ab4); }
+.sm-soc.social__btn--tt:hover, .sm-soc.social__btn--tt:focus-visible { background: #010101; }
+.sm-soc.social__btn--wa:hover, .sm-soc.social__btn--wa:focus-visible { background: #1faa53; }
+html[data-theme="dark"] .sm-soc { color: #f4f5fb; background: rgb(244 245 251 / .08); }
 .social__list--form { margin-top: 16px; }
 .social__btn--mail:hover, .social__btn--mail:focus-visible { background: linear-gradient(140deg, var(--violet), #1e24bb); }
 .contact__form > .contact__direct--form { margin-top: -8px; margin-bottom: 0; }
 .contact__form > .social__list--form { margin-top: -10px; }
 .contact__form > .social__list--form { margin-top: -4px; justify-content: center; }
 @media (max-width: 520px) { .contact__form > .social__list--form { display: flex; justify-content: center; } }
+.sm-soc.social__btn--mail:hover, .sm-soc.social__btn--mail:focus-visible { background: linear-gradient(140deg, var(--violet), #1e24bb); }
