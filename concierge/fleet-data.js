@@ -113,10 +113,10 @@ export const FLEET = [
   { id: "sunreef-70-yolo", type: "catamaran", name: "Sunreef 70 · Yolo", len: "22,72 m", pax: 12, night: 8, cabins: "4 camarotes", port: "Marina Botafoch", crew: "4 tripulantes", extra: "2 × 168 CV John Deere", incl: ["Neumática auxiliar", "Flybridge con zona de bar", "Sonido Hi-Fi Sonos", "Equipo de snorkel", "Paddle surf", "Wakeboard y esquí acuático", "Pesca"], toys: ["Seabob"], photos: 3 },
   // ---- motos de agua (shown on their own from the jet ski card; the boats fleet leaves them out) ----
   { id: "sea-doo-rxt-x-300", type: "moto-agua", name: "Sea-Doo RXT-X 300", crew: "Guiada o con titulación", photos: 1, img: "data/services/moto-de-agua.webp" },
-  { id: "sea-doo-gtx-230", type: "moto-agua", name: "Sea-Doo GTX 230", len: "3,45 m", pax: 3, port: "Marina Botafoch", crew: "Guiada o con titulación", extra: "230 CV", incl: ["Nevera", "Audio Bluetooth"], photos: 2 },
-  { id: "sea-doo-gtx-limited-300", type: "moto-agua", name: "Sea-Doo GTX Limited 300", len: "3,45 m", pax: 3, port: "Marina Botafoch", crew: "Guiada o con titulación", extra: "300 CV", incl: ["Nevera", "Audio Bluetooth"], photos: 2 },
-  { id: "sea-doo-rxt-x-rs-325", type: "moto-agua", name: "Sea-Doo RXT-X RS 325", len: "3,45 m", pax: 3, port: "Marina Botafoch", crew: "Guiada o con titulación", extra: "325 CV", incl: ["Nevera", "Audio Bluetooth"], photos: 2 },
-  { id: "sea-doo-wake-pro-230", type: "moto-agua", name: "Sea-Doo Wake Pro 230", len: "3,45 m", pax: 3, port: "Marina Botafoch", crew: "Guiada o con titulación", extra: "230 CV", incl: ["Nevera", "Audio Bluetooth"], photos: 2 },
+  { id: "sea-doo-gtx-230", type: "moto-agua", name: "Sea-Doo GTX 230", len: "3,45 m", pax: 3, port: "Marina Botafoch", crew: "Guiada o con titulación", extra: "230 CV", incl: ["Nevera", "Audio Bluetooth"], photos: 1 },
+  { id: "sea-doo-gtx-limited-300", type: "moto-agua", name: "Sea-Doo GTX Limited 300", len: "3,45 m", pax: 3, port: "Marina Botafoch", crew: "Guiada o con titulación", extra: "300 CV", incl: ["Nevera", "Audio Bluetooth"], photos: 1 },
+  { id: "sea-doo-rxt-x-rs-325", type: "moto-agua", name: "Sea-Doo RXT-X RS 325", len: "3,45 m", pax: 3, port: "Marina Botafoch", crew: "Guiada o con titulación", extra: "325 CV", incl: ["Nevera", "Audio Bluetooth"], photos: 1 },
+  { id: "sea-doo-wake-pro-230", type: "moto-agua", name: "Sea-Doo Wake Pro 230", len: "3,45 m", pax: 3, port: "Marina Botafoch", crew: "Guiada o con titulación", extra: "230 CV", incl: ["Nevera", "Audio Bluetooth"], photos: 1 },
   // ---- coches y transfers (each shown on its own from its card; photos from the service cards) ----
   { id: "lamborghini-huracan", type: "coche", name: "Lamborghini Huracán", photos: 1, img: "data/services/coches.webp" },
   { id: "mercedes-clase-v", type: "transfer", name: "Mercedes-Benz Clase V", photos: 1, img: "data/services/transfers.webp" },

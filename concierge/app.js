@@ -4,6 +4,7 @@ import { createCircularCarousel } from "./circular-carousel.js";
 import { createDepthRibbon } from "./depth-ribbon.js";
 import { FLEET, FLEET_TYPES, TYPE_NOTE } from "./fleet-data.js";
 import { initVillaTour, readingStops } from "./villa-tour.js";
+import { initFormenteraTour } from "./fx-tour.js";
 import { holo } from "./holo.js";
 import { shatterType } from "./shatter.js";
 import { logoFlight } from "./logo-flight.js";
@@ -641,6 +642,7 @@ const SVC_TREE = [
     { value: "clubs-vip", label: "Mesas VIP", icon: "star" }, { value: "clubs-guestlist", label: "Guestlist", icon: "users" } ] },
   { label: "Chefs", value: "chefs", svc: "dining", icon: "chef" },
   { label: "DJ", value: "dj", svc: "dj", icon: "dj" },
+  { label: "Formentera Experience", value: "formentera", svc: "formentera", icon: "boat" },
 ];
 const svcMenu = BranchedMenu(document.getElementById("bm"), {
   items: SVC_TREE, defaultOpen: -1, defaultActive: "__none__",
@@ -649,6 +651,7 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
   onSelect: (value, item) => {
     if (value.startsWith("motos-") && value !== "motos-scooter") { SM.set(false); setTimeout(() => openFleet("moto-agua"), 260); return; }   // jet skis: straight to their gallery
     if (value.startsWith("barcos-")) { const k = value.slice(7); SM.set(false); setTimeout(() => openFleet(k === "all" ? "open" : k), 260); return; }   // "Toda la flota" opens on the open boats; the other tabs stay one tap away
+    if (value === "formentera") { SM.set(false); setTimeout(() => fxTour.open(), 300); return; }   // straight into the excursion page
     if (value === "villa-aura") { SM.set(false); setTimeout(() => document.querySelector("[data-villa-tour]")?.click(), 300); return; }   // straight into the tour
     if (value === "todos") { SM.set(false); scrollToEl(document.getElementById("servicios")); return; }   // the services section itself
     const sec = SVC_TREE.find(s => s.value === value || s.children?.some(k => k.value === value));
@@ -765,7 +768,7 @@ document.addEventListener("click", e => {
   else if (h.startsWith("mailto:")) track("contact_click", { method: "email", place: "enlace" });
 }, { capture: true, passive: true });
 const LOADED_AT = performance.now();
-const CHOICES = { yates: "Barco", motos: "Moto de agua", coches: "Coche", moto: "Moto", villas: "Villa", vip: "Mesas VIP en clubs", transfers: "Transfer", dining: "Chef privado", dj: "DJ" };
+const CHOICES = { yates: "Barco", motos: "Moto de agua", coches: "Coche", moto: "Moto", villas: "Villa", vip: "Mesas VIP en clubs", transfers: "Transfer", dining: "Chef privado", dj: "DJ", formentera: "Formentera Experience" };
 // the services that unlock the guestlist gifts (every one in the list, club VIP tables included)
 const GIFT_SVC = new Set(["yates", "motos", "moto", "coches", "villas", "vip", "dining", "transfers", "dj"]);
 const giftCount = () => [...chosen].filter(c => GIFT_SVC.has(c)).length;
@@ -1635,7 +1638,7 @@ document.querySelectorAll(".stack__card").forEach(card => {
   if (!media.classList.contains("stack__media--product")) {
     // the backdrop is a tiny pre-blurred copy taken from one shared sprite (all seven in one small file): the
     // browser just scales it up, nothing to blur on every frame
-    const BG = ["transfers", "coches", "dining", "clubs", "beach", "villa-privada", "yates", "dj"];
+    const BG = ["transfers", "coches", "dining", "clubs", "beach", "villa-privada", "yates", "dj", "formentera"];
     const k = BG.indexOf(img.getAttribute("src").split("/").pop().replace(/\.(webp|jpe?g|png)$/i, ""));
     const bg = document.createElement("div"); bg.className = "stack__media-bg"; bg.setAttribute("aria-hidden", "true");
     if (k >= 0) bg.style.cssText = `background: url("data/services/bg-sprite.webp") ${(k / (BG.length - 1) * 100).toFixed(4)}% 50% / ${BG.length * 100}% 100% no-repeat`;
@@ -1759,3 +1762,12 @@ document.addEventListener("click", async e => {
   box.addEventListener("click", e => { if (e.target === box || e.target.closest("[data-close]")) close(); });
   addEventListener("keydown", e => { if (e.key === "Escape" && !box.hidden) close(); });
 }
+
+/* Formentera Experience: the excursion page, opened from its service card ("Ver excursión") or the menu */
+const fxTour = initFormenteraTour({ onBook: () => {
+  select("formentera", true);
+  if (openWA("Formentera Experience", "excursion_formentera")) return;
+  document.getElementById("f-notes").value = `${t("Me interesa")}: Formentera Experience.`;
+  setTimeout(() => scrollToEl(document.getElementById("contacto")), 120);
+} });
+document.addEventListener("click", e => { if (e.target.closest("[data-fx-tour]")) { e.preventDefault(); track("formentera_open", {}); fxTour.open(); } });
