@@ -2275,3 +2275,7 @@ html[data-perf="lite"] .sig__glow { filter: none; opacity: .35; }
 .sm-icon.social__btn--tt:hover, .sm-icon.social__btn--tt:focus-visible { background: #010101; }
 .sm-icon.social__btn--wa:hover, .sm-icon.social__btn--wa:focus-visible { background: #1faa53; }
 html[data-theme="dark"] .sm-icon { color: #f4f5fb; background: rgb(244 245 251 / .08); }
+.social__list--form { margin-top: 16px; }
+.social__btn--mail:hover, .social__btn--mail:focus-visible { background: linear-gradient(140deg, var(--violet), #1e24bb); }
+.contact__form > .contact__direct--form { margin-top: -8px; margin-bottom: 0; }
+.contact__form > .social__list--form { margin-top: -10px; }
