@@ -60,6 +60,13 @@ const L = {
     msgAlert: "Hallo Mey Society, ich möchte einen Line-up-Alarm", msgTable: "Hallo Mey Society, ich möchte einen VIP-Tisch oder eine Guestlist", msgDates: "Daten", msgClubs: "Clubs", msgOpen: "offen für Vorschläge",
   },
 };
+const L2 = {
+  es: { go: "Ver mis noches", vip: "Mesas VIP", vipSub: "Pide la tuya en un mensaje", day: "Day clubs", daySub: "Fiestas de día y piscina", feat: "Toca para elegir" },
+  en: { go: "See my nights", vip: "VIP tables", vipSub: "Ask for yours in one message", day: "Day clubs", daySub: "Daytime and pool parties", feat: "Tap to pick" },
+  it: { go: "Vedi le mie notti", vip: "Tavoli VIP", vipSub: "Chiedi il tuo in un messaggio", day: "Day club", daySub: "Feste di giorno e in piscina", feat: "Tocca per scegliere" },
+  fr: { go: "Voir mes nuits", vip: "Tables VIP", vipSub: "Demandez la vôtre en un message", day: "Day clubs", daySub: "Fêtes de jour et pool parties", feat: "Touchez pour choisir" },
+  de: { go: "Meine Nächte ansehen", vip: "VIP-Tische", vipSub: "Frag deinen mit einer Nachricht an", day: "Day Clubs", daySub: "Tages- und Poolpartys", feat: "Zum Auswählen tippen" },
+};
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const KEY = "mey-agenda";
 
@@ -73,23 +80,37 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
   const day = s => new Date(s + "T12:00");
   const fmt = (s, o = { weekday: "short", day: "numeric", month: "short" }) => day(s).toLocaleDateString(getLang(), o);
 
+  // the photo cards on top: the clubs we have real photos of, then two quick ways in (VIP tables, day clubs)
+  const FEAT = [
+    { club: "Ushuaïa Ibiza", img: "data/reviews/ushuaia-escenario.webp" },
+    { club: "[UNVRS]", img: "data/reviews/unvrs-noche.webp" },
+    { act: "table", img: "data/services/clubs.webp", key: "vip" },
+    { act: "day", img: "data/reviews/pool-party.webp", key: "day" },
+  ];
+  const PASTEL = ["#e4defe", "#d9ecfa", "#f1dcfb", "#dcdffe"];   // the logo's violet, cyan, magenta and royal blue, as pastels
   root.innerHTML = `<div class="wrap ag">
-    <header class="sec__head ag__head"><p class="eyebrow eyebrow--light ag__eyebrow"></p><h2 class="display display--md"><span class="ag__title"></span> <em class="ag__em"></em></h2><p class="lede ag__lede"></p></header>
+    <header class="sec__head ag__head"><p class="eyebrow ag__eyebrow"></p><h2 class="display display--md"><span class="ag__title"></span> <em class="ag__em"></em></h2><p class="lede lede--dark ag__lede"></p></header>
+    <div class="ag__search" role="group">
+      <label><span class="ag__l-from"></span><input type="date" data-f="from"></label>
+      <label><span class="ag__l-to"></span><input type="date" data-f="to"></label>
+      <button type="button" class="ag__go" data-act="go"></button>
+    </div>
     <p class="ag__status"><i aria-hidden="true"></i><span></span></p>
+    <ul class="ag__feat" role="list">${FEAT.map(f => `<li><button type="button" class="ag__fcard" ${f.club ? `data-club="${esc(f.club)}" aria-pressed="false"` : `data-act="${f.act}"`}>
+      <img src="${f.img}" alt="" loading="lazy" decoding="async"><span class="ag__fname">${f.club ? esc(f.club) : ""}</span><span class="ag__fsub"></span><span class="ag__arrow" aria-hidden="true"></span></button></li>`).join("")}</ul>
     <div class="ag__grid">
-      <div class="ag__panel lg lg--panel">
+      <div class="ag__panel ag__panel--nights">
         <h3 class="ag__h ag__h--nights"></h3>
-        <div class="ag__dates"><label><span class="ag__l-from"></span><input type="date" data-f="from"></label><label><span class="ag__l-to"></span><input type="date" data-f="to"></label></div>
         <ol class="ag__nights" aria-live="polite"></ol>
       </div>
       <div class="ag__panel ag__panel--clubs">
         <div class="ag__clubhead"><h3 class="ag__h ag__h--clubs"></h3><p class="ag__count"></p></div>
         <p class="ag__pick"></p>
-        <ul class="ag__clubs">${clubs.map((c, i) => `<li><button type="button" class="ag__club" data-club="${esc(c.name)}" aria-pressed="false" style="--h:${(228 + i * 47) % 360}">
+        <ul class="ag__clubs">${clubs.map((c, i) => `<li><button type="button" class="ag__club" data-club="${esc(c.name)}" aria-pressed="false" style="--bg:${PASTEL[i % 4]}">
           <span class="ag__ctype">${c.type === "dayclub" ? "Day club" : "Club"}</span><span class="ag__cname">${esc(c.name)}</span><span class="ag__carea">${esc(c.area)}</span><span class="ag__tick" aria-hidden="true"></span></button></li>`).join("")}</ul>
       </div>
     </div>
-    <div class="ag__cta"><button type="button" class="btn btn--primary" data-act="table"></button><button type="button" class="btn btn--glass btn--onDark" data-act="alert"></button></div>
+    <div class="ag__cta"><button type="button" class="btn btn--primary btn--lg" data-act="table"></button><button type="button" class="btn ag__ghost" data-act="alert"></button></div>
     <p class="ag__fine"></p>
   </div>`;
   const $ = s => root.querySelector(s);
@@ -117,9 +138,14 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     $(".ag__eyebrow").textContent = t.eyebrow; $(".ag__title").textContent = t.title; $(".ag__em").textContent = t.em; $(".ag__lede").textContent = t.lede;
     $(".ag__status span").textContent = t.status; $(".ag__h--nights").textContent = t.nights; $(".ag__h--clubs").textContent = t.clubs;
     $(".ag__l-from").textContent = t.from; $(".ag__l-to").textContent = t.to; $(".ag__pick").textContent = t.pick;
-    $('[data-act="alert"]').textContent = t.alert; $('[data-act="table"]').textContent = t.table; $(".ag__fine").textContent = t.fine;
+    $('.ag__cta [data-act="alert"]').textContent = t.alert; $('.ag__cta [data-act="table"]').textContent = t.table; $(".ag__fine").textContent = t.fine;
     $(".ag__count").textContent = t.picked(st.clubs.size);
-    root.querySelectorAll(".ag__club").forEach(b => b.setAttribute("aria-pressed", st.clubs.has(b.dataset.club)));
+    const X = L2[getLang()] || L2.es; $(".ag__go").textContent = X.go;
+    root.querySelectorAll(".ag__fcard").forEach(c => {
+      const a = c.dataset.act; if (a) { c.querySelector(".ag__fname").textContent = a === "table" ? X.vip : X.day; c.querySelector(".ag__fsub").textContent = a === "table" ? X.vipSub : X.daySub; }
+      else c.querySelector(".ag__fsub").textContent = X.feat;
+    });
+    root.querySelectorAll("[data-club]").forEach(b => b.setAttribute("aria-pressed", st.clubs.has(b.dataset.club)));
     inFrom.value = st.from; inTo.value = st.to; inFrom.min = today; inTo.min = st.from || today;
     paintNights();
   }
@@ -133,9 +159,11 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     keep(); paint();
   });
   root.addEventListener("click", e => {
-    const c = e.target.closest(".ag__club");
+    const c = e.target.closest("[data-club]");
     if (c) { const n = c.dataset.club; st.clubs.has(n) ? st.clubs.delete(n) : st.clubs.add(n); keep(); paint(); navigator.vibrate?.(4); return; }
     const a = e.target.closest("[data-act]")?.dataset.act;
+    if (a === "go") { $(".ag__panel--nights").scrollIntoView({ behavior: "smooth", block: "start" }); if (!st.from) inFrom.showPicker?.(); return; }
+    if (a === "day") { clubs.filter(v => v.type === "dayclub").forEach(v => st.clubs.add(v.name)); keep(); paint(); $(".ag__panel--clubs").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if (a) onSend?.({ kind: a, text: message(a), from: st.from, to: st.to || st.from, clubs: [...st.clubs] });
   });
   root.addEventListener("dblclick", e => { const c = e.target.closest(".ag__club"); if (c) onVenue?.(clubs.find(v => v.name === c.dataset.club)); });
