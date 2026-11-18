@@ -6,8 +6,9 @@
 import * as THREE from "./vendor/three.module.js";
 import { OrbitControls } from "./vendor/OrbitControls.js";
 import { MAPDATA } from "./map3d.js";
+import { createLiveTiles } from "./livetiles.js";
 
-const { A, B, EXAG, ISLE, LIMIT, toXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow } = MAPDATA;
+const { A, B, BB, EXAG, ISLE, LIMIT, toXZ, fromXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow } = MAPDATA;
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const C_DONE = new THREE.Color("#c856e6"), C_NEXT = new THREE.Color("#b9bde0"), C_TODAY = new THREE.Color("#78c7e4");
 
@@ -17,8 +18,8 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.setClearColor(0, 0);
   renderer.domElement.className = "route3d__gl"; el.prepend(renderer.domElement);
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(38, 1, .05, 400);
-  scene.add(new THREE.HemisphereLight("#b9c4ff", "#120f40", 1.1));
-  const key = new THREE.DirectionalLight("#e9e4ff", 2.2); key.position.set(-30, 26, 18); scene.add(key);
+  scene.add(new THREE.HemisphereLight("#ffffff", "#6b6f86", 1.5));   // daylight: the aerial photo in its true colours
+  const key = new THREE.DirectionalLight("#fff4e6", 2.1); key.position.set(-30, 26, 18); scene.add(key);
 
   const [H, M] = await Promise.all([sharedHeights(), sharedMask()]);
   const hAt = (x, z) => { const [u, v] = uvOf(x, z); return bilinear(H.a, H.w, H.h, u, v, -30); };
@@ -35,7 +36,9 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
     const pos = g.attributes.position;
     await sliced(pos.count, i => { const x = pos.getX(i), z = pos.getZ(i), m = hAt(x, z); pos.setY(i, m > .4 ? m * EXAG / 1000 : -.02 - (1 - maskAt(x, z)) * .5); });
     await yieldNow(); g.computeVertexNormals();
-    const mat = new THREE.MeshStandardMaterial({ color: "#4a4aa8", roughness: .85, metalness: 0, emissive: "#14104a", emissiveIntensity: 1 });
+    // the real island: the IGN aerial photo, with the street-level photo streamed in as the client zooms
+    const ortho = await new THREE.TextureLoader().loadAsync("data/ortho_lo.jpg"); ortho.colorSpace = THREE.SRGBColorSpace; ortho.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
+    const mat = new THREE.MeshStandardMaterial({ map: ortho, roughness: .93, metalness: 0 });
     mat.onBeforeCompile = sh => {
       sh.uniforms.uNrm = { value: nrm }; sh.uniforms.uMaskT = { value: maskTex }; sh.uniforms.uA2 = { value: new THREE.Vector4(A.x, A.z, B.x - A.x, B.z - A.z) };
       sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWp;")
@@ -46,9 +49,7 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
           float land = texture2D(uMaskT, vUv2).r;
           if (vWp.y < -.005 && land < .5) discard;`)
         .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
-          { vec2 vUv2 = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); vec3 wn = texture2D(uNrm, vUv2).xyz * 2. - 1.; normal = normalize(mat3(viewMatrix) * wn); }`)
-        .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>
-          totalEmissiveRadiance += vec3(.35, .65, .85) * smoothstep(.05, 0., vWp.y) * .55;`); // the shoreline glows faintly
+          { vec2 vUv2 = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); vec3 wn = texture2D(uNrm, vUv2).xyz * 2. - 1.; normal = normalize(mat3(viewMatrix) * wn); }`); // (photo-real: no glow)
     };
     scene.add(new THREE.Mesh(g, mat));
   }
@@ -70,12 +71,15 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
   const controls = new OrbitControls(camera, renderer.domElement);
   renderer.domElement.style.touchAction = "pan-y";   // OrbitControls sets "none", which stopped one finger from scrolling the page
   controls.enableDamping = true; controls.dampingFactor = .1; controls.rotateSpeed = .55; controls.panSpeed = .9; controls.zoomSpeed = 1.1;
-  controls.minDistance = 1.2; controls.maxDistance = 90; controls.maxPolarAngle = 1.2; controls.minPolarAngle = .05;
+  controls.minDistance = .28; controls.maxDistance = 90; controls.maxPolarAngle = 1.2; controls.minPolarAngle = .05;
   controls.screenSpacePanning = false; controls.zoomToCursor = true;
   camera.position.set(-6, 34, 40); controls.target.set(.5, 0, -2);
   const cvs = renderer.domElement;
   let dirty = true, raf = 0, flight = null;
   const wake = () => { dirty = true; if (!raf) raf = requestAnimationFrame(loop); };
+  const liveTiles = createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, small, bounds: BB, onChange: () => wake(),
+    heightAt: (x, z) => Math.max(.002, groundY(x, z) + .0015),
+    material: (tex, z) => new THREE.MeshBasicMaterial({ map: tex, polygonOffset: true, polygonOffsetFactor: -4 - (z - 15) * 2, polygonOffsetUnits: -4 - (z - 15) * 2 }) });
   controls.addEventListener("change", wake);
   // the page keeps scrolling over the map; Ctrl/⌘ + wheel (or a trackpad pinch) zooms
   el.addEventListener("wheel", e => { if (e.ctrlKey || e.metaKey) { e.preventDefault(); flight = null; return; } e.stopImmediatePropagation(); }, { capture: true, passive: false });
@@ -170,7 +174,8 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
       if (k >= 1) flight = null;
     }
     const damping = controls.update();
-    const floor = Math.max(0, groundY(camera.position.x, camera.position.z)) + .3; if (camera.position.y < floor) camera.position.y = floor;
+    const floor = Math.max(0, groundY(camera.position.x, camera.position.z)) + Math.min(.3, .05 + camera.position.distanceTo(controls.target) * .08); if (camera.position.y < floor) camera.position.y = floor;
+    liveTiles.update(controls.target, now, !(moving || damping));
     if (dirty || moving || damping) {
       renderer.render(scene, camera);
       for (const s of stops) {

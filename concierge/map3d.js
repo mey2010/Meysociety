@@ -5,11 +5,13 @@
    Touch: one finger scrolls the page, two fingers move, pinch-zoom and turn the island. */
 import * as THREE from "./vendor/three.module.js";
 import { OrbitControls } from "./vendor/OrbitControls.js";
+import { createLiveTiles } from "./livetiles.js";
 
 const BB = { lon0: 1.17, lon1: 1.65, lat0: 38.63, lat1: 39.13 };
 const C = { lon: 1.405, lat: 38.875 };                       // scene origin (between Ibiza and Formentera)
 const KX = 111.32 * Math.cos(38.88 * Math.PI / 180), KZ = 110.57;
 export const toXZ = (lon, lat) => ({ x: (lon - C.lon) * KX, z: -(lat - C.lat) * KZ });
+export const fromXZ = (x, z) => ({ lon: x / KX + C.lon, lat: -z / KZ + C.lat });
 const EXAG = 2.4;                                            // relief x2.4: readable hills, still natural
 const A = toXZ(BB.lon0, BB.lat1), B = toXZ(BB.lon1, BB.lat0); // world extent of the data (A = NW, B = SE)
 const LIMIT = { x0: toXZ(1.2, 0).x, x1: toXZ(1.63, 0).x, z0: toXZ(0, 39.12).z, z1: toXZ(0, 38.64).z };
@@ -72,7 +74,7 @@ async function normalTexture(H, scale) {
 let heightsP = null, maskP = null;
 const sharedHeights = onBytes => heightsP || (heightsP = loadHeights("data/height_mdt25.png", onBytes));
 const sharedMask = () => maskP || (maskP = loadGray("data/mask1024.png"));
-export const MAPDATA = { A, B, EXAG, ISLE, LIMIT, toXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow, nextFrame };
+export const MAPDATA = { A, B, BB, EXAG, ISLE, LIMIT, toXZ, fromXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow, nextFrame };
 
 /* The photographed sea, as it really is: the aerial photo's own water colours (turquoise over sand, deep blue
    over seagrass, the dark of deep water) are kept near the coast and lifted a little, because under the sun and
@@ -228,6 +230,16 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
       });
     }
   }
+  // ---- live street-level photo (IGN PNOA, 25 cm/px) over the bundled tiles when the camera comes down ----
+  const liveTiles = createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, small, bounds: BB,
+    heightAt: (x, z) => { const m = hAt(x, z); return Math.max(.002, m * EXAG / 1000 + .0015); },   // the sea too: the real photographed water, sharp, right to the shore
+    material: (tex, z) => {
+      const m = tileMat(tex); m.polygonOffsetFactor = m.polygonOffsetUnits = -4 - (z - 15) * 2;
+      // photographed water reads darker from above than the eye sees it: lifted a little, like the sea further out
+      const base = m.onBeforeCompile; m.customProgramCacheKey = () => "live";
+      m.onBeforeCompile = sh => { base(sh); sh.fragmentShader = sh.fragmentShader.replace("diffuseColor.rgb = clamp(c, 0., 1.); }",
+        "if (vWp.y < .0026) { float w = dot(c, vec3(.299, .587, .114)); c = mix(vec3(w), c, 1.25) * 1.22 + vec3(0., .01, .02); } diffuseColor.rgb = clamp(c, 0., 1.); }"); };
+      return m; } });
   // ---- the sea: sky reflections, sun glints, see-through shallows, feathered into the page ----
   const seaU = {
     uTime: { value: 0 }, uMask: { value: maskTex }, uA: { value: new THREE.Vector2(A.x, A.z) }, uB: { value: new THREE.Vector2(B.x, B.z) },
@@ -288,7 +300,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   const controls = new OrbitControls(camera, renderer.domElement);
   renderer.domElement.style.touchAction = "pan-y";   // OrbitControls sets "none", which stopped one finger from scrolling the page
   controls.enableDamping = true; controls.dampingFactor = .09; controls.rotateSpeed = .55; controls.panSpeed = .9; controls.zoomSpeed = 1.1;
-  controls.minDistance = 1.2; controls.maxDistance = 110; controls.maxPolarAngle = 1.2; controls.minPolarAngle = .05;
+  controls.minDistance = .28; controls.maxDistance = 110; controls.maxPolarAngle = 1.2; controls.minPolarAngle = .05;
   controls.screenSpacePanning = false; controls.zoomToCursor = true; controls.autoRotate = !reduced; controls.autoRotateSpeed = .3;
   const HOME = { pos: new THREE.Vector3(-8, 40, 46), target: new THREE.Vector3(.5, 0, -2) };
   { const a = el.clientWidth / Math.max(1, el.clientHeight); if (a < 1.2) HOME.pos.sub(HOME.target).multiplyScalar(Math.min(1.9, Math.pow(1.2 / a, .9))).add(HOME.target); } // portrait screens see the whole island
@@ -407,9 +419,9 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     const dist = camera.position.distanceTo(tgt);
     if (!flight && dist > 55) tgt.lerp(HOME.target, Math.min(1, (dist - 55) / 35) * .06);
     if (!tgt.equals(before)) { off.copy(tgt).sub(before); camera.position.add(off); }
-    const floor = Math.max(0, groundY(camera.position.x, camera.position.z)) + .3;
+    const floor = Math.max(0, groundY(camera.position.x, camera.position.z)) + Math.min(.3, .05 + dist * .08);   // close in, the camera may come down to rooftop height
     if (camera.position.y < floor) camera.position.y = floor;
-    updateDetail(now); renderer.render(scene, camera); project();
+    updateDetail(now); liveTiles.update(controls.target, now); renderer.render(scene, camera); project();
   })(performance.now());
 
   prog.build = 1; report();
@@ -421,7 +433,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     setFilter(type, on) { pins.forEach(p => { if (p.v.type === type) p.on = on; }); },
     setActive(v) { pins.forEach(p => p.btn.classList.toggle("is-active", p.v === v)); },
     flyToArea([lo0, lo1, la0, la1]) { const a = toXZ(lo0, la1), b = toXZ(lo1, la0); fly(new THREE.Vector3((a.x + b.x) / 2, 0, (a.z + b.z) / 2), Math.max(7, Math.hypot(b.x - a.x, b.z - a.z) * 1.1)); },
-    flyToVenue(v) { const p = toXZ(v.lon, v.lat); fly(new THREE.Vector3(p.x, 0, p.z), 3); },
+    flyToVenue(v) { const p = toXZ(v.lon, v.lat); fly(new THREE.Vector3(p.x, 0, p.z), 1.8); },
     reset() { fly(HOME.target.clone(), HOME.pos.distanceTo(HOME.target), 1.3); },
     zoom(f) { fly(flyTarget(), flyDist() * f, .45); },
   };

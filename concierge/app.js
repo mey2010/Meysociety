@@ -5,6 +5,8 @@ import { createDepthRibbon } from "./depth-ribbon.js";
 import { FLEET, FLEET_TYPES, TYPE_NOTE } from "./fleet-data.js";
 import { initVillaTour, readingStops } from "./villa-tour.js";
 import { initFormenteraTour } from "./fx-tour.js";
+import { initAgenda } from "./agenda.js";
+import { initPlanner } from "./planner.js";
 import { holo } from "./holo.js";
 import { shatterType } from "./shatter.js";
 import { logoFlight } from "./logo-flight.js";
@@ -159,7 +161,7 @@ function startMap() {
     onEmpty: () => { closePop(); closeList(); },
     onProgress: p => { pct.textContent = p; loader.setAttribute("aria-valuenow", p); },
   })).then(m => {
-    map3dReal = m; mapQueue.splice(0).forEach(([k, a]) => m[k](...a));
+    map3dReal = m; window.__map3d = m; mapQueue.splice(0).forEach(([k, a]) => m[k](...a));
     pct.textContent = 100; loader.classList.add("is-done"); setTimeout(() => loader.remove(), 700);
   }).catch(err => { console.error(err); loader.classList.add("is-error"); });
 }
@@ -820,9 +822,10 @@ clubChips.addEventListener("click", e => {
 chips.addEventListener("click", e => { const c = e.target.closest(".chip"); if (c) select(c.dataset.c, !chosen.has(c.dataset.c)); });
 document.querySelectorAll("[data-pack]").forEach(b => b.addEventListener("click", () => {
   if (openWA(`${t("plan")} ${b.dataset.pack}`, "paquete")) return;
-  const map = { "Arrival": ["transfers", "villas", "dining"], "Sea & Sun": ["yates", "motos", "beach", "dining"], "Night Edition": ["noche", "transfers"] };
+  const map = { "Arrival": ["transfers", "villas", "dining"], "Sea & Sun": ["yates", "motos", "dining"], "Night Edition": ["vip", "transfers"], "Signature": ["villas", "yates", "vip", "transfers"] };
   (map[b.dataset.pack] || []).forEach(id => select(id, true));
-  document.getElementById("f-notes").value = `${t("Me interesa")}: ${t("plan")} ${b.dataset.pack}.`;
+  document.getElementById("f-notes").value = b.dataset.pack === "Signature" ? `${t("Me interesa")}: Signature by Mey Society. ${t("Lo que celebro")}: ` : `${t("Me interesa")}: ${t("plan")} ${b.dataset.pack}.`;
+  track("select_promotion", { promotion_name: b.dataset.pack });
   scrollToEl(document.getElementById("contacto"));   // (a local "t" here used to shadow the translator and break the button)
 }));
 /* ---------------- vertical wheel picker (number of people) ----------------
@@ -1771,3 +1774,40 @@ const fxTour = initFormenteraTour({ onBook: () => {
   setTimeout(() => scrollToEl(document.getElementById("contacto")), 120);
 } });
 document.addEventListener("click", e => { if (e.target.closest("[data-fx-tour]")) { e.preventDefault(); track("formentera_open", {}); fxTour.open(); } });
+
+/* the plan or the agenda request goes to the concierge: straight into WhatsApp when the number is set, otherwise the
+   form is filled in for them (dates, group, services and the whole plan in the notes) and the page jumps to it */
+function sendRequest({ text, from, to, people, services = [], place }) {
+  services.forEach(s => select(s, true));
+  if (CONFIG.whatsapp) {
+    window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+    track("contact_click", { method: "whatsapp", place, item_name: services.join(",") || "general" }); return;
+  }
+  const f = id => document.getElementById(id);
+  if (from) f("f-from").value = from; if (to) f("f-to").value = to;
+  if (people) { const list = f("f-people").nextElementSibling?.querySelector(".wheel__list"), row = list?.firstElementChild?.offsetHeight;
+    if (list && row) list.scrollTo({ top: (people - (+f("f-people").dataset.min || 1)) * row, behavior: "auto" }); }
+  f("f-notes").value = text;
+  track("generate_lead", { place });
+  setTimeout(() => scrollToEl(f("contacto")), 60);
+}
+const cardOf = svc => { const cards = [...document.querySelectorAll(".stack__card")], snaps = [...document.querySelectorAll(".stack__snap:not(.stack__snap--edge)")];
+  const i = cards.findIndex(c => c.dataset.svc === svc); return snaps[i] || cards[i]; };
+initAgenda(document.getElementById("agenda"), {
+  venues: VENUES,
+  onSend: ({ kind, text, from, to }) => { track(kind === "table" ? "agenda_table" : "agenda_alert", {}); sendRequest({ text, from, to, services: kind === "table" ? ["vip"] : [], place: "agenda" }); },
+  onVenue: v => { if (!v) return; scrollToEl(document.getElementById("mapa")); startMap(); map3d.flyToVenue(v); setTimeout(() => openPop(v), 1100); },
+});
+initPlanner(document.getElementById("planner"), {
+  onGo: go => {
+    const [k, a] = go.split(":");
+    if (k === "track") return track("plan_created", {});
+    if (k === "fleet") return openFleet(a);
+    if (k === "fx") return fxTour.open();
+    if (k === "villa") return document.querySelector("[data-villa-tour]")?.click();
+    if (k === "agenda") return scrollToEl(document.getElementById("agenda"));
+    if (k === "svc") return scrollToEl(cardOf(a));
+    if (k === "map") { scrollToEl(document.getElementById("mapa")); startMap(); }
+  },
+  onSend: p => sendRequest({ ...p, place: "planner" }),
+});
