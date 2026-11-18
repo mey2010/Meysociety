@@ -2004,3 +2004,6 @@ html.is-jumping, html.is-jumping.snap-stack { scroll-snap-type: none !important;
 html.qs-open { overflow: hidden; }
 .qs .qs__input, .qs .qs__input:focus, .qs .qs__input:focus-visible { border: 0; background: none; box-shadow: none; outline: none; padding: 0; border-radius: 0; }
 .qs__bar:focus-within { background: rgb(255 255 255 / .03); }
+
+/* carousels: no prev/next arrows (swipe, drag or tap a card); only the counter stays */
+.fleet__arrow { display: none !important; }
