@@ -5,8 +5,11 @@ import { getLang } from "./i18n.js";
 
 const L = {
   es: {
-    eyebrow: "Planificador", title: "Diseña tu semana en Ibiza.", lede: "Cuatro preguntas y tienes tu viaje dibujado día a día. Lo afinamos juntos por WhatsApp.",
-    steps: ["Fechas", "Grupo", "Estilo", "Imprescindibles"], from: "Llegada", to: "Salida", people: "Personas", kids: "Viajamos con niños",
+    musicQ: "¿Qué música os gusta? (una o varias)", errMusic: "Elige al menos un tipo de música.",
+    music: { techno: "Techno", techhouse: "Tech house", house: "House", afro: "Afro house", melodic: "Melodic techno", edm: "EDM", commercial: "Comercial y reggaeton", hiphop: "Hip hop y R&B", disco: "Disco y funk", any: "Nos vale todo" },
+    clubT: n => `Noche en ${n} con mesa VIP`, clubD: (g, near) => `Su música va con lo vuestro: ${g}.${near ? " Queda cerca de vuestro plan de ese día." : ""} Te confirmamos la fiesta y el line-up de esa noche.`, djD: g => `Un DJ profesional de ${g} en tu villa o a bordo.`,
+    eyebrow: "Planificador", title: "Diseña tu semana en Ibiza.", lede: "Cinco preguntas y tienes tu viaje dibujado día a día. Lo afinamos juntos por WhatsApp.",
+    steps: ["Fechas", "Grupo", "Estilo", "Música", "Imprescindibles"], from: "Llegada", to: "Salida", people: "Personas", kids: "Viajamos con niños",
     styleQ: "¿Qué buscáis? (elige uno o varios)", mustQ: "¿Qué no puede faltar?",
     styles: { relax: "Relax y calas", party: "Fiesta", food: "Gastronomía", celeb: "Celebración", family: "Familia", sea: "Aventura en el mar" },
     musts: { villas: "Villa", yates: "Barco", formentera: "Formentera Experience", motos: "Motos de agua", vip: "Mesa VIP", dining: "Chef privado", dj: "DJ", coches: "Coche", transfers: "Transfer" },
@@ -36,8 +39,11 @@ const L = {
     waHead: "Hola, he diseñado mi viaje en vuestra web:",
   },
   en: {
-    eyebrow: "Planner", title: "Design your week in Ibiza.", lede: "Four questions and your trip is drawn day by day. We fine-tune it together on WhatsApp.",
-    steps: ["Dates", "Group", "Style", "Must-haves"], from: "Arrival", to: "Departure", people: "People", kids: "Travelling with children",
+    musicQ: "What music do you like? (one or more)", errMusic: "Choose at least one kind of music.",
+    music: { techno: "Techno", techhouse: "Tech house", house: "House", afro: "Afro house", melodic: "Melodic techno", edm: "EDM", commercial: "Commercial & reggaeton", hiphop: "Hip hop & R&B", disco: "Disco & funk", any: "Anything goes" },
+    clubT: n => `Night at ${n} with a VIP table`, clubD: (g, near) => `Its sound matches yours: ${g}.${near ? " It is close to that day's plan." : ""} We confirm the party and line-up for that night.`, djD: g => `A professional ${g} DJ at your villa or on board.`,
+    eyebrow: "Planner", title: "Design your week in Ibiza.", lede: "Five questions and your trip is drawn day by day. We fine-tune it together on WhatsApp.",
+    steps: ["Dates", "Group", "Style", "Music", "Must-haves"], from: "Arrival", to: "Departure", people: "People", kids: "Travelling with children",
     styleQ: "What are you after? (pick one or more)", mustQ: "What can't be missing?",
     styles: { relax: "Relax & coves", party: "Party", food: "Food", celeb: "Celebration", family: "Family", sea: "Sea adventure" },
     musts: { villas: "Villa", yates: "Boat", formentera: "Formentera Experience", motos: "Jet skis", vip: "VIP table", dining: "Private chef", dj: "DJ", coches: "Car", transfers: "Transfer" },
@@ -67,8 +73,11 @@ const L = {
     waHead: "Hi, I designed my trip on your website:",
   },
   it: {
-    eyebrow: "Pianificatore", title: "Disegna la tua settimana a Ibiza.", lede: "Quattro domande e il tuo viaggio è pronto giorno per giorno. Lo perfezioniamo insieme su WhatsApp.",
-    steps: ["Date", "Gruppo", "Stile", "Irrinunciabili"], from: "Arrivo", to: "Partenza", people: "Persone", kids: "Viaggiamo con bambini",
+    musicQ: "Che musica vi piace? (una o più)", errMusic: "Scegli almeno un genere musicale.",
+    music: { techno: "Techno", techhouse: "Tech house", house: "House", afro: "Afro house", melodic: "Melodic techno", edm: "EDM", commercial: "Commerciale e reggaeton", hiphop: "Hip hop e R&B", disco: "Disco e funk", any: "Ci va bene tutto" },
+    clubT: n => `Serata al ${n} con tavolo VIP`, clubD: (g, near) => `La sua musica fa per voi: ${g}.${near ? " È vicino al vostro piano di quel giorno." : ""} Ti confermiamo la festa e il line-up della serata.`, djD: g => `Un DJ professionista di ${g} in villa o a bordo.`,
+    eyebrow: "Pianificatore", title: "Disegna la tua settimana a Ibiza.", lede: "Cinque domande e il tuo viaggio è pronto giorno per giorno. Lo perfezioniamo insieme su WhatsApp.",
+    steps: ["Date", "Gruppo", "Stile", "Musica", "Irrinunciabili"], from: "Arrivo", to: "Partenza", people: "Persone", kids: "Viaggiamo con bambini",
     styleQ: "Cosa cercate? (scegline uno o più)", mustQ: "Cosa non può mancare?",
     styles: { relax: "Relax e calette", party: "Festa", food: "Gastronomia", celeb: "Celebrazione", family: "Famiglia", sea: "Avventura in mare" },
     musts: { villas: "Villa", yates: "Barca", formentera: "Formentera Experience", motos: "Moto d'acqua", vip: "Tavolo VIP", dining: "Chef privato", dj: "DJ", coches: "Auto", transfers: "Transfer" },
@@ -98,8 +107,11 @@ const L = {
     waHead: "Ciao, ho disegnato il mio viaggio sul vostro sito:",
   },
   fr: {
-    eyebrow: "Planificateur", title: "Dessinez votre semaine à Ibiza.", lede: "Quatre questions et votre voyage est tracé jour par jour. On l'affine ensemble sur WhatsApp.",
-    steps: ["Dates", "Groupe", "Style", "Indispensables"], from: "Arrivée", to: "Départ", people: "Personnes", kids: "Nous voyageons avec des enfants",
+    musicQ: "Quelle musique aimez-vous ? (une ou plusieurs)", errMusic: "Choisissez au moins un style de musique.",
+    music: { techno: "Techno", techhouse: "Tech house", house: "House", afro: "Afro house", melodic: "Melodic techno", edm: "EDM", commercial: "Commercial et reggaeton", hiphop: "Hip-hop et R&B", disco: "Disco et funk", any: "Tout nous va" },
+    clubT: n => `Soirée au ${n} avec table VIP`, clubD: (g, near) => `Sa musique vous correspond : ${g}.${near ? " Il est proche de votre programme du jour." : ""} Nous vous confirmons la fête et le line-up du soir.`, djD: g => `Un DJ professionnel ${g} à la villa ou à bord.`,
+    eyebrow: "Planificateur", title: "Dessinez votre semaine à Ibiza.", lede: "Cinq questions et votre voyage est tracé jour par jour. On l'affine ensemble sur WhatsApp.",
+    steps: ["Dates", "Groupe", "Style", "Musique", "Indispensables"], from: "Arrivée", to: "Départ", people: "Personnes", kids: "Nous voyageons avec des enfants",
     styleQ: "Que cherchez-vous ? (un ou plusieurs)", mustQ: "Qu'est-ce qui ne peut pas manquer ?",
     styles: { relax: "Détente et criques", party: "Fête", food: "Gastronomie", celeb: "Célébration", family: "Famille", sea: "Aventure en mer" },
     musts: { villas: "Villa", yates: "Bateau", formentera: "Formentera Experience", motos: "Jet-ski", vip: "Table VIP", dining: "Chef privé", dj: "DJ", coches: "Voiture", transfers: "Transfert" },
@@ -129,8 +141,11 @@ const L = {
     waHead: "Bonjour, j'ai dessiné mon voyage sur votre site :",
   },
   de: {
-    eyebrow: "Planer", title: "Plane deine Woche auf Ibiza.", lede: "Vier Fragen und deine Reise steht Tag für Tag. Den Feinschliff machen wir zusammen per WhatsApp.",
-    steps: ["Daten", "Gruppe", "Stil", "Must-haves"], from: "Ankunft", to: "Abreise", people: "Personen", kids: "Wir reisen mit Kindern",
+    musicQ: "Welche Musik mögt ihr? (eine oder mehrere)", errMusic: "Wähle mindestens eine Musikrichtung.",
+    music: { techno: "Techno", techhouse: "Tech house", house: "House", afro: "Afro house", melodic: "Melodic techno", edm: "EDM", commercial: "Charts & Reggaeton", hiphop: "Hip-Hop & R&B", disco: "Disco & Funk", any: "Uns ist alles recht" },
+    clubT: n => `Nacht im ${n} mit VIP-Tisch`, clubD: (g, near) => `Die Musik passt zu euch: ${g}.${near ? " Liegt nah an eurem Tagesplan." : ""} Wir bestätigen dir die Party und das Line-up des Abends.`, djD: g => `Ein professioneller ${g}-DJ in deiner Villa oder an Bord.`,
+    eyebrow: "Planer", title: "Plane deine Woche auf Ibiza.", lede: "Fünf Fragen und deine Reise steht Tag für Tag. Den Feinschliff machen wir zusammen per WhatsApp.",
+    steps: ["Daten", "Gruppe", "Stil", "Musik", "Must-haves"], from: "Ankunft", to: "Abreise", people: "Personen", kids: "Wir reisen mit Kindern",
     styleQ: "Was sucht ihr? (eins oder mehrere)", mustQ: "Was darf nicht fehlen?",
     styles: { relax: "Entspannung & Buchten", party: "Party", food: "Kulinarik", celeb: "Feier", family: "Familie", sea: "Abenteuer auf dem Meer" },
     musts: { villas: "Villa", yates: "Boot", formentera: "Formentera Experience", motos: "Jetski", vip: "VIP-Tisch", dining: "Privatkoch", dj: "DJ", coches: "Auto", transfers: "Transfer" },
@@ -173,12 +188,29 @@ const ITEMS = {
   chef:      { slot: "e", tags: ["food", "celeb", "family"], svc: "dining", go: "svc:dining" },
   dj:        { slot: "n", tags: ["celeb", "party"], svc: "dj", go: "svc:dj", adult: true },
 };
+/* what each club usually plays and where it is, so a club night fits the group's music and the day before it
+   (a night is always confirmed against that date's actual party and line-up) */
+const CLUBS = [
+  { n: "DC10", z: "south", g: ["techno", "techhouse"] }, { n: "Amnesia", z: "centre", g: ["techno", "techhouse", "melodic"] },
+  { n: "[UNVRS]", z: "centre", g: ["house", "techhouse", "edm", "techno"] }, { n: "Hï Ibiza", z: "south", g: ["techhouse", "house", "techno", "edm"] },
+  { n: "Ushuaïa Ibiza", z: "south", g: ["edm", "techhouse", "house", "commercial"] }, { n: "Pacha", z: "town", g: ["house", "afro", "disco", "melodic"] },
+  { n: "Eden", z: "west", g: ["house", "techhouse", "edm"] }, { n: "Es Paradis", z: "west", g: ["edm", "commercial"] },
+  { n: "Lío Ibiza", z: "town", g: ["commercial", "disco"] }, { n: "Chinois Ibiza", z: "town", g: ["hiphop", "commercial", "house"] },
+  { n: "Tantra Ibiza", z: "south", g: ["commercial", "hiphop"] }, { n: "Swag Ibiza", z: "south", g: ["hiphop", "commercial"] },
+  { n: "Keeper Ibiza", z: "town", g: ["commercial", "hiphop"] }, { n: "Lola's", z: "town", g: ["commercial", "disco"] },
+  { n: "Pikes", z: "west", g: ["disco", "house"] }, { n: "Cova Santa", z: "south", g: ["afro", "melodic"] },
+  { n: "Las Dalias · Akasha", z: "north", g: ["afro", "melodic", "house"] }, { n: "528 Ibiza", z: "west", g: ["melodic", "techno", "afro"] },
+];
+// how far apart the island's areas are (0 = same area, 1 = next door, 2 = across the island)
+const ZD = { town: { town: 0, south: 1, centre: 1, west: 2, north: 2 }, south: { town: 1, south: 0, centre: 1, west: 2, north: 2 },
+  centre: { town: 1, south: 1, centre: 0, west: 1, north: 1 }, west: { town: 2, south: 2, centre: 1, west: 0, north: 2 }, north: { town: 2, south: 2, centre: 1, west: 2, north: 0 } };
+const DAYZONE = { boat: "west", sunset: "west", jetski: "south", beach: "south", car: "north", daltvila: "town" };   // where each daytime plan ends up
 const GIFT_SVC = new Set(["yates", "motos", "moto", "coches", "villas", "vip", "dining", "transfers", "dj", "formentera"]);
 const giftFor = k => k >= 3 ? 4 : k === 2 ? 3 : k === 1 ? 1 : 0;   // the same ladder as the form
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 export function initPlanner(root, { onGo, onSend, icons = {} } = {}) {
-  const st = { step: 0, from: "", to: "", people: 4, kids: false, styles: new Set(), musts: new Set(["transfers"]), plan: null };
+  const st = { step: 0, from: "", to: "", people: 4, kids: false, music: new Set(), styles: new Set(), musts: new Set(["transfers"]), plan: null };
   const tx = () => L[getLang()] || L.es;
   const today = new Date(); today.setHours(12);
   const iso = d => d.toISOString().slice(0, 10);
@@ -210,24 +242,42 @@ export function initPlanner(root, { onGo, onSend, icons = {} } = {}) {
     for (let i = 0; i < half.length; i += 2) blocks.splice(Math.min(blocks.length, 1 + i), 0, half.slice(i, i + 2));
     const slow = middle.length >= 6 ? Math.floor(middle.length / 2) : -1;
     let bi = 0, ei = 0;
+    // the clubs, beach clubs and the Formentera excursion only run in season (May to October): out of season they are skipped
+    const SEASONAL = new Set(["club", "formentera", "beach"]);
+    const fits = (d, k) => !SEASONAL.has(k) || (d.date.getMonth() >= 4 && d.date.getMonth() <= 9);
+    const pick = (list, from, d) => { for (let n = 0; n < list.length; n++) { const x = list[(from + n) % list.length]; if ([].concat(x).every(k => fits(d, k))) return [x, from + n + 1]; } return [null, from]; };
     middle.forEach((d, i) => {
       if (i === slow) add(d, "free");
-      else if (blocks.length) blocks[bi++ % blocks.length].forEach(k => add(d, k));
+      else if (blocks.length) { const [blk, nx] = pick(blocks, bi, d); bi = nx; blk?.forEach(k => add(d, k)); }
       // Formentera fills the whole day and ends with its own sunset party: nothing else is planned that night
-      if (eve.length && !d.items.some(it => it.key === "formentera")) add(d, eve[ei++ % eve.length]);
+      if (eve.length && !d.items.some(it => it.key === "formentera")) { const [k, nx] = pick(eve, ei, d); ei = nx; if (k) add(d, k); }
       if (!d.items.length) add(d, "free");
     });
     if (!middle.length && want.length) add(D[0], want.find(k => ["e", "n"].includes(ITEMS[k].slot)) || want[0]);
+    // club nights: the club whose music matches and that is close to that day's plan; a different club each night
+    const likes = st.music.has("any") || !st.music.size ? null : st.music, used = new Map();
+    D.forEach(d => d.items.forEach(it => {
+      if (it.key !== "club" && it.key !== "dj") return;
+      const g = c => likes ? c.g.filter(x => likes.has(x)) : c.g;
+      if (it.key === "dj") { it.genres = likes ? [...likes] : []; return; }
+      const zone = [...d.items].reverse().map(x => DAYZONE[x.key]).find(Boolean) || null;
+      const best = CLUBS.map(c => ({ c, s: g(c).length * 10 - (zone ? ZD[zone][c.z] * 4 : 0) - (used.get(c.n) || 0) * 8 })).sort((a, b) => b.s - a.s)[0].c;
+      used.set(best.n, (used.get(best.n) || 0) + 1);
+      it.club = best.n; it.genres = g(best).length ? g(best) : best.g; it.near = !!zone && ZD[zone][best.z] === 0;
+    }));
     const order = { m: 0, a: 1, e: 2, n: 3 };
     D.forEach(d => d.items.sort((a, b) => order[a.slot] - order[b.slot]));
     const svcs = new Set(); D.forEach(d => d.items.forEach(it => it.svc && svcs.add(it.svc))); st.musts.forEach(m => svcs.add(m));
     return { days: D, nights, svcs: [...svcs], gifts: giftFor([...svcs].filter(s => GIFT_SVC.has(s)).length) };
   }
 
+  const gl = g => { const t = tx(); return g.map(x => t.music[x] || x).join(", "); };
+  const title = it => { const t = tx(); return it.key === "club" && it.club ? t.clubT(it.club) : (t.items[it.key] || [it.key])[0]; };
+  const desc = it => { const t = tx(); if (it.key === "club" && it.club) return t.clubD(gl(it.genres), it.near); if (it.key === "dj" && it.genres?.length) return t.djD(gl(it.genres)); return (t.items[it.key] || ["", ""])[1]; };
   function text() {
     const t = tx(), p = st.plan; if (!p) return "";
     const lines = [t.waHead, `${fmt(p.days[0].date)} → ${fmt(p.days[p.days.length - 1].date)} · ${t.nights(p.nights)} · ${t.guests(st.people)}${st.kids ? " · " + t.kids : ""}`];
-    p.days.forEach((d, i) => lines.push(`${t.day} ${i + 1} (${fmt(d.date)}): ${d.items.map(it => (t.items[it.key] || [it.key])[0]).join(" · ")}`));
+    p.days.forEach((d, i) => lines.push(`${t.day} ${i + 1} (${fmt(d.date)}): ${d.items.map(title).join(" · ")}`));
     return lines.join("\n");
   }
 
@@ -242,7 +292,7 @@ export function initPlanner(root, { onGo, onSend, icons = {} } = {}) {
         <p class="pl__sum">${esc(fmt(p.days[0].date))} → ${esc(fmt(p.days[p.days.length - 1].date))} · ${esc(t.nights(p.nights))} · ${esc(t.guests(st.people))}</p>
         <ol class="pl__days">${p.days.map((d, i) => `<li class="pl__day" style="--i:${i}">
           <header><b>${esc(t.day)} ${i + 1}</b><span>${esc(fmt(d.date))}</span></header>
-          <ul>${d.items.map(it => `<li><span class="pl__slot">${esc(t.slots[it.slot] || "")}</span><div><strong>${esc((t.items[it.key] || [it.key])[0])}</strong><p>${esc((t.items[it.key] || ["", ""])[1])}</p></div>${it.go ? `<button type="button" class="pl__see" data-go="${it.go}">${esc(t.see)}</button>` : ""}</li>`).join("")}</ul></li>`).join("")}</ol>
+          <ul>${d.items.map(it => `<li><span class="pl__slot">${esc(t.slots[it.slot] || "")}</span><div><strong>${esc(title(it))}</strong><p>${esc(desc(it))}</p></div>${it.go ? `<button type="button" class="pl__see" data-go="${it.go}">${esc(t.see)}</button>` : ""}</li>`).join("")}</ul></li>`).join("")}</ol>
         ${p.gifts ? `<div class="pl__gift"><b>🎁 ${esc(t.gift(p.gifts))}</b><small>${esc(t.giftFine)}</small></div>` : ""}
         <p class="pl__note">${esc(t.note)}</p>
         <div class="pl__actions"><button type="button" class="btn btn--primary" data-act="send">${esc(t.send)}</button><button type="button" class="btn pl__ghost" data-act="again">${esc(t.again)}</button></div></div>`;
@@ -253,10 +303,12 @@ export function initPlanner(root, { onGo, onSend, icons = {} } = {}) {
         <label class="pl__check"><input type="checkbox" data-f="kids" ${st.kids ? "checked" : ""}> ${esc(t.kids)}</label>`;
     } else if (st.step === 2) {
       body = `<p class="pl__q">${esc(t.styleQ)}</p><div class="pl__chips">${Object.entries(t.styles).filter(([k]) => !(st.kids && k === "party")).map(([k, v]) => chip("style", k, v, st.styles.has(k))).join("")}</div>`;
+    } else if (st.step === 3) {
+      body = `<p class="pl__q">${esc(t.musicQ)}</p><div class="pl__chips">${Object.entries(t.music).map(([k, v]) => chip("music", k, v, st.music.has(k))).join("")}</div>`;
     } else {
       body = `<p class="pl__q">${esc(t.mustQ)}</p><div class="pl__chips">${Object.entries(t.musts).filter(([k]) => !(st.kids && (k === "vip" || k === "dj"))).map(([k, v]) => chip("must", k, v, st.musts.has(k))).join("")}</div>`;
     }
-    const nav = st.plan ? "" : `<p class="pl__err" role="alert"></p><div class="pl__nav">${st.step ? `<button type="button" class="btn pl__ghost" data-act="back">${esc(t.back)}</button>` : "<span></span>"}<button type="button" class="btn btn--primary" data-act="${st.step < 3 ? "next" : "make"}">${esc(st.step < 3 ? t.next : t.make)}</button></div>`;
+    const nav = st.plan ? "" : `<p class="pl__err" role="alert"></p><div class="pl__nav">${st.step ? `<button type="button" class="btn pl__ghost" data-act="back">${esc(t.back)}</button>` : "<span></span>"}<button type="button" class="btn btn--primary" data-act="${st.step < 4 ? "next" : "make"}">${esc(st.step < 4 ? t.next : t.make)}</button></div>`;
     root.querySelector(".pl__card").innerHTML = (st.plan ? "" : stepper) + `<div class="pl__body">${body}</div>` + nav;
     root.querySelector(".pl__eyebrow").textContent = t.eyebrow; root.querySelector(".pl__title").textContent = t.title; root.querySelector(".pl__lede").textContent = t.lede;
   }
@@ -267,6 +319,8 @@ export function initPlanner(root, { onGo, onSend, icons = {} } = {}) {
   root.addEventListener("click", e => {
     const t = tx(), b = e.target.closest("button"); if (!b) return;
     if (b.dataset.style) { const k = b.dataset.style; st.styles.has(k) ? st.styles.delete(k) : st.styles.add(k); b.setAttribute("aria-pressed", st.styles.has(k)); return; }
+    if (b.dataset.music) { const k = b.dataset.music; if (k === "any") st.music.clear(); else st.music.delete("any"); st.music.has(k) ? st.music.delete(k) : st.music.add(k);
+      b.closest(".pl__chips").querySelectorAll("[data-music]").forEach(x => x.setAttribute("aria-pressed", st.music.has(x.dataset.music))); return; }
     if (b.dataset.must) { const k = b.dataset.must; st.musts.has(k) ? st.musts.delete(k) : st.musts.add(k); b.setAttribute("aria-pressed", st.musts.has(k)); return; }
     if (b.dataset.go) { onGo?.(b.dataset.go); return; }
     const a = b.dataset.act;
@@ -274,6 +328,7 @@ export function initPlanner(root, { onGo, onSend, icons = {} } = {}) {
     if (a === "next") {
       if (st.step === 0 && (!st.from || !st.to || st.to <= st.from)) return err(t.errDates);
       if (st.step === 2 && !st.styles.size) return err(t.errStyle);
+      if (st.step === 3 && !st.music.size) return err(t.errMusic);
       st.step++; render(); return;
     }
     if (a === "back") { st.step--; render(); return; }

@@ -763,64 +763,77 @@ function fastScroll(to) {
   jump = requestAnimationFrame(() => { jump = requestAnimationFrame(() => { jump = 0; root.classList.remove("is-jumping"); }); });
 }
 /* ---------------- date picker in the brand's colours ----------------
-   The phone's own calendar can't be styled (on iPhone it opens black). Every date field on the page (contact form,
-   planner, club agenda, also the ones drawn later) gets a field that shows the date centred and opens this calendar:
-   light, Monday first, past days off, the chosen day in the logo's violet-to-blue, today ringed in cyan. The real
-   <input type="date"> stays underneath holding the value, so the rest of the code reads and writes it as before. */
+   The phone's own calendar can't be styled (on iPhone it opens black), so every date field on the page (contact form,
+   planner, club agenda, also the ones drawn later) shows its date centred and opens this calendar instead: light,
+   Monday first, past days off, in the logo's violet-to-blue. Arrival and departure are one calendar: the first tap is
+   the arrival, the second the departure, and the whole stay lights up between them with the nights counted. The real
+   <input type="date"> fields stay underneath holding the values, so the rest of the code reads and writes them as before. */
 {
   const VALUE = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
   const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   const parse = s => s ? new Date(s + "T12:00") : null;
   const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const nightsBetween = (a, b) => Math.round((parse(b) - parse(a)) / 864e5);
   const sheet = document.createElement("div"); sheet.className = "dp"; sheet.hidden = true;
-  sheet.innerHTML = `<div class="dp__card" role="dialog" aria-modal="true"><header class="dp__head"><button type="button" class="dp__nav" data-m="-1" aria-label="‹">‹</button><b class="dp__month" aria-live="polite"></b><button type="button" class="dp__nav" data-m="1" aria-label="›">›</button></header>
-    <div class="dp__week"></div><div class="dp__grid"></div><footer class="dp__foot"><button type="button" class="dp__clear"></button><button type="button" class="dp__close"></button></footer></div>`;
+  sheet.innerHTML = `<div class="dp__card" role="dialog" aria-modal="true"><header class="dp__head"><div class="dp__bar"><button type="button" class="dp__nav" data-m="-1" aria-label="‹">‹</button><b class="dp__month" aria-live="polite"></b><button type="button" class="dp__nav" data-m="1" aria-label="›">›</button></div>
+    <div class="dp__sum"><span class="dp__a"><small></small><b></b></span><i aria-hidden="true">→</i><span class="dp__b"><small></small><b></b></span><em class="dp__n"></em></div></header>
+    <p class="dp__hint" aria-live="polite"></p><div class="dp__week"></div><div class="dp__grid"></div><footer class="dp__foot"><button type="button" class="dp__clear"></button><button type="button" class="dp__close"></button></footer></div>`;
   document.body.appendChild(sheet);
-  let cur = null, view = new Date(), lastFocus = null;
   const groupOf = inp => inp.closest(".grid2, .ag__search, .pl__grid2, form") || document.body;
-  const fields = () => [...document.querySelectorAll("input[type=date][data-dp]")];
-  const pairFrom = inp => { const g = groupOf(inp), f = fields().filter(x => groupOf(x) === g), i = f.indexOf(inp); return i > 0 ? f[i - 1] : null; };
-  const pairTo = inp => { const g = groupOf(inp), f = fields().filter(x => groupOf(x) === g), i = f.indexOf(inp); return i >= 0 && i < f.length - 1 ? f[i + 1] : null; };
+  const pair = inp => { const g = groupOf(inp), f = [...document.querySelectorAll("input[type=date][data-dp]")].filter(x => groupOf(x) === g && x.isConnected); return f.length >= 2 ? [f[0], f[1]] : [inp, null]; };
+  // r: the stay being chosen. a = arrival, b = departure; "end" means the next tap picks the departure
+  let r = null, view = new Date(), lastFocus = null;
+  const short = s => s ? cap(parse(s).toLocaleDateString(getLang(), { weekday: "short", day: "numeric", month: "short" })) : "—";
   function paint() {
-    const lang = getLang(), y = view.getFullYear(), m = view.getMonth();
+    const lang = getLang(), y = view.getFullYear(), m = view.getMonth(), range = !!r.to;
     sheet.querySelector(".dp__month").textContent = cap(new Date(y, m, 1).toLocaleDateString(lang, { month: "long", year: "numeric" }));
     const mon = new Date(2024, 0, 1);   // a Monday
     sheet.querySelector(".dp__week").innerHTML = [...Array(7)].map((_, i) => `<span>${new Date(mon.getTime() + i * 864e5).toLocaleDateString(lang, { weekday: "narrow" })}</span>`).join("");
     const first = (new Date(y, m, 1).getDay() + 6) % 7, days = new Date(y, m + 1, 0).getDate();
-    const today = iso(new Date()), min = cur.min || today, val = cur.value, start = pairFrom(cur)?.value || "";
+    const today = iso(new Date()), min = r.from.min || today;
     let html = "";
     for (let i = 0; i < first; i++) html += "<span></span>";
     for (let d = 1; d <= days; d++) {
       const k = iso(new Date(y, m, d)), off = k < min;
-      const cls = [k === val && "is-on", k === today && "is-today", start && val && k > start && k < val && "is-range", start && k === start && "is-start"].filter(Boolean).join(" ");
+      const cls = [k === today && "is-today", r.a && k === r.a && (range ? "is-start" : "is-on"), range && r.b && k === r.b && "is-end", range && r.a && r.b && k > r.a && k < r.b && "is-range",
+        range && r.a && r.b && k === r.a && "has-range"].filter(Boolean).join(" ");
       html += `<button type="button" data-d="${k}" class="${cls}" ${off ? "disabled" : ""}>${d}</button>`;
     }
     sheet.querySelector(".dp__grid").innerHTML = html;
-    sheet.querySelector(".dp__clear").textContent = t("Borrar"); sheet.querySelector(".dp__close").textContent = t("Cerrar");
-    const prevOff = new Date(y, m, 1) <= parse(min.slice(0, 8) + "01"); sheet.querySelector('[data-m="-1"]').disabled = prevOff;
+    sheet.querySelector('[data-m="-1"]').disabled = new Date(y, m, 1) <= parse(min.slice(0, 8) + "01");
+    // the stay at a glance: arrival → departure, nights
+    const sum = sheet.querySelector(".dp__sum"); sum.hidden = !range;
+    if (range) {
+      sum.querySelector(".dp__a small").textContent = t("Llegada"); sum.querySelector(".dp__a b").textContent = short(r.a);
+      sum.querySelector(".dp__b small").textContent = t("Salida"); sum.querySelector(".dp__b b").textContent = short(r.b);
+      const n = r.a && r.b ? nightsBetween(r.a, r.b) : 0; sum.querySelector(".dp__n").textContent = n ? `${n} ${t(n === 1 ? "noche" : "noches")}` : "";
+      sum.querySelector(".dp__a").classList.toggle("is-cur", r.step === "start"); sum.querySelector(".dp__b").classList.toggle("is-cur", r.step === "end");
+    }
+    sheet.querySelector(".dp__hint").textContent = range ? t(r.step === "start" ? "Toca el día de llegada" : "Ahora toca el día de salida") : "";
+    sheet.querySelector(".dp__clear").textContent = t("Borrar"); sheet.querySelector(".dp__close").textContent = t(range && r.a && r.b ? "Listo" : "Cerrar");
   }
   function open(inp) {
-    cur = inp; lastFocus = document.activeElement;
-    view = parse(inp.value) || parse(inp.min) || parse(pairFrom(inp)?.value) || new Date(); view.setDate(1);
+    const [from, to] = pair(inp); lastFocus = document.activeElement;
+    r = { from, to, a: from.value, b: to ? to.value : "", step: to && inp === to && from.value ? "end" : "start" };
+    view = parse(r.step === "end" ? (r.b || r.a) : r.a) || parse(from.min) || new Date(); view.setDate(1);
     paint(); sheet.hidden = false; document.documentElement.classList.add("dp-open");
     requestAnimationFrame(() => sheet.classList.add("is-in"));
-    (sheet.querySelector(".dp__grid .is-on") || sheet.querySelector(".dp__grid button:not([disabled])"))?.focus({ preventScroll: true });
   }
   function close() { sheet.classList.remove("is-in"); document.documentElement.classList.remove("dp-open"); setTimeout(() => { sheet.hidden = true; }, 200); lastFocus?.focus?.({ preventScroll: true }); }
-  function set(inp, v) {
-    inp.value = v;
-    inp.dispatchEvent(new Event("input", { bubbles: true })); inp.dispatchEvent(new Event("change", { bubbles: true }));
-  }
+  const set = (inp, v) => { if (!inp || !inp.isConnected || inp.value === v) return; inp.value = v; inp.dispatchEvent(new Event("input", { bubbles: true })); inp.dispatchEvent(new Event("change", { bubbles: true })); };
+  // the departure is written first, so a form that clears it when the arrival moves past it never sees a stale one
+  const commit = () => { set(r.to, r.b); set(r.from, r.a); if (r.to && r.b) r.to.min = r.a; };
   sheet.addEventListener("click", e => {
     if (e.target === sheet) return close();
     const nav = e.target.closest("[data-m]"); if (nav) { view.setMonth(view.getMonth() + +nav.dataset.m); paint(); return; }
     if (e.target.closest(".dp__close")) return close();
-    if (e.target.closest(".dp__clear")) { set(cur, ""); return close(); }
+    if (e.target.closest(".dp__clear")) { r.a = ""; r.b = ""; r.step = "start"; commit(); paint(); return; }
+    const sw = e.target.closest(".dp__a, .dp__b"); if (sw && r.to) { r.step = sw.classList.contains("dp__b") && r.a ? "end" : "start"; paint(); return; }
     const d = e.target.closest("[data-d]"); if (!d || d.disabled) return;
-    const inp = cur; set(inp, d.dataset.d); navigator.vibrate?.(4); close();
-    // picking the first date of a pair moves on to the second one
-    const next = pairTo(inp);
-    if (next) { if (!next.min || next.min < inp.value) next.min = inp.value; if (next.value && next.value <= inp.value) set(next, ""); if (!next.value) setTimeout(() => open(next), 260); }
+    const k = d.dataset.d; navigator.vibrate?.(4);
+    if (!r.to) { r.a = k; commit(); return close(); }                      // a single date field
+    if (r.step === "start" || !r.a || k <= r.a) { r.a = k; if (r.b && r.b <= k) r.b = ""; r.step = "end"; paint(); return; }
+    r.b = k; commit(); paint(); setTimeout(close, 420);                   // the stay is complete: show it a moment, then close
   });
   addEventListener("keydown", e => { if (!sheet.hidden && e.key === "Escape") close(); });
   function enhance(inp) {
