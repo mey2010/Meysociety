@@ -647,6 +647,7 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
   color: "#0d0a38", accentColor: "#ab50db", lineColor: "#c9cce8", width: 340, rowHeight: 38, fontSize: 15, indent: 42,
 
   onSelect: (value, item) => {
+    if (value.startsWith("motos-") && value !== "motos-scooter") { SM.set(false); setTimeout(() => openFleet("moto-agua"), 260); return; }   // jet skis: straight to their gallery
     if (value.startsWith("barcos-")) { const k = value.slice(7); SM.set(false); setTimeout(() => openFleet(k === "all" ? "open" : k), 260); return; }   // "Toda la flota" opens on the open boats; the other tabs stay one tap away
     if (value === "villa-aura") { SM.set(false); setTimeout(() => document.querySelector("[data-villa-tour]")?.click(), 300); return; }   // straight into the tour
     if (value === "todos") { SM.set(false); scrollToEl(document.getElementById("servicios")); return; }   // the services section itself
