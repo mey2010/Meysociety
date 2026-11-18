@@ -61,11 +61,11 @@ const L = {
   },
 };
 const L2 = {
-  es: { go: "Ver mis noches", vip: "Mesas VIP", vipSub: "Pide la tuya en un mensaje", day: "Day clubs", daySub: "Fiestas de día y piscina", feat: "Toca para elegir" },
-  en: { go: "See my nights", vip: "VIP tables", vipSub: "Ask for yours in one message", day: "Day clubs", daySub: "Daytime and pool parties", feat: "Tap to pick" },
-  it: { go: "Vedi le mie notti", vip: "Tavoli VIP", vipSub: "Chiedi il tuo in un messaggio", day: "Day club", daySub: "Feste di giorno e in piscina", feat: "Tocca per scegliere" },
-  fr: { go: "Voir mes nuits", vip: "Tables VIP", vipSub: "Demandez la vôtre en un message", day: "Day clubs", daySub: "Fêtes de jour et pool parties", feat: "Touchez pour choisir" },
-  de: { go: "Meine Nächte ansehen", vip: "VIP-Tische", vipSub: "Frag deinen mit einer Nachricht an", day: "Day Clubs", daySub: "Tages- und Poolpartys", feat: "Zum Auswählen tippen" },
+  es: { clear: "Quitar todos", done: "Listo", go: "Ver mis noches", vip: "Mesas VIP", vipSub: "Pide la tuya en un mensaje", day: "Day clubs", daySub: "Fiestas de día y piscina", feat: "Toca para elegir" },
+  en: { clear: "Clear all", done: "Done", go: "See my nights", vip: "VIP tables", vipSub: "Ask for yours in one message", day: "Day clubs", daySub: "Daytime and pool parties", feat: "Tap to pick" },
+  it: { clear: "Togli tutti", done: "Fatto", go: "Vedi le mie notti", vip: "Tavoli VIP", vipSub: "Chiedi il tuo in un messaggio", day: "Day club", daySub: "Feste di giorno e in piscina", feat: "Tocca per scegliere" },
+  fr: { clear: "Tout retirer", done: "Terminé", go: "Voir mes nuits", vip: "Tables VIP", vipSub: "Demandez la vôtre en un message", day: "Day clubs", daySub: "Fêtes de jour et pool parties", feat: "Touchez pour choisir" },
+  de: { clear: "Alle entfernen", done: "Fertig", go: "Meine Nächte ansehen", vip: "VIP-Tische", vipSub: "Frag deinen mit einer Nachricht an", day: "Day Clubs", daySub: "Tages- und Poolpartys", feat: "Zum Auswählen tippen" },
 };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const KEY = "mey-agenda";
@@ -98,17 +98,18 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     <p class="ag__status"><i aria-hidden="true"></i><span></span></p>
     <ul class="ag__feat" role="list">${FEAT.map(f => `<li><button type="button" class="ag__fcard" ${f.club ? `data-club="${esc(f.club)}" aria-pressed="false"` : `data-act="${f.act}"`}>
       <img src="${f.img}" alt="" loading="lazy" decoding="async"><span class="ag__fname">${f.club ? esc(f.club) : ""}</span><span class="ag__fsub"></span><span class="ag__arrow" aria-hidden="true"></span></button></li>`).join("")}</ul>
-    <div class="ag__grid">
-      <div class="ag__panel ag__panel--nights">
-        <h3 class="ag__h ag__h--nights"></h3>
-        <ol class="ag__nights" aria-live="polite"></ol>
+    <div class="ag__panel ag__panel--nights">
+      <h3 class="ag__h ag__h--nights"></h3>
+      <div class="ag__drop">
+        <button type="button" class="ag__dropbtn" aria-expanded="false" aria-controls="agDrop"><span class="ag__dropl"><b class="ag__h--clubs"></b><small class="ag__count"></small></span><span class="ag__chips"></span><i class="ag__chev" aria-hidden="true"></i></button>
+        <div class="ag__dropbody" id="agDrop" hidden>
+          <p class="ag__pick"></p>
+          <ul class="ag__clubs">${clubs.map((c, i) => `<li><button type="button" class="ag__club" data-club="${esc(c.name)}" aria-pressed="false" style="--bg:${PASTEL[i % 4]}">
+            <span class="ag__ctype">${c.type === "dayclub" ? "Day club" : "Club"}</span><span class="ag__cname">${esc(c.name)}</span><span class="ag__carea">${esc(c.area)}</span><span class="ag__tick" aria-hidden="true"></span></button></li>`).join("")}</ul>
+          <div class="ag__dropfoot"><button type="button" class="ag__clear" data-act="clear"></button><button type="button" class="ag__done" data-act="done"></button></div>
+        </div>
       </div>
-      <div class="ag__panel ag__panel--clubs">
-        <div class="ag__clubhead"><h3 class="ag__h ag__h--clubs"></h3><p class="ag__count"></p></div>
-        <p class="ag__pick"></p>
-        <ul class="ag__clubs">${clubs.map((c, i) => `<li><button type="button" class="ag__club" data-club="${esc(c.name)}" aria-pressed="false" style="--bg:${PASTEL[i % 4]}">
-          <span class="ag__ctype">${c.type === "dayclub" ? "Day club" : "Club"}</span><span class="ag__cname">${esc(c.name)}</span><span class="ag__carea">${esc(c.area)}</span><span class="ag__tick" aria-hidden="true"></span></button></li>`).join("")}</ul>
-      </div>
+      <ol class="ag__nights" aria-live="polite"></ol>
     </div>
     <div class="ag__cta"><button type="button" class="btn btn--primary btn--lg" data-act="table"></button><button type="button" class="btn ag__ghost" data-act="alert"></button></div>
     <p class="ag__fine"></p>
@@ -140,6 +141,8 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     $(".ag__l-from").textContent = t.from; $(".ag__l-to").textContent = t.to; $(".ag__pick").textContent = t.pick;
     $('.ag__cta [data-act="alert"]').textContent = t.alert; $('.ag__cta [data-act="table"]').textContent = t.table; $(".ag__fine").textContent = t.fine;
     $(".ag__count").textContent = t.picked(st.clubs.size);
+    $(".ag__chips").innerHTML = [...st.clubs].slice(0, 3).map(n => `<span>${esc(n)}</span>`).join("") + (st.clubs.size > 3 ? `<span>+${st.clubs.size - 3}</span>` : "");
+    $(".ag__clear").textContent = (L2[getLang()] || L2.es).clear; $(".ag__done").textContent = (L2[getLang()] || L2.es).done;
     const X = L2[getLang()] || L2.es; $(".ag__go").textContent = X.go;
     root.querySelectorAll(".ag__fcard").forEach(c => {
       const a = c.dataset.act; if (a) { c.querySelector(".ag__fname").textContent = a === "table" ? X.vip : X.day; c.querySelector(".ag__fsub").textContent = a === "table" ? X.vipSub : X.daySub; }
@@ -158,12 +161,16 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     st[f] = e.target.value; if (f === "from" && (!st.to || st.to < st.from)) st.to = st.from;
     keep(); paint();
   });
+  const drop = open => { const b = $(".ag__dropbtn"), body = $(".ag__dropbody"); open = open ?? body.hidden; body.hidden = !open; b.setAttribute("aria-expanded", open); };
+  root.addEventListener("click", e => { if (e.target.closest(".ag__dropbtn")) drop(); });
   root.addEventListener("click", e => {
     const c = e.target.closest("[data-club]");
     if (c) { const n = c.dataset.club; st.clubs.has(n) ? st.clubs.delete(n) : st.clubs.add(n); keep(); paint(); navigator.vibrate?.(4); return; }
     const a = e.target.closest("[data-act]")?.dataset.act;
     if (a === "go") { $(".ag__panel--nights").scrollIntoView({ behavior: "smooth", block: "start" }); if (!st.from) inFrom.showPicker?.(); return; }
-    if (a === "day") { clubs.filter(v => v.type === "dayclub").forEach(v => st.clubs.add(v.name)); keep(); paint(); $(".ag__panel--clubs").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+    if (a === "day") { clubs.filter(v => v.type === "dayclub").forEach(v => st.clubs.add(v.name)); keep(); paint(); drop(true); $(".ag__panel--nights").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+    if (a === "clear") { st.clubs.clear(); keep(); paint(); return; }
+    if (a === "done") { drop(false); return; }
     if (a) onSend?.({ kind: a, text: message(a), from: st.from, to: st.to || st.from, clubs: [...st.clubs] });
   });
   root.addEventListener("dblclick", e => { const c = e.target.closest(".ag__club"); if (c) onVenue?.(clubs.find(v => v.name === c.dataset.club)); });
