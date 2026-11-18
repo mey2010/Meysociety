@@ -173,7 +173,7 @@ const ITEMS = {
   chef:      { slot: "e", tags: ["food", "celeb", "family"], svc: "dining", go: "svc:dining" },
   dj:        { slot: "n", tags: ["celeb", "party"], svc: "dj", go: "svc:dj", adult: true },
 };
-const GIFT_SVC = new Set(["yates", "motos", "moto", "coches", "villas", "vip", "dining", "transfers", "dj"]);
+const GIFT_SVC = new Set(["yates", "motos", "moto", "coches", "villas", "vip", "dining", "transfers", "dj", "formentera"]);
 const giftFor = k => k >= 3 ? 4 : k === 2 ? 3 : k === 1 ? 1 : 0;   // the same ladder as the form
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 

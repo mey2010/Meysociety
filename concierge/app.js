@@ -762,6 +762,79 @@ function fastScroll(to) {
   scrollTo({ top: to, behavior: "instant" });
   jump = requestAnimationFrame(() => { jump = requestAnimationFrame(() => { jump = 0; root.classList.remove("is-jumping"); }); });
 }
+/* ---------------- date picker in the brand's colours ----------------
+   The phone's own calendar can't be styled (on iPhone it opens black). Every date field on the page (contact form,
+   planner, club agenda, also the ones drawn later) gets a field that shows the date centred and opens this calendar:
+   light, Monday first, past days off, the chosen day in the logo's violet-to-blue, today ringed in cyan. The real
+   <input type="date"> stays underneath holding the value, so the rest of the code reads and writes it as before. */
+{
+  const VALUE = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const parse = s => s ? new Date(s + "T12:00") : null;
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const sheet = document.createElement("div"); sheet.className = "dp"; sheet.hidden = true;
+  sheet.innerHTML = `<div class="dp__card" role="dialog" aria-modal="true"><header class="dp__head"><button type="button" class="dp__nav" data-m="-1" aria-label="‹">‹</button><b class="dp__month" aria-live="polite"></b><button type="button" class="dp__nav" data-m="1" aria-label="›">›</button></header>
+    <div class="dp__week"></div><div class="dp__grid"></div><footer class="dp__foot"><button type="button" class="dp__clear"></button><button type="button" class="dp__close"></button></footer></div>`;
+  document.body.appendChild(sheet);
+  let cur = null, view = new Date(), lastFocus = null;
+  const groupOf = inp => inp.closest(".grid2, .ag__search, .pl__grid2, form") || document.body;
+  const fields = () => [...document.querySelectorAll("input[type=date][data-dp]")];
+  const pairFrom = inp => { const g = groupOf(inp), f = fields().filter(x => groupOf(x) === g), i = f.indexOf(inp); return i > 0 ? f[i - 1] : null; };
+  const pairTo = inp => { const g = groupOf(inp), f = fields().filter(x => groupOf(x) === g), i = f.indexOf(inp); return i >= 0 && i < f.length - 1 ? f[i + 1] : null; };
+  function paint() {
+    const lang = getLang(), y = view.getFullYear(), m = view.getMonth();
+    sheet.querySelector(".dp__month").textContent = cap(new Date(y, m, 1).toLocaleDateString(lang, { month: "long", year: "numeric" }));
+    const mon = new Date(2024, 0, 1);   // a Monday
+    sheet.querySelector(".dp__week").innerHTML = [...Array(7)].map((_, i) => `<span>${new Date(mon.getTime() + i * 864e5).toLocaleDateString(lang, { weekday: "narrow" })}</span>`).join("");
+    const first = (new Date(y, m, 1).getDay() + 6) % 7, days = new Date(y, m + 1, 0).getDate();
+    const today = iso(new Date()), min = cur.min || today, val = cur.value, start = pairFrom(cur)?.value || "";
+    let html = "";
+    for (let i = 0; i < first; i++) html += "<span></span>";
+    for (let d = 1; d <= days; d++) {
+      const k = iso(new Date(y, m, d)), off = k < min;
+      const cls = [k === val && "is-on", k === today && "is-today", start && val && k > start && k < val && "is-range", start && k === start && "is-start"].filter(Boolean).join(" ");
+      html += `<button type="button" data-d="${k}" class="${cls}" ${off ? "disabled" : ""}>${d}</button>`;
+    }
+    sheet.querySelector(".dp__grid").innerHTML = html;
+    sheet.querySelector(".dp__clear").textContent = t("Borrar"); sheet.querySelector(".dp__close").textContent = t("Cerrar");
+    const prevOff = new Date(y, m, 1) <= parse(min.slice(0, 8) + "01"); sheet.querySelector('[data-m="-1"]').disabled = prevOff;
+  }
+  function open(inp) {
+    cur = inp; lastFocus = document.activeElement;
+    view = parse(inp.value) || parse(inp.min) || parse(pairFrom(inp)?.value) || new Date(); view.setDate(1);
+    paint(); sheet.hidden = false; document.documentElement.classList.add("dp-open");
+    requestAnimationFrame(() => sheet.classList.add("is-in"));
+    (sheet.querySelector(".dp__grid .is-on") || sheet.querySelector(".dp__grid button:not([disabled])"))?.focus({ preventScroll: true });
+  }
+  function close() { sheet.classList.remove("is-in"); document.documentElement.classList.remove("dp-open"); setTimeout(() => { sheet.hidden = true; }, 200); lastFocus?.focus?.({ preventScroll: true }); }
+  function set(inp, v) {
+    inp.value = v;
+    inp.dispatchEvent(new Event("input", { bubbles: true })); inp.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+  sheet.addEventListener("click", e => {
+    if (e.target === sheet) return close();
+    const nav = e.target.closest("[data-m]"); if (nav) { view.setMonth(view.getMonth() + +nav.dataset.m); paint(); return; }
+    if (e.target.closest(".dp__close")) return close();
+    if (e.target.closest(".dp__clear")) { set(cur, ""); return close(); }
+    const d = e.target.closest("[data-d]"); if (!d || d.disabled) return;
+    const inp = cur; set(inp, d.dataset.d); navigator.vibrate?.(4); close();
+    // picking the first date of a pair moves on to the second one
+    const next = pairTo(inp);
+    if (next) { if (!next.min || next.min < inp.value) next.min = inp.value; if (next.value && next.value <= inp.value) set(next, ""); if (!next.value) setTimeout(() => open(next), 260); }
+  });
+  addEventListener("keydown", e => { if (!sheet.hidden && e.key === "Escape") close(); });
+  function enhance(inp) {
+    if (inp.dataset.dp) return; inp.dataset.dp = "1";
+    const btn = document.createElement("button"); btn.type = "button"; btn.className = "dp-field"; inp.after(btn); inp.classList.add("dp-native"); inp.tabIndex = -1;
+    const label = () => { const v = VALUE.get.call(inp); btn.textContent = v ? cap(parse(v).toLocaleDateString(getLang(), { weekday: "short", day: "numeric", month: "short", year: "numeric" })) : t("Elegir fecha"); btn.classList.toggle("is-empty", !v); };
+    Object.defineProperty(inp, "value", { configurable: true, get() { return VALUE.get.call(inp); }, set(v) { VALUE.set.call(inp, v); label(); } });
+    btn.addEventListener("click", e => { e.preventDefault(); open(inp); });
+    inp.addEventListener("change", label); document.addEventListener("langchange", label); label();
+  }
+  const scan = root => root.querySelectorAll?.("input[type=date]:not([data-dp])").forEach(enhance);
+  scan(document);
+  new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1) { if (n.matches?.("input[type=date]")) enhance(n); else scan(n); } }))).observe(document.body, { childList: true, subtree: true });
+}
 initConsent(CONFIG.analytics);
 /* what people do, for Analytics: contact taps, legal-free and anonymous (no personal data is sent) */
 document.addEventListener("click", e => {
@@ -772,7 +845,7 @@ document.addEventListener("click", e => {
 const LOADED_AT = performance.now();
 const CHOICES = { yates: "Barco", motos: "Moto de agua", coches: "Coche", moto: "Moto", villas: "Villa", vip: "Mesas VIP en clubs", transfers: "Transfer", dining: "Chef privado", dj: "DJ", formentera: "Formentera Experience" };
 // the services that unlock the guestlist gifts (every one in the list, club VIP tables included)
-const GIFT_SVC = new Set(["yates", "motos", "moto", "coches", "villas", "vip", "dining", "transfers", "dj"]);
+const GIFT_SVC = new Set(["yates", "motos", "moto", "coches", "villas", "vip", "dining", "transfers", "dj", "formentera"]);
 const giftCount = () => [...chosen].filter(c => GIFT_SVC.has(c)).length;
 const chips = document.getElementById("chips"), chosen = new Set();
 for (const [id, n] of Object.entries(CHOICES)) chips.insertAdjacentHTML("beforeend", `<button type="button" class="chip" data-c="${id}" aria-pressed="false">${n}</button>`);
@@ -796,7 +869,7 @@ function paintLadder() {
       ${LADDER.map((s, i) => `<span class="ladder__step${k >= s.n ? " is-on" : ""}" style="left:${(i + 1) / 3 * 100}%"><b>${s.n}${s.n === 3 ? "+" : ""}</b></span>`).join("")}</div>
     <ol class="ladder__list">${LADDER.map(s => `<li class="${k >= s.n ? "is-on" : ""}"><span>${s.n}${s.n === 3 ? "+" : ""} ${t(s.n === 1 ? "servicio" : "servicios")}</span>${t(s.short)}</li>`).join("")}</ol>
     <p class="ladder__msg">${head}${more ? `<br><span>${more}</span>` : ""}</p>
-    <p class="ladder__fine">${t("Cuentan barco, moto de agua, moto, coche, villa, chef, transfer, mesa VIP y DJ.")} ${t("Regalos de cortesía, sujetos a disponibilidad del club. Guestlist solo para mayores de 18.")} <a href="legal/terminos.html#guestlists" target="_blank" rel="noopener">${t("Ver condiciones")}</a></p>`;
+    <p class="ladder__fine">${t("Cuentan barco, moto de agua, moto, coche, villa, chef, transfer, mesa VIP, DJ y Formentera Experience.")} ${t("Regalos de cortesía, sujetos a disponibilidad del club. Guestlist solo para mayores de 18.")} <a href="legal/terminos.html#guestlists" target="_blank" rel="noopener">${t("Ver condiciones")}</a></p>`;
   if (got && ladderEl.dataset.got !== String(got.n)) { ladderEl.classList.remove("is-pop"); void ladderEl.offsetWidth; ladderEl.classList.add("is-pop"); }
   ladderEl.dataset.got = got ? got.n : "";
 }
@@ -822,7 +895,7 @@ clubChips.addEventListener("click", e => {
 chips.addEventListener("click", e => { const c = e.target.closest(".chip"); if (c) select(c.dataset.c, !chosen.has(c.dataset.c)); });
 document.querySelectorAll("[data-pack]").forEach(b => b.addEventListener("click", () => {
   if (openWA(`${t("plan")} ${b.dataset.pack}`, "paquete")) return;
-  const map = { "Arrival": ["transfers", "villas", "dining"], "Sea & Sun": ["yates", "motos", "dining"], "Night Edition": ["vip", "transfers"], "Signature": ["villas", "yates", "vip", "transfers"] };
+  const map = { "Arrival": ["transfers", "villas", "dining"], "Sea & Sun": ["yates", "motos", "dining"], "Night Edition": ["vip", "transfers"], "Signature": ["villas", "yates", "vip", "transfers"], "Island Hopper": ["formentera", "motos", "vip"], "Day to Night": ["vip", "transfers"], "Celebration": ["villas", "dining", "dj", "vip"], "Sunset Lovers": ["yates", "transfers"], "Family Days": ["yates", "villas", "dining", "coches"] };
   (map[b.dataset.pack] || []).forEach(id => select(id, true));
   document.getElementById("f-notes").value = b.dataset.pack === "Signature" ? `${t("Me interesa")}: Signature by Mey Society. ${t("Lo que celebro")}: ` : `${t("Me interesa")}: ${t("plan")} ${b.dataset.pack}.`;
   track("select_promotion", { promotion_name: b.dataset.pack });

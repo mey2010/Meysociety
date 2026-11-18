@@ -2311,3 +2311,41 @@ html[data-theme="dark"] .sm-soc { color: #f4f5fb; background: rgb(244 245 251 / 
 .sm-soc.social__btn--mail:hover, .sm-soc.social__btn--mail:focus-visible { background: linear-gradient(140deg, var(--violet), #1e24bb); }
 #agenda .ag__fine { text-align: center; text-align-last: center; }
 @media (max-width: 899px) { .ag__search input { padding: 0 4px; font-size: 16px; letter-spacing: -.01em; } .ag__search label { padding: 4px 2px 0; } }
+
+/* ================= date picker in the logo's colours (see app.js) ================= */
+.dp-native { position: absolute !important; width: 1px !important; height: 1px !important; opacity: 0 !important; pointer-events: none !important; overflow: hidden; clip-path: inset(50%); }
+.dp-field { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 50px; padding: 0 14px; border: 0; border-radius: 16px; cursor: pointer;
+  font: 500 16px/1.2 inherit; text-align: center; color: var(--ag-ink, inherit);
+  background: linear-gradient(140deg, rgb(171 80 219 / .14), rgb(120 199 228 / .16)); box-shadow: inset 0 0 0 1px rgb(120 199 228 / .45); -webkit-tap-highlight-color: transparent; transition: box-shadow 200ms; }
+.dp-field.is-empty { color: rgb(140 145 190); text-transform: none; }
+.dp-field:focus-visible, .dp-field:hover { box-shadow: inset 0 0 0 2px var(--violet); }
+#contacto .dp-field, .sec--night .dp-field { color: #fff; background: linear-gradient(140deg, rgb(171 80 219 / .22), rgb(120 199 228 / .14)); }
+#contacto .dp-field.is-empty { color: rgb(244 245 251 / .65); }
+.pl__grid2 .dp-field, .ag__search .dp-field { color: var(--ink); }
+html[data-theme="dark"] :is(.pl__grid2, .ag__search) .dp-field { color: #eef0fb; }
+.dp { position: fixed; inset: 0; z-index: 3000; display: grid; place-items: center; padding: 16px; background: rgb(13 10 56 / 0); transition: background 200ms; }
+.dp.is-in { background: rgb(13 10 56 / .38); }
+.dp__card { width: min(380px, 100%); padding: 0 0 14px; border-radius: 28px; overflow: hidden; background: #fff; color: #12102e; box-shadow: 0 40px 90px -30px rgb(13 10 56 / .7);
+  transform: translateY(16px) scale(.97); opacity: 0; transition: transform 260ms var(--ease), opacity 200ms; }
+.dp.is-in .dp__card { transform: none; opacity: 1; }
+.dp__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 12px; color: #fff; background: linear-gradient(120deg, #ab50db, #1e24bb 55%, #3d8fe0); }
+.dp__month { font: 600 18px/1 var(--serif); }
+.dp__nav { width: 40px; height: 40px; border: 0; border-radius: 50%; font-size: 24px; line-height: 1; color: #fff; background: rgb(255 255 255 / .18); cursor: pointer; }
+.dp__nav:disabled { opacity: .35; cursor: default; }
+.dp__week, .dp__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 0 12px; }
+.dp__week { padding-top: 12px; padding-bottom: 6px; }
+.dp__week span { text-align: center; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #6b4ee8; }
+.dp__grid button { aspect-ratio: 1; border: 0; border-radius: 50%; font: 500 16px/1 inherit; color: #12102e; background: transparent; cursor: pointer; transition: background 150ms, color 150ms; }
+.dp__grid button:hover:not(:disabled) { background: rgb(171 80 219 / .12); }
+.dp__grid button:disabled { color: #c3c5d8; cursor: default; }
+.dp__grid .is-today { box-shadow: inset 0 0 0 2px #78c7e4; }
+.dp__grid .is-range { border-radius: 10px; background: rgb(120 199 228 / .2); }
+.dp__grid .is-start { color: #fff; background: rgb(107 78 232 / .55); }
+.dp__grid .is-on { color: #fff; font-weight: 700; background: linear-gradient(140deg, #ab50db, #1e24bb); box-shadow: 0 8px 18px -8px rgb(30 36 187 / .9); }
+.dp__foot { display: flex; justify-content: space-between; gap: 10px; padding: 12px 14px 0; }
+.dp__foot button { min-height: 44px; padding: 0 18px; border: 0; border-radius: 999px; font: 600 15px/1 inherit; cursor: pointer; }
+.dp__clear { color: #6b4ee8; background: rgb(171 80 219 / .1); }
+.dp__close { color: #fff; background: linear-gradient(120deg, #ab50db, #1e24bb); }
+@media (max-width: 599px) { .dp { place-items: end center; padding: 0; } .dp__card { width: 100%; border-radius: 28px 28px 0 0; padding-bottom: calc(14px + env(safe-area-inset-bottom)); } }
+@media (prefers-reduced-motion: reduce) { .dp__card { transition: none; } }
+@media (min-width: 1200px) { .packs { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; } .pack { padding: 26px 22px; } .pack h3 { font-size: 36px; } }
