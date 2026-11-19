@@ -2482,3 +2482,11 @@ html[data-theme="dark"] .occs__title { color: #f4f5fb; }
 html[data-theme="dark"] .qs__opt { background: #1b1656; color: #eef0fb; } html[data-theme="dark"] .qs__cs { color: #b4b8dc; }
 .qs__cta:not(.qs__cta--main) { color: #d9c8ff; background: rgb(171 80 219 / .22); }
 html[data-theme="light"] .qs:not(.is-dark) .qs__cta:not(.qs__cta--main) { color: #d9c8ff; }
+/* a little more air between the menu's sections */
+.sm-panel-list { gap: .9rem; }
+@media (max-width: 600px) { .sm-panel-list { gap: .75rem; } }
+/* "Viajamos con niños": a round tick, not a square */
+.pl__check input { border-radius: 50%; }
+.pl__check input:checked { background: linear-gradient(140deg, var(--violet), #1e24bb); }
+.pl__check { color: var(--ink); }
+.pl__check input { width: 24px !important; height: 24px !important; min-width: 24px; min-height: 0 !important; max-width: 24px; padding: 0 !important; margin: 0; flex: 0 0 24px; aspect-ratio: 1; border: 0; border-radius: 50% !important; }
