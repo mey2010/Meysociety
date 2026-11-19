@@ -2457,3 +2457,28 @@ html[data-theme="dark"] .occs__title { color: #f4f5fb; }
   .mf__rewards { grid-template-columns: 1fr; } .mf__grid { grid-template-columns: 1fr; }
   .mf__row { flex-direction: column; } .mf__row .btn { width: 100%; } .mf__btn { flex: 1 1 auto; }
 }
+/* referral share: the same round icons as the menu, on the dark card */
+.mf__share { gap: 12px; }
+.mf__ico { width: 52px; height: 52px; border: 0; cursor: pointer; color: #fff; background: rgb(244 245 251 / .1); box-shadow: inset 0 0 0 1px rgb(217 220 239 / .3); }
+.mf__ico:hover, .mf__ico:focus-visible { color: #fff; }
+.mf__ico--link:hover, .mf__ico--share:hover { background: linear-gradient(140deg, var(--violet), #1e24bb); }
+
+/* ================= Mey, the assistant in the search ================= */
+.qs__ai { margin: 12px 0 4px; padding: 16px; border-radius: 22px; background: linear-gradient(140deg, rgb(171 80 219 / .1), rgb(120 199 228 / .12)); box-shadow: inset 0 0 0 1px rgb(171 80 219 / .2); animation: plIn 300ms var(--ease) both; }
+.qs__who { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.qs__av { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-weight: 700; font-size: 13px; color: #fff; background: linear-gradient(140deg, var(--violet), #1e24bb); }
+.qs__who b { font-size: 14px; } .qs__who small { font-size: 12px; color: #6b4ee8; }
+.qs__say { margin: 0; font-size: 15px; line-height: 1.5; text-align: left; white-space: pre-line; }
+.qs__say.is-typing:empty::after { content: "···"; letter-spacing: .2em; color: #6b4ee8; animation: agPulse 1.2s infinite; }
+.qs__cards { display: flex; gap: 10px; margin: 12px -16px 0; padding: 2px 16px 6px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.qs__cards::-webkit-scrollbar { display: none; }
+.qs__opt { flex: 0 0 150px; display: grid; gap: 2px; padding: 0 0 10px; border: 0; border-radius: 16px; overflow: hidden; text-align: left; cursor: pointer; background: #fff; box-shadow: 0 0 0 1px rgb(81 92 159 / .14), 0 10px 20px -16px rgb(13 10 56 / .6); scroll-snap-align: start; color: var(--ink); }
+.qs__opt img, .qs__mono { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: grid; place-items: center; margin-bottom: 6px; background: linear-gradient(140deg, #e4defe, #d9ecfa); font: 700 26px/1 var(--serif); color: #6b4ee8; }
+.qs__ct { padding: 0 10px; font-weight: 600; font-size: 14px; line-height: 1.2; }
+.qs__cs { padding: 0 10px; font-size: 12px; color: #5b5f88; }
+.qs__ctas { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.qs__cta { min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px; font: 600 14px/1 inherit; cursor: pointer; color: #6b4ee8; background: rgb(171 80 219 / .12); }
+.qs__cta--main { color: #fff; background: linear-gradient(120deg, var(--violet), #1e24bb); box-shadow: 0 10px 20px -12px rgb(30 36 187 / .8); }
+html[data-theme="dark"] .qs__opt { background: #1b1656; color: #eef0fb; } html[data-theme="dark"] .qs__cs { color: #b4b8dc; }
+.qs__cta:not(.qs__cta--main) { color: #d9c8ff; background: rgb(171 80 219 / .22); }
+html[data-theme="light"] .qs:not(.is-dark) .qs__cta:not(.qs__cta--main) { color: #d9c8ff; }

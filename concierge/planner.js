@@ -190,7 +190,7 @@ const ITEMS = {
 };
 /* what each club usually plays and where it is, so a club night fits the group's music and the day before it
    (a night is always confirmed against that date's actual party and line-up) */
-const CLUBS = [
+export const CLUBS = [
   { n: "DC10", z: "south", g: ["techno", "techhouse"] }, { n: "Amnesia", z: "centre", g: ["techno", "techhouse", "melodic"] },
   { n: "[UNVRS]", z: "centre", g: ["house", "techhouse", "edm", "techno"] }, { n: "Hï Ibiza", z: "south", g: ["techhouse", "house", "techno", "edm"] },
   { n: "Ushuaïa Ibiza", z: "south", g: ["edm", "techhouse", "house", "commercial"] }, { n: "Pacha", z: "town", g: ["house", "afro", "disco", "melodic"] },

@@ -6,7 +6,7 @@ import { FLEET, FLEET_TYPES, TYPE_NOTE } from "./fleet-data.js";
 import { initVillaTour, readingStops } from "./villa-tour.js";
 import { initFormenteraTour } from "./fx-tour.js";
 import { initAgenda } from "./agenda.js";
-import { initPlanner } from "./planner.js";
+import { initPlanner, CLUBS as CLUB_MUSIC } from "./planner.js";
 import { holo } from "./holo.js";
 import { shatterType } from "./shatter.js";
 import { logoFlight } from "./logo-flight.js";
@@ -710,6 +710,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => { if (a.closest("#sm")) r
    CONTACT
    ===================================================================== */
 const CONFIG = {
+  aiEndpoint: "",   // live site: URL of a small server function that relays the assistant's questions to Claude (leave empty inside claude.ai)
   whatsapp: "",                       // international digits, no "+" (e.g. "34600111222")
   email: "Mey.society@protonmail.com",
   analytics: { plausible: "", ga4: "" }, // plausible: your domain (cookieless); ga4: "G-XXXXXXX" (asks for consent first)
@@ -1786,6 +1787,182 @@ document.addEventListener("click", async e => {
   m.querySelector(".terms-modal__body").innerHTML = html; m.hidden = false; m.querySelector(".modal__x").focus();
 });
 
+/* ---------------- Mey, the concierge assistant inside the search ----------------
+   Two layers. 1) An instant engine that understands requests ("barco para 9 personas", "moto de agua sin licencia",
+   "club de techno", "transfer para 6") and answers with the real options from the fleet and the clubs, as tappable
+   cards, in the visitor's language: it works on any website, offline, at no cost. 2) Anything else ("what do you
+   recommend for a hen party?") goes to Claude through the artifact's `sample` capability (or CONFIG.aiEndpoint on the
+   live site), briefed with the catalogue and told to answer like a sharp concierge: short, concrete, never inventing
+   prices or availability, always ending on the next step. Every answer ends in "ask for availability". */
+let closeSearch = () => {};
+const MEY = (() => {
+  const L = {
+    es: { occ: name => `Para eso tengo justo el plan: ${name}. Lo montamos a vuestra medida, con todo coordinado y un solo contacto. ¿Cuántos sois y qué fechas tenéis en mente?`,
+      seePack: "Ver el plan",
+      hi: "Pregúntame lo que quieras: «barco para 9 personas», «club de techno», «transfer desde el aeropuerto»…",
+      boats: (n, k, b) => n ? `Para ${n} personas tengo ${k} ${k === 1 ? "barco que os va" : "barcos que os van"} perfecto${k === 1 ? "" : "s"}. Mi apuesta: ${b}: espacio de sobra, sin ir apretados. ¿Lo queréis con patrón y comida a bordo? Dime la fecha y te confirmo disponibilidad.` : `Tengo ${k} barcos, de lanchas sin licencia a superyates. Dime cuántos sois y qué día, y te digo cuál os va mejor.`,
+      big: n => `Para ${n} personas lo más espectacular es ir en dos barcos navegando juntos, o en nuestro barco más grande. Te lo organizamos para que parezca uno solo.`,
+      nolic: k => `Sin licencia tienes ${k} opciones: las motos de agua van con un monitor que os abre la ruta, y hay barcos que no necesitan titulación. Para algo más grande, añadimos patrón.`,
+      jets: k => `Tenemos ${k} motos de agua Sea-Doo. Sin licencia vais con monitor por las calas; con licencia, libres las horas que elijáis. ¿A qué hora os viene mejor, mañana o atardecer?`,
+      cars: k => `Te dejo los coches que tenemos ahora. Si me dices cuántos sois y para cuántos días, te propongo el ideal y te lo dejamos en la villa.`,
+      transfer: (n, v) => n ? `Para ${n} personas te va ${v}. Te esperamos en llegadas con tu nombre y te llevamos directo a la villa, sin colas de taxi.` : `Te recogemos en el aeropuerto o el puerto con conductor privado. Dime cuántos sois y la hora de tu vuelo.`,
+      clubs: g => g ? `Si os gusta ${g}, estos son vuestros clubs. Te guardo mesa VIP según el line-up de esa noche; las mejores mesas vuelan en cuanto sale el cartel.` : `Estos son los clubs que más pedimos. Dime qué música os gusta y la noche, y te digo dónde ir y te guardo mesa.`,
+      villa: `Te enseño Villa Aura por dentro con un recorrido en vídeo. Todas nuestras villas tienen licencia turística; dime cuántos sois y las fechas y te paso las que encajan.`,
+      fx: `La Formentera Experience son 12 horas todo incluido: Espalmador, Ses Illetes, 6 horas libres y sunset party de vuelta. Es de lo que más repite la gente.`,
+      price: `No publicamos precios porque cambian con la fecha y la disponibilidad. Dime fechas y cuántos sois y te paso presupuesto cerrado, con cada servicio y nuestra tarifa clara.`,
+      gl: `Con cada servicio que reservas te regalamos guestlists: 1 con un servicio, 3 con dos y 4 o más con tres. Y si traes amigos, sumas más. Sujetas a disponibilidad del club, mayores de 18.`,
+      dj: `Un DJ profesional con una sesión diseñada para ti, en tu villa, barco o evento privado. Dime qué música os gusta y la fecha.`,
+      chef: `Chef privado en tu villa, con menú a tu medida. Dime cuántos sois y si hay alergias, y te paso propuestas.`,
+      none: `Cuéntame un poco más y te lo resuelvo: ¿cuántos sois, qué fechas y qué os apetece?`,
+      ask: "Pedir disponibilidad", seeFleet: "Ver flota", seeAgenda: "Ver agenda de clubs", seeVilla: "Ver Villa Aura", seeFx: "Ver excursión", thinking: "Mey está pensando…", askAi: "Preguntar a Mey", pax: n => `${n} pers.`,
+      v4: "un Mercedes para hasta 4", v7: "un Mercedes Clase V de 7 plazas", v9: "una furgoneta de 8–9 plazas", v13: "un minibús de 10–13 plazas", vbig: "varios vehículos coordinados" },
+    en: { occ: name => `I have just the plan for that: ${name}. We tailor it to you, everything coordinated, one contact. How many of you and what dates are you thinking of?`,
+      seePack: "See the plan",
+      hi: "Ask me anything: “boat for 9 people”, “techno club”, “airport transfer”…",
+      boats: (n, k, b) => n ? `For ${n} people I have ${k} boat${k === 1 ? "" : "s"} that fit perfectly. My pick: ${b}: plenty of room, no squeezing. Want it with a skipper and lunch on board? Tell me the date and I'll confirm availability.` : `I have ${k} boats, from licence-free speedboats to superyachts. Tell me how many you are and the day, and I'll tell you which suits you best.`,
+      big: n => `For ${n} people the most spectacular option is two boats sailing together, or our largest one. We arrange it so it feels like one.`,
+      nolic: k => `Without a licence you have ${k} options: jet skis go with an instructor leading the way, and some boats need no licence. For something bigger, we add a skipper.`,
+      jets: k => `We have ${k} Sea-Doo jet skis. Without a licence you ride with an instructor through the coves; with one, you're free for the hours you choose. Morning or sunset?`,
+      cars: k => `Here are the cars we have right now. Tell me how many you are and for how many days, and I'll suggest the ideal one and leave it at your villa.`,
+      transfer: (n, v) => n ? `For ${n} people, ${v} is right. We wait at arrivals with your name and take you straight to the villa, no taxi queues.` : `We pick you up at the airport or port with a private driver. Tell me how many you are and your flight time.`,
+      clubs: g => g ? `If you like ${g}, these are your clubs. I'll hold a VIP table depending on that night's line-up; the best tables go as soon as it's announced.` : `These are the clubs we're asked for most. Tell me the music you like and the night, and I'll tell you where to go and hold a table.`,
+      villa: `Let me show you Villa Aura inside with a video tour. All our villas are licensed; tell me how many you are and your dates and I'll send the ones that fit.`,
+      fx: `Formentera Experience is 12 hours all inclusive: Espalmador, Ses Illetes, 6 free hours and a sunset party on the way back. People love to repeat it.`,
+      price: `We don't publish prices because they change with the date and availability. Tell me your dates and group size and I'll send a firm quote, with each service and our clear fee.`,
+      gl: `With every service you book you get complimentary guestlists: 1 with one service, 3 with two, 4 or more with three. Bring friends and you get more. Subject to club availability, 18+.`,
+      dj: `A professional DJ with a set designed for you, at your villa, on a boat or at a private event. Tell me your music and the date.`,
+      chef: `A private chef at your villa with a bespoke menu. Tell me how many you are and any allergies, and I'll send ideas.`,
+      none: `Tell me a bit more and I'll sort it: how many of you, what dates and what do you fancy?`,
+      ask: "Ask for availability", seeFleet: "See the fleet", seeAgenda: "See club agenda", seeVilla: "See Villa Aura", seeFx: "See the excursion", thinking: "Mey is thinking…", askAi: "Ask Mey", pax: n => `${n} ppl`,
+      v4: "a Mercedes for up to 4", v7: "a 7-seat Mercedes V-Class", v9: "an 8–9 seat van", v13: "a 10–13 seat minibus", vbig: "several coordinated vehicles" },
+    it: { occ: name => `Per questo ho il piano giusto: ${name}. Lo costruiamo su misura, tutto coordinato e un solo contatto. Quanti siete e che date avete in mente?`,
+      seePack: "Vedi il piano",
+      hi: "Chiedimi quello che vuoi: «barca per 9 persone», «club techno», «transfer dall'aeroporto»…",
+      boats: (n, k, b) => n ? `Per ${n} persone ho ${k} ${k === 1 ? "barca perfetta" : "barche perfette"} per voi. La mia scelta: ${b}: spazio in abbondanza, senza stare stretti. La volete con skipper e pranzo a bordo? Dimmi la data e ti confermo la disponibilità.` : `Ho ${k} barche, dai gommoni senza patente ai superyacht. Dimmi quanti siete e il giorno, e ti dico quale fa per voi.`,
+      big: n => `Per ${n} persone la soluzione più spettacolare sono due barche che navigano insieme, o la nostra barca più grande. Organizziamo tutto perché sembri una sola.`,
+      nolic: k => `Senza patente hai ${k} opzioni: le moto d'acqua vanno con un istruttore che vi apre la rotta, e ci sono barche che non richiedono patente. Per qualcosa di più grande, aggiungiamo lo skipper.`,
+      jets: k => `Abbiamo ${k} moto d'acqua Sea-Doo. Senza patente andate con istruttore tra le calette; con patente, liberi per le ore che scegliete. Mattina o tramonto?`,
+      cars: k => `Ecco le auto disponibili. Dimmi quanti siete e per quanti giorni, ti propongo quella ideale e te la lasciamo in villa.`,
+      transfer: (n, v) => n ? `Per ${n} persone va bene ${v}. Vi aspettiamo agli arrivi con il vostro nome e vi portiamo dritti in villa, senza code ai taxi.` : `Ti veniamo a prendere in aeroporto o al porto con autista privato. Dimmi quanti siete e l'orario del volo.`,
+      clubs: g => g ? `Se vi piace ${g}, questi sono i vostri club. Ti tengo un tavolo VIP in base al line-up della serata; i tavoli migliori vanno via appena esce il cartellone.` : `Questi sono i club più richiesti. Dimmi che musica vi piace e la serata, e ti dico dove andare e ti tengo il tavolo.`,
+      villa: `Ti mostro Villa Aura dentro con un video tour. Tutte le nostre ville hanno licenza turistica; dimmi quanti siete e le date e ti mando quelle giuste.`,
+      fx: `Formentera Experience sono 12 ore all-inclusive: Espalmador, Ses Illetes, 6 ore libere e sunset party al ritorno. È tra le esperienze più ripetute.`,
+      price: `Non pubblichiamo i prezzi perché cambiano con la data e la disponibilità. Dimmi date e quanti siete e ti mando un preventivo chiuso, con ogni servizio e la nostra tariffa chiara.`,
+      gl: `Con ogni servizio prenotato ti regaliamo guestlist: 1 con un servizio, 3 con due, 4 o più con tre. E se porti amici, ne aggiungi altre. Soggette a disponibilità del club, maggiorenni.`,
+      dj: `Un DJ professionista con un set pensato per te, in villa, in barca o al tuo evento privato. Dimmi la musica e la data.`,
+      chef: `Chef privato in villa con menù su misura. Dimmi quanti siete e le allergie, e ti mando proposte.`,
+      none: `Raccontami un po' di più e lo risolvo: quanti siete, che date e cosa vi va di fare?`,
+      ask: "Chiedi disponibilità", seeFleet: "Vedi la flotta", seeAgenda: "Vedi agenda club", seeVilla: "Vedi Villa Aura", seeFx: "Vedi l'escursione", thinking: "Mey sta pensando…", askAi: "Chiedi a Mey", pax: n => `${n} pers.`,
+      v4: "una Mercedes fino a 4", v7: "una Mercedes Classe V da 7 posti", v9: "un van da 8–9 posti", v13: "un minibus da 10–13 posti", vbig: "più veicoli coordinati" },
+    fr: { occ: name => `J'ai exactement la formule : ${name}. Nous l'adaptons à vous, tout coordonné, un seul contact. Combien êtes-vous et quelles dates envisagez-vous ?`,
+      seePack: "Voir la formule",
+      hi: "Demandez-moi ce que vous voulez : « bateau pour 9 personnes », « club techno », « transfert depuis l'aéroport »…",
+      boats: (n, k, b) => n ? `Pour ${n} personnes, j'ai ${k} bateau${k === 1 ? "" : "x"} parfait${k === 1 ? "" : "s"} pour vous. Mon choix : ${b} : de la place à revendre, sans être serrés. Avec skipper et déjeuner à bord ? Donnez-moi la date et je confirme la disponibilité.` : `J'ai ${k} bateaux, des vedettes sans permis aux superyachts. Dites-moi combien vous êtes et le jour, et je vous dis lequel vous va le mieux.`,
+      big: n => `Pour ${n} personnes, le plus spectaculaire, ce sont deux bateaux qui naviguent ensemble, ou notre plus grand bateau. Nous organisons tout pour que ce soit comme un seul.`,
+      nolic: k => `Sans permis, vous avez ${k} options : les jet-skis partent avec un moniteur qui ouvre la route, et certains bateaux ne demandent pas de permis. Pour plus grand, on ajoute un skipper.`,
+      jets: k => `Nous avons ${k} jet-skis Sea-Doo. Sans permis, vous partez avec un moniteur dans les criques ; avec permis, libres pendant les heures choisies. Matin ou coucher de soleil ?`,
+      cars: k => `Voici nos voitures. Dites-moi combien vous êtes et pour combien de jours, je vous propose la voiture idéale et on la dépose à la villa.`,
+      transfer: (n, v) => n ? `Pour ${n} personnes, ${v} est idéal. Nous vous attendons aux arrivées avec votre nom et vous conduisons directement à la villa, sans file de taxis.` : `Nous venons vous chercher à l'aéroport ou au port avec chauffeur privé. Dites-moi combien vous êtes et l'heure de votre vol.`,
+      clubs: g => g ? `Si vous aimez ${g}, voici vos clubs. Je vous garde une table VIP selon le line-up du soir ; les meilleures tables partent dès l'annonce.` : `Voici les clubs les plus demandés. Dites-moi votre musique et la soirée, je vous dis où aller et je garde une table.`,
+      villa: `Je vous montre Villa Aura de l'intérieur avec une visite vidéo. Toutes nos villas sont agréées ; dites-moi combien vous êtes et vos dates, je vous envoie celles qui conviennent.`,
+      fx: `Formentera Experience, c'est 12 heures tout compris : Espalmador, Ses Illetes, 6 heures libres et sunset party au retour. Beaucoup la refont.`,
+      price: `Nous ne publions pas nos prix car ils varient selon la date et la disponibilité. Donnez-moi vos dates et votre groupe, je vous envoie un devis ferme, avec chaque service et nos frais clairs.`,
+      gl: `Avec chaque service réservé, nous offrons des guestlists : 1 avec un service, 3 avec deux, 4 ou plus avec trois. Et si vous amenez des amis, vous en gagnez plus. Selon disponibilité du club, 18 ans et plus.`,
+      dj: `Un DJ professionnel avec un set pensé pour vous, à la villa, sur un bateau ou à votre événement privé. Dites-moi votre musique et la date.`,
+      chef: `Un chef privé à la villa avec un menu sur mesure. Dites-moi combien vous êtes et vos allergies, je vous envoie des idées.`,
+      none: `Dites-m'en un peu plus et je m'en occupe : combien êtes-vous, quelles dates et qu'avez-vous envie de faire ?`,
+      ask: "Demander la disponibilité", seeFleet: "Voir la flotte", seeAgenda: "Voir l'agenda des clubs", seeVilla: "Voir Villa Aura", seeFx: "Voir l'excursion", thinking: "Mey réfléchit…", askAi: "Demander à Mey", pax: n => `${n} pers.`,
+      v4: "une Mercedes jusqu'à 4", v7: "un Mercedes Classe V 7 places", v9: "un van 8–9 places", v13: "un minibus 10–13 places", vbig: "plusieurs véhicules coordonnés" },
+    de: { occ: name => `Dafür habe ich genau den richtigen Plan: ${name}. Wir passen ihn an euch an, alles koordiniert, ein Kontakt. Wie viele seid ihr und welche Daten habt ihr im Kopf?`,
+      seePack: "Plan ansehen",
+      hi: "Frag mich, was du willst: „Boot für 9 Personen“, „Techno-Club“, „Flughafentransfer“…",
+      boats: (n, k, b) => n ? `Für ${n} Personen habe ich ${k} ${k === 1 ? "Boot, das perfekt passt" : "Boote, die perfekt passen"}. Mein Tipp: ${b}: viel Platz, nichts ist eng. Mit Skipper und Mittagessen an Bord? Sag mir das Datum und ich bestätige die Verfügbarkeit.` : `Ich habe ${k} Boote, vom führerscheinfreien Motorboot bis zur Superyacht. Sag mir, wie viele ihr seid und welcher Tag, und ich sage dir, welches am besten passt.`,
+      big: n => `Für ${n} Personen ist das Spektakulärste: zwei Boote, die zusammen fahren, oder unser größtes Boot. Wir organisieren es so, dass es sich wie eins anfühlt.`,
+      nolic: k => `Ohne Führerschein hast du ${k} Optionen: Jetskis fahren mit einem Guide voraus, und manche Boote brauchen keinen Führerschein. Für Größeres kommt ein Skipper dazu.`,
+      jets: k => `Wir haben ${k} Sea-Doo-Jetskis. Ohne Führerschein fahrt ihr mit Guide durch die Buchten, mit Führerschein frei für die gewünschten Stunden. Morgens oder zum Sonnenuntergang?`,
+      cars: k => `Hier sind unsere Autos. Sag mir, wie viele ihr seid und für wie viele Tage, ich schlage das ideale vor und wir stellen es an deiner Villa ab.`,
+      transfer: (n, v) => n ? `Für ${n} Personen passt ${v}. Wir warten in der Ankunftshalle mit deinem Namen und bringen euch direkt zur Villa, ohne Taxischlange.` : `Wir holen dich mit Privatfahrer am Flughafen oder Hafen ab. Sag mir, wie viele ihr seid und wann dein Flug landet.`,
+      clubs: g => g ? `Wenn ihr ${g} mögt, sind das eure Clubs. Ich halte euch einen VIP-Tisch je nach Line-up des Abends; die besten Tische sind weg, sobald es angekündigt ist.` : `Das sind die meistgefragten Clubs. Sag mir eure Musik und den Abend, und ich sage dir, wohin, und halte einen Tisch.`,
+      villa: `Ich zeige dir Villa Aura von innen mit einer Videotour. Alle unsere Villen sind lizenziert; sag mir, wie viele ihr seid und eure Daten, und ich schicke dir die passenden.`,
+      fx: `Formentera Experience sind 12 Stunden all inclusive: Espalmador, Ses Illetes, 6 freie Stunden und Sunset-Party auf der Rückfahrt. Viele machen sie zweimal.`,
+      price: `Wir veröffentlichen keine Preise, weil sie sich mit Datum und Verfügbarkeit ändern. Sag mir Daten und Gruppengröße, und ich schicke dir ein festes Angebot mit jedem Service und unserer klaren Gebühr.`,
+      gl: `Mit jedem gebuchten Service schenken wir dir Guestlists: 1 bei einem Service, 3 bei zwei, 4 oder mehr bei drei. Und wenn du Freunde mitbringst, gibt es mehr. Je nach Verfügbarkeit des Clubs, ab 18.`,
+      dj: `Ein professioneller DJ mit einem Set nur für dich, in der Villa, an Bord oder bei deinem privaten Event. Sag mir eure Musik und das Datum.`,
+      chef: `Ein Privatkoch in deiner Villa mit Menü nach Maß. Sag mir, wie viele ihr seid und ob es Allergien gibt, und ich schicke dir Vorschläge.`,
+      none: `Erzähl mir ein bisschen mehr und ich kümmere mich: Wie viele seid ihr, welche Daten und worauf habt ihr Lust?`,
+      ask: "Verfügbarkeit anfragen", seeFleet: "Flotte ansehen", seeAgenda: "Club-Agenda ansehen", seeVilla: "Villa Aura ansehen", seeFx: "Ausflug ansehen", thinking: "Mey denkt nach…", askAi: "Mey fragen", pax: n => `${n} Pers.`,
+      v4: "ein Mercedes für bis zu 4", v7: "eine Mercedes V-Klasse mit 7 Sitzen", v9: "ein Van mit 8–9 Sitzen", v13: "ein Minibus mit 10–13 Sitzen", vbig: "mehrere abgestimmte Fahrzeuge" },
+  };
+  return { L, lx: () => L[getLang()] || L.en };
+})();
+function meyAgent(qRaw) {
+  const f = s => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const q = f(qRaw), x = MEY.lx(), es = getLang() === "es" ? MEY.L.es : x;
+  const m = q.match(/\b(\d{1,3})\b/), n = m ? Math.min(200, +m[1]) : (/\b(pareja|couple|coppia|deux|zwei|dos)\b/.test(q) ? 2 : 0);
+  const has = rx => rx.test(q);
+  const nolic = has(/sin licencia|sin titul|sin carnet|without (a )?licen|no licen|senza patente|sans permis|ohne (fuhrer|schein)/);
+  const out = { text: "", cards: [], ctas: [], services: [] };
+  const boatCard = b => ({ img: cardSrc(b), title: b.name, sub: [b.len, b.pax && x.pax(b.pax), t(CAT_LABEL[b.type])].filter(Boolean).join(" · "), go: () => openBoat(b) });
+  const GENRES = { techno: /techno(?! house)/, techhouse: /tech ?house/, house: /\bhouse\b/, afro: /afro/, melodic: /melodic/, edm: /\bedm\b|big room|electro/, commercial: /comercial|commercial|reggaet|latino|pop/, hiphop: /hip ?hop|r&b|rap|trap/, disco: /disco|funk/ };
+  const genres = Object.keys(GENRES).filter(g => GENRES[g].test(q));
+  if (has(/precio|cuanto cuesta|cuanto vale|tarifa|price|cost|how much|prezzo|quanto costa|prix|combien|preis|kostet|€|euros?/)) { out.text = es.price; out.ctas = ["ask"]; return out; }
+  if (has(/guest ?list|lista de invitad|cortesia|regalo|gratis|free entry|ingresso/)) { out.text = es.gl; out.ctas = ["ask"]; return out; }
+  if (has(/moto(s)? de agua|jet ?ski|moto d.acqua|wasserski|wassermotorrad|sea-?doo|scooter des mers/)) {
+    const js = FLEET.filter(b => b.type === "moto-agua"); out.cards = js.map(boatCard); out.text = es.jets(js.length); out.ctas = ["ask", "fleet:moto-agua"]; out.services = ["motos"]; return out; }
+  if (has(/barc|yat|lanch|catamar|velero|boat|yacht|bateau|barca|boot|superyate|charter|navegar/) || (nolic && !has(/coche|car/))) {
+    let pool = BOATS.slice();
+    if (nolic) pool = pool.filter(b => b.type === "sin-licencia");
+    if (has(/catamar/)) pool = pool.filter(b => b.type === "catamaran");
+    if (has(/superyate|superyacht/)) pool = pool.filter(b => b.type === "superyate");
+    const fit = n ? pool.filter(b => b.pax >= n).sort((a, b) => a.pax - b.pax || parseFloat(String(a.len).replace(",", ".")) - parseFloat(String(b.len).replace(",", "."))) : pool.filter(b => b.pax).sort(() => 0).slice(0, 12);
+    if (n && !fit.length) { const top = pool.filter(b => b.pax).sort((a, b) => b.pax - a.pax).slice(0, 3); out.text = es.big(n); out.cards = top.map(boatCard); }
+    else if (nolic) { out.text = es.nolic(pool.length); out.cards = pool.slice(0, 4).map(boatCard); }
+    else { const best = fit[0]; out.text = es.boats(n, n ? fit.length : BOATS.length, best ? `${best.name}${best.len ? ` (${best.len})` : ""}` : ""); out.cards = fit.slice(0, 6).map(boatCard); }
+    out.ctas = ["ask", "fleet:open"]; out.services = ["yates"]; return out;
+  }
+  if (has(/transfer|aeropuerto|airport|aeroporto|aeroport|flughafen|traslado|chofer|driver|taxi|navette/)) {
+    const v = !n ? "" : n <= 4 ? es.v4 : n <= 7 ? es.v7 : n <= 9 ? es.v9 : n <= 13 ? es.v13 : es.vbig;
+    out.text = es.transfer(n, v); out.cards = FLEET.filter(b => b.type === "transfer").map(boatCard); out.ctas = ["ask"]; out.services = ["transfers"]; return out; }
+  if (has(/coche|deportivo|lamborghini|ferrari|porsche|\bsuv\b|rent a car|\bcar\b|voiture|\bauto\b|cabrio/)) {
+    const cs = FLEET.filter(b => b.type === "coche"); out.text = es.cars(cs.length); out.cards = cs.map(boatCard); out.ctas = ["ask", "fleet:coche"]; out.services = ["coches"]; return out; }
+  if (genres.length || has(/club|discoteca|disco\b|fiesta|party|mesa vip|vip table|tavolo vip|nightlife|salir de noche|line-?up|pacha|amnesia|dc10|hi ibiza|ushuaia|unvrs|eden|lio/)) {
+    const named = CLUB_MUSIC.filter(c => q.includes(f(c.n).replace(/[\[\]]/g, "")));
+    const list = (named.length ? named : CLUB_MUSIC.map(c => ({ c, s: genres.filter(g => c.g.includes(g)).length })).filter(o => !genres.length || o.s).sort((a, b) => b.s - a.s).map(o => o.c)).slice(0, 6);
+    const gl = genres.map(g => ({ techno: "techno", techhouse: "tech house", house: "house", afro: "afro house", melodic: "melodic techno", edm: "EDM", commercial: getLang() === "es" ? "comercial y reggaeton" : "commercial", hiphop: "hip hop", disco: "disco" }[g])).join(", ");
+    out.text = es.clubs(gl); out.cards = list.map(c => ({ title: c.n, sub: c.g.slice(0, 3).map(g => ({ techno: "Techno", techhouse: "Tech house", house: "House", afro: "Afro house", melodic: "Melodic", edm: "EDM", commercial: "Commercial", hiphop: "Hip hop", disco: "Disco" }[g])).join(" · "),
+      go: () => { closeSearch(); scrollToEl(document.getElementById("agenda")); } }));
+    out.ctas = ["ask", "agenda"]; out.services = ["vip"]; return out;
+  }
+  // occasions: the package made for it, shown as a card that opens it
+  const OCCS = [[/despedida de soltera|hen|bachelorette|nubilato|evjf|junggesellinnen/, "Despedida de soltera"], [/despedida|stag|bachelor|celibato|evg|junggesellen/, "Despedida de soltero"],
+    [/cumple|birthday|compleanno|anniversaire|geburtstag/, "Cumpleaños"], [/pedida|propos|proposta|demande en mariage|heiratsantrag|anillo|ring/, "Pedida de mano"],
+    [/luna de miel|honeymoon|luna di miele|lune de miel|flitterwochen|recien casad/, "Luna de miel"], [/aniversario|anniversary|anniversario|jahrestag/, "Aniversario"],
+    [/familia|ninos|kids|children|famiglia|bambini|famille|enfants|familie|kinder/, "Family Days"], [/romant|pareja|couple|coppia|amoureux/, "Sunset Lovers"]];
+  const occ = OCCS.find(([rx]) => rx.test(q));
+  if (occ) {
+    const btn = document.querySelector(`[data-pack="${occ[1]}"]`), card = btn?.closest(".occ, .pack");
+    if (card) { const name = card.querySelector("h3").textContent.trim();
+      out.text = es.occ(name); out.cards = [{ title: name, sub: [...card.querySelectorAll("li")].slice(0, 2).map(li => li.textContent.trim()).join(" · "), go: () => scrollToEl(card) }];
+      out.ctas = ["ask", "pack:" + occ[1]]; return out; }
+  }
+  if (has(/formentera|illetes|excursi/)) { out.text = es.fx; out.ctas = ["ask", "fx"]; out.services = ["formentera"]; return out; }
+  if (has(/villa|casa|alojamiento|house rental|accommodation|alloggio|logement|unterkunft|piscina|pool villa/)) { out.text = es.villa; out.ctas = ["ask", "villa"]; out.services = ["villas"]; return out; }
+  if (has(/\bdj\b|dee ?jay|musica en la villa/)) { out.text = es.dj; out.ctas = ["ask"]; out.services = ["dj"]; return out; }
+  if (has(/chef|cocinero|cena privada|private dinner|cuoco|cuisinier|koch/)) { out.text = es.chef; out.ctas = ["ask"]; out.services = ["dining"]; return out; }
+  return null;
+}
+// the brief Claude gets with each question: who it is, what Mey Society sells, the real catalogue, and the rules
+function meyBrief() {
+  const byType = {}; FLEET.forEach(b => { (byType[b.type] ||= []).push(`${b.name}${b.pax ? ` (${b.pax} pax${b.len ? ", " + b.len : ""})` : ""}`); });
+  const fleet = Object.entries(byType).map(([k, v]) => `${CAT_LABEL[k] || k}: ${v.join("; ")}`).join("\n");
+  const clubs = CLUB_MUSIC.map(c => `${c.n}: ${c.g.join(", ")}`).join("; ");
+  const packs = [...document.querySelectorAll(".pack h3, .occ h3")].map(h => h.textContent.trim()).join(", ");
+  return `You are Mey, the private concierge of Mey Society in Ibiza. You speak like a sharp, warm, well-connected local concierge: short, concrete, confident, never pushy. Your goal is that the visitor books a service, so every answer recommends ONE concrete option from the catalogue that fits, gives one smart reason, and ends with a short question that moves to booking (dates, group size). 
+Rules: answer in ${LANGS[getLang()]} only. Maximum 70 words, plain text, no lists, no markdown, no emojis. Never invent prices, availability, discounts or services not listed; prices are quoted per date. Guestlists are complimentary (1 with one service, 3 with two, 4+ with three), subject to club availability, 18+. Villas are licensed. Jet skis without licence go with an instructor. Club nights depend on that date's line-up. Clubs, beach clubs and Formentera Experience run May–October. Never ask for payment or personal data in the chat; to book, the visitor uses "Ask for availability".
+Services: villas, boats with or without skipper, Formentera Experience (12h all inclusive day trip), jet skis, cars, private transfers, private chef, DJ, VIP tables and guestlists at clubs, packages (${packs}).
+Fleet:\n${fleet}\nClubs and their usual music: ${clubs}.`;
+}
+
 /* ---------------- search: a magnifier under the menu button finds anything on the page ----------------
    Sections, services, every boat and jet ski, every place on the map, the FAQ and the packages, in the visitor's
    language (the texts are read as they are shown). A result goes straight to its place: a boat opens its sheet,
@@ -1798,10 +1975,11 @@ document.addEventListener("click", async e => {
   wrap.appendChild(btn);
   const box = document.createElement("div"); box.className = "qs"; box.hidden = true; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true");
   box.innerHTML = `<div class="qs__card"><label class="qs__bar">${ICONS.search}<input class="qs__input" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button type="button" class="qs__x" data-close>${ICONS.close}</button></label>
+    <div class="qs__ai" hidden aria-live="polite"><div class="qs__who"><span class="qs__av" aria-hidden="true">M</span><b>Mey</b><small></small></div><p class="qs__say"></p><div class="qs__cards"></div><div class="qs__ctas"></div></div>
     <p class="qs__hint"></p><div class="qs__chips"></div><ul class="qs__list" role="listbox"></ul></div>`;
   document.body.appendChild(box);
   const input = box.querySelector(".qs__input"), list = box.querySelector(".qs__list"), hint = box.querySelector(".qs__hint"), chips = box.querySelector(".qs__chips");
-  const label = () => { btn.setAttribute("aria-label", t("Buscar")); box.setAttribute("aria-label", t("Buscar")); box.querySelector(".qs__x").setAttribute("aria-label", t("Cerrar")); input.placeholder = t("Barcos, clubs, playas…"); };
+  const label = () => { btn.setAttribute("aria-label", t("Buscar")); box.setAttribute("aria-label", t("Buscar")); box.querySelector(".qs__x").setAttribute("aria-label", t("Cerrar")); input.placeholder = t("Pregúntame: barco para 9 personas…"); };
   label(); document.addEventListener("langchange", label);
 
   // the index is built when the box opens, from what the page shows now (so it follows the language)
@@ -1819,17 +1997,63 @@ document.addEventListener("click", async e => {
     document.querySelectorAll(".pack").forEach(p => { const h = p.querySelector("h3"); if (h) add(t("Paquete"), txt(h), txt(p), () => scrollToEl(p)); });
     return out;
   };
-  const SUGGEST = ["Yates", "Motos de agua", "Villas", "Pacha", "Cala Comte", "DJ"];
+  const SUGGEST = ["Barco para 9 personas", "Moto de agua sin licencia", "Club de techno", "Transfer desde el aeropuerto para 6", "¿Cómo funcionan las guestlists?", "Villa con piscina"];
+  // ---- the assistant's answer: instant from the engine, or written by Claude for open questions ----
+  const ai = box.querySelector(".qs__ai"), say = ai.querySelector(".qs__say"), cardsEl = ai.querySelector(".qs__cards"), ctasEl = ai.querySelector(".qs__ctas");
+  let last = null, aiCtl = null, sampleP = null;
+  const getSample = () => sampleP || (sampleP = (window.claude?.use ? claude.use("sample") : Promise.resolve(null)).catch(() => null));
+  const CTA = { "pack:": () => MEY.lx().seePack, ask: () => MEY.lx().ask, "fleet:open": () => MEY.lx().seeFleet, "fleet:moto-agua": () => MEY.lx().seeFleet, "fleet:coche": () => MEY.lx().seeFleet, agenda: () => MEY.lx().seeAgenda, villa: () => MEY.lx().seeVilla, fx: () => MEY.lx().seeFx };
+  function showAnswer(ans, who = "") {
+    last = ans; ai.hidden = !ans; if (!ans) return;
+    ai.querySelector(".qs__who small").textContent = who;
+    say.textContent = ans.text;
+    cardsEl.innerHTML = (ans.cards || []).map((c, i) => `<button type="button" class="qs__opt" data-c="${i}">${c.img ? `<img src="${c.img}" alt="" loading="lazy">` : `<span class="qs__mono" aria-hidden="true">${c.title.replace(/[^A-Za-zÀ-ÿ0-9]/g, "").slice(0, 2)}</span>`}<span class="qs__ct"></span><span class="qs__cs"></span></button>`).join("");
+    cardsEl.querySelectorAll(".qs__opt").forEach((b, i) => { b.querySelector(".qs__ct").textContent = ans.cards[i].title; b.querySelector(".qs__cs").textContent = ans.cards[i].sub || ""; });
+    cardsEl.hidden = !(ans.cards || []).length;
+    ctasEl.innerHTML = (ans.ctas || []).map(k => `<button type="button" class="${k === "ask" ? "qs__cta qs__cta--main" : "qs__cta"}" data-cta="${k}"></button>`).join("");
+    ctasEl.querySelectorAll("[data-cta]").forEach(b => { b.textContent = (CTA[b.dataset.cta] || (b.dataset.cta.startsWith("pack:") && CTA["pack:"]))?.() || ""; });
+  }
+  cardsEl.addEventListener("click", e => { const b = e.target.closest("[data-c]"); const c = last?.cards?.[+b?.dataset.c]; if (!c) return; track("assistant_card", { item_name: c.title }); closeSearch(); setTimeout(c.go, 60); });
+  ctasEl.addEventListener("click", e => {
+    const k = e.target.closest("[data-cta]")?.dataset.cta; if (!k) return; const q = input.value.trim();
+    track("assistant_cta", { action: k });
+    if (k === "ask") { closeSearch(); sendRequest({ text: `${t("Hola Mey Society")}. ${q}${last?.cards?.[0] ? ` (${last.cards[0].title})` : ""}`, services: last?.services || [], place: "asistente" }); return; }
+    closeSearch();
+    setTimeout(() => { if (k.startsWith("fleet:")) openFleet(k.slice(6)); else if (k === "agenda") scrollToEl(document.getElementById("agenda")); else if (k === "villa") document.querySelector("[data-villa-tour]")?.click(); else if (k === "fx") fxTour.open(); else if (k.startsWith("pack:")) { const c = document.querySelector(`[data-pack="${k.slice(5)}"]`)?.closest(".occ, .pack"); if (c) scrollToEl(c); } }, 60);
+  });
+  // open questions: Claude, briefed with the catalogue (streams the answer in); the instant engine stays the fallback
+  async function askAI(q) {
+    const lx = MEY.lx();
+    const local = meyAgent(q);
+    const sample = CONFIG.aiEndpoint ? null : await getSample();
+    if (!sample && !CONFIG.aiEndpoint) { showAnswer(local || { text: lx.none, ctas: ["ask"] }); return; }
+    aiCtl?.abort(); aiCtl = new AbortController();
+    const base = local || { cards: [], ctas: ["ask"], services: [] };
+    showAnswer({ ...base, text: "" }, lx.thinking); say.classList.add("is-typing");
+    const prompt = `${meyBrief()}
+
+${local ? `Options the website already found for this request (mention the best one by name): ${local.cards.slice(0, 4).map(c => `${c.title} [${c.sub}]`).join("; ")}
+
+` : ""}Visitor's message: """${q.slice(0, 400)}"""`;
+    try {
+      let text;
+      if (CONFIG.aiEndpoint) { const r = await fetch(CONFIG.aiEndpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt }), signal: aiCtl.signal }); text = (await r.json()).text; }
+      else ({ text } = await sample(prompt, { signal: aiCtl.signal, cache: false, onText: ({ text }) => { say.textContent = text; } }));
+      showAnswer({ ...base, text: text || lx.none }, ""); track("assistant_ai", {});
+    } catch (err) { if (err?.name === "AbortError" || err?.code === "aborted") return; showAnswer(local || { text: lx.none, ctas: ["ask"] }); }
+    finally { say.classList.remove("is-typing"); }
+  }
   let shown = [], sel = 0;
   const render = () => {
     const q = fold(input.value).trim(), terms = q.split(/\s+/).filter(Boolean);
     chips.hidden = !!q; hint.hidden = true;
+    aiCtl?.abort(); showAnswer(q.length > 2 ? meyAgent(input.value) : null);
     if (!terms.length) { list.replaceChildren(); return; }
     shown = index.filter(r => terms.every(w => r.hay.includes(w)))
       .map(r => ({ r, s: (r.t.startsWith(q) ? 4 : 0) + (r.t.includes(q) ? 2 : 0) + (terms.every(w => r.t.includes(w)) ? 1 : 0) }))
       .sort((a, b) => b.s - a.s || a.r.title.length - b.r.title.length).slice(0, 14).map(x => x.r);
     sel = 0;
-    if (!shown.length) { list.replaceChildren(); hint.hidden = false; hint.textContent = `${t("Sin resultados para")} «${input.value.trim()}»`; return; }
+    if (!shown.length) { list.replaceChildren(); if (!last) { hint.hidden = false; hint.textContent = t("Pulsa Enter y Mey te responde."); } return; }
     list.innerHTML = shown.map((r, i) => `<li role="option" id="qs-${i}" aria-selected="${i === 0}"><button type="button" data-i="${i}"><span class="qs__t"></span><span class="qs__k"></span></button></li>`).join("");
     list.querySelectorAll("li").forEach((li, i) => { li.querySelector(".qs__t").textContent = shown[i].title; li.querySelector(".qs__k").textContent = shown[i].kind; });
   };
@@ -1837,14 +2061,17 @@ document.addEventListener("click", async e => {
     index = build(); box.hidden = false; document.documentElement.classList.add("qs-open");
     chips.innerHTML = `<span>${t("Sugerencias")}</span>` + SUGGEST.map(s => `<button type="button"></button>`).join("");
     chips.querySelectorAll("button").forEach((b, i) => { b.textContent = t(SUGGEST[i]); b.onclick = () => { input.value = b.textContent; render(); input.focus(); }; });
-    input.value = ""; render(); requestAnimationFrame(() => input.focus());
+    input.value = ""; render(); ai.hidden = true; ai.querySelector(".qs__who").lastElementChild.textContent = ""; requestAnimationFrame(() => input.focus());
   };
-  const close = () => { box.hidden = true; document.documentElement.classList.remove("qs-open"); btn.focus({ preventScroll: true }); };
+  const close = () => { aiCtl?.abort(); box.hidden = true; document.documentElement.classList.remove("qs-open"); btn.focus({ preventScroll: true }); };
+  closeSearch = close;
   const pick = i => { const r = shown[i]; if (!r) return; close(); track("search", { search_term: input.value.trim().slice(0, 60) }); setTimeout(r.go, 60); };
   btn.addEventListener("click", open);
   input.addEventListener("input", render);
   input.addEventListener("keydown", e => {
-    if (e.key === "Enter") { e.preventDefault(); pick(sel); }
+    if (e.key === "Enter") { e.preventDefault(); const q = input.value.trim(); if (!q) return; track("search", { search_term: q.slice(0, 60) });
+      // a question or a request goes to Mey; a plain name ("Pacha") still jumps straight to its result
+      if (shown.length && !last && q.split(/\s+/).length <= 2 && !/[?¿]/.test(q)) pick(sel); else askAI(q); }
     else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); if (!shown.length) return; sel = (sel + (e.key === "ArrowDown" ? 1 : -1) + shown.length) % shown.length;
       list.querySelectorAll("li").forEach((li, i) => li.setAttribute("aria-selected", i === sel)); list.children[sel]?.scrollIntoView({ block: "nearest" }); }
   });
@@ -1910,6 +2137,11 @@ const refLine = () => { const r = currentRef(); return r && REF_RX.test(r) ? `${
       }
       if (!mine) return;
       if (act === "wa") { window.open(`https://wa.me/?text=${encodeURIComponent(shareText(mine.code))}`, "_blank", "noopener"); track("referral_share", { method: "whatsapp" }); }
+      if (act === "ig" || act === "tt") {   // no web share link for DMs: copy the message, then open the app's messages
+        try { await navigator.clipboard.writeText(shareText(mine.code)); } catch {}
+        ok.textContent = t("Mensaje copiado: pégalo en el chat de tu amigo.");
+        window.open(act === "ig" ? "https://www.instagram.com/direct/inbox/" : "https://www.tiktok.com/messages", "_blank", "noopener"); track("referral_share", { method: act === "ig" ? "instagram" : "tiktok" }); }
+      if (act === "mail") { location.href = `mailto:?subject=${encodeURIComponent(t("Te invito a Mey Society"))}&body=${encodeURIComponent(shareText(mine.code))}`; track("referral_share", { method: "email" }); }
       if (act === "copy") { try { await navigator.clipboard.writeText(linkOf(mine.code)); ok.textContent = t("Enlace copiado. Pégalo donde quieras."); } catch { ok.textContent = linkOf(mine.code); } track("referral_share", { method: "copy" }); }
       if (act === "share") { try { await navigator.share({ title: "Mey Society", text: shareText(mine.code), url: linkOf(mine.code) }); track("referral_share", { method: "native" }); } catch {} }
       if (act === "again") { refStore.set("mey-myref", null); try { localStorage.removeItem("mey-myref"); } catch {} nameIn.value = ""; ok.textContent = ""; show(); nameIn.focus(); }
