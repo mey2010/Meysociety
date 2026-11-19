@@ -725,7 +725,7 @@ const WA_TXT = {
   fr: { hi: "Bonjour Mey Society", want: "je suis intéressé(e) par", ask: "Pouvez-vous m'envoyer les disponibilités et ce dont vous avez besoin ?", stay: "je voudrais organiser mon séjour à Ibiza. Vous m'aidez ?" },
   de: { hi: "Hallo Mey Society", want: "ich interessiere mich für", ask: "Kannst du mir die Verfügbarkeit schicken und sagen, was du brauchst?", stay: "ich möchte meinen Aufenthalt auf Ibiza planen. Hilfst du mir?" },
 };
-const waText = product => { const w = WA_TXT[getLang()] || WA_TXT.es; return product ? `${w.hi}, ${w.want}: ${product}. ${w.ask}` : `${w.hi}, ${w.stay}`; };
+const waText = product => { const w = WA_TXT[getLang()] || WA_TXT.es, r = typeof refLine === "function" ? refLine() : ""; return (product ? `${w.hi}, ${w.want}: ${product}. ${w.ask}` : `${w.hi}, ${w.stay}`) + (r ? ` (${r})` : ""); };
 // opens the chat (true) or, with no number configured yet, runs the form fallback (false)
 function openWA(product, place, fallback) {
   if (!CONFIG.whatsapp) { fallback?.(); return false; }
@@ -971,6 +971,7 @@ document.getElementById("form").addEventListener("submit", e => {
     giftNow() ? `Regalo desbloqueado: ${giftNow().gift}` : "",
     `Clubs: ${clubsChosen.size ? (clubsChosen.size === CLUBS.length ? "Todos" : [...clubsChosen].join(", ")) : "sin indicar"}`,
     v("f-notes") ? `Notas: ${v("f-notes")}` : "",
+    v("f-ref") ? `Código de amigo: ${refNorm(v("f-ref"))}` : "",
     `Idioma del cliente: ${LANGS[getLang()]}`,
   ].filter(Boolean).join("\n");
   const url = CONFIG.whatsapp ? `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(lines)}` : `mailto:${CONFIG.email}?subject=${encodeURIComponent("Mi estancia en Ibiza")}&body=${encodeURIComponent(lines)}`;
@@ -1852,6 +1853,72 @@ document.addEventListener("click", async e => {
   addEventListener("keydown", e => { if (e.key === "Escape" && !box.hidden) close(); });
 }
 
+/* ---------------- Mey Friends: refer a friend, both get guestlists ----------------
+   No server needed. A client writes their name and gets a personal code (MEY-ANA-7K2) and a link with ?ref=CODE.
+   A friend who arrives through that link (or types the code in the form) carries it in every message they send us:
+   the quote form, the planner, the agenda and WhatsApp. Mey Society checks the booking and gives the guestlists by hand. */
+const REF_RX = /^MEY-[A-Z]{1,10}-[A-Z0-9]{3}$/;
+const refNorm = s => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
+const refStore = { get(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+const refName = c => { const n = (c.split("-")[1] || "").toLowerCase(); return n.charAt(0).toUpperCase() + n.slice(1); };
+// the friend's side: remember who sent them, for 60 days
+{
+  const u = new URL(location.href), r = refNorm(u.searchParams.get("ref"));
+  if (r && REF_RX.test(r) && r !== refStore.get("mey-myref")?.code) refStore.set("mey-ref", { code: r, at: Date.now(), seen: false });
+  if (u.searchParams.has("ref")) { u.searchParams.delete("ref"); history.replaceState(null, "", u.pathname + u.search + u.hash); }
+}
+const friendRef = () => { const r = refStore.get("mey-ref"); return r && Date.now() - r.at < 60 * 864e5 ? r.code : ""; };
+const currentRef = () => refNorm(document.getElementById("f-ref")?.value) || friendRef();
+const refLine = () => { const r = currentRef(); return r && REF_RX.test(r) ? `${t("Código de amigo")}: ${r}` : ""; };
+{
+  const fRef = document.getElementById("f-ref"), r = friendRef();
+  if (fRef && r) fRef.value = r;
+  const stored = refStore.get("mey-ref");
+  if (r && stored && !stored.seen) {
+    // a quiet welcome, once: who invited them and what they get
+    const toast = document.createElement("div"); toast.className = "mf-toast"; toast.setAttribute("role", "status");
+    const paint = () => { toast.innerHTML = `<span class="mf-toast__ico" aria-hidden="true">🎁</span><p><b>${t("Vienes de parte de")} ${refName(r)}.</b> ${t("Tu primera reserva incluye 1 guestlist de bienvenida.")}</p><button type="button" aria-label="${t("Cerrar")}">×</button>`; };
+    paint(); document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add("is-in"), 1800);
+    const bye = () => { toast.classList.remove("is-in"); setTimeout(() => toast.remove(), 400); };
+    toast.addEventListener("click", e => { if (e.target.closest("button")) bye(); });
+    setTimeout(bye, 12000);
+    stored.seen = true; refStore.set("mey-ref", stored);
+    track("referral_arrival", { code: r });
+  }
+}
+// the client's side: make and share their link
+{
+  const box = document.querySelector(".mf__card");
+  if (box) {
+    const $ = s => box.querySelector(s), nameIn = $("#mf-name"), ok = $(".mf__ok");
+    const ALNUM = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+    const linkOf = c => { const u = new URL(location.href); u.hash = ""; u.search = ""; u.searchParams.set("ref", c); return u.toString(); };
+    const shareText = c => `${t("Te paso mi enlace de Mey Society, el concierge que me organiza Ibiza. Con él tu primera reserva incluye una guestlist de regalo:")} ${linkOf(c)}`;
+    function show() {
+      const mine = refStore.get("mey-myref"); $(".mf__make").hidden = !!mine; $(".mf__mine").hidden = !mine; if (!mine) return;
+      $(".mf__code").textContent = mine.code; $(".mf__link").textContent = linkOf(mine.code).replace(/^https?:\/\//, "");
+      $('[data-mf="share"]').hidden = !navigator.share;
+    }
+    box.addEventListener("click", async e => {
+      const b = e.target.closest("[data-mf]"); if (!b) return; const act = b.dataset.mf, mine = refStore.get("mey-myref");
+      if (act === "make") {
+        const slug = nameIn.value.normalize("NFD").replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 10);
+        if (!slug) { nameIn.focus(); ok.textContent = ""; return; }
+        const rnd = [...crypto.getRandomValues(new Uint8Array(3))].map(x => ALNUM[x % ALNUM.length]).join("");
+        refStore.set("mey-myref", { code: `MEY-${slug}-${rnd}`, at: Date.now() }); show(); track("referral_create", {}); return;
+      }
+      if (!mine) return;
+      if (act === "wa") { window.open(`https://wa.me/?text=${encodeURIComponent(shareText(mine.code))}`, "_blank", "noopener"); track("referral_share", { method: "whatsapp" }); }
+      if (act === "copy") { try { await navigator.clipboard.writeText(linkOf(mine.code)); ok.textContent = t("Enlace copiado. Pégalo donde quieras."); } catch { ok.textContent = linkOf(mine.code); } track("referral_share", { method: "copy" }); }
+      if (act === "share") { try { await navigator.share({ title: "Mey Society", text: shareText(mine.code), url: linkOf(mine.code) }); track("referral_share", { method: "native" }); } catch {} }
+      if (act === "again") { refStore.set("mey-myref", null); try { localStorage.removeItem("mey-myref"); } catch {} nameIn.value = ""; ok.textContent = ""; show(); nameIn.focus(); }
+    });
+    nameIn.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $('[data-mf="make"]').click(); } });
+    show();
+  }
+}
+
 /* Formentera Experience: the excursion page, opened from its service card ("Ver excursión") or the menu */
 const fxTour = initFormenteraTour({ onBook: () => {
   select("formentera", true);
@@ -1864,6 +1931,7 @@ document.addEventListener("click", e => { if (e.target.closest("[data-fx-tour]")
 /* the plan or the agenda request goes to the concierge: straight into WhatsApp when the number is set, otherwise the
    form is filled in for them (dates, group, services and the whole plan in the notes) and the page jumps to it */
 function sendRequest({ text, from, to, people, services = [], place }) {
+  if (refLine() && !text.includes(currentRef())) text += `\n${refLine()}`;
   services.forEach(s => select(s, true));
   if (CONFIG.whatsapp) {
     window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(text)}`, "_blank", "noopener");

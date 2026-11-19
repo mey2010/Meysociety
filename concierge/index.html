@@ -92,6 +92,7 @@
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#planner"><span class="sm-panel-itemLabel">Diseña tu viaje</span></a></li>
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#paquetes"><span class="sm-panel-itemLabel">Paquetes</span></a></li>
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#reviews"><span class="sm-panel-itemLabel">Reviews</span></a></li>
+        <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#amigos"><span class="sm-panel-itemLabel">Trae a tus amigos</span></a></li>
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#faq"><span class="sm-panel-itemLabel">Preguntas</span></a></li>
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#contacto"><span class="sm-panel-itemLabel">Contacto</span></a></li>
         <li class="sm-panel-itemWrap"><a class="sm-panel-item" href="#area-cliente" data-login><span class="sm-panel-itemLabel">Área cliente</span></a></li>
@@ -461,6 +462,49 @@
     </div>
   </section>
 
+  <!-- ============ MEY FRIENDS (referrals) ============ -->
+  <section class="sec sec--night" id="amigos" aria-labelledby="mf-h">
+    <div class="wrap mf">
+      <header class="sec__head mf__head">
+        <p class="eyebrow eyebrow--light">Mey Friends</p>
+        <h2 class="display display--md" id="mf-h">Trae a tus amigos. <em>La noche os la regalamos.</em></h2>
+        <p class="lede">Comparte tu enlace personal. Cuando un amigo reserva con nosotros, tú sumas guestlists y él estrena la isla con una de bienvenida.</p>
+      </header>
+      <ul class="mf__rewards" role="list">
+        <li class="mf__reward"><span class="mf__who">Para ti</span><b class="mf__big">2 guestlists</b><span class="mf__how">por cada amigo que reserve un servicio</span></li>
+        <li class="mf__reward"><span class="mf__who">Para tu amigo</span><b class="mf__big">1 guestlist</b><span class="mf__how">de bienvenida en su primera reserva</span></li>
+        <li class="mf__reward mf__reward--vip"><span class="mf__who">Desde el tercer amigo</span><b class="mf__big">Mey Insider</b><span class="mf__how">alertas de line-up en primicia y atención prioritaria</span></li>
+      </ul>
+      <div class="mf__grid">
+        <ol class="mf__steps">
+          <li><b>Crea tu enlace</b><span>Escribe tu nombre y te damos un código personal.</span></li>
+          <li><b>Compártelo</b><span>Por WhatsApp, Instagram o donde quieras.</span></li>
+          <li><b>Tu amigo pide su plan</b><span>Con tu enlace o diciéndonos tu código.</span></li>
+          <li><b>Reserva y lo celebráis</b><span>Te escribimos para elegir club y noche.</span></li>
+        </ol>
+        <div class="mf__card lg lg--panel">
+          <div class="mf__make">
+            <label class="mf__label" for="mf-name">Tu nombre</label>
+            <div class="mf__row"><input id="mf-name" type="text" autocomplete="given-name" maxlength="30"><button type="button" class="btn btn--primary" data-mf="make">Crear mi enlace</button></div>
+          </div>
+          <div class="mf__mine" hidden>
+            <p class="mf__label">Tu código</p>
+            <p class="mf__code" data-no-i18n></p>
+            <p class="mf__link" data-no-i18n></p>
+            <div class="mf__share">
+              <button type="button" class="mf__btn mf__btn--wa" data-mf="wa">WhatsApp</button>
+              <button type="button" class="mf__btn" data-mf="copy">Copiar enlace</button>
+              <button type="button" class="mf__btn" data-mf="share" hidden>Compartir</button>
+            </div>
+            <p class="mf__ok" role="status"></p>
+            <button type="button" class="mf__again" data-mf="again">Cambiar nombre</button>
+          </div>
+          <p class="mf__fine">Cuenta cuando tu amigo es cliente nuevo y confirma y paga al menos un servicio. Guestlists de cortesía, sujetas a disponibilidad del club, solo para mayores de 18 y no canjeables por dinero. <a href="legal/terminos.html#amigos" target="_blank" rel="noopener">Ver condiciones</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ FAQ ============ -->
   <section class="sec sec--mist" id="faq">
     <div class="wrap faq">
@@ -512,6 +556,7 @@
         </fieldset>
         <!-- anti-spam: invisible to people, irresistible to bots -->
         <div class="hp" aria-hidden="true"><label>Web<input type="text" name="website" id="f-website" tabindex="-1" autocomplete="off"></label></div>
+        <label>Código de amigo <small>(opcional)</small><input type="text" id="f-ref" name="ref" autocomplete="off" maxlength="24" placeholder="MEY-…"></label>
         <label>Cuéntanos más<textarea id="f-notes" name="notes" rows="3" placeholder="Celebración, preferencias, horarios…"></textarea></label>
         <div class="form__actions">
           <button class="btn btn--liquid btn--lg" type="submit"><span class="btn__liquid" aria-hidden="true"></span><span>Pedir presupuesto</span></button>
