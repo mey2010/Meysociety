@@ -8,6 +8,7 @@ Repositorio único de Mey Society: todo (código, skills, documentación) vive a
 - `design-system/` — sistema de diseño de Mey Society.
 - `open-generative-ai/` — estudio de generación de imagen y vídeo con IA (fork de [Anil-matcha/Open-Generative-AI](https://github.com/Anil-matcha/Open-Generative-AI), MIT). Ver `open-generative-ai/README.md`.
 - `gta6-vaults/` — playbook de la página de clips GTA 6 Vaults.
+- `trading/` — investigación y bot de trading del oro (XAUUSD) para FundedHive/cTrader: backtests, fichas de estrategia y cBot GoldShield. Ver `trading/README.md`.
 - `tools/` — utilidades en Python (`camera_path.py`, `skills_index.py`).
 - `.claude/skills/` — **todas** las skills de Claude Code (232), agrupadas por tema en [`.claude/skills/INDEX.md`](.claude/skills/INDEX.md). Cualquier sesión que abra este repo las carga solas. Las `trader-*` necesitan `SEC_USER_AGENT="Nombre email"` o `trader/config.json` (`trader/` no se sube al repo). Al añadir o quitar skills: `python3 tools/skills_index.py`.
 - `.claude/settings.json` — marketplace oficial de plugins de Claude.

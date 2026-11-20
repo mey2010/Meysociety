@@ -1,0 +1,9113 @@
+{
+ "meta": {
+  "source": "histdata.com XAUUSD M1 bid (UTC); spread: fijo 0.40 USD (estimaci\u00f3n)",
+  "data_start": "2022-01-02 23:00:00",
+  "data_end": "2026-11-13 21:58:00",
+  "oos_start": "2023-01-01 00:00:00",
+  "buy_hold_gold_oos_pct_unlevered": 112.65062516526272,
+  "assumptions": {
+   "risk_per_trade": 0.005,
+   "balance": 5000.0,
+   "slip_usd_oz": 0.05,
+   "commission": "USD 15 por mill\u00f3n por lado (PDF FundedHive ene-2026)",
+   "stress": "spread x1.5, slippage x2, comisi\u00f3n x2",
+   "walk_forward": "12m entrenamiento / 3m prueba, rodando",
+   "day_boundary": "00:00 UTC"
+  },
+  "generated_utc": "2026-11-20T13:59:13.186213+00:00"
+ },
+ "setups": {
+  "asia_breakout_london_5m": {
+   "hft": {
+    "trades_per_active_day": 1.0,
+    "median_hold_min": 374.0,
+    "hft_risk": false
+   },
+   "desc": "Ruptura del rango asi\u00e1tico en la apertura de Londres",
+   "regime": "tendencia",
+   "tf": 5,
+   "oos": {
+    "n": 797,
+    "win": 0.49560853199498117,
+    "exp_r": 0.020891232496568723,
+    "total_pct": 8.325156149882636,
+    "pf": 1.0493334653455673,
+    "max_dd_pct": -12.347753062689556,
+    "max_loss_streak": 8,
+    "worst_month_pct": -4.315226613917396,
+    "worst_month": "2024-02-29",
+    "pos_months": 0.4888888888888889,
+    "trades_per_month": 17.711111111111112
+   },
+   "oos_shield": {
+    "n": 797,
+    "win": 0.49560853199498117,
+    "exp_r": 0.020891232496568723,
+    "total_pct": 8.325156149882636,
+    "pf": 1.0493334653455673,
+    "max_dd_pct": -12.347753062689556,
+    "max_loss_streak": 8,
+    "worst_month_pct": -4.315226613917396,
+    "worst_month": "2024-02-29",
+    "pos_months": 0.4888888888888889,
+    "trades_per_month": 17.711111111111112
+   },
+   "stress_2x": {
+    "n": 800,
+    "win": 0.48875,
+    "exp_r": -0.00452545825568335,
+    "total_pct": -1.8101833022733453,
+    "pf": 0.9896121737233785,
+    "max_dd_pct": -15.88264858217824,
+    "max_loss_streak": 9,
+    "worst_month_pct": -4.550749004225434,
+    "worst_month": "2024-02-29",
+    "pos_months": 0.4444444444444444,
+    "trades_per_month": 17.77777777777778
+   },
+   "one_min_late": {
+    "n": 796,
+    "win": 0.49748743718592964,
+    "exp_r": 0.024052638912538574,
+    "total_pct": 9.572950287190352,
+    "pf": 1.0570456819973089,
+    "max_dd_pct": -11.43104856411904,
+    "max_loss_streak": 8,
+    "worst_month_pct": -4.317943457708104,
+    "worst_month": "2024-02-29",
+    "pos_months": 0.4888888888888889,
+    "trades_per_month": 17.68888888888889
+   },
+   "grid_positive_share": 0.5,
+   "by_regime": {
+    "alcista": 5.8438266659823785,
+    "bajista": 3.2675974811551605,
+    "lateral": -0.7862679972549013
+   },
+   "score": {
+    "oos_profit": 3,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 3,
+    "bear_flat": 3,
+    "double_cost": 2,
+    "avg": 2.8333333333333335
+   },
+   "challenge_mc": {
+    "p_pass": 0.0008,
+    "p_fail": 0.0,
+    "p_pause": 0.0656,
+    "p_undecided": 0.9336,
+    "median_days": 106.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.1858,
+    "p_fail": 0.0,
+    "p_pause": 0.0664,
+    "p_undecided": 0.7478,
+    "median_days": 80.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.1682,
+    "p_undecided": 0.8318,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ]
+   ]
+  },
+  "asia_breakout_london_15m": {
+   "hft": {
+    "trades_per_active_day": 1.0,
+    "median_hold_min": 374.0,
+    "hft_risk": false
+   },
+   "desc": "Ruptura del rango asi\u00e1tico en la apertura de Londres",
+   "regime": "tendencia",
+   "tf": 15,
+   "oos": {
+    "n": 797,
+    "win": 0.49560853199498117,
+    "exp_r": 0.020891232496568723,
+    "total_pct": 8.325156149882636,
+    "pf": 1.0493334653455673,
+    "max_dd_pct": -12.347753062689556,
+    "max_loss_streak": 8,
+    "worst_month_pct": -4.315226613917396,
+    "worst_month": "2024-02-29",
+    "pos_months": 0.4888888888888889,
+    "trades_per_month": 17.711111111111112
+   },
+   "oos_shield": {
+    "n": 797,
+    "win": 0.49560853199498117,
+    "exp_r": 0.020891232496568723,
+    "total_pct": 8.325156149882636,
+    "pf": 1.0493334653455673,
+    "max_dd_pct": -12.347753062689556,
+    "max_loss_streak": 8,
+    "worst_month_pct": -4.315226613917396,
+    "worst_month": "2024-02-29",
+    "pos_months": 0.4888888888888889,
+    "trades_per_month": 17.711111111111112
+   },
+   "stress_2x": {
+    "n": 800,
+    "win": 0.48875,
+    "exp_r": -0.00452545825568335,
+    "total_pct": -1.8101833022733453,
+    "pf": 0.9896121737233785,
+    "max_dd_pct": -15.88264858217824,
+    "max_loss_streak": 9,
+    "worst_month_pct": -4.550749004225434,
+    "worst_month": "2024-02-29",
+    "pos_months": 0.4444444444444444,
+    "trades_per_month": 17.77777777777778
+   },
+   "one_min_late": {
+    "n": 796,
+    "win": 0.49748743718592964,
+    "exp_r": 0.024052638912538574,
+    "total_pct": 9.572950287190352,
+    "pf": 1.0570456819973089,
+    "max_dd_pct": -11.43104856411904,
+    "max_loss_streak": 8,
+    "worst_month_pct": -4.317943457708104,
+    "worst_month": "2024-02-29",
+    "pos_months": 0.4888888888888889,
+    "trades_per_month": 17.68888888888889
+   },
+   "grid_positive_share": 0.5,
+   "by_regime": {
+    "alcista": 5.8438266659823785,
+    "bajista": 3.2675974811551605,
+    "lateral": -0.7862679972549013
+   },
+   "score": {
+    "oos_profit": 3,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 3,
+    "bear_flat": 3,
+    "double_cost": 2,
+    "avg": 2.8333333333333335
+   },
+   "challenge_mc": {
+    "p_pass": 0.0008,
+    "p_fail": 0.0,
+    "p_pause": 0.0656,
+    "p_undecided": 0.9336,
+    "median_days": 106.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.1858,
+    "p_fail": 0.0,
+    "p_pause": 0.0664,
+    "p_undecided": 0.7478,
+    "median_days": 80.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.1682,
+    "p_undecided": 0.8318,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ]
+   ]
+  },
+  "asia_sweep_london_3m": {
+   "hft": {
+    "trades_per_active_day": 1.0850480109739369,
+    "median_hold_min": 12.0,
+    "hft_risk": false
+   },
+   "desc": "Barrida del m\u00e1ximo o m\u00ednimo asi\u00e1tico en Londres y vuelta al rango",
+   "regime": "rango",
+   "tf": 3,
+   "oos": {
+    "n": 791,
+    "win": 0.18584070796460178,
+    "exp_r": -0.2858194461925142,
+    "total_pct": -113.04159096913938,
+    "pf": 0.6808978184704696,
+    "max_dd_pct": -123.10593647412296,
+    "max_loss_streak": 26,
+    "worst_month_pct": -11.098699969639354,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.26666666666666666,
+    "trades_per_month": 17.57777777777778
+   },
+   "oos_shield": {
+    "n": 791,
+    "win": 0.18584070796460178,
+    "exp_r": -0.2858194461925142,
+    "total_pct": -113.04159096913938,
+    "pf": 0.6808978184704696,
+    "max_dd_pct": -123.10593647412296,
+    "max_loss_streak": 26,
+    "worst_month_pct": -11.098699969639354,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.26666666666666666,
+    "trades_per_month": 17.57777777777778
+   },
+   "stress_2x": {
+    "n": 791,
+    "win": 0.17699115044247787,
+    "exp_r": -0.4547003580234831,
+    "total_pct": -179.83399159828755,
+    "pf": 0.5343962140877424,
+    "max_dd_pct": -183.8122318954118,
+    "max_loss_streak": 26,
+    "worst_month_pct": -13.043526909196544,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.2,
+    "trades_per_month": 17.57777777777778
+   },
+   "one_min_late": {
+    "n": 775,
+    "win": 0.1935483870967742,
+    "exp_r": -0.2759090494981761,
+    "total_pct": -106.91475668054322,
+    "pf": 0.6844477608346335,
+    "max_dd_pct": -111.7586954555921,
+    "max_loss_streak": 25,
+    "worst_month_pct": -11.515897092344332,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 17.22222222222222
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -64.68647847806594,
+    "bajista": -17.803185850145383,
+    "lateral": -30.551926640928034
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.1194,
+    "p_fail": 0.0,
+    "p_pause": 0.827,
+    "p_undecided": 0.05359999999999998,
+    "median_days": 27.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.1206,
+    "p_fail": 0.0,
+    "p_pause": 0.8252,
+    "p_undecided": 0.054200000000000026,
+    "median_days": 27.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.8404,
+    "p_undecided": 0.15959999999999996,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ]
+   ]
+  },
+  "asia_sweep_london_5m": {
+   "hft": {
+    "trades_per_active_day": 1.0828651685393258,
+    "median_hold_min": 17.0,
+    "hft_risk": false
+   },
+   "desc": "Barrida del m\u00e1ximo o m\u00ednimo asi\u00e1tico en Londres y vuelta al rango",
+   "regime": "rango",
+   "tf": 5,
+   "oos": {
+    "n": 771,
+    "win": 0.19455252918287938,
+    "exp_r": -0.25230426798356703,
+    "total_pct": -97.26329530766508,
+    "pf": 0.7109594132614274,
+    "max_dd_pct": -100.35994619728467,
+    "max_loss_streak": 17,
+    "worst_month_pct": -10.753978746526688,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.26666666666666666,
+    "trades_per_month": 17.133333333333333
+   },
+   "oos_shield": {
+    "n": 771,
+    "win": 0.19455252918287938,
+    "exp_r": -0.25230426798356703,
+    "total_pct": -97.26329530766508,
+    "pf": 0.7109594132614274,
+    "max_dd_pct": -100.35994619728467,
+    "max_loss_streak": 17,
+    "worst_month_pct": -10.753978746526688,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.26666666666666666,
+    "trades_per_month": 17.133333333333333
+   },
+   "stress_2x": {
+    "n": 770,
+    "win": 0.18831168831168832,
+    "exp_r": -0.3941502687720144,
+    "total_pct": -151.74785347722556,
+    "pf": 0.5801358913601549,
+    "max_dd_pct": -154.50719887306704,
+    "max_loss_streak": 17,
+    "worst_month_pct": -11.97659315353403,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.17777777777777778,
+    "trades_per_month": 17.11111111111111
+   },
+   "one_min_late": {
+    "n": 755,
+    "win": 0.1947019867549669,
+    "exp_r": -0.2417483665372415,
+    "total_pct": -91.26000836780867,
+    "pf": 0.7200614143418107,
+    "max_dd_pct": -95.15464716553387,
+    "max_loss_streak": 17,
+    "worst_month_pct": -10.861570534383352,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.3111111111111111,
+    "trades_per_month": 16.77777777777778
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -55.837396462635475,
+    "bajista": -11.450802784918286,
+    "lateral": -29.975096060111312
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.142,
+    "p_fail": 0.0,
+    "p_pause": 0.7958,
+    "p_undecided": 0.06220000000000003,
+    "median_days": 34.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.1438,
+    "p_fail": 0.0,
+    "p_pause": 0.793,
+    "p_undecided": 0.06320000000000003,
+    "median_days": 32.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.8136,
+    "p_undecided": 0.1864,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ]
+   ]
+  },
+  "asia_sweep_london_15m": {
+   "hft": {
+    "trades_per_active_day": 1.0884146341463414,
+    "median_hold_min": 35.0,
+    "hft_risk": false
+   },
+   "desc": "Barrida del m\u00e1ximo o m\u00ednimo asi\u00e1tico en Londres y vuelta al rango",
+   "regime": "rango",
+   "tf": 15,
+   "oos": {
+    "n": 714,
+    "win": 0.3081232492997199,
+    "exp_r": -0.17388219191592152,
+    "total_pct": -62.07594251398399,
+    "pf": 0.7583973824721025,
+    "max_dd_pct": -64.58268911047274,
+    "max_loss_streak": 22,
+    "worst_month_pct": -11.040821640417727,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 15.866666666666667
+   },
+   "oos_shield": {
+    "n": 714,
+    "win": 0.3081232492997199,
+    "exp_r": -0.17388219191592152,
+    "total_pct": -62.07594251398399,
+    "pf": 0.7583973824721025,
+    "max_dd_pct": -64.58268911047274,
+    "max_loss_streak": 22,
+    "worst_month_pct": -11.040821640417727,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 15.866666666666667
+   },
+   "stress_2x": {
+    "n": 714,
+    "win": 0.29551820728291317,
+    "exp_r": -0.28867973692574234,
+    "total_pct": -103.05866608249002,
+    "pf": 0.6246441562429996,
+    "max_dd_pct": -105.42503852776497,
+    "max_loss_streak": 22,
+    "worst_month_pct": -11.836409878549087,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.24444444444444444,
+    "trades_per_month": 15.866666666666667
+   },
+   "one_min_late": {
+    "n": 710,
+    "win": 0.30985915492957744,
+    "exp_r": -0.16522697411614487,
+    "total_pct": -58.655575811231444,
+    "pf": 0.7698891370550932,
+    "max_dd_pct": -61.224096390173116,
+    "max_loss_streak": 13,
+    "worst_month_pct": -11.220598743069766,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.26666666666666666,
+    "trades_per_month": 15.777777777777779
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -25.374747629975758,
+    "bajista": -14.194673193931465,
+    "lateral": -22.506521690076756
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.1066,
+    "p_fail": 0.0,
+    "p_pause": 0.6556,
+    "p_undecided": 0.2378,
+    "median_days": 48.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.1084,
+    "p_fail": 0.0,
+    "p_pause": 0.6548,
+    "p_undecided": 0.2368,
+    "median_days": 48.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.6842,
+    "p_undecided": 0.31579999999999997,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ]
+   ]
+  },
+  "ny_orb_1m": {
+   "hft": {
+    "trades_per_active_day": 1.0,
+    "median_hold_min": 44.0,
+    "hft_risk": false
+   },
+   "desc": "Ruptura del rango de los primeros 30 min de COMEX (08:20 NY)",
+   "regime": "tendencia",
+   "tf": 1,
+   "oos": {
+    "n": 906,
+    "win": 0.3631346578366446,
+    "exp_r": -0.0564114471937681,
+    "total_pct": -25.554385578776944,
+    "pf": 0.9136539892191495,
+    "max_dd_pct": -39.555279015918444,
+    "max_loss_streak": 13,
+    "worst_month_pct": -5.525598419480739,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.35555555555555557,
+    "trades_per_month": 20.133333333333333
+   },
+   "oos_shield": {
+    "n": 906,
+    "win": 0.3631346578366446,
+    "exp_r": -0.0564114471937681,
+    "total_pct": -25.554385578776944,
+    "pf": 0.9136539892191495,
+    "max_dd_pct": -39.555279015918444,
+    "max_loss_streak": 13,
+    "worst_month_pct": -5.525598419480739,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.35555555555555557,
+    "trades_per_month": 20.133333333333333
+   },
+   "stress_2x": {
+    "n": 906,
+    "win": 0.3598233995584989,
+    "exp_r": -0.09617656297968079,
+    "total_pct": -43.5679830297954,
+    "pf": 0.8571350871921185,
+    "max_dd_pct": -52.948026710381946,
+    "max_loss_streak": 17,
+    "worst_month_pct": -5.822193992673082,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.35555555555555557,
+    "trades_per_month": 20.133333333333333
+   },
+   "one_min_late": {
+    "n": 906,
+    "win": 0.3675496688741722,
+    "exp_r": -0.054174022555917495,
+    "total_pct": -24.540832217830626,
+    "pf": 0.9163836103495611,
+    "max_dd_pct": -37.02988107131645,
+    "max_loss_streak": 13,
+    "worst_month_pct": -5.523641663030395,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.37777777777777777,
+    "trades_per_month": 20.133333333333333
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -22.889892754934447,
+    "bajista": -3.5084641825664677,
+    "lateral": 0.8439713587239717
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 2,
+    "double_cost": 1,
+    "avg": 1.8333333333333333
+   },
+   "challenge_mc": {
+    "p_pass": 0.0102,
+    "p_fail": 0.0,
+    "p_pause": 0.441,
+    "p_undecided": 0.5488,
+    "median_days": 95.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.221,
+    "p_fail": 0.0,
+    "p_pause": 0.4402,
+    "p_undecided": 0.3388,
+    "median_days": 55.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.046,
+    "p_pause": 0.4942,
+    "p_undecided": 0.4598,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ]
+   ]
+  },
+  "ny_orb_3m": {
+   "hft": {
+    "trades_per_active_day": 1.0,
+    "median_hold_min": 49.0,
+    "hft_risk": false
+   },
+   "desc": "Ruptura del rango de los primeros 30 min de COMEX (08:20 NY)",
+   "regime": "tendencia",
+   "tf": 3,
+   "oos": {
+    "n": 906,
+    "win": 0.39293598233995586,
+    "exp_r": -0.02866596233489209,
+    "total_pct": -12.985680937706118,
+    "pf": 0.9534369758079755,
+    "max_dd_pct": -28.597151456870886,
+    "max_loss_streak": 13,
+    "worst_month_pct": -5.527342790280081,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.4444444444444444,
+    "trades_per_month": 20.133333333333333
+   },
+   "oos_shield": {
+    "n": 906,
+    "win": 0.39293598233995586,
+    "exp_r": -0.02866596233489209,
+    "total_pct": -12.985680937706118,
+    "pf": 0.9534369758079755,
+    "max_dd_pct": -28.597151456870886,
+    "max_loss_streak": 13,
+    "worst_month_pct": -5.527342790280081,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.4444444444444444,
+    "trades_per_month": 20.133333333333333
+   },
+   "stress_2x": {
+    "n": 906,
+    "win": 0.38962472406181015,
+    "exp_r": -0.06495068088368573,
+    "total_pct": -29.42265844030964,
+    "pf": 0.897384845259879,
+    "max_dd_pct": -40.22886091259648,
+    "max_loss_streak": 17,
+    "worst_month_pct": -5.898227809188849,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.4222222222222222,
+    "trades_per_month": 20.133333333333333
+   },
+   "one_min_late": {
+    "n": 906,
+    "win": 0.3973509933774834,
+    "exp_r": -0.02670603247954944,
+    "total_pct": -12.097832713235896,
+    "pf": 0.9562359575637156,
+    "max_dd_pct": -26.061211594227146,
+    "max_loss_streak": 13,
+    "worst_month_pct": -5.525386033829737,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.4444444444444444,
+    "trades_per_month": 20.133333333333333
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -19.11586780110822,
+    "bajista": -4.582343565010357,
+    "lateral": 10.712530428412467
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 3,
+    "double_cost": 1,
+    "avg": 2.0
+   },
+   "challenge_mc": {
+    "p_pass": 0.012,
+    "p_fail": 0.0,
+    "p_pause": 0.3496,
+    "p_undecided": 0.6384000000000001,
+    "median_days": 95.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.2626,
+    "p_fail": 0.0,
+    "p_pause": 0.3466,
+    "p_undecided": 0.39080000000000004,
+    "median_days": 58.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0484,
+    "p_pause": 0.4252,
+    "p_undecided": 0.5264,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ]
+   ]
+  },
+  "ny_orb_5m": {
+   "hft": {
+    "trades_per_active_day": 1.0,
+    "median_hold_min": 57.0,
+    "hft_risk": false
+   },
+   "desc": "Ruptura del rango de los primeros 30 min de COMEX (08:20 NY)",
+   "regime": "tendencia",
+   "tf": 5,
+   "oos": {
+    "n": 904,
+    "win": 0.372787610619469,
+    "exp_r": -0.043671559845580646,
+    "total_pct": -19.739545050202448,
+    "pf": 0.9308221035366895,
+    "max_dd_pct": -30.042601570958023,
+    "max_loss_streak": 13,
+    "worst_month_pct": -8.684440984293749,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.4,
+    "trades_per_month": 20.08888888888889
+   },
+   "oos_shield": {
+    "n": 904,
+    "win": 0.372787610619469,
+    "exp_r": -0.043671559845580646,
+    "total_pct": -19.739545050202448,
+    "pf": 0.9308221035366895,
+    "max_dd_pct": -30.042601570958023,
+    "max_loss_streak": 13,
+    "worst_month_pct": -8.684440984293749,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.4,
+    "trades_per_month": 20.08888888888889
+   },
+   "stress_2x": {
+    "n": 904,
+    "win": 0.3661504424778761,
+    "exp_r": -0.08234626705065437,
+    "total_pct": -37.220512706895775,
+    "pf": 0.8733760022304129,
+    "max_dd_pct": -46.602432149781436,
+    "max_loss_streak": 13,
+    "worst_month_pct": -8.88699399969309,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.4,
+    "trades_per_month": 20.08888888888889
+   },
+   "one_min_late": {
+    "n": 904,
+    "win": 0.377212389380531,
+    "exp_r": -0.047186631001129506,
+    "total_pct": -21.328357212510532,
+    "pf": 0.924574950476942,
+    "max_dd_pct": -34.25201455233796,
+    "max_loss_streak": 13,
+    "worst_month_pct": -8.703337402497285,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.4,
+    "trades_per_month": 20.08888888888889
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -23.26805969220656,
+    "bajista": -4.2523578995747116,
+    "lateral": 7.780872541578827
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 3,
+    "double_cost": 1,
+    "avg": 2.0
+   },
+   "challenge_mc": {
+    "p_pass": 0.006,
+    "p_fail": 0.0,
+    "p_pause": 0.3954,
+    "p_undecided": 0.5986,
+    "median_days": 90.5,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.2394,
+    "p_fail": 0.0,
+    "p_pause": 0.387,
+    "p_undecided": 0.37360000000000004,
+    "median_days": 57.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0928,
+    "p_pause": 0.4188,
+    "p_undecided": 0.48839999999999995,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ]
+   ]
+  },
+  "ny_sweep_1m": {
+   "hft": {
+    "trades_per_active_day": 1.5216374269005848,
+    "median_hold_min": 2.0,
+    "hft_risk": true
+   },
+   "desc": "Barrida del rango de apertura de Nueva York y reversi\u00f3n",
+   "regime": "vol\u00e1til",
+   "tf": 1,
+   "oos": {
+    "n": 1301,
+    "win": 0.2282859338970023,
+    "exp_r": -0.3214861449715518,
+    "total_pct": -209.12673730399442,
+    "pf": 0.6484104215486629,
+    "max_dd_pct": -211.9797625015459,
+    "max_loss_streak": 24,
+    "worst_month_pct": -32.77171363135584,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.15555555555555556,
+    "trades_per_month": 28.91111111111111
+   },
+   "oos_shield": {
+    "n": 1301,
+    "win": 0.2282859338970023,
+    "exp_r": -0.3214861449715518,
+    "total_pct": -209.12673730399442,
+    "pf": 0.6484104215486629,
+    "max_dd_pct": -211.9797625015459,
+    "max_loss_streak": 24,
+    "worst_month_pct": -32.77171363135584,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.15555555555555556,
+    "trades_per_month": 28.91111111111111
+   },
+   "stress_2x": {
+    "n": 1299,
+    "win": 0.21939953810623555,
+    "exp_r": -0.49284387401403373,
+    "total_pct": -320.1020961721149,
+    "pf": 0.5047394724912446,
+    "max_dd_pct": -322.39805669926704,
+    "max_loss_streak": 24,
+    "worst_month_pct": -30.064555047153785,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.08888888888888889,
+    "trades_per_month": 28.866666666666667
+   },
+   "one_min_late": {
+    "n": 1215,
+    "win": 0.24773662551440329,
+    "exp_r": -0.3405087222987422,
+    "total_pct": -206.85904879648587,
+    "pf": 0.5959436194830043,
+    "max_dd_pct": -215.1087282393157,
+    "max_loss_streak": 21,
+    "worst_month_pct": -21.840054631509293,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.2,
+    "trades_per_month": 27.0
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -92.91633627091169,
+    "bajista": -35.834541845802335,
+    "lateral": -80.37585918728044
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.1186,
+    "p_fail": 0.0948,
+    "p_pause": 0.7804,
+    "p_undecided": 0.006199999999999983,
+    "median_days": 19.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.1262,
+    "p_fail": 0.093,
+    "p_pause": 0.7748,
+    "p_undecided": 0.006000000000000005,
+    "median_days": 18.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.065,
+    "p_pause": 0.8666,
+    "p_undecided": 0.06840000000000002,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.0
+     }
+    ]
+   ]
+  },
+  "ny_sweep_3m": {
+   "hft": {
+    "trades_per_active_day": 1.5,
+    "median_hold_min": 5.0,
+    "hft_risk": false
+   },
+   "desc": "Barrida del rango de apertura de Nueva York y reversi\u00f3n",
+   "regime": "vol\u00e1til",
+   "tf": 3,
+   "oos": {
+    "n": 1251,
+    "win": 0.3293365307753797,
+    "exp_r": -0.2596929405131054,
+    "total_pct": -162.4379342909474,
+    "pf": 0.6614323176617938,
+    "max_dd_pct": -163.15629339406112,
+    "max_loss_streak": 15,
+    "worst_month_pct": -21.32029297666635,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.15555555555555556,
+    "trades_per_month": 27.8
+   },
+   "oos_shield": {
+    "n": 1251,
+    "win": 0.3293365307753797,
+    "exp_r": -0.2596929405131054,
+    "total_pct": -162.4379342909474,
+    "pf": 0.6614323176617938,
+    "max_dd_pct": -163.15629339406112,
+    "max_loss_streak": 15,
+    "worst_month_pct": -21.32029297666635,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.15555555555555556,
+    "trades_per_month": 27.8
+   },
+   "stress_2x": {
+    "n": 1249,
+    "win": 0.3122497998398719,
+    "exp_r": -0.3791622676365386,
+    "total_pct": -236.78683613901836,
+    "pf": 0.5382740285773594,
+    "max_dd_pct": -237.35750313760022,
+    "max_loss_streak": 15,
+    "worst_month_pct": -20.529285996890774,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.1111111111111111,
+    "trades_per_month": 27.755555555555556
+   },
+   "one_min_late": {
+    "n": 1203,
+    "win": 0.33000831255195345,
+    "exp_r": -0.26990071416674954,
+    "total_pct": -162.34527957129984,
+    "pf": 0.6345526720834025,
+    "max_dd_pct": -164.47327228408327,
+    "max_loss_streak": 14,
+    "worst_month_pct": -21.71825814534077,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.15555555555555556,
+    "trades_per_month": 26.733333333333334
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -87.64532728336643,
+    "bajista": -20.272598852411914,
+    "lateral": -54.52000815516906
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.0702,
+    "p_fail": 0.0886,
+    "p_pause": 0.8152,
+    "p_undecided": 0.026000000000000023,
+    "median_days": 29.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0724,
+    "p_fail": 0.088,
+    "p_pause": 0.8138,
+    "p_undecided": 0.025800000000000045,
+    "median_days": 28.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.1054,
+    "p_pause": 0.8062,
+    "p_undecided": 0.08840000000000003,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ]
+   ]
+  },
+  "ny_sweep_5m": {
+   "hft": {
+    "trades_per_active_day": 1.45875,
+    "median_hold_min": 8.0,
+    "hft_risk": false
+   },
+   "desc": "Barrida del rango de apertura de Nueva York y reversi\u00f3n",
+   "regime": "vol\u00e1til",
+   "tf": 5,
+   "oos": {
+    "n": 1167,
+    "win": 0.3718937446443873,
+    "exp_r": -0.06889175839141888,
+    "total_pct": -40.19834102139291,
+    "pf": 0.89590093147276,
+    "max_dd_pct": -57.269105810593906,
+    "max_loss_streak": 11,
+    "worst_month_pct": -6.412574631639452,
+    "worst_month": "2024-06-30",
+    "pos_months": 0.4,
+    "trades_per_month": 25.933333333333334
+   },
+   "oos_shield": {
+    "n": 1167,
+    "win": 0.3718937446443873,
+    "exp_r": -0.06889175839141888,
+    "total_pct": -40.19834102139291,
+    "pf": 0.89590093147276,
+    "max_dd_pct": -57.269105810593906,
+    "max_loss_streak": 11,
+    "worst_month_pct": -6.412574631639452,
+    "worst_month": "2024-06-30",
+    "pos_months": 0.4,
+    "trades_per_month": 25.933333333333334
+   },
+   "stress_2x": {
+    "n": 1159,
+    "win": 0.35806729939603105,
+    "exp_r": -0.17466883517746037,
+    "total_pct": -101.22058998533828,
+    "pf": 0.7530010813456091,
+    "max_dd_pct": -107.34180052167554,
+    "max_loss_streak": 11,
+    "worst_month_pct": -8.645147282318304,
+    "worst_month": "2024-06-30",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 25.755555555555556
+   },
+   "one_min_late": {
+    "n": 1143,
+    "win": 0.3657042869641295,
+    "exp_r": -0.14296360141499645,
+    "total_pct": -81.70369820867049,
+    "pf": 0.7806899649148654,
+    "max_dd_pct": -85.4344167542845,
+    "max_loss_streak": 11,
+    "worst_month_pct": -6.225571544465561,
+    "worst_month": "2023-11-30",
+    "pos_months": 0.2,
+    "trades_per_month": 25.4
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -27.864564033100027,
+    "bajista": -1.1088579605730042,
+    "lateral": -11.224919027719867
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 2,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.8333333333333333
+   },
+   "challenge_mc": {
+    "p_pass": 0.261,
+    "p_fail": 0.0,
+    "p_pause": 0.5658,
+    "p_undecided": 0.17320000000000002,
+    "median_days": 42.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.2614,
+    "p_fail": 0.0,
+    "p_pause": 0.5646,
+    "p_undecided": 0.17400000000000004,
+    "median_days": 41.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.6376,
+    "p_undecided": 0.36240000000000006,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mode": "mid",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mode": "far",
+      "buf": 0.2
+     }
+    ]
+   ]
+  },
+  "london_orb_5m": {
+   "hft": {
+    "trades_per_active_day": 1.0,
+    "median_hold_min": 136.0,
+    "hft_risk": false
+   },
+   "desc": "Ruptura del rango de la primera hora de Londres",
+   "regime": "tendencia",
+   "tf": 5,
+   "oos": {
+    "n": 934,
+    "win": 0.43254817987152033,
+    "exp_r": -0.07726669644498997,
+    "total_pct": -36.08354723981032,
+    "pf": 0.8658535256134504,
+    "max_dd_pct": -42.688667514920716,
+    "max_loss_streak": 9,
+    "worst_month_pct": -6.828749730464463,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.4,
+    "trades_per_month": 20.755555555555556
+   },
+   "oos_shield": {
+    "n": 934,
+    "win": 0.43254817987152033,
+    "exp_r": -0.07726669644498997,
+    "total_pct": -36.08354723981032,
+    "pf": 0.8658535256134504,
+    "max_dd_pct": -42.688667514920716,
+    "max_loss_streak": 9,
+    "worst_month_pct": -6.828749730464463,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.4,
+    "trades_per_month": 20.755555555555556
+   },
+   "stress_2x": {
+    "n": 935,
+    "win": 0.4235294117647059,
+    "exp_r": -0.12589633387200183,
+    "total_pct": -58.856536085160855,
+    "pf": 0.7900234445962223,
+    "max_dd_pct": -64.31510548589151,
+    "max_loss_streak": 9,
+    "worst_month_pct": -8.421498062708832,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 20.77777777777778
+   },
+   "one_min_late": {
+    "n": 934,
+    "win": 0.43254817987152033,
+    "exp_r": -0.08617680301063912,
+    "total_pct": -40.24456700596847,
+    "pf": 0.8502321420310036,
+    "max_dd_pct": -46.737132438656076,
+    "max_loss_streak": 9,
+    "worst_month_pct": -7.012335608689217,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.37777777777777777,
+    "trades_per_month": 20.755555555555556
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -11.267917448195345,
+    "bajista": -3.7070480437600652,
+    "lateral": -21.108581747854913
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 3,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 2.0
+   },
+   "challenge_mc": {
+    "p_pass": 0.0004,
+    "p_fail": 0.0,
+    "p_pause": 0.4458,
+    "p_undecided": 0.5538000000000001,
+    "median_days": 96.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0982,
+    "p_fail": 0.0,
+    "p_pause": 0.4444,
+    "p_undecided": 0.45740000000000003,
+    "median_days": 64.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0002,
+    "p_pause": 0.511,
+    "p_undecided": 0.4888,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ]
+   ]
+  },
+  "london_orb_15m": {
+   "hft": {
+    "trades_per_active_day": 1.0,
+    "median_hold_min": 136.0,
+    "hft_risk": false
+   },
+   "desc": "Ruptura del rango de la primera hora de Londres",
+   "regime": "tendencia",
+   "tf": 15,
+   "oos": {
+    "n": 934,
+    "win": 0.43254817987152033,
+    "exp_r": -0.07726669644498997,
+    "total_pct": -36.08354723981032,
+    "pf": 0.8658535256134504,
+    "max_dd_pct": -42.688667514920716,
+    "max_loss_streak": 9,
+    "worst_month_pct": -6.828749730464463,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.4,
+    "trades_per_month": 20.755555555555556
+   },
+   "oos_shield": {
+    "n": 934,
+    "win": 0.43254817987152033,
+    "exp_r": -0.07726669644498997,
+    "total_pct": -36.08354723981032,
+    "pf": 0.8658535256134504,
+    "max_dd_pct": -42.688667514920716,
+    "max_loss_streak": 9,
+    "worst_month_pct": -6.828749730464463,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.4,
+    "trades_per_month": 20.755555555555556
+   },
+   "stress_2x": {
+    "n": 935,
+    "win": 0.4235294117647059,
+    "exp_r": -0.12589633387200183,
+    "total_pct": -58.856536085160855,
+    "pf": 0.7900234445962223,
+    "max_dd_pct": -64.31510548589151,
+    "max_loss_streak": 9,
+    "worst_month_pct": -8.421498062708832,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 20.77777777777778
+   },
+   "one_min_late": {
+    "n": 934,
+    "win": 0.43254817987152033,
+    "exp_r": -0.08617680301063912,
+    "total_pct": -40.24456700596847,
+    "pf": 0.8502321420310036,
+    "max_dd_pct": -46.737132438656076,
+    "max_loss_streak": 9,
+    "worst_month_pct": -7.012335608689217,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.37777777777777777,
+    "trades_per_month": 20.755555555555556
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -11.267917448195345,
+    "bajista": -3.7070480437600652,
+    "lateral": -21.108581747854913
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 3,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 2.0
+   },
+   "challenge_mc": {
+    "p_pass": 0.0004,
+    "p_fail": 0.0,
+    "p_pause": 0.4458,
+    "p_undecided": 0.5538000000000001,
+    "median_days": 96.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0982,
+    "p_fail": 0.0,
+    "p_pause": 0.4444,
+    "p_undecided": 0.45740000000000003,
+    "median_days": 64.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0002,
+    "p_pause": 0.511,
+    "p_undecided": 0.4888,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "mid"
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mult": 1.5,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mult": 2.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mult": 1.0,
+      "sl_mode": "far"
+     }
+    ]
+   ]
+  },
+  "pdhl_breakout_5m": {
+   "hft": {
+    "trades_per_active_day": 1.126984126984127,
+    "median_hold_min": 9.0,
+    "hft_risk": false
+   },
+   "desc": "Cierre por fuera del m\u00e1ximo o m\u00ednimo del d\u00eda anterior",
+   "regime": "tendencia",
+   "tf": 5,
+   "oos": {
+    "n": 710,
+    "win": 0.35492957746478876,
+    "exp_r": -0.1195468196807063,
+    "total_pct": -42.439120986650735,
+    "pf": 0.8242491121194682,
+    "max_dd_pct": -50.87526057460894,
+    "max_loss_streak": 17,
+    "worst_month_pct": -9.183122678774565,
+    "worst_month": "2023-02-28",
+    "pos_months": 0.4222222222222222,
+    "trades_per_month": 15.777777777777779
+   },
+   "oos_shield": {
+    "n": 710,
+    "win": 0.35492957746478876,
+    "exp_r": -0.1195468196807063,
+    "total_pct": -42.439120986650735,
+    "pf": 0.8242491121194682,
+    "max_dd_pct": -50.87526057460894,
+    "max_loss_streak": 17,
+    "worst_month_pct": -9.183122678774565,
+    "worst_month": "2023-02-28",
+    "pos_months": 0.4222222222222222,
+    "trades_per_month": 15.777777777777779
+   },
+   "stress_2x": {
+    "n": 710,
+    "win": 0.3492957746478873,
+    "exp_r": -0.21372627844649067,
+    "total_pct": -75.87282884850417,
+    "pf": 0.7020420597975914,
+    "max_dd_pct": -81.40351795872539,
+    "max_loss_streak": 18,
+    "worst_month_pct": -9.938233361628276,
+    "worst_month": "2023-02-28",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 15.777777777777779
+   },
+   "one_min_late": {
+    "n": 697,
+    "win": 0.3629842180774749,
+    "exp_r": -0.14992668901670814,
+    "total_pct": -52.24945112232278,
+    "pf": 0.7785894237428934,
+    "max_dd_pct": -58.49439590794352,
+    "max_loss_streak": 16,
+    "worst_month_pct": -8.590410730548289,
+    "worst_month": "2023-02-28",
+    "pos_months": 0.4,
+    "trades_per_month": 15.488888888888889
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -14.870339473530391,
+    "bajista": -20.383017258239363,
+    "lateral": -7.185764254880979
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.0976,
+    "p_fail": 0.0,
+    "p_pause": 0.4984,
+    "p_undecided": 0.404,
+    "median_days": 59.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.1026,
+    "p_fail": 0.0,
+    "p_pause": 0.4978,
+    "p_undecided": 0.39959999999999996,
+    "median_days": 58.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.5518,
+    "p_undecided": 0.44820000000000004,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mult": 3.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mult": 3.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mult": 3.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mult": 3.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mult": 1.5
+     }
+    ]
+   ]
+  },
+  "pdhl_breakout_15m": {
+   "hft": {
+    "trades_per_active_day": 1.1065989847715736,
+    "median_hold_min": 27.5,
+    "hft_risk": false
+   },
+   "desc": "Cierre por fuera del m\u00e1ximo o m\u00ednimo del d\u00eda anterior",
+   "regime": "tendencia",
+   "tf": 15,
+   "oos": {
+    "n": 654,
+    "win": 0.35932721712538224,
+    "exp_r": -0.07660212134335728,
+    "total_pct": -25.04889367927783,
+    "pf": 0.8843055932832623,
+    "max_dd_pct": -32.048453876254506,
+    "max_loss_streak": 11,
+    "worst_month_pct": -4.798755920771767,
+    "worst_month": "2023-06-30",
+    "pos_months": 0.35555555555555557,
+    "trades_per_month": 14.533333333333333
+   },
+   "oos_shield": {
+    "n": 654,
+    "win": 0.35932721712538224,
+    "exp_r": -0.07660212134335728,
+    "total_pct": -25.04889367927783,
+    "pf": 0.8843055932832623,
+    "max_dd_pct": -32.048453876254506,
+    "max_loss_streak": 11,
+    "worst_month_pct": -4.798755920771767,
+    "worst_month": "2023-06-30",
+    "pos_months": 0.35555555555555557,
+    "trades_per_month": 14.533333333333333
+   },
+   "stress_2x": {
+    "n": 654,
+    "win": 0.3562691131498471,
+    "exp_r": -0.13900588950896994,
+    "total_pct": -45.45492586943317,
+    "pf": 0.7978720898504245,
+    "max_dd_pct": -50.515830851532044,
+    "max_loss_streak": 11,
+    "worst_month_pct": -5.197783675288558,
+    "worst_month": "2023-06-30",
+    "pos_months": 0.3111111111111111,
+    "trades_per_month": 14.533333333333333
+   },
+   "one_min_late": {
+    "n": 650,
+    "win": 0.36153846153846153,
+    "exp_r": -0.04793071956672394,
+    "total_pct": -15.577483859185278,
+    "pf": 0.9277155566478297,
+    "max_dd_pct": -29.773438838901995,
+    "max_loss_streak": 11,
+    "worst_month_pct": -4.576531339410778,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.35555555555555557,
+    "trades_per_month": 14.444444444444445
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -11.219816255490167,
+    "bajista": -11.112794127761024,
+    "lateral": -2.7162832960266377
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 2,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.8333333333333333
+   },
+   "challenge_mc": {
+    "p_pass": 0.0894,
+    "p_fail": 0.0,
+    "p_pause": 0.3506,
+    "p_undecided": 0.56,
+    "median_days": 79.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.1256,
+    "p_fail": 0.0,
+    "p_pause": 0.3512,
+    "p_undecided": 0.5232,
+    "median_days": 67.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.4352,
+    "p_undecided": 0.5648,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mult": 3.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mult": 3.0
+     }
+    ]
+   ]
+  },
+  "pdhl_sweep_5m": {
+   "hft": {
+    "trades_per_active_day": 1.1382636655948553,
+    "median_hold_min": 15.0,
+    "hft_risk": false
+   },
+   "desc": "Barrida del m\u00e1ximo o m\u00ednimo del d\u00eda anterior y vuelta",
+   "regime": "rango",
+   "tf": 5,
+   "oos": {
+    "n": 708,
+    "win": 0.3545197740112994,
+    "exp_r": -0.17623950801053723,
+    "total_pct": -62.388785835730175,
+    "pf": 0.740737623822984,
+    "max_dd_pct": -66.36294817583415,
+    "max_loss_streak": 12,
+    "worst_month_pct": -6.191971034950051,
+    "worst_month": "2024-08-31",
+    "pos_months": 0.3111111111111111,
+    "trades_per_month": 15.733333333333333
+   },
+   "oos_shield": {
+    "n": 708,
+    "win": 0.3545197740112994,
+    "exp_r": -0.17623950801053723,
+    "total_pct": -62.388785835730175,
+    "pf": 0.740737623822984,
+    "max_dd_pct": -66.36294817583415,
+    "max_loss_streak": 12,
+    "worst_month_pct": -6.191971034950051,
+    "worst_month": "2024-08-31",
+    "pos_months": 0.3111111111111111,
+    "trades_per_month": 15.733333333333333
+   },
+   "stress_2x": {
+    "n": 708,
+    "win": 0.3488700564971751,
+    "exp_r": -0.2716192907406456,
+    "total_pct": -96.15322892218855,
+    "pf": 0.6234603465979841,
+    "max_dd_pct": -98.20547059208872,
+    "max_loss_streak": 12,
+    "worst_month_pct": -6.792638301286444,
+    "worst_month": "2024-08-31",
+    "pos_months": 0.17777777777777778,
+    "trades_per_month": 15.733333333333333
+   },
+   "one_min_late": {
+    "n": 691,
+    "win": 0.36034732272069464,
+    "exp_r": -0.17384020100748443,
+    "total_pct": -60.061789448085875,
+    "pf": 0.7397079456355332,
+    "max_dd_pct": -64.92012072875463,
+    "max_loss_streak": 12,
+    "worst_month_pct": -5.754466101390064,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 15.355555555555556
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -34.55957531972497,
+    "bajista": -5.670274405739226,
+    "lateral": -22.15893611026598
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 2,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.8333333333333333
+   },
+   "challenge_mc": {
+    "p_pass": 0.0152,
+    "p_fail": 0.0,
+    "p_pause": 0.615,
+    "p_undecided": 0.3698,
+    "median_days": 68.5,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0322,
+    "p_fail": 0.0,
+    "p_pause": 0.6138,
+    "p_undecided": 0.354,
+    "median_days": 56.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.6268,
+    "p_undecided": 0.3732,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mult": 1.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mult": 1.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mult": 2.0
+     }
+    ]
+   ]
+  },
+  "pdhl_sweep_15m": {
+   "hft": {
+    "trades_per_active_day": 1.1071428571428572,
+    "median_hold_min": 44.0,
+    "hft_risk": false
+   },
+   "desc": "Barrida del m\u00e1ximo o m\u00ednimo del d\u00eda anterior y vuelta",
+   "regime": "rango",
+   "tf": 15,
+   "oos": {
+    "n": 651,
+    "win": 0.3778801843317972,
+    "exp_r": -0.13132787415425323,
+    "total_pct": -42.74722303720943,
+    "pf": 0.7892712623257033,
+    "max_dd_pct": -47.344448374522926,
+    "max_loss_streak": 12,
+    "worst_month_pct": -5.251702196802828,
+    "worst_month": "2023-04-30",
+    "pos_months": 0.4,
+    "trades_per_month": 14.466666666666667
+   },
+   "oos_shield": {
+    "n": 651,
+    "win": 0.3778801843317972,
+    "exp_r": -0.13132787415425323,
+    "total_pct": -42.74722303720943,
+    "pf": 0.7892712623257033,
+    "max_dd_pct": -47.344448374522926,
+    "max_loss_streak": 12,
+    "worst_month_pct": -5.251702196802828,
+    "worst_month": "2023-04-30",
+    "pos_months": 0.4,
+    "trades_per_month": 14.466666666666667
+   },
+   "stress_2x": {
+    "n": 651,
+    "win": 0.37327188940092165,
+    "exp_r": -0.17874170253513827,
+    "total_pct": -58.180424175187504,
+    "pf": 0.7204987024545,
+    "max_dd_pct": -60.94847645275674,
+    "max_loss_streak": 12,
+    "worst_month_pct": -5.137049199203616,
+    "worst_month": "2026-08-31",
+    "pos_months": 0.35555555555555557,
+    "trades_per_month": 14.466666666666667
+   },
+   "one_min_late": {
+    "n": 645,
+    "win": 0.3829457364341085,
+    "exp_r": -0.147076306605399,
+    "total_pct": -47.432108880241174,
+    "pf": 0.7624339950682394,
+    "max_dd_pct": -51.321177064109044,
+    "max_loss_streak": 12,
+    "worst_month_pct": -5.4090298417463645,
+    "worst_month": "2026-08-31",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 14.333333333333334
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -24.35154198900117,
+    "bajista": -2.0843326357196195,
+    "lateral": -16.311348412488638
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 2,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.8333333333333333
+   },
+   "challenge_mc": {
+    "p_pass": 0.0242,
+    "p_fail": 0.0,
+    "p_pause": 0.447,
+    "p_undecided": 0.5287999999999999,
+    "median_days": 75.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0428,
+    "p_fail": 0.0,
+    "p_pause": 0.4494,
+    "p_undecided": 0.5078,
+    "median_days": 71.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0492,
+    "p_pause": 0.4648,
+    "p_undecided": 0.486,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mult": 1.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mult": 2.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mult": 1.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mult": 1.5
+     }
+    ]
+   ]
+  },
+  "vwap_pullback_3m": {
+   "hft": {
+    "trades_per_active_day": 2.4156626506024095,
+    "median_hold_min": 7.0,
+    "hft_risk": false
+   },
+   "desc": "Retroceso al VWAP del d\u00eda dentro de una tendencia",
+   "regime": "tendencia",
+   "tf": 3,
+   "oos": {
+    "n": 1203,
+    "win": 0.35827098919368244,
+    "exp_r": -0.17755287194636432,
+    "total_pct": -106.79805247573813,
+    "pf": 0.7431228425268226,
+    "max_dd_pct": -112.11454185276271,
+    "max_loss_streak": 16,
+    "worst_month_pct": -28.51456268844356,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.24444444444444444,
+    "trades_per_month": 26.733333333333334
+   },
+   "oos_shield": {
+    "n": 1087,
+    "win": 0.36522539098436063,
+    "exp_r": -0.16080808246829625,
+    "total_pct": -87.399192821519,
+    "pf": 0.7644190328207021,
+    "max_dd_pct": -91.70998938449097,
+    "max_loss_streak": 13,
+    "worst_month_pct": -18.612972859392613,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.26666666666666666,
+    "trades_per_month": 24.155555555555555
+   },
+   "stress_2x": {
+    "n": 1223,
+    "win": 0.3466884709730172,
+    "exp_r": -0.3056346085073617,
+    "total_pct": -186.89556310225169,
+    "pf": 0.5916991057786125,
+    "max_dd_pct": -190.9872621007959,
+    "max_loss_streak": 18,
+    "worst_month_pct": -37.82489453019729,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.2,
+    "trades_per_month": 27.177777777777777
+   },
+   "one_min_late": {
+    "n": 1211,
+    "win": 0.36085879438480595,
+    "exp_r": -0.24584280445899265,
+    "total_pct": -148.85781809992008,
+    "pf": 0.6426563078194762,
+    "max_dd_pct": -149.7289944891439,
+    "max_loss_streak": 17,
+    "worst_month_pct": -27.560527063994602,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.2,
+    "trades_per_month": 26.91111111111111
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -38.36170959873184,
+    "bajista": -3.3833570530078125,
+    "lateral": -65.05298582399848
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.0592,
+    "p_fail": 0.0,
+    "p_pause": 0.7604,
+    "p_undecided": 0.1804,
+    "median_days": 51.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0672,
+    "p_fail": 0.0,
+    "p_pause": 0.759,
+    "p_undecided": 0.17379999999999995,
+    "median_days": 40.5,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0004,
+    "p_pause": 0.7414,
+    "p_undecided": 0.2582,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "ema_n": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "ema_n": 50,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "ema_n": 50,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "ema_n": 50,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "ema_n": 50,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "ema_n": 50,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "ema_n": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "ema_n": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "ema_n": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "ema_n": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "ema_n": 20,
+      "tp_r": 2.0
+     }
+    ]
+   ]
+  },
+  "vwap_pullback_5m": {
+   "hft": {
+    "trades_per_active_day": 2.285968028419183,
+    "median_hold_min": 13.0,
+    "hft_risk": false
+   },
+   "desc": "Retroceso al VWAP del d\u00eda dentro de una tendencia",
+   "regime": "tendencia",
+   "tf": 5,
+   "oos": {
+    "n": 1287,
+    "win": 0.34654234654234656,
+    "exp_r": -0.13917101565252346,
+    "total_pct": -89.55654857239884,
+    "pf": 0.7998438136872915,
+    "max_dd_pct": -96.96663526132133,
+    "max_loss_streak": 19,
+    "worst_month_pct": -15.642996891231716,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.3111111111111111,
+    "trades_per_month": 28.6
+   },
+   "oos_shield": {
+    "n": 1168,
+    "win": 0.3518835616438356,
+    "exp_r": -0.13150166147817552,
+    "total_pct": -76.7969703032545,
+    "pf": 0.8094722008657523,
+    "max_dd_pct": -84.20705699217685,
+    "max_loss_streak": 17,
+    "worst_month_pct": -12.049286677390693,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 25.955555555555556
+   },
+   "stress_2x": {
+    "n": 1307,
+    "win": 0.3320581484315226,
+    "exp_r": -0.26562990292719335,
+    "total_pct": -173.58914156292087,
+    "pf": 0.645635538148421,
+    "max_dd_pct": -180.67175484823,
+    "max_loss_streak": 20,
+    "worst_month_pct": -25.177384974730682,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.15555555555555556,
+    "trades_per_month": 29.044444444444444
+   },
+   "one_min_late": {
+    "n": 1276,
+    "win": 0.3510971786833856,
+    "exp_r": -0.16504607089670115,
+    "total_pct": -105.29939323209535,
+    "pf": 0.7632256938177452,
+    "max_dd_pct": -110.48167061963937,
+    "max_loss_streak": 19,
+    "worst_month_pct": -17.479403998373122,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 28.355555555555554
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -41.711669011666686,
+    "bajista": -14.369833677819043,
+    "lateral": -33.475045882913115
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.092,
+    "p_fail": 0.0,
+    "p_pause": 0.7186,
+    "p_undecided": 0.1894,
+    "median_days": 54.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.1012,
+    "p_fail": 0.0,
+    "p_pause": 0.7148,
+    "p_undecided": 0.18400000000000005,
+    "median_days": 46.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0418,
+    "p_pause": 0.6856,
+    "p_undecided": 0.27259999999999995,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "ema_n": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "ema_n": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "ema_n": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "ema_n": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "ema_n": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "ema_n": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "ema_n": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "ema_n": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "ema_n": 20,
+      "tp_r": 1.5
+     }
+    ]
+   ]
+  },
+  "vwap_pullback_15m": {
+   "hft": {
+    "trades_per_active_day": 1.9617224880382775,
+    "median_hold_min": 35.0,
+    "hft_risk": false
+   },
+   "desc": "Retroceso al VWAP del d\u00eda dentro de una tendencia",
+   "regime": "tendencia",
+   "tf": 15,
+   "oos": {
+    "n": 1230,
+    "win": 0.3544715447154472,
+    "exp_r": -0.14314422749194208,
+    "total_pct": -88.03369990754439,
+    "pf": 0.7803905485646031,
+    "max_dd_pct": -94.48133572927372,
+    "max_loss_streak": 16,
+    "worst_month_pct": -15.944989480235705,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 27.333333333333332
+   },
+   "oos_shield": {
+    "n": 1170,
+    "win": 0.3564102564102564,
+    "exp_r": -0.13717101192847492,
+    "total_pct": -80.24504197815783,
+    "pf": 0.789031279762894,
+    "max_dd_pct": -86.6926777998873,
+    "max_loss_streak": 14,
+    "worst_month_pct": -12.817970245508448,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 26.0
+   },
+   "stress_2x": {
+    "n": 1242,
+    "win": 0.3446054750402576,
+    "exp_r": -0.2212883349092955,
+    "total_pct": -137.4200559786725,
+    "pf": 0.6766752627340233,
+    "max_dd_pct": -143.06353401105025,
+    "max_loss_streak": 17,
+    "worst_month_pct": -18.573518814780208,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.3111111111111111,
+    "trades_per_month": 27.6
+   },
+   "one_min_late": {
+    "n": 1233,
+    "win": 0.35117599351175993,
+    "exp_r": -0.16303218162256103,
+    "total_pct": -100.50933997030887,
+    "pf": 0.749593693171191,
+    "max_dd_pct": -108.10724307288346,
+    "max_loss_streak": 16,
+    "worst_month_pct": -16.784276296674086,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 27.4
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -36.080789248076734,
+    "bajista": -23.70791285252878,
+    "lateral": -28.244997806938866
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.0746,
+    "p_fail": 0.0,
+    "p_pause": 0.7386,
+    "p_undecided": 0.18679999999999997,
+    "median_days": 48.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.078,
+    "p_fail": 0.0,
+    "p_pause": 0.7378,
+    "p_undecided": 0.18420000000000003,
+    "median_days": 47.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0316,
+    "p_pause": 0.715,
+    "p_undecided": 0.25339999999999996,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "ema_n": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "ema_n": 50,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "ema_n": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "ema_n": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "ema_n": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "ema_n": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "ema_n": 50,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "ema_n": 50,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "ema_n": 50,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "ema_n": 20,
+      "tp_r": 1.5
+     }
+    ]
+   ]
+  },
+  "ema_pullback_3m": {
+   "hft": {
+    "trades_per_active_day": 10.508790072388832,
+    "median_hold_min": 17.0,
+    "hft_risk": true
+   },
+   "desc": "Retroceso a la EMA r\u00e1pida con EMAs alineadas",
+   "regime": "tendencia",
+   "tf": 3,
+   "oos": {
+    "n": 10162,
+    "win": 0.24995079708718757,
+    "exp_r": -0.2133859553980509,
+    "total_pct": -1084.2140393774966,
+    "pf": 0.7362792916240409,
+    "max_dd_pct": -1089.9064955045917,
+    "max_loss_streak": 20,
+    "worst_month_pct": -82.40783175916827,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.022222222222222223,
+    "trades_per_month": 225.82222222222222
+   },
+   "oos_shield": {
+    "n": 4684,
+    "win": 0.24679760888129804,
+    "exp_r": -0.22808323651257217,
+    "total_pct": -534.170939912444,
+    "pf": 0.7199541661149965,
+    "max_dd_pct": -538.9165421914445,
+    "max_loss_streak": 30,
+    "worst_month_pct": -27.999998785588705,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.044444444444444446,
+    "trades_per_month": 104.08888888888889
+   },
+   "stress_2x": {
+    "n": 10315,
+    "win": 0.24139602520601067,
+    "exp_r": -0.3297096941940081,
+    "total_pct": -1700.4777478055967,
+    "pf": 0.6173042472791568,
+    "max_dd_pct": -1705.0835854809607,
+    "max_loss_streak": 22,
+    "worst_month_pct": -111.62862655162125,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.0,
+    "trades_per_month": 229.22222222222223
+   },
+   "one_min_late": {
+    "n": 10175,
+    "win": 0.25228501228501227,
+    "exp_r": -0.21990414901980315,
+    "total_pct": -1118.7623581382486,
+    "pf": 0.7283627293485159,
+    "max_dd_pct": -1124.9800056091815,
+    "max_loss_streak": 20,
+    "worst_month_pct": -80.34707588524637,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.06666666666666667,
+    "trades_per_month": 226.11111111111111
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -570.1994085593067,
+    "bajista": -194.05948874923868,
+    "lateral": -319.9551420689514
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.0536,
+    "p_fail": 0.0,
+    "p_pause": 0.9464,
+    "p_undecided": 0.0,
+    "median_days": 11.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0652,
+    "p_fail": 0.0,
+    "p_pause": 0.9348,
+    "p_undecided": 0.0,
+    "median_days": 8.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0144,
+    "p_pause": 0.9832,
+    "p_undecided": 0.0023999999999999577,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "fast": 9,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "fast": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "fast": 20,
+      "tp_r": 2.0
+     }
+    ]
+   ]
+  },
+  "ema_pullback_5m": {
+   "hft": {
+    "trades_per_active_day": 7.269906928645295,
+    "median_hold_min": 23.0,
+    "hft_risk": true
+   },
+   "desc": "Retroceso a la EMA r\u00e1pida con EMAs alineadas",
+   "regime": "tendencia",
+   "tf": 5,
+   "oos": {
+    "n": 7030,
+    "win": 0.3274537695590327,
+    "exp_r": -0.17838991678967883,
+    "total_pct": -627.040557515721,
+    "pf": 0.7489102984637188,
+    "max_dd_pct": -633.068998329433,
+    "max_loss_streak": 20,
+    "worst_month_pct": -48.82162146204845,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.1111111111111111,
+    "trades_per_month": 156.22222222222223
+   },
+   "oos_shield": {
+    "n": 4666,
+    "win": 0.3219031290184312,
+    "exp_r": -0.19585452354552052,
+    "total_pct": -456.9286034316994,
+    "pf": 0.7267679112766303,
+    "max_dd_pct": -466.7220517591978,
+    "max_loss_streak": 18,
+    "worst_month_pct": -25.993982556369303,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.08888888888888889,
+    "trades_per_month": 103.68888888888888
+   },
+   "stress_2x": {
+    "n": 7086,
+    "win": 0.31879762912785775,
+    "exp_r": -0.27106558231572436,
+    "total_pct": -960.3853581446115,
+    "pf": 0.6390209062347324,
+    "max_dd_pct": -964.5497623644185,
+    "max_loss_streak": 20,
+    "worst_month_pct": -73.25235131507849,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.044444444444444446,
+    "trades_per_month": 157.46666666666667
+   },
+   "one_min_late": {
+    "n": 7065,
+    "win": 0.32965322009908,
+    "exp_r": -0.19682660531847385,
+    "total_pct": -695.289983287509,
+    "pf": 0.7226307753333976,
+    "max_dd_pct": -701.2729917362658,
+    "max_loss_streak": 20,
+    "worst_month_pct": -51.232979432839656,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.06666666666666667,
+    "trades_per_month": 157.0
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -325.76168600536255,
+    "bajista": -139.36798516024146,
+    "lateral": -161.91088635011687
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.0386,
+    "p_fail": 0.0,
+    "p_pause": 0.9614,
+    "p_undecided": 0.0,
+    "median_days": 11.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0392,
+    "p_fail": 0.0,
+    "p_pause": 0.9608,
+    "p_undecided": 0.0,
+    "median_days": 11.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.023,
+    "p_pause": 0.9734,
+    "p_undecided": 0.0036000000000000476,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "fast": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "fast": 9,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "fast": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "fast": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "fast": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "fast": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "fast": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "fast": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "fast": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "fast": 20,
+      "tp_r": 2.0
+     }
+    ]
+   ]
+  },
+  "ema_pullback_15m": {
+   "hft": {
+    "trades_per_active_day": 2.9809119830328736,
+    "median_hold_min": 68.0,
+    "hft_risk": false
+   },
+   "desc": "Retroceso a la EMA r\u00e1pida con EMAs alineadas",
+   "regime": "tendencia",
+   "tf": 15,
+   "oos": {
+    "n": 2811,
+    "win": 0.3649946638207044,
+    "exp_r": -0.04372106081439155,
+    "total_pct": -61.449950974627335,
+    "pf": 0.930723555586827,
+    "max_dd_pct": -84.96093800067784,
+    "max_loss_streak": 21,
+    "worst_month_pct": -13.760728263768536,
+    "worst_month": "2024-09-30",
+    "pos_months": 0.4444444444444444,
+    "trades_per_month": 62.46666666666667
+   },
+   "oos_shield": {
+    "n": 2580,
+    "win": 0.36589147286821705,
+    "exp_r": -0.03804020830640228,
+    "total_pct": -49.071868715258944,
+    "pf": 0.9402036880523448,
+    "max_dd_pct": -66.8341420923351,
+    "max_loss_streak": 23,
+    "worst_month_pct": -13.176956547808537,
+    "worst_month": "2024-09-30",
+    "pos_months": 0.4888888888888889,
+    "trades_per_month": 57.333333333333336
+   },
+   "stress_2x": {
+    "n": 2830,
+    "win": 0.35653710247349824,
+    "exp_r": -0.10395720655004219,
+    "total_pct": -147.09944726830966,
+    "pf": 0.8412396893945411,
+    "max_dd_pct": -158.20056298132124,
+    "max_loss_streak": 22,
+    "worst_month_pct": -15.966306801398897,
+    "worst_month": "2024-09-30",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 62.888888888888886
+   },
+   "one_min_late": {
+    "n": 2824,
+    "win": 0.3661473087818697,
+    "exp_r": -0.057967091802004,
+    "total_pct": -81.84953362442965,
+    "pf": 0.9078733570556224,
+    "max_dd_pct": -99.58449943654165,
+    "max_loss_streak": 21,
+    "worst_month_pct": -14.816815246565637,
+    "worst_month": "2024-09-30",
+    "pos_months": 0.4,
+    "trades_per_month": 62.75555555555555
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -17.959416156039715,
+    "bajista": -27.037030452899096,
+    "lateral": -16.453504365688527
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.3368,
+    "p_fail": 0.0434,
+    "p_pause": 0.5646,
+    "p_undecided": 0.05520000000000003,
+    "median_days": 32.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.3392,
+    "p_fail": 0.0432,
+    "p_pause": 0.5638,
+    "p_undecided": 0.05379999999999996,
+    "median_days": 31.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0672,
+    "p_pause": 0.6672,
+    "p_undecided": 0.26559999999999995,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "fast": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "fast": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "fast": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "fast": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "fast": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "fast": 9,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "fast": 20,
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "fast": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "fast": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "fast": 20,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "fast": 20,
+      "tp_r": 1.5
+     }
+    ]
+   ]
+  },
+  "donchian_volume_5m": {
+   "hft": {
+    "trades_per_active_day": 2.207107843137255,
+    "median_hold_min": 8.0,
+    "hft_risk": false
+   },
+   "desc": "Ruptura de rango con volumen de ticks creciente",
+   "regime": "tendencia",
+   "tf": 5,
+   "oos": {
+    "n": 1801,
+    "win": 0.29650194336479735,
+    "exp_r": -0.11721243014228819,
+    "total_pct": -105.54979334313052,
+    "pf": 0.842782890481201,
+    "max_dd_pct": -120.50284609839537,
+    "max_loss_streak": 20,
+    "worst_month_pct": -15.90320915226425,
+    "worst_month": "2023-10-31",
+    "pos_months": 0.35555555555555557,
+    "trades_per_month": 40.022222222222226
+   },
+   "oos_shield": {
+    "n": 1752,
+    "win": 0.2968036529680365,
+    "exp_r": -0.11799472723153373,
+    "total_pct": -103.36338105482352,
+    "pf": 0.8417596517893045,
+    "max_dd_pct": -117.62271524189394,
+    "max_loss_streak": 24,
+    "worst_month_pct": -14.243130367440653,
+    "worst_month": "2023-10-31",
+    "pos_months": 0.3111111111111111,
+    "trades_per_month": 38.93333333333333
+   },
+   "stress_2x": {
+    "n": 1802,
+    "win": 0.290788013318535,
+    "exp_r": -0.20752944218391203,
+    "total_pct": -186.98402740770473,
+    "pf": 0.7347057036776334,
+    "max_dd_pct": -192.94202645161172,
+    "max_loss_streak": 20,
+    "worst_month_pct": -20.03728388922942,
+    "worst_month": "2023-10-31",
+    "pos_months": 0.2,
+    "trades_per_month": 40.044444444444444
+   },
+   "one_min_late": {
+    "n": 1754,
+    "win": 0.3090079817559863,
+    "exp_r": -0.1631883479204065,
+    "total_pct": -143.11618112619652,
+    "pf": 0.7790640174156147,
+    "max_dd_pct": -167.09792003760677,
+    "max_loss_streak": 19,
+    "worst_month_pct": -14.116858224182321,
+    "worst_month": "2025-01-31",
+    "pos_months": 0.26666666666666666,
+    "trades_per_month": 38.977777777777774
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -54.32120194023906,
+    "bajista": -24.76986054673356,
+    "lateral": -26.45873085615789
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.1614,
+    "p_fail": 0.0,
+    "p_pause": 0.7892,
+    "p_undecided": 0.0494,
+    "median_days": 34.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.1624,
+    "p_fail": 0.0,
+    "p_pause": 0.7892,
+    "p_undecided": 0.0484,
+    "median_days": 33.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.031,
+    "p_pause": 0.798,
+    "p_undecided": 0.17100000000000004,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "n": 20,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "n": 20,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "n": 20,
+      "vol_mult": 2.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "n": 20,
+      "vol_mult": 2.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "n": 40,
+      "vol_mult": 1.5,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "n": 20,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ]
+   ]
+  },
+  "donchian_volume_15m": {
+   "hft": {
+    "trades_per_active_day": 1.664516129032258,
+    "median_hold_min": 19.0,
+    "hft_risk": false
+   },
+   "desc": "Ruptura de rango con volumen de ticks creciente",
+   "regime": "tendencia",
+   "tf": 15,
+   "oos": {
+    "n": 1032,
+    "win": 0.3372093023255814,
+    "exp_r": -0.09504634595176593,
+    "total_pct": -49.043914511111225,
+    "pf": 0.8619030245567796,
+    "max_dd_pct": -56.072739878300084,
+    "max_loss_streak": 18,
+    "worst_month_pct": -8.477173167183444,
+    "worst_month": "2024-07-31",
+    "pos_months": 0.3111111111111111,
+    "trades_per_month": 22.933333333333334
+   },
+   "oos_shield": {
+    "n": 1028,
+    "win": 0.33754863813229574,
+    "exp_r": -0.09301643885015105,
+    "total_pct": -47.81044956897764,
+    "pf": 0.8647886217282709,
+    "max_dd_pct": -55.35095149145532,
+    "max_loss_streak": 18,
+    "worst_month_pct": -8.477173167183444,
+    "worst_month": "2024-07-31",
+    "pos_months": 0.3111111111111111,
+    "trades_per_month": 22.844444444444445
+   },
+   "stress_2x": {
+    "n": 1033,
+    "win": 0.3330106485963214,
+    "exp_r": -0.1523068147916235,
+    "total_pct": -78.66646983987356,
+    "pf": 0.7857171041186221,
+    "max_dd_pct": -81.11849807472284,
+    "max_loss_streak": 18,
+    "worst_month_pct": -8.950703114468228,
+    "worst_month": "2024-07-31",
+    "pos_months": 0.26666666666666666,
+    "trades_per_month": 22.955555555555556
+   },
+   "one_min_late": {
+    "n": 1026,
+    "win": 0.3362573099415205,
+    "exp_r": -0.09643528096235093,
+    "total_pct": -49.47129913368603,
+    "pf": 0.8597600599878644,
+    "max_dd_pct": -60.388182074451834,
+    "max_loss_streak": 13,
+    "worst_month_pct": -8.651259418761539,
+    "worst_month": "2024-07-31",
+    "pos_months": 0.37777777777777777,
+    "trades_per_month": 22.8
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -31.081370739151446,
+    "bajista": -16.000925352442053,
+    "lateral": -1.9616184195177224
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.1618,
+    "p_fail": 0.0,
+    "p_pause": 0.5788,
+    "p_undecided": 0.25939999999999996,
+    "median_days": 49.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.1616,
+    "p_fail": 0.0,
+    "p_pause": 0.579,
+    "p_undecided": 0.25939999999999996,
+    "median_days": 49.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0006,
+    "p_pause": 0.6292,
+    "p_undecided": 0.3702,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "n": 20,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "n": 20,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "n": 20,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "n": 20,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "n": 40,
+      "vol_mult": 1.5,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "n": 40,
+      "vol_mult": 2.0,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "n": 40,
+      "vol_mult": 1.5,
+      "tp_r": 1.5
+     }
+    ]
+   ]
+  },
+  "rsi2_trend_5m": {
+   "hft": {
+    "trades_per_active_day": 5.071725571725572,
+    "median_hold_min": 24.0,
+    "hft_risk": true
+   },
+   "desc": "RSI(2) extremo a favor de la media de 200 velas",
+   "regime": "tendencia",
+   "tf": 5,
+   "oos": {
+    "n": 4879,
+    "win": 0.44127895060463207,
+    "exp_r": -0.11741446466687698,
+    "total_pct": -286.43258655484635,
+    "pf": 0.7916738704628196,
+    "max_dd_pct": -317.12641308270423,
+    "max_loss_streak": 14,
+    "worst_month_pct": -21.94880466412307,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.2222222222222222,
+    "trades_per_month": 108.42222222222222
+   },
+   "oos_shield": {
+    "n": 4246,
+    "win": 0.4418276024493641,
+    "exp_r": -0.11418592632161916,
+    "total_pct": -242.4167215807975,
+    "pf": 0.7972742746099734,
+    "max_dd_pct": -273.3750284078043,
+    "max_loss_streak": 18,
+    "worst_month_pct": -21.70805251778904,
+    "worst_month": "2023-07-31",
+    "pos_months": 0.2,
+    "trades_per_month": 94.35555555555555
+   },
+   "stress_2x": {
+    "n": 4905,
+    "win": 0.4303771661569827,
+    "exp_r": -0.18933813490374174,
+    "total_pct": -464.3517758514266,
+    "pf": 0.6812415749326729,
+    "max_dd_pct": -480.19448321339127,
+    "max_loss_streak": 14,
+    "worst_month_pct": -27.441974826692274,
+    "worst_month": "2024-01-31",
+    "pos_months": 0.15555555555555556,
+    "trades_per_month": 109.0
+   },
+   "one_min_late": {
+    "n": 4995,
+    "win": 0.43683683683683683,
+    "exp_r": -0.13328410964059728,
+    "total_pct": -332.8770638273917,
+    "pf": 0.7661879788063198,
+    "max_dd_pct": -352.05594188011986,
+    "max_loss_streak": 14,
+    "worst_month_pct": -25.714296363789195,
+    "worst_month": "2024-01-31",
+    "pos_months": 0.17777777777777778,
+    "trades_per_month": 111.0
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -141.3741604173559,
+    "bajista": -28.47929056318363,
+    "lateral": -116.57913557430686
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.069,
+    "p_fail": 0.0,
+    "p_pause": 0.9278,
+    "p_undecided": 0.0031999999999999806,
+    "median_days": 18.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0702,
+    "p_fail": 0.0,
+    "p_pause": 0.9268,
+    "p_undecided": 0.0030000000000000027,
+    "median_days": 18.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0038,
+    "p_pause": 0.9586,
+    "p_undecided": 0.03759999999999997,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "lo": 5,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "lo": 5,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "lo": 5,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "lo": 10,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "lo": 5,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "lo": 5,
+      "tp_r": 1.5
+     }
+    ]
+   ]
+  },
+  "rsi2_trend_15m": {
+   "hft": {
+    "trades_per_active_day": 2.2889963724304714,
+    "median_hold_min": 62.0,
+    "hft_risk": false
+   },
+   "desc": "RSI(2) extremo a favor de la media de 200 velas",
+   "regime": "tendencia",
+   "tf": 15,
+   "oos": {
+    "n": 1893,
+    "win": 0.479661912308505,
+    "exp_r": -0.06780549078360566,
+    "total_pct": -64.17789702668276,
+    "pf": 0.8461287231927622,
+    "max_dd_pct": -71.86532439274617,
+    "max_loss_streak": 11,
+    "worst_month_pct": -7.6098985418844824,
+    "worst_month": "2025-05-31",
+    "pos_months": 0.24444444444444444,
+    "trades_per_month": 42.06666666666667
+   },
+   "oos_shield": {
+    "n": 1839,
+    "win": 0.4828711256117455,
+    "exp_r": -0.061953008532250074,
+    "total_pct": -56.96579134540394,
+    "pf": 0.8586593866739173,
+    "max_dd_pct": -65.20873638270199,
+    "max_loss_streak": 10,
+    "worst_month_pct": -5.848510359517349,
+    "worst_month": "2023-03-31",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 40.86666666666667
+   },
+   "stress_2x": {
+    "n": 1901,
+    "win": 0.46817464492372435,
+    "exp_r": -0.11563863413050374,
+    "total_pct": -109.9145217410438,
+    "pf": 0.7494596049635887,
+    "max_dd_pct": -115.65118041024415,
+    "max_loss_streak": 11,
+    "worst_month_pct": -8.055174497240317,
+    "worst_month": "2025-05-31",
+    "pos_months": 0.2222222222222222,
+    "trades_per_month": 42.24444444444445
+   },
+   "one_min_late": {
+    "n": 1920,
+    "win": 0.4786458333333333,
+    "exp_r": -0.08042578313952062,
+    "total_pct": -77.2087518139398,
+    "pf": 0.8194494216144922,
+    "max_dd_pct": -84.63532562902658,
+    "max_loss_streak": 11,
+    "worst_month_pct": -7.977065000827614,
+    "worst_month": "2025-05-31",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 42.666666666666664
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -24.551688256481455,
+    "bajista": -7.112265877653462,
+    "lateral": -32.51394289254784
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 2,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.8333333333333333
+   },
+   "challenge_mc": {
+    "p_pass": 0.0572,
+    "p_fail": 0.0,
+    "p_pause": 0.5892,
+    "p_undecided": 0.3536,
+    "median_days": 72.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.074,
+    "p_fail": 0.0,
+    "p_pause": 0.5912,
+    "p_undecided": 0.3348,
+    "median_days": 63.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0434,
+    "p_pause": 0.5828,
+    "p_undecided": 0.3738,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "lo": 5,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "lo": 10,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "lo": 10,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "lo": 5,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "lo": 10,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "lo": 10,
+      "tp_r": 1.5
+     }
+    ]
+   ]
+  },
+  "bb_fade_asia_5m": {
+   "hft": {
+    "trades_per_active_day": 2.269368295589988,
+    "median_hold_min": 20.0,
+    "hft_risk": false
+   },
+   "desc": "Bandas de Bollinger hacia la media en la sesi\u00f3n asi\u00e1tica",
+   "regime": "rango",
+   "tf": 5,
+   "oos": {
+    "n": 1904,
+    "win": 0.35241596638655465,
+    "exp_r": -0.1808529463437216,
+    "total_pct": -172.17200491922296,
+    "pf": 0.7338032321455488,
+    "max_dd_pct": -187.0297001817139,
+    "max_loss_streak": 12,
+    "worst_month_pct": -12.793014304603245,
+    "worst_month": "2024-11-30",
+    "pos_months": 0.15555555555555556,
+    "trades_per_month": 42.31111111111111
+   },
+   "oos_shield": {
+    "n": 1810,
+    "win": 0.35359116022099446,
+    "exp_r": -0.18170954685301272,
+    "total_pct": -164.4471399019765,
+    "pf": 0.7321355972209925,
+    "max_dd_pct": -179.18612867839616,
+    "max_loss_streak": 18,
+    "worst_month_pct": -15.61760528474987,
+    "worst_month": "2024-11-30",
+    "pos_months": 0.15555555555555556,
+    "trades_per_month": 40.22222222222222
+   },
+   "stress_2x": {
+    "n": 1917,
+    "win": 0.33854981742305684,
+    "exp_r": -0.28980877177107617,
+    "total_pct": -277.7817077425765,
+    "pf": 0.6015081034592001,
+    "max_dd_pct": -287.81090756986686,
+    "max_loss_streak": 12,
+    "worst_month_pct": -17.098867957996,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.08888888888888889,
+    "trades_per_month": 42.6
+   },
+   "one_min_late": {
+    "n": 1925,
+    "win": 0.3490909090909091,
+    "exp_r": -0.18918291026471798,
+    "total_pct": -182.08855112979106,
+    "pf": 0.7227815360911424,
+    "max_dd_pct": -199.10591550363515,
+    "max_loss_streak": 12,
+    "worst_month_pct": -13.926086331571732,
+    "worst_month": "2024-11-30",
+    "pos_months": 0.15555555555555556,
+    "trades_per_month": 42.77777777777778
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -91.09273506342903,
+    "bajista": -30.08993952834141,
+    "lateral": -50.98933032745251
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 2,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.8333333333333333
+   },
+   "challenge_mc": {
+    "p_pass": 0.027,
+    "p_fail": 0.0,
+    "p_pause": 0.943,
+    "p_undecided": 0.030000000000000027,
+    "median_days": 40.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0268,
+    "p_fail": 0.0,
+    "p_pause": 0.9434,
+    "p_undecided": 0.02980000000000005,
+    "median_days": 39.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.9116,
+    "p_undecided": 0.08840000000000003,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ]
+   ]
+  },
+  "bb_fade_asia_15m": {
+   "hft": {
+    "trades_per_active_day": 1.5437616387337059,
+    "median_hold_min": 51.0,
+    "hft_risk": false
+   },
+   "desc": "Bandas de Bollinger hacia la media en la sesi\u00f3n asi\u00e1tica",
+   "regime": "rango",
+   "tf": 15,
+   "oos": {
+    "n": 829,
+    "win": 0.4028950542822678,
+    "exp_r": -0.09667524208634969,
+    "total_pct": -40.071887844791945,
+    "pf": 0.8269329913978894,
+    "max_dd_pct": -49.289698857634754,
+    "max_loss_streak": 13,
+    "worst_month_pct": -8.77322211521665,
+    "worst_month": "2024-10-31",
+    "pos_months": 0.4,
+    "trades_per_month": 18.42222222222222
+   },
+   "oos_shield": {
+    "n": 817,
+    "win": 0.401468788249694,
+    "exp_r": -0.09588603647089243,
+    "total_pct": -39.169445898359555,
+    "pf": 0.8284998129314972,
+    "max_dd_pct": -48.90031190857504,
+    "max_loss_streak": 10,
+    "worst_month_pct": -7.690138709024467,
+    "worst_month": "2024-10-31",
+    "pos_months": 0.4,
+    "trades_per_month": 18.155555555555555
+   },
+   "stress_2x": {
+    "n": 831,
+    "win": 0.38267148014440433,
+    "exp_r": -0.16727623027846653,
+    "total_pct": -69.50327368070285,
+    "pf": 0.7163566454857561,
+    "max_dd_pct": -73.60562226232926,
+    "max_loss_streak": 13,
+    "worst_month_pct": -10.367596982710122,
+    "worst_month": "2024-10-31",
+    "pos_months": 0.3111111111111111,
+    "trades_per_month": 18.466666666666665
+   },
+   "one_min_late": {
+    "n": 838,
+    "win": 0.39856801909307876,
+    "exp_r": -0.067047562709541,
+    "total_pct": -28.092928775297686,
+    "pf": 0.8800103345024644,
+    "max_dd_pct": -35.738167578380065,
+    "max_loss_streak": 13,
+    "worst_month_pct": -9.173724687304105,
+    "worst_month": "2024-10-31",
+    "pos_months": 0.35555555555555557,
+    "trades_per_month": 18.622222222222224
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -20.044225457123513,
+    "bajista": -13.097725546147899,
+    "lateral": -6.929936841520535
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.051,
+    "p_fail": 0.0,
+    "p_pause": 0.4294,
+    "p_undecided": 0.5196000000000001,
+    "median_days": 72.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0572,
+    "p_fail": 0.0,
+    "p_pause": 0.4302,
+    "p_undecided": 0.5126,
+    "median_days": 70.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.4854,
+    "p_undecided": 0.5146,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "k": 2.0,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "k": 2.5,
+      "atr_sl": 1.0
+     }
+    ]
+   ]
+  },
+  "flush_reversal_1m": {
+   "hft": {
+    "trades_per_active_day": 2.638592750533049,
+    "median_hold_min": 2.0,
+    "hft_risk": true
+   },
+   "desc": "Reversi\u00f3n tras una liquidaci\u00f3n violenta",
+   "regime": "vol\u00e1til",
+   "tf": 1,
+   "oos": {
+    "n": 2475,
+    "win": 0.37292929292929294,
+    "exp_r": -0.3497774999552248,
+    "total_pct": -432.8496561945907,
+    "pf": 0.48579309801204446,
+    "max_dd_pct": -433.32855070878486,
+    "max_loss_streak": 20,
+    "worst_month_pct": -27.756307915209412,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.044444444444444446,
+    "trades_per_month": 55.0
+   },
+   "oos_shield": {
+    "n": 2306,
+    "win": 0.3768430182133565,
+    "exp_r": -0.3434236600420621,
+    "total_pct": -395.9674800284976,
+    "pf": 0.4912491007096887,
+    "max_dd_pct": -396.44637454269173,
+    "max_loss_streak": 23,
+    "worst_month_pct": -23.075347559347215,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.06666666666666667,
+    "trades_per_month": 51.24444444444445
+   },
+   "stress_2x": {
+    "n": 2476,
+    "win": 0.3388529886914378,
+    "exp_r": -0.5297019976229705,
+    "total_pct": -655.7710730572376,
+    "pf": 0.32884471853682373,
+    "max_dd_pct": -656.228076685569,
+    "max_loss_streak": 28,
+    "worst_month_pct": -42.46074248177308,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.022222222222222223,
+    "trades_per_month": 55.022222222222226
+   },
+   "one_min_late": {
+    "n": 2324,
+    "win": 0.3588640275387263,
+    "exp_r": -0.3250280497015782,
+    "total_pct": -377.6825937532339,
+    "pf": 0.47943868047794685,
+    "max_dd_pct": -378.2240867696032,
+    "max_loss_streak": 30,
+    "worst_month_pct": -27.220015094876146,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.1111111111111111,
+    "trades_per_month": 51.644444444444446
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -198.4585268502327,
+    "bajista": -90.4758886943687,
+    "lateral": -143.91524064998924
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 1.0,
+    "p_undecided": 0.0,
+    "median_days": null,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 1.0,
+    "p_undecided": 0.0,
+    "median_days": null,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0016,
+    "p_pause": 0.9982,
+    "p_undecided": 0.00019999999999997797,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ]
+   ]
+  },
+  "flush_reversal_3m": {
+   "hft": {
+    "trades_per_active_day": 1.3680297397769516,
+    "median_hold_min": 11.0,
+    "hft_risk": false
+   },
+   "desc": "Reversi\u00f3n tras una liquidaci\u00f3n violenta",
+   "regime": "vol\u00e1til",
+   "tf": 3,
+   "oos": {
+    "n": 736,
+    "win": 0.37228260869565216,
+    "exp_r": -0.24005977101352743,
+    "total_pct": -88.34199573297809,
+    "pf": 0.633115925306103,
+    "max_dd_pct": -89.3038385781376,
+    "max_loss_streak": 11,
+    "worst_month_pct": -6.956331463907452,
+    "worst_month": "2024-04-30",
+    "pos_months": 0.2,
+    "trades_per_month": 16.355555555555554
+   },
+   "oos_shield": {
+    "n": 734,
+    "win": 0.37193460490463215,
+    "exp_r": -0.2412095629532763,
+    "total_pct": -88.5239096038524,
+    "pf": 0.6315476606108724,
+    "max_dd_pct": -89.48575244901193,
+    "max_loss_streak": 11,
+    "worst_month_pct": -6.956331463907452,
+    "worst_month": "2024-04-30",
+    "pos_months": 0.2,
+    "trades_per_month": 16.31111111111111
+   },
+   "stress_2x": {
+    "n": 736,
+    "win": 0.3641304347826087,
+    "exp_r": -0.33301403569488974,
+    "total_pct": -122.54916513571942,
+    "pf": 0.5218799530452354,
+    "max_dd_pct": -122.7073233639833,
+    "max_loss_streak": 11,
+    "worst_month_pct": -8.456942516630939,
+    "worst_month": "2023-06-30",
+    "pos_months": 0.13333333333333333,
+    "trades_per_month": 16.355555555555554
+   },
+   "one_min_late": {
+    "n": 726,
+    "win": 0.36639118457300274,
+    "exp_r": -0.23903271239774943,
+    "total_pct": -86.76887460038304,
+    "pf": 0.6337368532155118,
+    "max_dd_pct": -87.86825934343152,
+    "max_loss_streak": 11,
+    "worst_month_pct": -6.240808471133141,
+    "worst_month": "2023-05-31",
+    "pos_months": 0.17777777777777778,
+    "trades_per_month": 16.133333333333333
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -44.135427831022405,
+    "bajista": -22.131863739313786,
+    "lateral": -22.074704162641893
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 2,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.8333333333333333
+   },
+   "challenge_mc": {
+    "p_pass": 0.0012,
+    "p_fail": 0.0,
+    "p_pause": 0.7826,
+    "p_undecided": 0.21619999999999995,
+    "median_days": 70.5,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0032,
+    "p_fail": 0.0,
+    "p_pause": 0.782,
+    "p_undecided": 0.2148,
+    "median_days": 63.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.7308,
+    "p_undecided": 0.2692,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ]
+   ]
+  },
+  "flush_reversal_5m": {
+   "hft": {
+    "trades_per_active_day": 1.3087557603686637,
+    "median_hold_min": 15.0,
+    "hft_risk": false
+   },
+   "desc": "Reversi\u00f3n tras una liquidaci\u00f3n violenta",
+   "regime": "vol\u00e1til",
+   "tf": 5,
+   "oos": {
+    "n": 568,
+    "win": 0.43838028169014087,
+    "exp_r": -0.14827502850542035,
+    "total_pct": -42.110108095539374,
+    "pf": 0.7408082697943177,
+    "max_dd_pct": -44.77762102623437,
+    "max_loss_streak": 9,
+    "worst_month_pct": -6.968967465551779,
+    "worst_month": "2026-08-31",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 12.622222222222222
+   },
+   "oos_shield": {
+    "n": 565,
+    "win": 0.4389380530973451,
+    "exp_r": -0.14535331550929925,
+    "total_pct": -41.06231163137704,
+    "pf": 0.745074687015705,
+    "max_dd_pct": -43.909407246713926,
+    "max_loss_streak": 9,
+    "worst_month_pct": -6.968967465551779,
+    "worst_month": "2026-08-31",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 12.555555555555555
+   },
+   "stress_2x": {
+    "n": 568,
+    "win": 0.43133802816901406,
+    "exp_r": -0.21310208997465682,
+    "total_pct": -60.52099355280254,
+    "pf": 0.6436810315442772,
+    "max_dd_pct": -62.54405472954471,
+    "max_loss_streak": 9,
+    "worst_month_pct": -7.667736920891491,
+    "worst_month": "2026-08-31",
+    "pos_months": 0.2222222222222222,
+    "trades_per_month": 12.622222222222222
+   },
+   "one_min_late": {
+    "n": 563,
+    "win": 0.43161634103019536,
+    "exp_r": -0.15631828872269662,
+    "total_pct": -44.0035982754391,
+    "pf": 0.7274818459476649,
+    "max_dd_pct": -50.314508324376476,
+    "max_loss_streak": 12,
+    "worst_month_pct": -8.86468797134053,
+    "worst_month": "2026-08-31",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 12.511111111111111
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -19.611015970983637,
+    "bajista": -12.765929620933647,
+    "lateral": -9.733162503622097
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 3,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 2.0
+   },
+   "challenge_mc": {
+    "p_pass": 0.0034,
+    "p_fail": 0.0,
+    "p_pause": 0.3306,
+    "p_undecided": 0.6659999999999999,
+    "median_days": 100.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.01,
+    "p_fail": 0.0,
+    "p_pause": 0.3316,
+    "p_undecided": 0.6584,
+    "median_days": 83.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.397,
+    "p_undecided": 0.603,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "move_atr": 3.0,
+      "tp_r": 1.5
+     }
+    ]
+   ]
+  },
+  "flush_reversal_15m": {
+   "hft": {
+    "trades_per_active_day": 1.2116788321167884,
+    "median_hold_min": 54.5,
+    "hft_risk": false
+   },
+   "desc": "Reversi\u00f3n tras una liquidaci\u00f3n violenta",
+   "regime": "vol\u00e1til",
+   "tf": 15,
+   "oos": {
+    "n": 332,
+    "win": 0.43373493975903615,
+    "exp_r": -0.12405225997729784,
+    "total_pct": -20.59267515623144,
+    "pf": 0.7517508136125777,
+    "max_dd_pct": -23.508589602597578,
+    "max_loss_streak": 7,
+    "worst_month_pct": -2.9486418311781066,
+    "worst_month": "2025-05-31",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 7.377777777777778
+   },
+   "oos_shield": {
+    "n": 332,
+    "win": 0.43373493975903615,
+    "exp_r": -0.12405225997729784,
+    "total_pct": -20.59267515623144,
+    "pf": 0.7517508136125777,
+    "max_dd_pct": -23.508589602597578,
+    "max_loss_streak": 7,
+    "worst_month_pct": -2.9486418311781066,
+    "worst_month": "2025-05-31",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 7.377777777777778
+   },
+   "stress_2x": {
+    "n": 332,
+    "win": 0.42771084337349397,
+    "exp_r": -0.1523925412034957,
+    "total_pct": -25.297161839780287,
+    "pf": 0.7029063818585429,
+    "max_dd_pct": -27.520727631327727,
+    "max_loss_streak": 7,
+    "worst_month_pct": -3.241792235351405,
+    "worst_month": "2025-05-31",
+    "pos_months": 0.3111111111111111,
+    "trades_per_month": 7.377777777777778
+   },
+   "one_min_late": {
+    "n": 330,
+    "win": 0.42727272727272725,
+    "exp_r": -0.10115329292321561,
+    "total_pct": -16.690293332330576,
+    "pf": 0.7992313585734212,
+    "max_dd_pct": -18.784522255876038,
+    "max_loss_streak": 7,
+    "worst_month_pct": -2.3868881034609166,
+    "worst_month": "2026-03-31",
+    "pos_months": 0.35555555555555557,
+    "trades_per_month": 7.333333333333333
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -9.199002553913035,
+    "bajista": -8.39795529193926,
+    "lateral": -2.995717310379141
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 4,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 2.1666666666666665
+   },
+   "challenge_mc": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.0618,
+    "p_undecided": 0.9382,
+    "median_days": null,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.003,
+    "p_fail": 0.0,
+    "p_pause": 0.0598,
+    "p_undecided": 0.9372,
+    "median_days": 97.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.1212,
+    "p_undecided": 0.8788,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "move_atr": 3.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "move_atr": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "move_atr": 3.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "move_atr": 4.0,
+      "tp_r": 1.0
+     }
+    ]
+   ]
+  },
+  "momentum_burst_1m": {
+   "hft": {
+    "trades_per_active_day": 2.13727959697733,
+    "median_hold_min": 2.0,
+    "hft_risk": true
+   },
+   "desc": "Seguir una vela gigante con volumen alto",
+   "regime": "vol\u00e1til",
+   "tf": 1,
+   "oos": {
+    "n": 1697,
+    "win": 0.3547436652916912,
+    "exp_r": -0.30346032466721456,
+    "total_pct": -257.4860854801316,
+    "pf": 0.5661429194853711,
+    "max_dd_pct": -260.6520738622519,
+    "max_loss_streak": 15,
+    "worst_month_pct": -21.312544669965742,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.08888888888888889,
+    "trades_per_month": 37.71111111111111
+   },
+   "oos_shield": {
+    "n": 1641,
+    "win": 0.3546617915904936,
+    "exp_r": -0.3058256094673119,
+    "total_pct": -250.92991256792942,
+    "pf": 0.5630732282073769,
+    "max_dd_pct": -254.09590095004958,
+    "max_loss_streak": 15,
+    "worst_month_pct": -23.08636086549208,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.08888888888888889,
+    "trades_per_month": 36.46666666666667
+   },
+   "stress_2x": {
+    "n": 1697,
+    "win": 0.33117265763111375,
+    "exp_r": -0.43778551549743994,
+    "total_pct": -371.46100989957785,
+    "pf": 0.4297433428271236,
+    "max_dd_pct": -374.22942978038895,
+    "max_loss_streak": 16,
+    "worst_month_pct": -26.09443589348379,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.022222222222222223,
+    "trades_per_month": 37.71111111111111
+   },
+   "one_min_late": {
+    "n": 1571,
+    "win": 0.34182049649904517,
+    "exp_r": -0.27915569538920676,
+    "total_pct": -219.27679872822188,
+    "pf": 0.5755923385882428,
+    "max_dd_pct": -228.54925551052042,
+    "max_loss_streak": 14,
+    "worst_month_pct": -18.566744658049146,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.1111111111111111,
+    "trades_per_month": 34.91111111111111
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -127.09920019218706,
+    "bajista": -37.01395638359447,
+    "lateral": -93.37292890435
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.0028,
+    "p_fail": 0.0,
+    "p_pause": 0.9958,
+    "p_undecided": 0.0013999999999999568,
+    "median_days": 19.5,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0032,
+    "p_fail": 0.0,
+    "p_pause": 0.9954,
+    "p_undecided": 0.0013999999999999568,
+    "median_days": 19.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.001,
+    "p_pause": 0.9888,
+    "p_undecided": 0.010199999999999987,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ]
+   ]
+  },
+  "momentum_burst_3m": {
+   "hft": {
+    "trades_per_active_day": 1.2939814814814814,
+    "median_hold_min": 7.0,
+    "hft_risk": false
+   },
+   "desc": "Seguir una vela gigante con volumen alto",
+   "regime": "vol\u00e1til",
+   "tf": 3,
+   "oos": {
+    "n": 559,
+    "win": 0.3542039355992844,
+    "exp_r": -0.17957998925555843,
+    "total_pct": -50.192606996928575,
+    "pf": 0.7378597489670798,
+    "max_dd_pct": -53.29600282245615,
+    "max_loss_streak": 13,
+    "worst_month_pct": -6.240142085567655,
+    "worst_month": "2023-04-30",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 12.422222222222222
+   },
+   "oos_shield": {
+    "n": 559,
+    "win": 0.3542039355992844,
+    "exp_r": -0.17957998925555843,
+    "total_pct": -50.192606996928575,
+    "pf": 0.7378597489670798,
+    "max_dd_pct": -53.29600282245615,
+    "max_loss_streak": 13,
+    "worst_month_pct": -6.240142085567655,
+    "worst_month": "2023-04-30",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 12.422222222222222
+   },
+   "stress_2x": {
+    "n": 559,
+    "win": 0.35062611806797855,
+    "exp_r": -0.24141112208037036,
+    "total_pct": -67.4744086214635,
+    "pf": 0.661191022597819,
+    "max_dd_pct": -69.1917097029471,
+    "max_loss_streak": 13,
+    "worst_month_pct": -7.189708922362305,
+    "worst_month": "2024-03-31",
+    "pos_months": 0.28888888888888886,
+    "trades_per_month": 12.422222222222222
+   },
+   "one_min_late": {
+    "n": 548,
+    "win": 0.35583941605839414,
+    "exp_r": -0.12369973558993104,
+    "total_pct": -33.8937275516411,
+    "pf": 0.8197975054537529,
+    "max_dd_pct": -40.620157935779595,
+    "max_loss_streak": 12,
+    "worst_month_pct": -7.109144245111329,
+    "worst_month": "2023-04-30",
+    "pos_months": 0.3111111111111111,
+    "trades_per_month": 12.177777777777777
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -30.16966101582158,
+    "bajista": 0.38143634634864654,
+    "lateral": -20.404382327455643
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 2,
+    "double_cost": 1,
+    "avg": 1.8333333333333333
+   },
+   "challenge_mc": {
+    "p_pass": 0.0422,
+    "p_fail": 0.0,
+    "p_pause": 0.5214,
+    "p_undecided": 0.4364,
+    "median_days": 70.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0458,
+    "p_fail": 0.0,
+    "p_pause": 0.5206,
+    "p_undecided": 0.4336,
+    "median_days": 63.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.56,
+    "p_undecided": 0.43999999999999995,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ]
+   ]
+  },
+  "momentum_burst_5m": {
+   "hft": {
+    "trades_per_active_day": 1.1677018633540373,
+    "median_hold_min": 8.0,
+    "hft_risk": false
+   },
+   "desc": "Seguir una vela gigante con volumen alto",
+   "regime": "vol\u00e1til",
+   "tf": 5,
+   "oos": {
+    "n": 376,
+    "win": 0.4122340425531915,
+    "exp_r": -0.10997564128464539,
+    "total_pct": -20.675420561513334,
+    "pf": 0.8156091350580789,
+    "max_dd_pct": -25.99801269105782,
+    "max_loss_streak": 11,
+    "worst_month_pct": -4.107345259619599,
+    "worst_month": "2024-01-31",
+    "pos_months": 0.37777777777777777,
+    "trades_per_month": 8.355555555555556
+   },
+   "oos_shield": {
+    "n": 376,
+    "win": 0.4122340425531915,
+    "exp_r": -0.10997564128464539,
+    "total_pct": -20.675420561513334,
+    "pf": 0.8156091350580789,
+    "max_dd_pct": -25.99801269105782,
+    "max_loss_streak": 11,
+    "worst_month_pct": -4.107345259619599,
+    "worst_month": "2024-01-31",
+    "pos_months": 0.37777777777777777,
+    "trades_per_month": 8.355555555555556
+   },
+   "stress_2x": {
+    "n": 376,
+    "win": 0.40691489361702127,
+    "exp_r": -0.16309406988947298,
+    "total_pct": -30.66168513922092,
+    "pf": 0.7365746517449905,
+    "max_dd_pct": -34.043020239108486,
+    "max_loss_streak": 11,
+    "worst_month_pct": -4.302264301908292,
+    "worst_month": "2024-01-31",
+    "pos_months": 0.35555555555555557,
+    "trades_per_month": 8.355555555555556
+   },
+   "one_min_late": {
+    "n": 372,
+    "win": 0.40860215053763443,
+    "exp_r": -0.1313241887107784,
+    "total_pct": -24.426299100204783,
+    "pf": 0.7774454014551575,
+    "max_dd_pct": -31.843755188183113,
+    "max_loss_streak": 13,
+    "worst_month_pct": -5.3450317792658355,
+    "worst_month": "2023-10-31",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 8.266666666666667
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -15.512471637254292,
+    "bajista": -2.5972812091121398,
+    "lateral": -2.5656677151469
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 2,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.8333333333333333
+   },
+   "challenge_mc": {
+    "p_pass": 0.0074,
+    "p_fail": 0.0,
+    "p_pause": 0.1518,
+    "p_undecided": 0.8408,
+    "median_days": 90.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0196,
+    "p_fail": 0.0,
+    "p_pause": 0.1512,
+    "p_undecided": 0.8291999999999999,
+    "median_days": 92.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.2358,
+    "p_undecided": 0.7642,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "k": 3.0,
+      "tp_r": 1.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "k": 3.0,
+      "tp_r": 2.0
+     }
+    ]
+   ]
+  },
+  "inside_bar_5m": {
+   "hft": {
+    "trades_per_active_day": 5.260869565217392,
+    "median_hold_min": 23.0,
+    "hft_risk": true
+   },
+   "desc": "Ruptura de vela interior a favor de la EMA 50",
+   "regime": "tendencia",
+   "tf": 5,
+   "oos": {
+    "n": 5082,
+    "win": 0.2619047619047619,
+    "exp_r": -0.178136165787144,
+    "total_pct": -452.64399726513284,
+    "pf": 0.772785454355391,
+    "max_dd_pct": -462.3113690506094,
+    "max_loss_streak": 22,
+    "worst_month_pct": -34.40614297917951,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.13333333333333333,
+    "trades_per_month": 112.93333333333334
+   },
+   "oos_shield": {
+    "n": 3738,
+    "win": 0.24986623863028357,
+    "exp_r": -0.2118790078113924,
+    "total_pct": -396.0018655994924,
+    "pf": 0.7351192133945992,
+    "max_dd_pct": -400.28408719579136,
+    "max_loss_streak": 23,
+    "worst_month_pct": -28.609233295097415,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.13333333333333333,
+    "trades_per_month": 83.06666666666666
+   },
+   "stress_2x": {
+    "n": 5350,
+    "win": 0.24467289719626167,
+    "exp_r": -0.30150079146564807,
+    "total_pct": -806.5146171706085,
+    "pf": 0.643597879756434,
+    "max_dd_pct": -808.0044647666122,
+    "max_loss_streak": 23,
+    "worst_month_pct": -51.61712590267159,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.08888888888888889,
+    "trades_per_month": 118.88888888888889
+   },
+   "one_min_late": {
+    "n": 5181,
+    "win": 0.2731132985910056,
+    "exp_r": -0.18398373655011446,
+    "total_pct": -476.6098695330715,
+    "pf": 0.760700917593096,
+    "max_dd_pct": -482.39939160649817,
+    "max_loss_streak": 21,
+    "worst_month_pct": -33.47167623110056,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.15555555555555556,
+    "trades_per_month": 115.13333333333334
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -189.5471740523533,
+    "bajista": -98.81021872370798,
+    "lateral": -164.28660448907158
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.0778,
+    "p_fail": 0.0,
+    "p_pause": 0.9222,
+    "p_undecided": 0.0,
+    "median_days": 12.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0834,
+    "p_fail": 0.0,
+    "p_pause": 0.9166,
+    "p_undecided": 0.0,
+    "median_days": 11.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0442,
+    "p_pause": 0.9446,
+    "p_undecided": 0.011199999999999988,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_r": 2.0
+     }
+    ]
+   ]
+  },
+  "inside_bar_15m": {
+   "hft": {
+    "trades_per_active_day": 1.6095890410958904,
+    "median_hold_min": 55.0,
+    "hft_risk": false
+   },
+   "desc": "Ruptura de vela interior a favor de la EMA 50",
+   "regime": "tendencia",
+   "tf": 15,
+   "oos": {
+    "n": 1175,
+    "win": 0.3770212765957447,
+    "exp_r": -0.10169555398915003,
+    "total_pct": -59.74613796862564,
+    "pf": 0.8352929749892943,
+    "max_dd_pct": -69.02101467804346,
+    "max_loss_streak": 14,
+    "worst_month_pct": -11.28572703771463,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.4,
+    "trades_per_month": 26.11111111111111
+   },
+   "oos_shield": {
+    "n": 1166,
+    "win": 0.37821612349914235,
+    "exp_r": -0.09862145392580085,
+    "total_pct": -57.49630763874189,
+    "pf": 0.8398611022464344,
+    "max_dd_pct": -66.77118434815971,
+    "max_loss_streak": 14,
+    "worst_month_pct": -10.213035524218602,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.4,
+    "trades_per_month": 25.91111111111111
+   },
+   "stress_2x": {
+    "n": 1244,
+    "win": 0.36816720257234725,
+    "exp_r": -0.16334572727891622,
+    "total_pct": -101.6010423674859,
+    "pf": 0.7489654211170744,
+    "max_dd_pct": -109.4350591286357,
+    "max_loss_streak": 16,
+    "worst_month_pct": -13.66109265717578,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 27.644444444444446
+   },
+   "one_min_late": {
+    "n": 1265,
+    "win": 0.3778656126482213,
+    "exp_r": -0.12372252242121613,
+    "total_pct": -78.25449543141919,
+    "pf": 0.7968096066690256,
+    "max_dd_pct": -83.59005858506416,
+    "max_loss_streak": 14,
+    "worst_month_pct": -11.159148325425752,
+    "worst_month": "2023-08-31",
+    "pos_months": 0.37777777777777777,
+    "trades_per_month": 28.11111111111111
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -10.94492048124982,
+    "bajista": -13.767310769743455,
+    "lateral": -35.03390671763237
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 1.6666666666666667
+   },
+   "challenge_mc": {
+    "p_pass": 0.0948,
+    "p_fail": 0.0,
+    "p_pause": 0.6128,
+    "p_undecided": 0.2924,
+    "median_days": 58.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0968,
+    "p_fail": 0.0,
+    "p_pause": 0.6108,
+    "p_undecided": 0.2924,
+    "median_days": 56.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.003,
+    "p_pause": 0.6356,
+    "p_undecided": 0.36140000000000005,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_r": 3.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_r": 1.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_r": 1.5
+     }
+    ]
+   ]
+  },
+  "sunday_gap_5m": {
+   "hft": {
+    "trades_per_active_day": 1.0,
+    "median_hold_min": 17.0,
+    "hft_risk": false
+   },
+   "desc": "Cierre parcial del hueco de apertura del domingo",
+   "regime": "rango",
+   "tf": 5,
+   "oos": {
+    "n": 116,
+    "win": 0.4224137931034483,
+    "exp_r": -0.21607344166232603,
+    "total_pct": -12.53225961641491,
+    "pf": 0.5759207662553216,
+    "max_dd_pct": -13.305041748068943,
+    "max_loss_streak": 7,
+    "worst_month_pct": -2.5365593791059373,
+    "worst_month": "2026-01-31",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 2.577777777777778
+   },
+   "oos_shield": {
+    "n": 116,
+    "win": 0.4224137931034483,
+    "exp_r": -0.21607344166232603,
+    "total_pct": -12.53225961641491,
+    "pf": 0.5759207662553216,
+    "max_dd_pct": -13.305041748068943,
+    "max_loss_streak": 7,
+    "worst_month_pct": -2.5365593791059373,
+    "worst_month": "2026-01-31",
+    "pos_months": 0.3333333333333333,
+    "trades_per_month": 2.577777777777778
+   },
+   "stress_2x": {
+    "n": 116,
+    "win": 0.4224137931034483,
+    "exp_r": -0.27233630247091717,
+    "total_pct": -15.795505543313196,
+    "pf": 0.4915450991140927,
+    "max_dd_pct": -16.49697806780794,
+    "max_loss_streak": 7,
+    "worst_month_pct": -2.572249537656085,
+    "worst_month": "2026-01-31",
+    "pos_months": 0.3111111111111111,
+    "trades_per_month": 2.577777777777778
+   },
+   "one_min_late": {
+    "n": 114,
+    "win": 0.4298245614035088,
+    "exp_r": -0.233072912150339,
+    "total_pct": -13.285155992569324,
+    "pf": 0.5312768619658284,
+    "max_dd_pct": -13.623245546159476,
+    "max_loss_streak": 8,
+    "worst_month_pct": -2.556664810883455,
+    "worst_month": "2026-01-31",
+    "pos_months": 0.35555555555555557,
+    "trades_per_month": 2.533333333333333
+   },
+   "grid_positive_share": 0.0,
+   "by_regime": {
+    "alcista": -7.385121505583953,
+    "bajista": -0.6187222385396549,
+    "lateral": -4.528415872291301
+   },
+   "score": {
+    "oos_profit": 1,
+    "max_dd": 1,
+    "trades": 4,
+    "loss_streak": 4,
+    "bear_flat": 1,
+    "double_cost": 1,
+    "avg": 2.0
+   },
+   "challenge_mc": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.0004,
+    "p_undecided": 0.9996,
+    "median_days": null,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.0004,
+    "p_undecided": 0.9996,
+    "median_days": null,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.003,
+    "p_undecided": 0.997,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "min_gap_atr": 1.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "min_gap_atr": 1.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "min_gap_atr": 1.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "min_gap_atr": 2.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "min_gap_atr": 2.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "min_gap_atr": 2.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "min_gap_atr": 2.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "min_gap_atr": 1.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "min_gap_atr": 2.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "min_gap_atr": 1.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "min_gap_atr": 1.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "min_gap_atr": 1.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "min_gap_atr": 1.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "min_gap_atr": 1.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "min_gap_atr": 1.0
+     }
+    ]
+   ]
+  },
+  "donchian_trend_h1_60m": {
+   "hft": {
+    "trades_per_active_day": 1.1102514506769825,
+    "median_hold_min": 785.0,
+    "hft_risk": false
+   },
+   "desc": "Ruptura del m\u00e1ximo/m\u00ednimo de N horas, stop a 2 ATR",
+   "regime": "tendencia",
+   "tf": 60,
+   "oos": {
+    "n": 574,
+    "win": 0.3693379790940767,
+    "exp_r": 0.13436715623995016,
+    "total_pct": 38.563373840865694,
+    "pf": 1.221002405377743,
+    "max_dd_pct": -14.558446816865859,
+    "max_loss_streak": 11,
+    "worst_month_pct": -5.488961187911802,
+    "worst_month": "2024-01-31",
+    "pos_months": 0.5111111111111111,
+    "trades_per_month": 12.755555555555556
+   },
+   "oos_shield": {
+    "n": 574,
+    "win": 0.3693379790940767,
+    "exp_r": 0.13436715623995016,
+    "total_pct": 38.563373840865694,
+    "pf": 1.221002405377743,
+    "max_dd_pct": -14.558446816865859,
+    "max_loss_streak": 11,
+    "worst_month_pct": -5.488961187911802,
+    "worst_month": "2024-01-31",
+    "pos_months": 0.5111111111111111,
+    "trades_per_month": 12.755555555555556
+   },
+   "stress_2x": {
+    "n": 574,
+    "win": 0.367595818815331,
+    "exp_r": 0.10953158880328195,
+    "total_pct": 31.435565986541924,
+    "pf": 1.178253586268536,
+    "max_dd_pct": -15.231660213133871,
+    "max_loss_streak": 11,
+    "worst_month_pct": -5.60858452706224,
+    "worst_month": "2024-01-31",
+    "pos_months": 0.5111111111111111,
+    "trades_per_month": 12.755555555555556
+   },
+   "one_min_late": {
+    "n": 571,
+    "win": 0.37302977232924694,
+    "exp_r": 0.14085278165240747,
+    "total_pct": 40.21346916176233,
+    "pf": 1.232435407887355,
+    "max_dd_pct": -15.65441758937456,
+    "max_loss_streak": 11,
+    "worst_month_pct": -5.461508352042877,
+    "worst_month": "2024-01-31",
+    "pos_months": 0.5333333333333333,
+    "trades_per_month": 12.688888888888888
+   },
+   "grid_positive_share": 0.625,
+   "by_regime": {
+    "alcista": 39.05675457596815,
+    "bajista": 7.269384727868106,
+    "lateral": -7.762765462970577
+   },
+   "score": {
+    "oos_profit": 5,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 2,
+    "bear_flat": 3,
+    "double_cost": 5,
+    "avg": 3.5
+   },
+   "challenge_mc": {
+    "p_pass": 0.5146,
+    "p_fail": 0.0,
+    "p_pause": 0.1042,
+    "p_undecided": 0.3812,
+    "median_days": 58.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.5142,
+    "p_fail": 0.0,
+    "p_pause": 0.1044,
+    "p_undecided": 0.38139999999999996,
+    "median_days": 58.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.2266,
+    "p_undecided": 0.7734,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "n": 20,
+      "tp_r": 4.0,
+      "trend_n": 0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "n": 20,
+      "tp_r": 4.0,
+      "trend_n": 200
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "n": 20,
+      "tp_r": 4.0,
+      "trend_n": 200
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "n": 20,
+      "tp_r": 4.0,
+      "trend_n": 200
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "n": 20,
+      "tp_r": 4.0,
+      "trend_n": 200
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "n": 20,
+      "tp_r": 4.0,
+      "trend_n": 200
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "n": 20,
+      "tp_r": 4.0,
+      "trend_n": 200
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "n": 20,
+      "tp_r": 4.0,
+      "trend_n": 200
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "n": 20,
+      "tp_r": 4.0,
+      "trend_n": 200
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "n": 20,
+      "tp_r": 4.0,
+      "trend_n": 200
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "n": 20,
+      "tp_r": 4.0,
+      "trend_n": 200
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "n": 20,
+      "tp_r": 4.0,
+      "trend_n": 200
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "n": 55,
+      "tp_r": 4.0,
+      "trend_n": 0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "n": 55,
+      "tp_r": 4.0,
+      "trend_n": 0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "n": 55,
+      "tp_r": 4.0,
+      "trend_n": 200
+     }
+    ]
+   ]
+  },
+  "donchian_trend_h4_240m": {
+   "hft": {
+    "trades_per_active_day": 1.022950819672131,
+    "median_hold_min": 2143.0,
+    "hft_risk": false
+   },
+   "desc": "Ruptura del m\u00e1ximo/m\u00ednimo de N velas de 4h, stop a 2 ATR",
+   "regime": "tendencia",
+   "tf": 240,
+   "oos": {
+    "n": 312,
+    "win": 0.44551282051282054,
+    "exp_r": 0.13455192028285717,
+    "total_pct": 20.99009956412572,
+    "pf": 1.308120526484152,
+    "max_dd_pct": -8.452336123066697,
+    "max_loss_streak": 10,
+    "worst_month_pct": -3.544307155897954,
+    "worst_month": "2024-06-30",
+    "pos_months": 0.6222222222222222,
+    "trades_per_month": 6.933333333333334
+   },
+   "oos_shield": {
+    "n": 312,
+    "win": 0.44551282051282054,
+    "exp_r": 0.13455192028285717,
+    "total_pct": 20.99009956412572,
+    "pf": 1.308120526484152,
+    "max_dd_pct": -8.452336123066697,
+    "max_loss_streak": 10,
+    "worst_month_pct": -3.544307155897954,
+    "worst_month": "2024-06-30",
+    "pos_months": 0.6222222222222222,
+    "trades_per_month": 6.933333333333334
+   },
+   "stress_2x": {
+    "n": 311,
+    "win": 0.4340836012861736,
+    "exp_r": 0.1288305762446171,
+    "total_pct": 20.03315460603796,
+    "pf": 1.293779164348675,
+    "max_dd_pct": -8.665815172312431,
+    "max_loss_streak": 10,
+    "worst_month_pct": -3.5753591417226454,
+    "worst_month": "2024-06-30",
+    "pos_months": 0.6222222222222222,
+    "trades_per_month": 6.911111111111111
+   },
+   "one_min_late": {
+    "n": 310,
+    "win": 0.45161290322580644,
+    "exp_r": 0.14672873059343028,
+    "total_pct": 22.742953241981695,
+    "pf": 1.339109370029789,
+    "max_dd_pct": -8.785031772828354,
+    "max_loss_streak": 10,
+    "worst_month_pct": -3.5548195308302177,
+    "worst_month": "2024-06-30",
+    "pos_months": 0.6222222222222222,
+    "trades_per_month": 6.888888888888889
+   },
+   "grid_positive_share": 1.0,
+   "by_regime": {
+    "alcista": 22.20669696354463,
+    "bajista": 3.0631429691233243,
+    "lateral": -4.279740368542225
+   },
+   "score": {
+    "oos_profit": 4,
+    "max_dd": 2,
+    "trades": 5,
+    "loss_streak": 2,
+    "bear_flat": 3,
+    "double_cost": 5,
+    "avg": 3.5
+   },
+   "challenge_mc": {
+    "p_pass": 0.1598,
+    "p_fail": 0.0,
+    "p_pause": 0.0068,
+    "p_undecided": 0.8334,
+    "median_days": 91.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.1886,
+    "p_fail": 0.0,
+    "p_pause": 0.0056,
+    "p_undecided": 0.8058,
+    "median_days": 87.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.0358,
+    "p_undecided": 0.9642,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "n": 20,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "n": 20,
+      "tp_r": 4.0
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "n": 10,
+      "tp_r": 4.0
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "n": 20,
+      "tp_r": 4.0
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "n": 10,
+      "tp_r": 4.0
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "n": 10,
+      "tp_r": 4.0
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "n": 10,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "n": 10,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "n": 10,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "n": 10,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "n": 10,
+      "tp_r": 2.0
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "n": 10,
+      "tp_r": 4.0
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "n": 20,
+      "tp_r": 4.0
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "n": 20,
+      "tp_r": 4.0
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "n": 20,
+      "tp_r": 4.0
+     }
+    ]
+   ]
+  },
+  "session_drift_15m": {
+   "hft": {
+    "trades_per_active_day": 1.0,
+    "median_hold_min": 420.0,
+    "hft_risk": false
+   },
+   "desc": "Estacionalidad: operar una sesi\u00f3n entera en el lado que m\u00e1s gan\u00f3 los 12 meses previos",
+   "regime": "cualquiera",
+   "tf": 15,
+   "oos": {
+    "n": 910,
+    "win": 0.510989010989011,
+    "exp_r": 0.09324006527856094,
+    "total_pct": 42.42422970174523,
+    "pf": 1.2712858193443917,
+    "max_dd_pct": -13.407080672758795,
+    "max_loss_streak": 16,
+    "worst_month_pct": -7.5430124340769975,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.6888888888888889,
+    "trades_per_month": 20.22222222222222
+   },
+   "oos_shield": {
+    "n": 910,
+    "win": 0.510989010989011,
+    "exp_r": 0.09324006527856094,
+    "total_pct": 42.42422970174523,
+    "pf": 1.2712858193443917,
+    "max_dd_pct": -13.407080672758795,
+    "max_loss_streak": 16,
+    "worst_month_pct": -7.5430124340769975,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.6888888888888889,
+    "trades_per_month": 20.22222222222222
+   },
+   "stress_2x": {
+    "n": 910,
+    "win": 0.5010989010989011,
+    "exp_r": 0.06957451330038306,
+    "total_pct": 31.656403551674288,
+    "pf": 1.196896279571687,
+    "max_dd_pct": -16.036604531064114,
+    "max_loss_streak": 16,
+    "worst_month_pct": -8.176598060287676,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.6666666666666666,
+    "trades_per_month": 20.22222222222222
+   },
+   "one_min_late": {
+    "n": 908,
+    "win": 0.4878854625550661,
+    "exp_r": 0.058589485636383366,
+    "total_pct": 26.599626478918047,
+    "pf": 1.1678583054787601,
+    "max_dd_pct": -14.388040271073343,
+    "max_loss_streak": 16,
+    "worst_month_pct": -8.169780334779214,
+    "worst_month": "2023-09-30",
+    "pos_months": 0.6,
+    "trades_per_month": 20.177777777777777
+   },
+   "grid_positive_share": 0.25,
+   "by_regime": {
+    "alcista": 45.696527755806876,
+    "bajista": -7.444685742908387,
+    "lateral": 4.172387688846746
+   },
+   "score": {
+    "oos_profit": 5,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 3,
+    "double_cost": 5,
+    "avg": 3.3333333333333335
+   },
+   "challenge_mc": {
+    "p_pass": 0.3634,
+    "p_fail": 0.0,
+    "p_pause": 0.0166,
+    "p_undecided": 0.62,
+    "median_days": 83.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.4182,
+    "p_fail": 0.0,
+    "p_pause": 0.0164,
+    "p_undecided": 0.5654,
+    "median_days": 73.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.0784,
+    "p_undecided": 0.9216,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "session": "late",
+      "side": -1
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "session": "late",
+      "side": -1
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "session": "ny",
+      "side": 1
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "session": "asia",
+      "side": 1
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "session": "asia",
+      "side": 1
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "session": "asia",
+      "side": 1
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "session": "asia",
+      "side": 1
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "session": "asia",
+      "side": 1
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "session": "asia",
+      "side": 1
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "session": "asia",
+      "side": 1
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "session": "asia",
+      "side": 1
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "session": "asia",
+      "side": 1
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "session": "asia",
+      "side": 1
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "session": "asia",
+      "side": 1
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "session": "asia",
+      "side": 1
+     }
+    ]
+   ]
+  },
+  "trend_pullback_h1_60m": {
+   "hft": {
+    "trades_per_active_day": 1.4038748137108792,
+    "median_hold_min": 576.0,
+    "hft_risk": false
+   },
+   "desc": "RSI(2) de sobreventa con la media de 100h subiendo, stop a 1,5 ATR",
+   "regime": "tendencia",
+   "tf": 60,
+   "oos": {
+    "n": 942,
+    "win": 0.3619957537154989,
+    "exp_r": 0.03668784092116338,
+    "total_pct": 17.27997307386795,
+    "pf": 1.0598434290251444,
+    "max_dd_pct": -20.033410938365158,
+    "max_loss_streak": 15,
+    "worst_month_pct": -6.693778863648739,
+    "worst_month": "2024-02-29",
+    "pos_months": 0.5555555555555556,
+    "trades_per_month": 20.933333333333334
+   },
+   "oos_shield": {
+    "n": 938,
+    "win": 0.3624733475479744,
+    "exp_r": 0.0385007020106588,
+    "total_pct": 18.05682924299897,
+    "pf": 1.0628280981748113,
+    "max_dd_pct": -19.0112890603704,
+    "max_loss_streak": 15,
+    "worst_month_pct": -6.059873324227023,
+    "worst_month": "2024-05-31",
+    "pos_months": 0.5555555555555556,
+    "trades_per_month": 20.844444444444445
+   },
+   "stress_2x": {
+    "n": 945,
+    "win": 0.35555555555555557,
+    "exp_r": 0.0008315608271202423,
+    "total_pct": 0.3929124908143118,
+    "pf": 1.0013273708550026,
+    "max_dd_pct": -21.638780590189086,
+    "max_loss_streak": 16,
+    "worst_month_pct": -7.128164037979975,
+    "worst_month": "2024-02-29",
+    "pos_months": 0.5111111111111111,
+    "trades_per_month": 21.0
+   },
+   "one_min_late": {
+    "n": 944,
+    "win": 0.361228813559322,
+    "exp_r": 0.0385082378583906,
+    "total_pct": 18.17588826916037,
+    "pf": 1.0626059180758602,
+    "max_dd_pct": -20.526133752473953,
+    "max_loss_streak": 16,
+    "worst_month_pct": -6.809966298801731,
+    "worst_month": "2024-05-31",
+    "pos_months": 0.5777777777777777,
+    "trades_per_month": 20.977777777777778
+   },
+   "grid_positive_share": 0.75,
+   "by_regime": {
+    "alcista": 38.87908235871404,
+    "bajista": -0.9518835012700819,
+    "lateral": -20.647225783576005
+   },
+   "score": {
+    "oos_profit": 4,
+    "max_dd": 1,
+    "trades": 5,
+    "loss_streak": 1,
+    "bear_flat": 1,
+    "double_cost": 3,
+    "avg": 2.5
+   },
+   "challenge_mc": {
+    "p_pass": 0.4334,
+    "p_fail": 0.0,
+    "p_pause": 0.2362,
+    "p_undecided": 0.3304,
+    "median_days": 56.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.4334,
+    "p_fail": 0.0,
+    "p_pause": 0.2362,
+    "p_undecided": 0.3304,
+    "median_days": 56.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.3668,
+    "p_undecided": 0.6332,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "lo": 20,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "lo": 20,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "lo": 20,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "lo": 20,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "lo": 20,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "lo": 10,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "lo": 20,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "lo": 20,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "lo": 20,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "lo": 20,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "lo": 20,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "lo": 20,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "lo": 10,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "lo": 10,
+      "tp_r": 2.5
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "lo": 10,
+      "tp_r": 2.5
+     }
+    ]
+   ]
+  },
+  "asia_breakout_wide_15m": {
+   "hft": {
+    "trades_per_active_day": 1.0,
+    "median_hold_min": 480.0,
+    "hft_risk": false
+   },
+   "desc": "Ruptura asi\u00e1tica solo a favor de la tendencia diaria, stop ancho",
+   "regime": "tendencia",
+   "tf": 15,
+   "oos": {
+    "n": 446,
+    "win": 0.4910313901345291,
+    "exp_r": 0.0558355955935767,
+    "total_pct": 12.451337817367607,
+    "pf": 1.1801346277000306,
+    "max_dd_pct": -11.953050160097824,
+    "max_loss_streak": 9,
+    "worst_month_pct": -2.862134758758105,
+    "worst_month": "2024-06-30",
+    "pos_months": 0.6222222222222222,
+    "trades_per_month": 9.911111111111111
+   },
+   "oos_shield": {
+    "n": 446,
+    "win": 0.4910313901345291,
+    "exp_r": 0.0558355955935767,
+    "total_pct": 12.451337817367607,
+    "pf": 1.1801346277000306,
+    "max_dd_pct": -11.953050160097824,
+    "max_loss_streak": 9,
+    "worst_month_pct": -2.862134758758105,
+    "worst_month": "2024-06-30",
+    "pos_months": 0.6222222222222222,
+    "trades_per_month": 9.911111111111111
+   },
+   "stress_2x": {
+    "n": 448,
+    "win": 0.484375,
+    "exp_r": 0.04379177285858944,
+    "total_pct": 9.809357120324037,
+    "pf": 1.1388315926992585,
+    "max_dd_pct": -13.230535832202325,
+    "max_loss_streak": 9,
+    "worst_month_pct": -2.93206817414524,
+    "worst_month": "2024-06-30",
+    "pos_months": 0.6222222222222222,
+    "trades_per_month": 9.955555555555556
+   },
+   "one_min_late": {
+    "n": 446,
+    "win": 0.49327354260089684,
+    "exp_r": 0.054600810099140806,
+    "total_pct": 12.175980652108402,
+    "pf": 1.1761896548212334,
+    "max_dd_pct": -11.899128733796655,
+    "max_loss_streak": 9,
+    "worst_month_pct": -2.862134758758105,
+    "worst_month": "2024-06-30",
+    "pos_months": 0.6222222222222222,
+    "trades_per_month": 9.911111111111111
+   },
+   "grid_positive_share": 1.0,
+   "by_regime": {
+    "alcista": 8.777149510172428,
+    "bajista": 4.4351038164117025,
+    "lateral": -0.7609155092165215
+   },
+   "score": {
+    "oos_profit": 3,
+    "max_dd": 2,
+    "trades": 5,
+    "loss_streak": 3,
+    "bear_flat": 3,
+    "double_cost": 4,
+    "avg": 3.3333333333333335
+   },
+   "challenge_mc": {
+    "p_pass": 0.029,
+    "p_fail": 0.0,
+    "p_pause": 0.003,
+    "p_undecided": 0.968,
+    "median_days": 102.0,
+    "horizon_days": 120
+   },
+   "challenge_mc_if_3_days_done": {
+    "p_pass": 0.0718,
+    "p_fail": 0.0,
+    "p_pause": 0.0026,
+    "p_undecided": 0.9256,
+    "median_days": 92.0,
+    "horizon_days": 120
+   },
+   "funded_moderate_3m": {
+    "p_pass": 0.0,
+    "p_fail": 0.0,
+    "p_pause": 0.0232,
+    "p_undecided": 0.9768,
+    "median_days": null,
+    "horizon_days": 63
+   },
+   "chosen_params": [
+    [
+     "2023-01-01",
+     {
+      "tp_mult": 2.5,
+      "trend_n": 20
+     }
+    ],
+    [
+     "2023-04-01",
+     {
+      "tp_mult": 2.5,
+      "trend_n": 50
+     }
+    ],
+    [
+     "2023-07-01",
+     {
+      "tp_mult": 2.5,
+      "trend_n": 50
+     }
+    ],
+    [
+     "2023-10-01",
+     {
+      "tp_mult": 2.5,
+      "trend_n": 50
+     }
+    ],
+    [
+     "2024-01-01",
+     {
+      "tp_mult": 2.5,
+      "trend_n": 50
+     }
+    ],
+    [
+     "2024-04-01",
+     {
+      "tp_mult": 2.5,
+      "trend_n": 50
+     }
+    ],
+    [
+     "2024-07-01",
+     {
+      "tp_mult": 1.5,
+      "trend_n": 20
+     }
+    ],
+    [
+     "2024-10-01",
+     {
+      "tp_mult": 1.5,
+      "trend_n": 20
+     }
+    ],
+    [
+     "2025-01-01",
+     {
+      "tp_mult": 1.5,
+      "trend_n": 20
+     }
+    ],
+    [
+     "2025-04-01",
+     {
+      "tp_mult": 1.5,
+      "trend_n": 20
+     }
+    ],
+    [
+     "2025-07-01",
+     {
+      "tp_mult": 1.5,
+      "trend_n": 20
+     }
+    ],
+    [
+     "2025-10-01",
+     {
+      "tp_mult": 2.5,
+      "trend_n": 20
+     }
+    ],
+    [
+     "2026-01-01",
+     {
+      "tp_mult": 1.5,
+      "trend_n": 50
+     }
+    ],
+    [
+     "2026-04-01",
+     {
+      "tp_mult": 2.5,
+      "trend_n": 20
+     }
+    ],
+    [
+     "2026-07-01",
+     {
+      "tp_mult": 2.5,
+      "trend_n": 20
+     }
+    ]
+   ]
+  }
+ }
+}
