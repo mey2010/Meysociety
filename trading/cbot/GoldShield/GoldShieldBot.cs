@@ -14,6 +14,10 @@ namespace GoldShield
     [Robot(TimeZone = TimeZones.UTC, AccessRights = AccessRights.None)]
     public class GoldShieldBot : Robot
     {
+        [Parameter("Modo (Examen / Fondeada / Personalizado)", DefaultValue = BotMode.Examen)]
+        public BotMode Mode { get; set; }
+
+        // Los parámetros de abajo solo se usan en modo Personalizado; Examen y Fondeada traen los suyos.
         [Parameter("Setup", DefaultValue = "donchian_trend;tf=240;n=20;tp_r=4;trend_n=0;hold_h=120")]
         public string SetupLine { get; set; }
 
@@ -26,7 +30,7 @@ namespace GoldShield
         [Parameter("Corte del día %", DefaultValue = 2.0, MinValue = 0.5, MaxValue = 3.0)]
         public double DayStopPct { get; set; }
 
-        [Parameter("Pausa total % bajo balance inicial", DefaultValue = 4.0, MinValue = 1, MaxValue = 6)]
+        [Parameter("Pausa total % bajo balance inicial", DefaultValue = 4.0, MinValue = 1, MaxValue = 8)]
         public double TotalPausePct { get; set; }
 
         [Parameter("Pérdidas seguidas que cortan el día", DefaultValue = 3, MinValue = 1, MaxValue = 10)]
@@ -54,6 +58,12 @@ namespace GoldShield
 
         protected override void OnStart()
         {
+            var preset = Modes.Get(Mode);
+            if (preset != null)
+            {
+                SetupLine = preset.SetupLine; RiskPct = preset.RiskPct; DayStopPct = preset.DayStopPct;
+                TotalPausePct = preset.TotalPausePct; MaxLosses = preset.MaxLosses;
+            }
             _setup = SetupFactory.Create(SetupLine);
             if (AuthorizedAccount.Trim() != Account.Number.ToString())
             {
@@ -74,7 +84,7 @@ namespace GoldShield
             Positions.Closed += OnPositionClosed;
             _lastTick = Server.Time;
             Timer.Start(1);
-            Log("INICIO", $"setup={_setup.Name} tf={_setup.TimeFrame} riesgo={RiskPct}% dryrun={DryRun} " +
+            Log("INICIO", $"modo={Mode} setup={_setup.Name} corte_dia={DayStopPct}% pausa_total=-{TotalPausePct}% tf={_setup.TimeFrame} riesgo={RiskPct}% dryrun={DryRun} " +
                           $"estado={_shield.State.Serialize()}");
             if (Symbol.Name.ToUpperInvariant().Replace("/", "") != "XAUUSD")
                 Log("AVISO", $"símbolo {SymbolName}: el bot fue testeado solo en XAUUSD");

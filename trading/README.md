@@ -20,7 +20,7 @@ Las fichas de los setups ganadores están en [`ESTRATEGIAS.md`](ESTRATEGIAS.md).
 | `research/lab.py` | Lab: walk-forward 12m/3m, stress ×2, Monte Carlo del examen y de la fondeada, filtro anti-HFT |
 | `research/test_engine.py` | Tests del motor (`python3 -m pytest research/test_engine.py`) |
 | `results/` | Salidas de Lab: `results.json`, `leaderboard.csv`, trades fuera de muestra |
-| `cbot/GoldShield/` | El cBot para cTrader (C#): `GoldShieldBot.cs`, `Shield.cs`, `Setups.cs`, `SetupCore.cs` |
+| `cbot/GoldShield/` | El cBot para cTrader (C#): `GoldShieldBot.cs`, `Shield.cs`, `Setups.cs`, `SetupCore.cs`, `Modes.cs` |
 | `cbot/GoldShield.Tests/` | Tests de Shield y de paridad Python ↔ C# (`dotnet test`) |
 | `data/` | Datos descargados (no se suben; se regeneran con los scripts) |
 
@@ -38,8 +38,8 @@ cd ../cbot/GoldShield.Tests && dotnet test
 ## Instalar el bot en cTrader (unos 5 minutos)
 
 1. **Copiar los archivos.** En cTrader Desktop, ir a *Algo* → *New cBot* y llamarlo `GoldShield`.
-   Pegar el contenido de los cuatro archivos `.cs` de `cbot/GoldShield/`: o se crean como
-   archivos del mismo proyecto, o se pegan los cuatro, uno tras otro, en el archivo del cBot.
+   Pegar el contenido de los cinco archivos `.cs` de `cbot/GoldShield/`: o se crean como
+   archivos del mismo proyecto, o se pegan los cinco, uno tras otro, en el archivo del cBot.
    Después, *Build*.
 2. **Crear la instancia.** Agregar una instancia sobre **XAUUSD**; el timeframe del gráfico da
    igual, porque el bot pide sus propias velas.
@@ -47,10 +47,16 @@ cd ../cbot/GoldShield.Tests && dotnet test
 
    | Parámetro | Valor |
    |---|---|
-   | `Setup` | `donchian_trend;tf=240;n=20;tp_r=4;trend_n=0;hold_h=120` (líder) |
+   | `Modo` | **Examen** mientras dure el examen; **Fondeada** al pasar a la cuenta fondeada. Cada modo trae su setup, su riesgo y sus límites (ver la tabla de modos). Personalizado usa los parámetros a mano. |
    | `Balance inicial` | 5000 |
-   | `Riesgo por trade %` | 0.5 en el examen; 0.35 en la fondeada Moderate |
    | `Número de cuenta autorizada` | **el número de tu cuenta DEMO**. En cualquier otra cuenta el bot solo registra. |
+
+   **Modos** (`cbot/GoldShield/Modes.cs`; Monte Carlo = estimación):
+
+   | Modo | Setup | Riesgo | Corte del día | Pausa total | Qué se espera |
+   |---|---|---|---|---|---|
+   | Examen | Deriva asiática larga (23:00–06:00 UTC) | 1,5% | −3% | −6% bajo el inicial (4.700 €; la firma corta en 4.500 €) | En 60 días hábiles: aprueba 61% (mediana 23 días), pausa 15%, rompe 0% |
+   | Fondeada | Donchian 4h | 0,35% | −2% | −4% (Moderate corta en −6%) | DD máx. del backtest −6,0%; unos +3,7% al año |
 
 4. **Guardar la configuración.** Con clic derecho en la instancia → *Save parameters*, queda un
    archivo `.cbotset`. Hay que guardar uno por setup; cambiar de setup es cargar otro archivo.
@@ -66,9 +72,9 @@ cd ../cbot/GoldShield.Tests && dotnet test
 
 | Regla | Shield | FundedHive Moderate |
 |---|---|---|
-| Riesgo por trade | 0,5% (máx. configurable 1,5%) | 1,5% |
-| Corte del día (sobre equity, día 00:00 UTC) | −2% o 3 pérdidas seguidas | −3% |
-| Pausa total (bajo el balance inicial) | −4%: el bot se detiene y solo un humano lo reactiva | −6% |
+| Riesgo por trade | 1,5% en Examen, 0,35% en Fondeada (nunca más de 1,5%) | 1,5% |
+| Corte del día (sobre equity, día 00:00 UTC) | −3% en Examen, −2% en Fondeada, o 3 pérdidas seguidas | −3% |
+| Pausa total (bajo el balance inicial) | −6% en Examen, −4% en Fondeada: el bot se detiene y solo un humano lo reactiva | −6% (examen: −10%) |
 | Stop loss | Siempre adjunto. Si una posición queda sin stop, se cierra. | Obligatorio al cerrar |
 | Anti-HFT | Máx. 6 trades por día, una posición a la vez, sin órdenes a ambos lados. Lab descarta los setups con más de 4 trades por día o una mediana de duración menor a 3 minutos. | Sin HFT ni copy trading |
 | Feed caído | Más de 60 s sin ticks (fuera de la pausa diaria del oro) → cierra todo y corta el día | — |

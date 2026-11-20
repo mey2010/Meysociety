@@ -24,7 +24,22 @@ porque los stops son de solo 2 a 6 USD. El detalle está en `results/provisional
 
 ---
 
-## #1 — Donchian 4h (LÍDER)
+## Qué usa el bot en cada fase (decisión del 20-nov)
+
+- **Examen:** el #3, la deriva asiática a **1,5%** de riesgo, un poco más agresiva pero con techo duro.
+  - Shield corta el día en −3% y se pausa en −6% bajo el inicial (4.700 €).
+  - Monte Carlo (estimación), partiendo de +3,31%:
+
+    | Plazo | Aprueba | Pausa de Shield | Rompe la firma |
+    |---|---|---|---|
+    | 20 días hábiles | 26% | 3% | 0% |
+    | 60 días hábiles | 61% (mediana 23 días) | 15% | 0% |
+
+  - Peor trade del backtest a 1,5%: −2,17% (gap más allá del stop).
+  - Aprobar en 3 a 5 días con este setup: menos del 2%. Con cualquier setup y al riesgo máximo de la firma: menos del 10%.
+- **Fondeada (Moderate):** el #1, Donchian 4h a **0,35%**, corte del día en −2% y pausa en −4%.
+
+## #1 — Donchian 4h (LÍDER para la fondeada)
 
 **La idea:** cuando una vela de 4h cierra por encima del máximo de las 20 anteriores (o por
 debajo del mínimo), se sigue esa dirección con el stop a 2 ATR.

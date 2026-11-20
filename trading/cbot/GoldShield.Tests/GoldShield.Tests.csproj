@@ -25,6 +25,7 @@
   <ItemGroup>
     <Compile Include="../GoldShield/Shield.cs" Link="Shield.cs" />
     <Compile Include="../GoldShield/SetupCore.cs" Link="SetupCore.cs" />
+    <Compile Include="../GoldShield/Modes.cs" Link="Modes.cs" />
     <None Include="fixtures/**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
