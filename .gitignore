@@ -7,3 +7,10 @@ __pycache__/
 
 # Datos personales de las skills trader-* (cartera, config con email)
 trader/
+
+# Datos de mercado descargados (pesados, se regeneran con trading/research/data_dukascopy.py)
+trading/data/
+trading/cbot/**/bin/
+trading/cbot/**/obj/
+trading/results/provisional/trades_*.parquet
+trading/results/half_spread/trades_*.parquet
