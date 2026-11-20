@@ -6,7 +6,7 @@
 import * as THREE from "./vendor/three.module.js";
 import { OrbitControls } from "./vendor/OrbitControls.js";
 import { MAPDATA } from "./map3d.js";
-import { createLiveTiles } from "./livetiles.js";
+import { createLiveTiles, liveShader } from "./livetiles.js";
 import { hdPack } from "./hd-assets.js";
 
 const { WATERCUT, A, B, BB, EXAG, ISLE, LIMIT, toXZ, fromXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow } = MAPDATA;
@@ -31,7 +31,7 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
 
   // ---- land: indigo, lit by its own relief, a soft cyan rim along the coast ----
   {
-    const NX = small ? 220 : 340, NZ = Math.round(NX * (B.z - A.z) / (B.x - A.x));
+    const NX = small ? 360 : 640, NZ = Math.round(NX * (B.z - A.z) / (B.x - A.x));
     const g = new THREE.PlaneGeometry(B.x - A.x, B.z - A.z, NX - 1, NZ - 1).rotateX(-Math.PI / 2);
     g.translate((A.x + B.x) / 2, 0, (A.z + B.z) / 2);
     const pos = g.attributes.position;
@@ -50,7 +50,7 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
           float land = texture2D(uMaskT, vUv2).r;
           if (vWp.y < -.005 && land < .5) discard;`)
         .replace("#include <map_fragment>", `#include <map_fragment>
-          { vec2 vUv3 = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); if (WATERCUT(diffuseColor.rgb, texture2D(uMaskT, vUv3).r, max(vWp.y, 0.))) discard; }`)
+          { vec2 vUv3 = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); if (WATERCUT(texture2D(map, vMapUv, 2.).rgb, texture2D(uMaskT, vUv3).r, max(vWp.y, 0.))) discard; }`)
         .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
           { vec2 vUv2 = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); vec3 wn = texture2D(uNrm, vUv2).xyz * 2. - 1.; normal = normalize(mat3(viewMatrix) * wn); }`); // (photo-real: no glow)
     };
@@ -83,13 +83,14 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
   const liveTiles = createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, small, bounds: BB, onChange: () => wake(), pack: await hdPack,
     heightAt: (x, z) => { const m = hAt(x, z); return m > .4 ? m * EXAG / 1000 + .0015 : .0009; },
     material: (tex, z) => {   // the photo, with the water cut away so the island floats (no squares of sea)
-      const m = new THREE.MeshBasicMaterial({ map: tex, polygonOffset: true, polygonOffsetFactor: -4 - (z - 15) * 2, polygonOffsetUnits: -4 - (z - 15) * 2 });
+      const m = new THREE.MeshBasicMaterial({ map: tex, alphaTest: .5, polygonOffset: true, polygonOffsetFactor: -4 - (z - 15) * 2, polygonOffsetUnits: -4 - (z - 15) * 2 });
       m.onBeforeCompile = sh => {
+        liveShader(sh, { pull: .016, sharpen: .7 });
         sh.uniforms.uMaskT = { value: maskTex }; sh.uniforms.uA2 = { value: new THREE.Vector4(A.x, A.z, B.x - A.x, B.z - A.z) };
         sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWp;").replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.)).xyz;");
         sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uMaskT; uniform vec4 uA2; varying vec3 vWp;\n" + WATERCUT())
           .replace("#include <map_fragment>", `#include <map_fragment>
-            { vec2 wuv = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); if (WATERCUT(diffuseColor.rgb, texture2D(uMaskT, wuv).r, vWp.y)) discard; }`);
+            { vec2 wuv = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); if (WATERCUT(texture2D(map, vMapUv, 2.).rgb, texture2D(uMaskT, wuv).r, vWp.y)) discard; }`);
       };
       m.customProgramCacheKey = () => "route-live"; return m; } });
   controls.addEventListener("change", wake);

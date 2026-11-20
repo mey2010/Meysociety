@@ -651,7 +651,7 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
   color: "#0d0a38", accentColor: "#ab50db", lineColor: "#c9cce8", width: 340, rowHeight: 38, fontSize: 15, indent: 42,
 
   onSelect: (value, item) => {
-    if (value.startsWith("motos-") && value !== "motos-scooter") { SM.set(false); setTimeout(() => openFleet("moto-agua"), 260); return; }   // jet skis: straight to their gallery
+    if (value.startsWith("motos-") && value !== "motos-scooter") { const brand = { "motos-seadoo": "Sea-Doo", "motos-yamaha": "Yamaha" }[value]; SM.set(false); setTimeout(() => openFleet("moto-agua", brand), 260); return; }   // jet skis: straight to their gallery (Sea-Doo / Yamaha: only that brand)   // jet skis: straight to their gallery
     if (value.startsWith("barcos-")) { const k = value.slice(7); SM.set(false); setTimeout(() => openFleet(k === "all" ? "open" : k), 260); return; }   // "Toda la flota" opens on the open boats; the other tabs stay one tap away
     if (value === "formentera") { SM.set(false); setTimeout(() => fxTour.open(), 300); return; }   // straight into the excursion page
     if (value === "villa-aura") { SM.set(false); setTimeout(() => document.querySelector("[data-villa-tour]")?.click(), 300); return; }   // straight into the tour
@@ -1443,9 +1443,9 @@ function setFleetCat(cat) {
   ribbon.setItems(fleetItems());
   document.querySelector(".fleet__nav").classList.toggle("is-single", fleetList.length < 2);   // one boat: nothing to step through
 }
-function openFleet(cat = "all") {
+function openFleet(cat = "all", brand = "") {
   fleet.hidden = false; document.body.style.overflow = "hidden";
-  const solo = SOLO.includes(cat); fleetBase = solo ? FLEET.filter(b => b.type === cat) : BOATS; if (solo) cat = "all";
+  const solo = SOLO.includes(cat); fleetBase = solo ? FLEET.filter(b => b.type === cat && (!brand || b.name.startsWith(brand))) : BOATS; if (solo) cat = "all";
   // only the types that have boats, each with its count (jet skis, cars and transfers are one group each: no chips)
   fleetChips.hidden = solo;
   fleetChips.innerHTML = FLEET_TYPES.filter(([k]) => k === "all" || fleetBase.some(b => b.type === k))
@@ -1803,7 +1803,7 @@ const MEY = (() => {
       boats: (n, k, b) => n ? `Para ${n} personas tengo ${k} ${k === 1 ? "barco que os va" : "barcos que os van"} perfecto${k === 1 ? "" : "s"}. Mi apuesta: ${b}: espacio de sobra, sin ir apretados. ¿Lo queréis con patrón y comida a bordo? Dime la fecha y te confirmo disponibilidad.` : `Tengo ${k} barcos, de lanchas sin licencia a superyates. Dime cuántos sois y qué día, y te digo cuál os va mejor.`,
       big: n => `Para ${n} personas lo más espectacular es ir en dos barcos navegando juntos, o en nuestro barco más grande. Te lo organizamos para que parezca uno solo.`,
       nolic: k => `Sin licencia tienes ${k} opciones: las motos de agua van con un monitor que os abre la ruta, y hay barcos que no necesitan titulación. Para algo más grande, añadimos patrón.`,
-      jets: k => `Tenemos ${k} motos de agua Sea-Doo. Sin licencia vais con monitor por las calas; con licencia, libres las horas que elijáis. ¿A qué hora os viene mejor, mañana o atardecer?`,
+      jets: k => `Tenemos ${k} motos de agua Sea-Doo y Yamaha. Sin licencia vais con monitor por las calas; con licencia, libres las horas que elijáis. ¿A qué hora os viene mejor, mañana o atardecer?`,
       cars: k => `Te dejo los coches que tenemos ahora. Si me dices cuántos sois y para cuántos días, te propongo el ideal y te lo dejamos en la villa.`,
       transfer: (n, v) => n ? `Para ${n} personas te va ${v}. Te esperamos en llegadas con tu nombre y te llevamos directo a la villa, sin colas de taxi.` : `Te recogemos en el aeropuerto o el puerto con conductor privado. Dime cuántos sois y la hora de tu vuelo.`,
       clubs: g => g ? `Si os gusta ${g}, estos son vuestros clubs. Te guardo mesa VIP según el line-up de esa noche; las mejores mesas vuelan en cuanto sale el cartel.` : `Estos son los clubs que más pedimos. Dime qué música os gusta y la noche, y te digo dónde ir y te guardo mesa.`,
@@ -1822,7 +1822,7 @@ const MEY = (() => {
       boats: (n, k, b) => n ? `For ${n} people I have ${k} boat${k === 1 ? "" : "s"} that fit perfectly. My pick: ${b}: plenty of room, no squeezing. Want it with a skipper and lunch on board? Tell me the date and I'll confirm availability.` : `I have ${k} boats, from licence-free speedboats to superyachts. Tell me how many you are and the day, and I'll tell you which suits you best.`,
       big: n => `For ${n} people the most spectacular option is two boats sailing together, or our largest one. We arrange it so it feels like one.`,
       nolic: k => `Without a licence you have ${k} options: jet skis go with an instructor leading the way, and some boats need no licence. For something bigger, we add a skipper.`,
-      jets: k => `We have ${k} Sea-Doo jet skis. Without a licence you ride with an instructor through the coves; with one, you're free for the hours you choose. Morning or sunset?`,
+      jets: k => `We have ${k} Sea-Doo and Yamaha jet skis. Without a licence you ride with an instructor through the coves; with one, you're free for the hours you choose. Morning or sunset?`,
       cars: k => `Here are the cars we have right now. Tell me how many you are and for how many days, and I'll suggest the ideal one and leave it at your villa.`,
       transfer: (n, v) => n ? `For ${n} people, ${v} is right. We wait at arrivals with your name and take you straight to the villa, no taxi queues.` : `We pick you up at the airport or port with a private driver. Tell me how many you are and your flight time.`,
       clubs: g => g ? `If you like ${g}, these are your clubs. I'll hold a VIP table depending on that night's line-up; the best tables go as soon as it's announced.` : `These are the clubs we're asked for most. Tell me the music you like and the night, and I'll tell you where to go and hold a table.`,
@@ -1841,7 +1841,7 @@ const MEY = (() => {
       boats: (n, k, b) => n ? `Per ${n} persone ho ${k} ${k === 1 ? "barca perfetta" : "barche perfette"} per voi. La mia scelta: ${b}: spazio in abbondanza, senza stare stretti. La volete con skipper e pranzo a bordo? Dimmi la data e ti confermo la disponibilità.` : `Ho ${k} barche, dai gommoni senza patente ai superyacht. Dimmi quanti siete e il giorno, e ti dico quale fa per voi.`,
       big: n => `Per ${n} persone la soluzione più spettacolare sono due barche che navigano insieme, o la nostra barca più grande. Organizziamo tutto perché sembri una sola.`,
       nolic: k => `Senza patente hai ${k} opzioni: le moto d'acqua vanno con un istruttore che vi apre la rotta, e ci sono barche che non richiedono patente. Per qualcosa di più grande, aggiungiamo lo skipper.`,
-      jets: k => `Abbiamo ${k} moto d'acqua Sea-Doo. Senza patente andate con istruttore tra le calette; con patente, liberi per le ore che scegliete. Mattina o tramonto?`,
+      jets: k => `Abbiamo ${k} moto d'acqua Sea-Doo e Yamaha. Senza patente andate con istruttore tra le calette; con patente, liberi per le ore che scegliete. Mattina o tramonto?`,
       cars: k => `Ecco le auto disponibili. Dimmi quanti siete e per quanti giorni, ti propongo quella ideale e te la lasciamo in villa.`,
       transfer: (n, v) => n ? `Per ${n} persone va bene ${v}. Vi aspettiamo agli arrivi con il vostro nome e vi portiamo dritti in villa, senza code ai taxi.` : `Ti veniamo a prendere in aeroporto o al porto con autista privato. Dimmi quanti siete e l'orario del volo.`,
       clubs: g => g ? `Se vi piace ${g}, questi sono i vostri club. Ti tengo un tavolo VIP in base al line-up della serata; i tavoli migliori vanno via appena esce il cartellone.` : `Questi sono i club più richiesti. Dimmi che musica vi piace e la serata, e ti dico dove andare e ti tengo il tavolo.`,
@@ -1860,7 +1860,7 @@ const MEY = (() => {
       boats: (n, k, b) => n ? `Pour ${n} personnes, j'ai ${k} bateau${k === 1 ? "" : "x"} parfait${k === 1 ? "" : "s"} pour vous. Mon choix : ${b} : de la place à revendre, sans être serrés. Avec skipper et déjeuner à bord ? Donnez-moi la date et je confirme la disponibilité.` : `J'ai ${k} bateaux, des vedettes sans permis aux superyachts. Dites-moi combien vous êtes et le jour, et je vous dis lequel vous va le mieux.`,
       big: n => `Pour ${n} personnes, le plus spectaculaire, ce sont deux bateaux qui naviguent ensemble, ou notre plus grand bateau. Nous organisons tout pour que ce soit comme un seul.`,
       nolic: k => `Sans permis, vous avez ${k} options : les jet-skis partent avec un moniteur qui ouvre la route, et certains bateaux ne demandent pas de permis. Pour plus grand, on ajoute un skipper.`,
-      jets: k => `Nous avons ${k} jet-skis Sea-Doo. Sans permis, vous partez avec un moniteur dans les criques ; avec permis, libres pendant les heures choisies. Matin ou coucher de soleil ?`,
+      jets: k => `Nous avons ${k} jet-skis Sea-Doo et Yamaha. Sans permis, vous partez avec un moniteur dans les criques ; avec permis, libres pendant les heures choisies. Matin ou coucher de soleil ?`,
       cars: k => `Voici nos voitures. Dites-moi combien vous êtes et pour combien de jours, je vous propose la voiture idéale et on la dépose à la villa.`,
       transfer: (n, v) => n ? `Pour ${n} personnes, ${v} est idéal. Nous vous attendons aux arrivées avec votre nom et vous conduisons directement à la villa, sans file de taxis.` : `Nous venons vous chercher à l'aéroport ou au port avec chauffeur privé. Dites-moi combien vous êtes et l'heure de votre vol.`,
       clubs: g => g ? `Si vous aimez ${g}, voici vos clubs. Je vous garde une table VIP selon le line-up du soir ; les meilleures tables partent dès l'annonce.` : `Voici les clubs les plus demandés. Dites-moi votre musique et la soirée, je vous dis où aller et je garde une table.`,
@@ -1879,7 +1879,7 @@ const MEY = (() => {
       boats: (n, k, b) => n ? `Für ${n} Personen habe ich ${k} ${k === 1 ? "Boot, das perfekt passt" : "Boote, die perfekt passen"}. Mein Tipp: ${b}: viel Platz, nichts ist eng. Mit Skipper und Mittagessen an Bord? Sag mir das Datum und ich bestätige die Verfügbarkeit.` : `Ich habe ${k} Boote, vom führerscheinfreien Motorboot bis zur Superyacht. Sag mir, wie viele ihr seid und welcher Tag, und ich sage dir, welches am besten passt.`,
       big: n => `Für ${n} Personen ist das Spektakulärste: zwei Boote, die zusammen fahren, oder unser größtes Boot. Wir organisieren es so, dass es sich wie eins anfühlt.`,
       nolic: k => `Ohne Führerschein hast du ${k} Optionen: Jetskis fahren mit einem Guide voraus, und manche Boote brauchen keinen Führerschein. Für Größeres kommt ein Skipper dazu.`,
-      jets: k => `Wir haben ${k} Sea-Doo-Jetskis. Ohne Führerschein fahrt ihr mit Guide durch die Buchten, mit Führerschein frei für die gewünschten Stunden. Morgens oder zum Sonnenuntergang?`,
+      jets: k => `Wir haben ${k} Jetskis von Sea-Doo und Yamaha. Ohne Führerschein fahrt ihr mit Guide durch die Buchten, mit Führerschein frei für die gewünschten Stunden. Morgens oder zum Sonnenuntergang?`,
       cars: k => `Hier sind unsere Autos. Sag mir, wie viele ihr seid und für wie viele Tage, ich schlage das ideale vor und wir stellen es an deiner Villa ab.`,
       transfer: (n, v) => n ? `Für ${n} Personen passt ${v}. Wir warten in der Ankunftshalle mit deinem Namen und bringen euch direkt zur Villa, ohne Taxischlange.` : `Wir holen dich mit Privatfahrer am Flughafen oder Hafen ab. Sag mir, wie viele ihr seid und wann dein Flug landet.`,
       clubs: g => g ? `Wenn ihr ${g} mögt, sind das eure Clubs. Ich halte euch einen VIP-Tisch je nach Line-up des Abends; die besten Tische sind weg, sobald es angekündigt ist.` : `Das sind die meistgefragten Clubs. Sag mir eure Musik und den Abend, und ich sage dir, wohin, und halte einen Tisch.`,

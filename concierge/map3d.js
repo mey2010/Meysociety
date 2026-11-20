@@ -5,7 +5,7 @@
    Touch: one finger scrolls the page, two fingers move, pinch-zoom and turn the island. */
 import * as THREE from "./vendor/three.module.js";
 import { OrbitControls } from "./vendor/OrbitControls.js";
-import { createLiveTiles } from "./livetiles.js";
+import { createLiveTiles, liveShader } from "./livetiles.js";
 import { hdPack, tileUrl } from "./hd-assets.js";
 
 const BB = { lon0: 1.17, lon1: 1.65, lat0: 38.63, lat1: 39.13 };
@@ -103,9 +103,13 @@ export const MAPDATA = { coastBand, WATERCUT: () => WATERCUT_GLSL, A, B, BB, EXA
 // and along the coast every pixel that the aerial photo shows as water is dropped too, so the shoreline is the
 // photograph's own (sand, rock, foam stay), not the 25 m relief's stair-steps
 const WATERCUT_GLSL = `bool WATERCUT(vec3 c, float landM, float y) {
-  // landM here is the coastal band (1 on land and in the water next to it, fading to 0 about 300 m out):
-  // the crystal-clear shallows and the turquoise of every beach stay, open sea dissolves away into the page
-  return landM < .3;   // a clean edge that follows the coastline's shape, ~200 m out
+  // landM is the coastal band (1 on land and in the water next to it, fading to 0 about 300 m out); c is the photo
+  // softened (a coarse mip level), so the decision follows patches of water, not single pixels (no speckle).
+  // Kept: every beach's turquoise shallows and the sand, rock and foam of the shore. Dropped: open sea, and the
+  // dark deep-water blue inside the band, so the island floats with its crystal-clear rim and nothing murky.
+  float l = dot(c, vec3(.2126, .7152, .0722));
+  bool deep = l < .045 && c.b > c.r * 1.15;
+  return landM < .3 || (deep && y < .002 && landM < .97);   // y: water sits flat at sea level, land starts above it
 }`;
 const REALWATER_GLSL = `vec3 REALWATER(vec3 c) {
   float l = dot(c, vec3(.299, .587, .114));
@@ -155,7 +159,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
 
   // ---- terrain ----
   {
-    const NX = small ? 440 : 560, NZ = Math.round(NX * (B.z - A.z) / (B.x - A.x));
+    const NX = small ? 560 : 900, NZ = Math.round(NX * (B.z - A.z) / (B.x - A.x));
     const g = new THREE.PlaneGeometry(B.x - A.x, B.z - A.z, NX - 1, NZ - 1).rotateX(-Math.PI / 2);
     g.translate((A.x + B.x) / 2, 0, (A.z + B.z) / 2);
     const pos = g.attributes.position;
@@ -171,7 +175,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
         .replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.)).xyz;");
       sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uNrm, uMaskT; uniform vec4 uIsle; varying vec3 vWp;\n" + REALWATER_GLSL + WATERCUT_GLSL)
         .replace("#include <map_fragment>", `#include <map_fragment>
-          { if (WATERCUT(diffuseColor.rgb, texture2D(uMaskT, vMapUv).r, vWp.y)) discard;
+          { if (WATERCUT(texture2D(map, vMapUv, 2.).rgb, texture2D(uMaskT, vMapUv).r, vWp.y)) discard;
             vec3 c = diffuseColor.rgb; float l = dot(c, vec3(.299, .587, .114));
             c = mix(vec3(l), c, 1.18); c = (c - .5) * 1.06 + .5;
             if (vWp.y < -.005) c = REALWATER(c);
@@ -187,6 +191,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   const tileMat = tex => {
     const m = new THREE.MeshStandardMaterial({ map: tex, roughness: .93, metalness: 0, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
     m.onBeforeCompile = sh => {
+      liveShader(sh, { pull: .008, sharpen: .35 });
       sh.uniforms.uNrm = { value: nrm }; sh.uniforms.uMaskT = { value: maskTex }; sh.uniforms.uA2 = { value: new THREE.Vector4(A.x, A.z, B.x - A.x, B.z - A.z) };
       sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWp;")
         .replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.)).xyz;");
@@ -194,7 +199,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
         .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>
           vec2 wuv = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w);`)   // tiles end exactly at the shoreline of the relief (smooth, not the land mask's stair-steps): beyond it is the sea, coloured from the photo
         .replace("#include <map_fragment>", `#include <map_fragment>
-          { if (WATERCUT(diffuseColor.rgb, texture2D(uMaskT, wuv).r, vWp.y)) discard;
+          { if (WATERCUT(texture2D(map, vMapUv, 2.).rgb, texture2D(uMaskT, wuv).r, vWp.y)) discard;
             vec3 c = diffuseColor.rgb; float l = dot(c, vec3(.299, .587, .114)); c = mix(vec3(l), c, 1.1); c = (c - .5) * 1.04 + .5;
             if (vWp.y < -.005) c = REALWATER(c);
             diffuseColor.rgb = clamp(c, 0., 1.); }`)
@@ -261,10 +266,10 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   const liveTiles = createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, small, bounds: BB, pack,
     heightAt: (x, z) => { const m = hAt(x, z); return m > .4 ? m * EXAG / 1000 + .0015 : .0009; },
     material: (tex, z) => {
-      const m = tileMat(tex); m.polygonOffsetFactor = m.polygonOffsetUnits = -4 - (z - 15) * 2;
+      const m = tileMat(tex); m.polygonOffsetFactor = m.polygonOffsetUnits = -4 - (z - 15) * 2; m.alphaTest = .5;
       // photographed water reads darker from above than the eye sees it: lifted a little, like the sea further out
       const base = m.onBeforeCompile; m.customProgramCacheKey = () => "live";
-      m.onBeforeCompile = sh => { base(sh); sh.fragmentShader = sh.fragmentShader.replace("diffuseColor.rgb = clamp(c, 0., 1.); }",
+      m.onBeforeCompile = sh => { base(sh); sh.vertexShader = sh.vertexShader.replace("*= 0.9920;", "*= 0.9840;"); sh.fragmentShader = sh.fragmentShader.replace("* 0.35, 0.)", "* 0.70, 0.)"); sh.fragmentShader = sh.fragmentShader.replace("diffuseColor.rgb = clamp(c, 0., 1.); }",
         "if (vWp.y < .0026) { float w = dot(c, vec3(.299, .587, .114)); c = mix(vec3(w), c, 1.25) * 1.22 + vec3(0., .01, .02); } diffuseColor.rgb = clamp(c, 0., 1.); }"); };
       return m; } });
   // ---- the sea: sky reflections, sun glints, see-through shallows, feathered into the page ----

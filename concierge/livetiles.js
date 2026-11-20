@@ -11,6 +11,29 @@ const lat2y = (lat, n) => { const r = lat * Math.PI / 180; return (1 - Math.asin
 const x2lon = (x, n) => x / n * 360 - 180;
 const y2lat = (y, n) => Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n))) * 180 / Math.PI;
 
+/* Shared shader touches for every sharp photo layer:
+   - PULL: each vertex slides toward the eye along its own line of sight (so it stays exactly where it is on screen)
+     by a small share of its distance. The photo layers then always win the depth test against the coarse relief
+     underneath, which used to poke through on slopes as blurry brown smudges.
+   - SHARPEN: a light unsharp mask on the photo, sized to the pixel on screen, so the water over sand, the foam and
+     the rocks of every cove read crisp. */
+export function liveShader(sh, { pull = .015, sharpen = .6 } = {}) {
+  sh.vertexShader = sh.vertexShader.replace("#include <project_vertex>", `#include <project_vertex>
+    mvPosition.xyz *= ${(1 - pull).toFixed(4)}; gl_Position = projectionMatrix * mvPosition;`);
+  if (sharpen) sh.fragmentShader = sh.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>
+    { vec2 px = max(1. / vec2(textureSize(map, 0)), fwidth(vMapUv));
+      vec3 blur = (texture2D(map, vMapUv + vec2(px.x, 0.)).rgb + texture2D(map, vMapUv - vec2(px.x, 0.)).rgb
+                 + texture2D(map, vMapUv + vec2(0., px.y)).rgb + texture2D(map, vMapUv - vec2(0., px.y)).rgb) * .25;
+      diffuseColor.rgb = max(diffuseColor.rgb + (diffuseColor.rgb - blur) * ${sharpen.toFixed(2)}, 0.); }`);
+}
+// the stored blocks pad the open sea (never photographed at this scale) with one flat blue: made see-through
+function knockOutPad(c) {
+  const cx = c.getContext("2d", { willReadFrequently: true }), im = cx.getImageData(0, 0, c.width, c.height), d = im.data;
+  let hit = 0;
+  for (let i = 0; i < d.length; i += 4) if (Math.abs(d[i] - 30) < 7 && Math.abs(d[i + 1] - 74) < 7 && Math.abs(d[i + 2] - 110) < 7) { d[i + 3] = 0; hit++; }
+  if (hit) cx.putImageData(im, 0, 0);
+}
+
 export function createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, heightAt, material, small = false, onChange, bounds, minZ = 16, maxZ = 19, pack = null }) {
   /* pack: the same photo, pre-cut into 2048 px blocks of 8x8 zoom-18 tiles and stored with the page (inside claude.ai,
      where outside image hosts are not reachable). { url(bx, by) -> string | null }. Each 1024 px patch is a quarter
@@ -31,7 +54,7 @@ export function createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, 
   };
   const live = new Map(), queue = [];
   let inflight = 0, ok = 0, fails = 0, dead = false, last = 0;
-  const MAX = small ? 30 : 42, PAR = small ? 6 : 10, N = small ? 24 : 36;
+  const MAX = small ? 30 : 42, PAR = small ? 6 : 10, N = small ? 32 : 48;
   const aniso = Math.min(16, renderer.capabilities.getMaxAnisotropy());
 
   function patchMesh(z, sx, sy, tex) {
@@ -52,7 +75,8 @@ export function createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, 
     if (pack) {   // a quarter of a stored block
       blockImg(e.sx >> 1, e.sy >> 1).then(({ im, off }) => {
         const c = document.createElement("canvas"); c.width = c.height = 1024;
-        c.getContext("2d").drawImage(im, off + (e.sx & 1) * 1024, (e.sy & 1) * 1024, 1024, 1024, 0, 0, 1024, 1024);
+        c.getContext("2d", { willReadFrequently: true }).drawImage(im, off + (e.sx & 1) * 1024, (e.sy & 1) * 1024, 1024, 1024, 0, 0, 1024, 1024);
+        knockOutPad(c);
         inflight--; pump(); if (!live.has(e.key) || e.cancel) return; ok++;
         const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = aniso;
         tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter; tex.magFilter = THREE.LinearFilter;

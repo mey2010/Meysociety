@@ -67,14 +67,31 @@ const L2 = {
   fr: { clear: "Tout retirer", done: "Terminé", go: "Voir mes nuits", vip: "Tables VIP", vipSub: "Demandez la vôtre en un message", day: "Day clubs", daySub: "Fêtes de jour et pool parties", feat: "Touchez pour choisir" },
   de: { clear: "Alle entfernen", done: "Fertig", go: "Meine Nächte ansehen", vip: "VIP-Tische", vipSub: "Frag deinen mit einer Nachricht an", day: "Day Clubs", daySub: "Tages- und Poolpartys", feat: "Zum Auswählen tippen" },
 };
+const L3 = {
+  es: { cal: "Calendario de fiestas 2027", calSub: "Toca tu primera noche y después la última. Los días con punto ya tienen line-up oficial.", prev: "Mes anterior", next: "Mes siguiente",
+        legEv: "Line-up anunciado", legSel: "Tus noches", notify: "Avísame cuando salga el line-up", notifyOn: "Aviso activado: te lo enseñamos aquí en cuanto se anuncie", notifyOff: "Quitar aviso",
+        ics: "Añadir a mi calendario", fresh: n => `${n} ${n === 1 ? "line-up nuevo" : "line-ups nuevos"} en tus noches`, see: "Ver", icsTitle: "Noche en Ibiza", icsNote: "Line-up y mesas: Mey Society" },
+  en: { cal: "2027 party calendar", calSub: "Tap your first night, then your last. Days with a dot already have an official line-up.", prev: "Previous month", next: "Next month",
+        legEv: "Line-up announced", legSel: "Your nights", notify: "Tell me when the line-up drops", notifyOn: "Alert on: we'll show it here the moment it's announced", notifyOff: "Turn alert off",
+        ics: "Add to my calendar", fresh: n => `${n} new ${n === 1 ? "line-up" : "line-ups"} on your nights`, see: "See", icsTitle: "Night in Ibiza", icsNote: "Line-up and tables: Mey Society" },
+  it: { cal: "Calendario feste 2027", calSub: "Tocca la prima notte e poi l'ultima. I giorni con il punto hanno già il line-up ufficiale.", prev: "Mese precedente", next: "Mese successivo",
+        legEv: "Line-up annunciato", legSel: "Le tue notti", notify: "Avvisami quando esce il line-up", notifyOn: "Avviso attivo: te lo mostriamo qui appena viene annunciato", notifyOff: "Togli avviso",
+        ics: "Aggiungi al mio calendario", fresh: n => `${n} ${n === 1 ? "nuovo line-up" : "nuovi line-up"} nelle tue notti`, see: "Vedi", icsTitle: "Notte a Ibiza", icsNote: "Line-up e tavoli: Mey Society" },
+  fr: { cal: "Calendrier des fêtes 2027", calSub: "Touchez votre première nuit, puis la dernière. Les jours avec un point ont déjà leur line-up officiel.", prev: "Mois précédent", next: "Mois suivant",
+        legEv: "Line-up annoncé", legSel: "Vos nuits", notify: "Prévenez-moi à la sortie du line-up", notifyOn: "Alerte activée : nous l'affichons ici dès son annonce", notifyOff: "Retirer l'alerte",
+        ics: "Ajouter à mon calendrier", fresh: n => `${n} ${n === 1 ? "nouveau line-up" : "nouveaux line-ups"} sur vos nuits`, see: "Voir", icsTitle: "Nuit à Ibiza", icsNote: "Line-up et tables : Mey Society" },
+  de: { cal: "Partykalender 2027", calSub: "Tippe auf deine erste Nacht, dann auf die letzte. Tage mit Punkt haben schon ein offizielles Line-up.", prev: "Vorheriger Monat", next: "Nächster Monat",
+        legEv: "Line-up bekannt", legSel: "Deine Nächte", notify: "Sag mir, wenn das Line-up erscheint", notifyOn: "Alarm aktiv: Wir zeigen es dir hier, sobald es bekannt ist", notifyOff: "Alarm entfernen",
+        ics: "Zu meinem Kalender", fresh: n => `${n} ${n === 1 ? "neues Line-up" : "neue Line-ups"} in deinen Nächten`, see: "Ansehen", icsTitle: "Nacht auf Ibiza", icsNote: "Line-up und Tische: Mey Society" },
+};
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const KEY = "mey-agenda";
 
 export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
   const clubs = venues.filter(v => v.type === "club" || v.type === "dayclub");
   let saved = {}; try { saved = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch {}
-  const st = { from: saved.from || "", to: saved.to || "", clubs: new Set((saved.clubs || []).filter(n => clubs.some(c => c.name === n))) };
-  const keep = () => { try { localStorage.setItem(KEY, JSON.stringify({ from: st.from, to: st.to, clubs: [...st.clubs] })); } catch {} };
+  const st = { from: saved.from || "", to: saved.to || "", clubs: new Set((saved.clubs || []).filter(n => clubs.some(c => c.name === n))), alert: !!saved.alert, seen: new Set(saved.seen || []) };
+  const keep = () => { try { localStorage.setItem(KEY, JSON.stringify({ from: st.from, to: st.to, clubs: [...st.clubs], alert: st.alert, seen: [...st.seen] })); } catch {} };
   const tx = () => L[getLang()] || L.es;
   const today = new Date().toISOString().slice(0, 10);
   const day = s => new Date(s + "T12:00");
@@ -98,6 +115,14 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     <p class="ag__status"><i aria-hidden="true"></i><span></span></p>
     <ul class="ag__feat" role="list">${FEAT.map(f => `<li><button type="button" class="ag__fcard" ${f.club ? `data-club="${esc(f.club)}" aria-pressed="false"` : `data-act="${f.act}"`}>
       <img src="${f.img}" alt="" loading="lazy" decoding="async"><span class="ag__fname">${f.club ? esc(f.club) : ""}</span><span class="ag__fsub"></span><span class="ag__arrow" aria-hidden="true"></span></button></li>`).join("")}</ul>
+    <div class="ag__panel ag__cal">
+      <p class="ag__fresh" hidden><span></span><button type="button" data-act="fresh"></button></p>
+      <div class="ag__calhead"><button type="button" class="ag__nav" data-nav="-1"><i aria-hidden="true">‹</i></button><div><h3 class="ag__h ag__calt"></h3><p class="ag__calsub"></p></div><button type="button" class="ag__nav" data-nav="1"><i aria-hidden="true">›</i></button></div>
+      <p class="ag__month" aria-live="polite"></p>
+      <div class="ag__grid" role="grid"></div>
+      <div class="ag__calfoot"><span class="ag__leg"><i class="is-ev"></i><span class="ag__legev"></span></span><span class="ag__leg"><i class="is-sel"></i><span class="ag__legsel"></span></span></div>
+      <div class="ag__calcta"><button type="button" class="ag__notify" data-act="notify" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16Zm4 3.5a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span></span></button><button type="button" class="ag__ics" data-act="ics"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 3.5v4M16 3.5v4M4 10h16M12 13v4M10 15h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span></span></button></div>
+    </div>
     <div class="ag__panel ag__panel--nights">
       <h3 class="ag__h ag__h--nights"></h3>
       <div class="ag__drop">
@@ -134,6 +159,58 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
       return `<li class="ag__night"><time datetime="${d}"><b>${esc(fmt(d, { day: "numeric" }))}</b><span>${esc(fmt(d, { weekday: "short", month: "short" }))}</span></time>${body}</li>`;
     }).join("");
   }
+  // ---- the season calendar: a month at a time, tap first and last night ----
+  const tx3 = () => L3[getLang()] || L3.es;
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const SEASON0 = "2027-05", SEASON1 = "2027-10", nowM = today.slice(0, 7);
+  const firstM = nowM > SEASON0 ? nowM : SEASON0;
+  let month = (st.from && st.from.slice(0, 7) >= nowM ? st.from.slice(0, 7) : firstM);
+  const shiftM = (m, k) => { const d = new Date(m + "-15T12:00"); d.setMonth(d.getMonth() + k); return iso(d).slice(0, 7); };
+  const lastM = SEASON1 > nowM ? SEASON1 : shiftM(nowM, 6);
+  const matching = () => EVENTS.filter(e => (!st.clubs.size || st.clubs.has(e.club)) && (!st.from || (e.date >= st.from && e.date <= (st.to || st.from))));
+  const evKey = e => e.date + "|" + e.club;
+  function paintCal() {
+    const t = tx3(), first = new Date(month + "-01T12:00"), lead = (first.getDay() + 6) % 7, n = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+    $(".ag__calt").textContent = t.cal; $(".ag__calsub").textContent = t.calSub; $(".ag__legev").textContent = t.legEv; $(".ag__legsel").textContent = t.legSel;
+    $(".ag__month").textContent = first.toLocaleDateString(getLang(), { month: "long", year: "numeric" });
+    const [pv, nx] = root.querySelectorAll(".ag__nav"); pv.setAttribute("aria-label", t.prev); nx.setAttribute("aria-label", t.next);
+    pv.disabled = month <= nowM; nx.disabled = month >= lastM;
+    const wk = Array.from({ length: 7 }, (_, i) => new Date(2027, 1, 1 + i, 12).toLocaleDateString(getLang(), { weekday: "narrow" }));
+    const to = st.to || st.from;
+    let h = wk.map(w => `<span class="ag__wd" aria-hidden="true">${esc(w)}</span>`).join("") + "<span></span>".repeat(lead);
+    for (let i = 1; i <= n; i++) {
+      const d = month + "-" + String(i).padStart(2, "0"), evs = EVENTS.filter(e => e.date === d && (!st.clubs.size || st.clubs.has(e.club)));
+      const sel = st.from && d >= st.from && d <= to, edge = d === st.from || d === to;
+      h += `<button type="button" class="ag__d${sel ? " is-sel" : ""}${edge ? " is-edge" : ""}${evs.length ? " is-ev" : ""}${d === today ? " is-today" : ""}" data-d="${d}" ${d < today ? "disabled" : ""} aria-pressed="${!!sel}" aria-label="${esc(fmt(d, { weekday: "long", day: "numeric", month: "long" }))}${evs.length ? " · " + esc(evs.map(e => e.club).join(", ")) : ""}"><b>${i}</b>${evs.length ? `<i aria-hidden="true">${evs.length > 1 ? evs.length : ""}</i>` : ""}</button>`;
+    }
+    $(".ag__grid").innerHTML = h;
+    const nb = $(".ag__notify"); nb.setAttribute("aria-pressed", st.alert); nb.querySelector("span").textContent = st.alert ? t.notifyOn : t.notify; nb.title = st.alert ? t.notifyOff : "";
+    $(".ag__ics span").textContent = t.ics; $(".ag__ics").disabled = !st.from;
+    const fresh = st.alert ? matching().filter(e => !st.seen.has(evKey(e))) : [], fb = $(".ag__fresh");
+    fb.hidden = !fresh.length; if (fresh.length) { fb.querySelector("span").textContent = t.fresh(fresh.length); fb.querySelector("button").textContent = t.see; }
+  }
+  function ics() {
+    const t = tx3(), from = st.from, to = st.to || st.from; if (!from) return;
+    const d = s => s.replace(/-/g, ""), next = s => { const x = day(s); x.setDate(x.getDate() + 1); return iso(x); };
+    const evs = EVENTS.filter(e => e.date >= from && e.date <= to && (!st.clubs.size || st.clubs.has(e.club)));
+    const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Mey Society//Agenda//ES", "CALSCALE:GREGORIAN"];
+    const add = (uid, s, sum, desc) => lines.push("BEGIN:VEVENT", `UID:${uid}@meysociety`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").slice(0, 15)}Z`, `DTSTART;VALUE=DATE:${d(s)}`, `DTEND;VALUE=DATE:${d(next(s))}`, `SUMMARY:${sum.replace(/[,;]/g, " ")}`, `DESCRIPTION:${desc.replace(/[,;]/g, " ")}`, "BEGIN:VALARM", "TRIGGER:-P7D", "ACTION:DISPLAY", `DESCRIPTION:${sum.replace(/[,;]/g, " ")}`, "END:VALARM", "END:VEVENT");
+    for (let x = from; x <= to; x = next(x)) {
+      const es = evs.filter(e => e.date === x);
+      if (es.length) es.forEach(e => add(x + "-" + e.club.replace(/\W/g, ""), x, `${e.club} · ${e.title}`, `${(e.artists || []).join(" · ")} — ${t.icsNote}`));
+      else add(x + "-night", x, `${t.icsTitle}${st.clubs.size ? " · " + [...st.clubs].join(" / ") : ""}`, `${tx().tba} — ${t.icsNote}`);
+    }
+    lines.push("END:VCALENDAR");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([lines.join("\r\n")], { type: "text/calendar" })); a.download = "mey-society-ibiza-2027.ics";
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+  root.addEventListener("click", e => {
+    const nv = e.target.closest("[data-nav]"); if (nv) { month = shiftM(month, +nv.dataset.nav); paintCal(); return; }
+    const c = e.target.closest(".ag__d"); if (!c || c.disabled) return;
+    const d = c.dataset.d;
+    if (!st.from || (st.to && st.to !== st.from) || d < st.from) { st.from = d; st.to = d; } else st.to = d;
+    keep(); paint(); navigator.vibrate?.(4);
+  });
   function paint() {
     const t = tx();
     $(".ag__eyebrow").textContent = t.eyebrow; $(".ag__title").textContent = t.title; $(".ag__em").textContent = t.em; $(".ag__lede").textContent = t.lede;
@@ -150,7 +227,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     });
     root.querySelectorAll("[data-club]").forEach(b => b.setAttribute("aria-pressed", st.clubs.has(b.dataset.club)));
     inFrom.value = st.from; inTo.value = st.to; inFrom.min = today; inTo.min = st.from || today;
-    paintNights();
+    paintNights(); paintCal();
   }
   const message = kind => {
     const t = tx(), dates = st.from ? `${fmt(st.from)}${st.to && st.to !== st.from ? " → " + fmt(st.to) : ""}` : "";
@@ -171,6 +248,9 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     if (a === "day") { clubs.filter(v => v.type === "dayclub").forEach(v => st.clubs.add(v.name)); keep(); paint(); drop(true); $(".ag__panel--nights").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if (a === "clear") { st.clubs.clear(); keep(); paint(); return; }
     if (a === "done") { drop(false); return; }
+    if (a === "notify") { st.alert = !st.alert; if (st.alert) matching().forEach(x => st.seen.add(evKey(x))); keep(); paint(); navigator.vibrate?.(8); return; }
+    if (a === "ics") { ics(); return; }
+    if (a === "fresh") { matching().forEach(x => st.seen.add(evKey(x))); keep(); paint(); $(".ag__panel--nights").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if (a) onSend?.({ kind: a, text: message(a), from: st.from, to: st.to || st.from, clubs: [...st.clubs] });
   });
   root.addEventListener("dblclick", e => { const c = e.target.closest(".ag__club"); if (c) onVenue?.(clubs.find(v => v.name === c.dataset.club)); });
