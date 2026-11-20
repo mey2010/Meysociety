@@ -6,6 +6,7 @@
 import * as THREE from "./vendor/three.module.js";
 import { OrbitControls } from "./vendor/OrbitControls.js";
 import { createLiveTiles } from "./livetiles.js";
+import { hdPack, tileUrl } from "./hd-assets.js";
 
 const BB = { lon0: 1.17, lon1: 1.65, lat0: 38.63, lat1: 39.13 };
 const C = { lon: 1.405, lat: 38.875 };                       // scene origin (between Ibiza and Formentera)
@@ -74,11 +75,38 @@ async function normalTexture(H, scale) {
 let heightsP = null, maskP = null;
 const sharedHeights = onBytes => heightsP || (heightsP = loadHeights("data/height_mdt25.png", onBytes));
 const sharedMask = () => maskP || (maskP = loadGray("data/mask1024.png"));
-export const MAPDATA = { A, B, BB, EXAG, ISLE, LIMIT, toXZ, fromXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow, nextFrame };
+
+// the coastal band the map keeps: the land mask grown outwards and softened (box blur, ~250-300 m), so the water
+// right off every beach and cove stays visible while open sea fades out; returned as a texture (red = band)
+function coastBand(M) {
+  if (M.band) return M.band;
+  const { w, h, g } = M, a = new Float32Array(w * h), b = new Float32Array(w * h);
+  for (let i = 0; i < a.length; i++) a[i] = g[i] > .5 ? 1 : 0;
+  const R = 6, pass = (src, dst, dx, dy) => {
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let s = 0, n = 0; for (let k = -R; k <= R; k++) { const xx = x + k * dx, yy = y + k * dy; if (xx >= 0 && yy >= 0 && xx < w && yy < h) { s += src[yy * w + xx]; n++; } }
+      dst[y * w + x] = s / n; } };
+  pass(a, b, 1, 0); pass(b, a, 0, 1); pass(a, b, 1, 0); pass(b, a, 0, 1);
+  const c = document.createElement("canvas"); c.width = w; c.height = h; const cx = c.getContext("2d"), im = cx.createImageData(w, h);
+  for (let i = 0; i < a.length; i++) { const v = Math.max(g[i] > .5 ? 1 : 0, Math.min(1, a[i] * 3.2)); im.data[i * 4] = im.data[i * 4 + 1] = im.data[i * 4 + 2] = v * 255; im.data[i * 4 + 3] = 255; }
+  cx.putImageData(im, 0, 0);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.NoColorSpace; t.minFilter = t.magFilter = THREE.LinearFilter; t.generateMipmaps = false;
+  return (M.band = t);
+}
+export const MAPDATA = { coastBand, WATERCUT: () => WATERCUT_GLSL, A, B, BB, EXAG, ISLE, LIMIT, toXZ, fromXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow, nextFrame };
 
 /* The photographed sea, as it really is: the aerial photo's own water colours (turquoise over sand, deep blue
    over seagrass, the dark of deep water) are kept near the coast and lifted a little, because under the sun and
    the tone curve the raw photo of open water reads almost black. */
+
+// the map floats on the page with no sea, frame or oval around it: open water (the land mask says so) is dropped,
+// and along the coast every pixel that the aerial photo shows as water is dropped too, so the shoreline is the
+// photograph's own (sand, rock, foam stay), not the 25 m relief's stair-steps
+const WATERCUT_GLSL = `bool WATERCUT(vec3 c, float landM, float y) {
+  // landM here is the coastal band (1 on land and in the water next to it, fading to 0 about 300 m out):
+  // the crystal-clear shallows and the turquoise of every beach stay, open sea dissolves away into the page
+  return landM < .3;   // a clean edge that follows the coastline's shape, ~200 m out
+}`;
 const REALWATER_GLSL = `vec3 REALWATER(vec3 c) {
   float l = dot(c, vec3(.299, .587, .114));
   vec3 vivid = mix(vec3(l), c, 1.3) * 1.2 + vec3(.0, .015, .03);   // shallow water over sand: its own turquoise, a little richer
@@ -122,7 +150,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   // each big texture goes to the graphics card in its own moment, not all together on the first frame
   try { renderer.initTexture(ortho); await yieldNow(); renderer.initTexture(nrm); await yieldNow(); } catch {}
   prog.build = .6; report(); await nextFrame();
-  const maskTex = new THREE.CanvasTexture(M.canvas); maskTex.colorSpace = THREE.NoColorSpace;
+  const maskTex = coastBand(M);
   const isleU = { uIsle: { value: new THREE.Vector4(ISLE.cx, ISLE.cz, ISLE.ax, ISLE.az) } };
 
   // ---- terrain ----
@@ -133,7 +161,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     const pos = g.attributes.position;
     await sliced(pos.count, i => {
       const x = pos.getX(i), z = pos.getZ(i), m = hAt(x, z);
-      pos.setY(i, m > .4 ? m * EXAG / 1000 : -.02 - (1 - maskAt(x, z)) * .5);
+      pos.setY(i, m > .4 ? m * EXAG / 1000 : .0003);   // the sea is not drawn: water areas sit flat at sea level and are cut away
     });
     await yieldNow(); g.computeVertexNormals(); await yieldNow();
     const mat = new THREE.MeshStandardMaterial({ map: ortho, roughness: .93, metalness: 0 });
@@ -141,12 +169,10 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
       sh.uniforms.uNrm = { value: nrm }; sh.uniforms.uIsle = isleU.uIsle; sh.uniforms.uMaskT = { value: maskTex };
       sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWp;")
         .replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.)).xyz;");
-      sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uNrm, uMaskT; uniform vec4 uIsle; varying vec3 vWp;\n" + REALWATER_GLSL)
-        .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>
-          { float landM = texture2D(uMaskT, vMapUv).r;
-            if (vWp.y < -.005 && landM < .06) discard; }  // open sea: the water shader is there`)
+      sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uNrm, uMaskT; uniform vec4 uIsle; varying vec3 vWp;\n" + REALWATER_GLSL + WATERCUT_GLSL)
         .replace("#include <map_fragment>", `#include <map_fragment>
-          { vec3 c = diffuseColor.rgb; float l = dot(c, vec3(.299, .587, .114));
+          { if (WATERCUT(diffuseColor.rgb, texture2D(uMaskT, vMapUv).r, vWp.y)) discard;
+            vec3 c = diffuseColor.rgb; float l = dot(c, vec3(.299, .587, .114));
             c = mix(vec3(l), c, 1.18); c = (c - .5) * 1.06 + .5;
             if (vWp.y < -.005) c = REALWATER(c);
             diffuseColor.rgb = clamp(c, 0., 1.); }`)  // a touch of grade: richer, crisper
@@ -164,12 +190,12 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
       sh.uniforms.uNrm = { value: nrm }; sh.uniforms.uMaskT = { value: maskTex }; sh.uniforms.uA2 = { value: new THREE.Vector4(A.x, A.z, B.x - A.x, B.z - A.z) };
       sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWp;")
         .replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.)).xyz;");
-      sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uNrm, uMaskT; uniform vec4 uA2; varying vec3 vWp;\n" + REALWATER_GLSL)
+      sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uNrm, uMaskT; uniform vec4 uA2; varying vec3 vWp;\n" + REALWATER_GLSL + WATERCUT_GLSL)
         .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>
-          vec2 wuv = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w);
-          if (vWp.y < -.004) discard;`)   // tiles end exactly at the shoreline of the relief (smooth, not the land mask's stair-steps): beyond it is the sea, coloured from the photo
+          vec2 wuv = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w);`)   // tiles end exactly at the shoreline of the relief (smooth, not the land mask's stair-steps): beyond it is the sea, coloured from the photo
         .replace("#include <map_fragment>", `#include <map_fragment>
-          { vec3 c = diffuseColor.rgb; float l = dot(c, vec3(.299, .587, .114)); c = mix(vec3(l), c, 1.1); c = (c - .5) * 1.04 + .5;
+          { if (WATERCUT(diffuseColor.rgb, texture2D(uMaskT, wuv).r, vWp.y)) discard;
+            vec3 c = diffuseColor.rgb; float l = dot(c, vec3(.299, .587, .114)); c = mix(vec3(l), c, 1.1); c = (c - .5) * 1.04 + .5;
             if (vWp.y < -.005) c = REALWATER(c);
             diffuseColor.rgb = clamp(c, 0., 1.); }`)
         .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
@@ -182,7 +208,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     const p0 = toXZ(a, top), p1 = toXZ(b, bot), N = small ? 40 : 64;
     const g = new THREE.PlaneGeometry(p1.x - p0.x, p1.z - p0.z, N, N).rotateX(-Math.PI / 2); g.translate((p0.x + p1.x) / 2, 0, (p0.z + p1.z) / 2);
     const pos = g.attributes.position;
-    for (let k = 0; k < pos.count; k++) { const x = pos.getX(k), z = pos.getZ(k), m = hAt(x, z); pos.setY(k, m > .4 ? m * EXAG / 1000 + .001 : -.025); }  // flat under the water: no walls at the shoreline
+    for (let k = 0; k < pos.count; k++) { const x = pos.getX(k), z = pos.getZ(k), m = hAt(x, z); pos.setY(k, m > .4 ? m * EXAG / 1000 + .001 : .0006); }  // flat under the water: no walls at the shoreline
     const mesh = new THREE.Mesh(g, tileMat(tex)); mesh.receiveShadow = true; mesh.renderOrder = 0; return mesh;
   }
   /* the aerial tiles travel four to a file (2x2 blocks of 2048 px, data/tiles/<bi>_<bj>.webp): each tile is cut out
@@ -191,7 +217,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   const blockOf = (bi, bj) => {
     const k = bi + "_" + bj; let b = blocks.get(k);
     if (!b) {
-      b = { used: 0, img: new Promise((ok, no) => { const im = new Image(); im.decoding = "async"; im.onload = () => ok(im); im.onerror = no; im.src = `data/tiles/${k}.webp`; }) };
+      b = { used: 0, img: tileUrl(k).then(u => new Promise((ok, no) => { const im = new Image(); im.decoding = "async"; im.onload = () => ok(im); im.onerror = no; im.src = u; })) };
       blocks.set(k, b);
       if (blocks.size > 6) { const old = [...blocks.entries()].sort((x, y) => x[1].used - y[1].used)[0]; blocks.delete(old[0]); }
     }
@@ -231,8 +257,9 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     }
   }
   // ---- live street-level photo (IGN PNOA, 25 cm/px) over the bundled tiles when the camera comes down ----
-  const liveTiles = createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, small, bounds: BB,
-    heightAt: (x, z) => { const m = hAt(x, z); return Math.max(.002, m * EXAG / 1000 + .0015); },   // the sea too: the real photographed water, sharp, right to the shore
+  const pack = await hdPack;   // the stored 0.47 m/px photo inside claude.ai; otherwise the IGN photo streamed live
+  const liveTiles = createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, small, bounds: BB, pack,
+    heightAt: (x, z) => { const m = hAt(x, z); return m > .4 ? m * EXAG / 1000 + .0015 : .0009; },
     material: (tex, z) => {
       const m = tileMat(tex); m.polygonOffsetFactor = m.polygonOffsetUnits = -4 - (z - 15) * 2;
       // photographed water reads darker from above than the eye sees it: lifted a little, like the sea further out
@@ -282,7 +309,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
           #include <colorspace_fragment>
         }`,
     }));
-    sea.renderOrder = 1; sea.receiveShadow = false; scene.add(sea);
+    sea.renderOrder = 1; sea.receiveShadow = false;   // (kept for reference, not added: the island floats alone on the page)
   }
 
   // ---- venue pins: HTML markers anchored to the ground ----

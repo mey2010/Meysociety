@@ -7,8 +7,9 @@ import * as THREE from "./vendor/three.module.js";
 import { OrbitControls } from "./vendor/OrbitControls.js";
 import { MAPDATA } from "./map3d.js";
 import { createLiveTiles } from "./livetiles.js";
+import { hdPack } from "./hd-assets.js";
 
-const { A, B, BB, EXAG, ISLE, LIMIT, toXZ, fromXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow } = MAPDATA;
+const { WATERCUT, A, B, BB, EXAG, ISLE, LIMIT, toXZ, fromXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow } = MAPDATA;
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const C_DONE = new THREE.Color("#c856e6"), C_NEXT = new THREE.Color("#b9bde0"), C_TODAY = new THREE.Color("#78c7e4");
 
@@ -26,7 +27,7 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
   const maskAt = (x, z) => { const [u, v] = uvOf(x, z); return bilinear(M.g, M.w, M.h, u, v, 0); };
   const groundY = (x, z) => { const m = hAt(x, z); return m > .4 ? m * EXAG / 1000 : 0; };
   const nrm = await normalTexture(H, small ? .35 : .5);
-  const maskTex = new THREE.CanvasTexture(M.canvas); maskTex.colorSpace = THREE.NoColorSpace;
+  const maskTex = MAPDATA.coastBand(M);
 
   // ---- land: indigo, lit by its own relief, a soft cyan rim along the coast ----
   {
@@ -43,11 +44,13 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
       sh.uniforms.uNrm = { value: nrm }; sh.uniforms.uMaskT = { value: maskTex }; sh.uniforms.uA2 = { value: new THREE.Vector4(A.x, A.z, B.x - A.x, B.z - A.z) };
       sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWp;")
         .replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.)).xyz;");
-      sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uNrm, uMaskT; uniform vec4 uA2; varying vec3 vWp;")
+      sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uNrm, uMaskT; uniform vec4 uA2; varying vec3 vWp;\n" + WATERCUT())
         .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>
           vec2 vUv2 = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); // texture coords from the world position
           float land = texture2D(uMaskT, vUv2).r;
           if (vWp.y < -.005 && land < .5) discard;`)
+        .replace("#include <map_fragment>", `#include <map_fragment>
+          { vec2 vUv3 = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); if (WATERCUT(diffuseColor.rgb, texture2D(uMaskT, vUv3).r, max(vWp.y, 0.))) discard; }`)
         .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
           { vec2 vUv2 = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); vec3 wn = texture2D(uNrm, vUv2).xyz * 2. - 1.; normal = normalize(mat3(viewMatrix) * wn); }`); // (photo-real: no glow)
     };
@@ -64,7 +67,7 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
           #include <colorspace_fragment>
         }`,
     }));
-    sea.position.y = -.03; sea.renderOrder = -1; scene.add(sea);
+    sea.position.y = -.03; sea.renderOrder = -1;   // (not added: the island floats alone, no glow or oval around it)
   }
 
   // ---- camera & controls (same feel as the home map) ----
@@ -77,9 +80,18 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
   const cvs = renderer.domElement;
   let dirty = true, raf = 0, flight = null;
   const wake = () => { dirty = true; if (!raf) raf = requestAnimationFrame(loop); };
-  const liveTiles = createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, small, bounds: BB, onChange: () => wake(),
-    heightAt: (x, z) => Math.max(.002, groundY(x, z) + .0015),
-    material: (tex, z) => new THREE.MeshBasicMaterial({ map: tex, polygonOffset: true, polygonOffsetFactor: -4 - (z - 15) * 2, polygonOffsetUnits: -4 - (z - 15) * 2 }) });
+  const liveTiles = createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, small, bounds: BB, onChange: () => wake(), pack: await hdPack,
+    heightAt: (x, z) => { const m = hAt(x, z); return m > .4 ? m * EXAG / 1000 + .0015 : .0009; },
+    material: (tex, z) => {   // the photo, with the water cut away so the island floats (no squares of sea)
+      const m = new THREE.MeshBasicMaterial({ map: tex, polygonOffset: true, polygonOffsetFactor: -4 - (z - 15) * 2, polygonOffsetUnits: -4 - (z - 15) * 2 });
+      m.onBeforeCompile = sh => {
+        sh.uniforms.uMaskT = { value: maskTex }; sh.uniforms.uA2 = { value: new THREE.Vector4(A.x, A.z, B.x - A.x, B.z - A.z) };
+        sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWp;").replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.)).xyz;");
+        sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uMaskT; uniform vec4 uA2; varying vec3 vWp;\n" + WATERCUT())
+          .replace("#include <map_fragment>", `#include <map_fragment>
+            { vec2 wuv = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); if (WATERCUT(diffuseColor.rgb, texture2D(uMaskT, wuv).r, vWp.y)) discard; }`);
+      };
+      m.customProgramCacheKey = () => "route-live"; return m; } });
   controls.addEventListener("change", wake);
   // the page keeps scrolling over the map; Ctrl/⌘ + wheel (or a trackpad pinch) zooms
   el.addEventListener("wheel", e => { if (e.ctrlKey || e.metaKey) { e.preventDefault(); flight = null; return; } e.stopImmediatePropagation(); }, { capture: true, passive: false });

@@ -11,7 +11,24 @@ const lat2y = (lat, n) => { const r = lat * Math.PI / 180; return (1 - Math.asin
 const x2lon = (x, n) => x / n * 360 - 180;
 const y2lat = (y, n) => Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n))) * 180 / Math.PI;
 
-export function createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, heightAt, material, small = false, onChange, bounds, minZ = 16, maxZ = 19 }) {
+export function createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, heightAt, material, small = false, onChange, bounds, minZ = 16, maxZ = 19, pack = null }) {
+  /* pack: the same photo, pre-cut into 2048 px blocks of 8x8 zoom-18 tiles and stored with the page (inside claude.ai,
+     where outside image hosts are not reachable). { url(bx, by) -> string | null }. Each 1024 px patch is a quarter
+     of a block; the last few blocks stay decoded so neighbouring patches come for free. */
+  const blocks = new Map();
+  // a stored file holds one block, or two side by side (url ending "#0" = left half, "#1" = right half)
+  const blockImg = (bx, by) => {
+    const full = pack.url(bx, by) || "", [u0, half] = full.split("#"), k = u0; let b = blocks.get(k);
+    if (b) b.used = performance.now();
+    const off = half === "1" ? 2048 : 0;
+    if (!b) {
+      const u = u0;
+      b = { used: 0, img: u ? new Promise((ok, no) => { const im = new Image(); im.decoding = "async"; im.onload = () => ok(im); im.onerror = no; im.src = u; }) : Promise.reject(0) };
+      b.img.catch(() => {}); blocks.set(k, b);
+      if (blocks.size > (small ? 4 : 8)) { const old = [...blocks.entries()].sort((x, y) => x[1].used - y[1].used)[0]; blocks.delete(old[0]); }
+    }
+    b.used = performance.now(); return b.img.then(im => ({ im, off }));
+  };
   const live = new Map(), queue = [];
   let inflight = 0, ok = 0, fails = 0, dead = false, last = 0;
   const MAX = small ? 30 : 42, PAR = small ? 6 : 10, N = small ? 24 : 36;
@@ -32,6 +49,17 @@ export function createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, 
 
   function load(e) {
     inflight++;
+    if (pack) {   // a quarter of a stored block
+      blockImg(e.sx >> 1, e.sy >> 1).then(({ im, off }) => {
+        const c = document.createElement("canvas"); c.width = c.height = 1024;
+        c.getContext("2d").drawImage(im, off + (e.sx & 1) * 1024, (e.sy & 1) * 1024, 1024, 1024, 0, 0, 1024, 1024);
+        inflight--; pump(); if (!live.has(e.key) || e.cancel) return; ok++;
+        const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = aniso;
+        tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter; tex.magFilter = THREE.LinearFilter;
+        e.tex = tex; e.mesh = patchMesh(e.z, e.sx, e.sy, tex); e.mesh.visible = e.want; scene.add(e.mesh); onChange?.();
+      }).catch(() => { inflight--; e.failed = true; pump(); });
+      return;
+    }
     // the sharp level gets 1024 px patches; the wider backdrop levels behind it 512 px (they are further away)
     const S = e.sharp ? 256 : 128, c = document.createElement("canvas"); c.width = c.height = S * SUPER; const cx = c.getContext("2d");
     let left = SUPER * SUPER, got = 0;
@@ -53,7 +81,7 @@ export function createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, 
   function pump() {
     if (dead) return;
     queue.sort((a, b) => a.d - b.d);
-    while (inflight < PAR / 2 && queue.length) { const e = queue.shift(); if (!e.cancel && live.has(e.key)) load(e); }   // each patch is 16 requests: two or so at a time
+    while (inflight < (pack ? PAR : PAR / 2) && queue.length) { const e = queue.shift(); if (!e.cancel && live.has(e.key)) load(e); }   // each patch is 16 requests: two or so at a time
   }
   function drop(k, e) { e.cancel = true; if (e.mesh) { scene.remove(e.mesh); e.mesh.geometry.dispose(); e.mesh.material.dispose(); } e.tex?.dispose(); live.delete(k); }
 
@@ -72,13 +100,16 @@ export function createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, 
       const ll = fromXZ(target.x, target.z);
       // the level the screen needs, plus two coarser rings behind it: they cover the whole view out to the haze, so
       // the photographed sea and coast never end in a visible edge, and they fill in first while the sharp ones arrive
-      for (const [lz, R] of [[z, 1], [z - 1, 1], [z - 2, 1]]) {
-        if (lz < minZ - 1) continue;
+      // stored blocks exist at zoom 18 only: shown from the moment the screen needs finer than the bundled tiles
+      const levels = pack ? (z >= 17 ? [[18, small ? 1 : 2]] : []) : [[z, 1], [z - 1, 1], [z - 2, 1]];
+      for (const [lz, R] of levels) {
+        if (!pack && lz < minZ - 1) continue;
         const n = 2 ** lz, cx = Math.floor(lon2x(ll.lon, n) / SUPER), cy = Math.floor(lat2y(ll.lat, n) / SUPER);
         const fx = lon2x(ll.lon, n) / SUPER - cx - .5, fy = lat2y(ll.lat, n) / SUPER - cy - .5;
         for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) {
           const sx = cx + dx, sy = cy + dy;
           if (bounds) { const lon = x2lon(sx * SUPER, n), lat = y2lat(sy * SUPER, n); if (lon > bounds.lon1 || lon + SUPER * 360 / n < bounds.lon0 || lat < bounds.lat0 || y2lat((sy + 1) * SUPER, n) > bounds.lat1) continue; }
+          if (pack && !pack.url(sx >> 1, sy >> 1)) continue;   // open sea: no block stored
           const key = `${lz}/${sx}/${sy}`; wanted.add(key);
           const d = Math.hypot(dx - fx, dy - fy) + (z - lz) * .45;
           let e = live.get(key);
