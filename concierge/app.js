@@ -159,15 +159,24 @@ function startMap() {
   const pct = loader.querySelector("b") || { textContent: "" };
   // the loader is the main logo itself (same coin, relief, edge and halo), filling with colour as the map loads
   { const logo = logoLoader(); if (logo) { loader.replaceChildren(logo); loader.style.setProperty("--p", 0); } }
+  // the liquid always rises at a steady pace: it follows the real progress when that is ahead, and never stops to wait
+  let mapTarget = 0, mapReady = false, mapShown = 0;
+  (function rise() {
+    if (!loader.isConnected) return;
+    mapShown = Math.min(mapReady ? 1 : .97, mapShown + Math.max((mapTarget - mapShown) * .1, mapReady ? .03 : .006));
+    loader.style.setProperty("--p", mapShown.toFixed(3));
+    if (mapReady && mapShown >= 1) { setTimeout(() => { loader.classList.add("is-done"); setTimeout(() => loader.remove(), 700); }, 350); return; }
+    requestAnimationFrame(rise);
+  })();
   load3D().then(m => m.initMap3D(mapEl, {
     venues: VENUES, mapJson: MAP,
     onPick: (v) => { closeList(); openPop(v); },
     onList: (list, anchor) => openList(list, anchor),
     onEmpty: () => { closePop(); closeList(); },
-    onProgress: p => { pct.textContent = p; loader.setAttribute("aria-valuenow", p); loader.style.setProperty("--p", (p / 100).toFixed(3)); },
+    onProgress: p => { pct.textContent = p; loader.setAttribute("aria-valuenow", p); mapTarget = Math.max(mapTarget, p / 100); },
   })).then(m => {
     map3dReal = m; window.__map3d = m; mapQueue.splice(0).forEach(([k, a]) => m[k](...a));
-    pct.textContent = 100; loader.style.setProperty("--p", 1); setTimeout(() => { loader.classList.add("is-done"); setTimeout(() => loader.remove(), 700); }, 450);
+    pct.textContent = 100; mapTarget = 1; mapReady = true;
   }).catch(err => { console.error(err); loader.classList.add("is-error"); });
 }
 new IntersectionObserver((es, io) => { if (es.some(e => e.isIntersecting)) { io.disconnect(); startMap(); } }, { rootMargin: "900px 0px" }).observe(mapEl);
@@ -381,7 +390,7 @@ const TURN = 1400;
   setTimeout(finish, 6000);
   (function tick(now) {
     // never jumps: the colour climbs toward what has really arrived, and keeps creeping while it waits
-    shown += Math.min(.06, (Math.min(target, done ? 1 : .96) - shown) * .16 + (done ? 0 : .002)); shown = Math.min(1, shown);   // at most ~1.4 s from grey to full colour: the turn is always seen whole
+    { const k = Math.min(1, (now - t0) / (TURN * .92)); shown = Math.max(shown, k * k * (3 - 2 * k)); }   // the liquid rises steadily over one turn and never stalls halfway; if the page is still on its way, the full logo keeps turning
     splash.style.setProperty("--p", shown.toFixed(3));
     if (done && shown > .995 && now - t0 > TURN * .96 && (now - t0) % TURN > TURN * .94) { splash.style.setProperty("--p", 1); setTimeout(() => { splash.classList.add("is-out"); document.documentElement.classList.remove("is-splash"); setTimeout(() => splash.remove(), 700); }, 380); return; }
     requestAnimationFrame(tick);
