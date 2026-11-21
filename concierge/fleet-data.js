@@ -13,6 +13,7 @@ export const FLEET_TYPES = [
   ["catamaran", "Catamarán"],
   ["moto-agua", "Motos de agua"],
   ["juguete", "Juguetes acuáticos"],
+  ["villa", "Villas"],
   ["coche", "Coches"],
   ["transfer", "Transfers"],
 ];
@@ -26,6 +27,7 @@ export const TYPE_NOTE = {
   "gran-yate": "Yate de gran eslora con tripulación profesional.",
   "superyate": "Superyate con tripulación completa, para el día o para dormir a bordo.",
   "catamaran": "Catamarán a vela: estable, espacioso y tranquilo.",
+  "villa": "Villa privada con licencia turística: toca la casa para ver su tour completo.",
   "juguete": "Juguete acuático: te lo llevamos a tu barco o a la playa, con monitor cuando hace falta.",
   "moto-agua": "Moto de agua: tour guiado con monitor, o alquiler si tienes titulación.",
   "coche": "Coche de alquiler entregado donde estés, por días o por semanas.",
@@ -147,6 +149,8 @@ export const FLEET = [
   { id: "hoverboard", type: "juguete", name: "Hoverboard", crew: "Con monitor", incl: ["Tabla voladora de propulsión acuática", "En tu barco, en Ibiza o Formentera", "Sesiones por persona"], photos: 4 },
   { id: "flyride", type: "juguete", name: "Flyride", crew: "Con monitor", incl: ["Asiento volador de propulsión acuática", "Para quien quiere volar sin hacer equilibrios", "En tu barco, en Ibiza o Formentera"], photos: 4 },
   { id: "wakeboard", type: "juguete", name: "Wakeboard", crew: "Remolcado por tu barco", incl: ["Tabla, fijaciones y cabo", "Entre el snowboard y el esquí acuático", "Para tu día de barco"], photos: 4 },
+  // ---- villas (their own gallery; tapping one opens its own page) ----
+  { id: "villa-aura", type: "villa", name: "Villa Aura", crew: "Tour completo en vídeo", photos: 1 },
   { id: "lamborghini-huracan", type: "coche", name: "Lamborghini Huracán", photos: 1, img: "data/services/coches.webp" },
   { id: "mercedes-v-250", type: "transfer", name: "Mercedes-Benz V 250", pax: 7, crew: "Chófer privado", incl: ["Up to 7 pers.", "Asientos de piel enfrentados", "Espacio para el equipaje", "Aire acondicionado"], photos: 2 },
 ];

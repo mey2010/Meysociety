@@ -669,7 +669,8 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
     if (value === "transfer-all") { SM.set(false); setTimeout(() => openFleet("transfer"), 260); return; }
     if (value.startsWith("transfer-")) { SM.set(false); setTimeout(() => transferPage.open(+value.slice(9)), 300); return; }   // the transfer page, with the group size already chosen
     if (value === "coches-all") { SM.set(false); setTimeout(() => openFleet("coche"), 260); return; }   // the cars' gallery
-    if (value === "villa-aura" || value === "villas-ver") { SM.set(false); setTimeout(() => document.querySelector("[data-villa-tour]")?.click(), 300); return; }   // straight into the tour
+    if (value === "villas-ver") { SM.set(false); setTimeout(() => openFleet(VILLA), 260); return; }   // the villas' gallery
+    if (value === "villa-aura") { SM.set(false); setTimeout(() => document.querySelector("[data-villa-tour]")?.click(), 300); return; }   // straight into the tour   // straight into the tour
     if (value === "todos") { SM.set(false); scrollToEl(document.getElementById("servicios")); return; }   // the services section itself
     const sec = SVC_TREE.find(s => s.value === value || s.children?.some(k => k.value === value));
     select(sec.svc, true);
@@ -1441,9 +1442,9 @@ const fleet = document.getElementById("fleet"), fleetInfo = document.getElementB
 document.getElementById("fleetClose").innerHTML = ICONS.close;
 document.getElementById("fleetPrev").innerHTML = ICONS.left; document.getElementById("fleetNext").innerHTML = ICONS.right;
 const cardSrc = b => blobPick(b.img || `data/fleet/card/${b.id}.webp`), fullSrc = (b, k) => blobPick(`data/fleet/4k/${b.id}-${k}.webp`);
-const JET = "moto-agua", TOY = "juguete", SOLO = [JET, TOY, "coche", "transfer"];   // groups shown as their own fleet, apart from the boats
+const JET = "moto-agua", TOY = "juguete", VILLA = "villa", SOLO = [JET, TOY, VILLA, "coche", "transfer"];   // groups shown as their own fleet, apart from the boats
 const BOATS = FLEET.filter(b => !SOLO.includes(b.type)), JETS = FLEET.filter(b => b.type === JET);
-const typeIcon = ty => ty === JET || ty === TOY ? ICONS.jetski : ty === "coche" ? ICONS.car : ty === "transfer" ? ICONS.van : ICONS.boat;
+const typeIcon = ty => ty === VILLA ? ICONS.villa : ty === JET || ty === TOY ? ICONS.jetski : ty === "coche" ? ICONS.car : ty === "transfer" ? ICONS.van : ICONS.boat;
 let ribbon = null, fleetCat = "all", fleetBase = BOATS, fleetList = BOATS;
 const fleetItems = () => fleetList.map(b => ({ ...b, src: cardSrc(b), title: t(b.name), tag: t(CAT_LABEL[b.type]), whole: b.type === "moto-agua" || b.type === TOY || b.type === "transfer" }));   // jet skis are cut-outs: shown whole, not cropped
 const paxText = b => b.pax ? `${t("Hasta")} ${b.pax} ${t("personas")}` : "";
@@ -1451,7 +1452,7 @@ function renderFleetInfo(b, i) {
   if (!b) return;
   fleetInfo.innerHTML = `<h3>${b.name}</h3>
     <ul class="fleet__specs"><li>${typeIcon(b.type)}${t(CAT_LABEL[b.type])}</li>${b.len ? `<li>${ICONS.ruler}${b.len}</li>` : ""}${b.pax ? `<li>${ICONS.users2}${paxText(b)}</li>` : ""}${b.crew ? `<li>${ICONS.helm}${t(b.crew)}</li>` : ""}</ul>
-    <div class="fleet__actions"><button class="btn btn--glass btn--onDark btn--sm" type="button" data-sheet>${t("Ver ficha")}</button><button class="btn btn--primary btn--sm" type="button" data-ask>${t("Pedir disponibilidad")}</button></div>`;
+    <div class="fleet__actions"><button class="btn btn--glass btn--onDark btn--sm" type="button" data-sheet>${t(b.type === VILLA ? "Ver la villa" : "Ver ficha")}</button><button class="btn btn--primary btn--sm" type="button" data-ask>${t("Pedir disponibilidad")}</button></div>`;
   fleetInfo.classList.remove("is-swap"); void fleetInfo.offsetWidth; fleetInfo.classList.add("is-swap");
   document.getElementById("fleetCount").textContent = `${String(i + 1).padStart(2, "0")} / ${String(fleetList.length).padStart(2, "0")}`;
 }
@@ -1465,6 +1466,8 @@ function setFleetCat(cat) {
 }
 function openFleet(cat = "all", brand = "") {
   fleet.hidden = false; document.body.style.overflow = "hidden";
+  { const [eb, tt] = cat === VILLA ? ["Villas privadas · Ibiza", "Nuestras villas"] : ["Barcos y yates · Ibiza", "Nuestra flota"];   // the gallery's own title
+    fleet.querySelector(".fleet__top .eyebrow").textContent = t(eb); document.getElementById("fleetTitle").textContent = t(tt); }
   const TOY_GROUP = { motor: ["fliteboard", "jetsurf", "radinn", "seabob-f5s", "scubajet"], vuelo: ["flyboard", "hoverboard", "flyride"] };
   const solo = SOLO.includes(cat); fleetBase = solo ? FLEET.filter(b => b.type === cat && (!brand || (TOY_GROUP[brand] ? TOY_GROUP[brand].includes(b.id) : b.name.startsWith(brand)))) : BOATS; if (solo) cat = "all";
   // only the types that have boats, each with its count (jet skis, cars and transfers are one group each: no chips)
@@ -1486,7 +1489,7 @@ function openFleet(cat = "all", brand = "") {
 function closeFleet() { fleet.hidden = true; document.body.style.overflow = ""; }
 function askFleet(b) {
   if (openWA([b.name, t(CAT_LABEL[b.type]), b.len, b.pax ? paxText(b) : ""].filter(Boolean).join(" · "), "flota")) return;
-  closeBoat(); closeFleet(); select({ [JET]: "motos", [TOY]: "motos", coche: "coches", transfer: "transfers" }[b.type] || "yates", true);
+  closeBoat(); closeFleet(); select({ [JET]: "motos", [TOY]: "motos", [VILLA]: "villas", coche: "coches", transfer: "transfers" }[b.type] || "yates", true);
   document.getElementById("f-notes").value = `${t("Me interesa")}: ${b.name}${b.len ? " · " + b.len : ""} (${t(CAT_LABEL[b.type])}).`;
   scrollToEl(document.getElementById("contacto"));
 }
@@ -1505,6 +1508,7 @@ function showShot(k) {
   sheet.querySelectorAll(".boat__thumbs button").forEach((x, i) => x.setAttribute("aria-current", i + 1 === shot));
 }
 function openBoat(b) {
+  if (b?.type === VILLA) { closeFleet(); setTimeout(() => window.__villaTours?.[b.id]?.(), 120); return; }   // a villa opens its own page
   if (!b) return; if (b !== boatNow) track("view_item", { item_category: "barco", item_name: b.name || "" }); boatNow = b; shot = 1; sheet.classList.toggle("boat--whole", b.type === "moto-agua" || b.type === TOY || b.type === "transfer");
   const row = (label, v) => v ? `<div><dt>${t(label)}</dt><dd>${v}</dd></div>` : "";
   sheet.innerHTML = `<div class="boat__card">
@@ -1787,6 +1791,7 @@ document.querySelectorAll(".stack__card").forEach(card => {
     scrollToEl(document.getElementById("contacto"));
   } });
   document.addEventListener("click", e => { if (e.target.closest("[data-villa-tour]")) { e.preventDefault(); track("villa_tour_open", { villa: "Aura" }); tour.open(); } });
+  window.__villaTours = { "villa-aura": () => { track("villa_tour_open", { villa: "Aura" }); tour.open(); } };   // each villa in the gallery opens its own page
 }
 
 /* "Ver condiciones" under the gift ladder: the guestlist terms open in a window over the form (a new tab is blocked
