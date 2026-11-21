@@ -246,6 +246,8 @@ document.getElementById("popBook").addEventListener("click", () => {
 /* =====================================================================
    SIGNAL TYPE — the name flickers on like a neon sign, then idles
    ===================================================================== */
+// the loading screen ends by flying its logo into the page; the neon name strikes on once it has landed
+{ let over; window.__afterSplash = new Promise(ok => { over = ok; }); window.__splashOver = () => over(); setTimeout(over, 9000); }
 {
   const h = document.getElementById("signal"), intro = h.closest(".intro"), text = h.textContent;
   h.innerHTML = [...text].map(c => c === " " ? '<span class="sp"> </span>' : `<span class="ch" aria-hidden="true">${c}</span>`).join("");
@@ -255,7 +257,7 @@ document.getElementById("popBook").addEventListener("click", () => {
   else {
     // each letter strikes on at its own moment, stutters 2-4 times, then holds
     let done = 0;
-    chars.forEach((c, i) => {
+    window.__afterSplash.then(() => chars.forEach((c, i) => {
       const start = 80 + Math.random() * 650 + (i === chars.length - 1 ? 300 : 0); /* the name lights up quickly: it is the first thing people wait for */ let t = start;
       const flips = 2 + Math.floor(Math.random() * 3);
       for (let k = 0; k < flips; k++) {
@@ -263,7 +265,7 @@ document.getElementById("popBook").addEventListener("click", () => {
         setTimeout(() => { c.classList.remove("on"); c.classList.add("dim"); }, t); t += 50 + Math.random() * 140;
       }
       setTimeout(() => { c.classList.add("on"); c.classList.remove("dim"); if (++done === chars.length) lit(); }, t);
-    });
+    }));
     // a tube that hiccups now and then
     (function idle() {
       setTimeout(() => {
@@ -373,32 +375,46 @@ function logoLoader(px = 130) {
     const c = el.classList, k = c.contains("asm__plate") ? 0 : c.contains("asm__screw") ? 1 : c.contains("asm__panel") ? 2 : c.contains("asm__face") ? 3 : c.contains("asm__ring") ? 4 : c.contains("asm__let") ? 5 : c.contains("asm__bezel") ? 6 : 7;
     return { el, k, side: c.contains("asm__let--side"), top: c.contains("asm__let--top") };
   });
-  // seated depth of each part (px), and where it waits in the exploded view (in logo widths along the axis)
+  /* choreography, per part (plate, screws, panel, face, ring, letters, bezel):
+     HOME: seated depth (px/size)   OUT: where it waits in the exploded view, along the axis (logo widths)
+     DX/DY: a sideways offset it glides in from (an arc, never a straight push)   ROT: the turn it unwinds as it comes
+     TILT: how far off-square it floats, levelling as it seats   START: when it sets off (share of the load) */
   const HOME = [-.075, -.09, -.05, -.02, .012, .03, .018, .045], OUT = [-1.05, -1.5, -.62, -.2, .28, .75, 1.25, 0];
-  const START = [0, .06, .14, .26, .38, .5, .62, 1];
-  const easeOut = x => 1 - Math.pow(1 - x, 3), settle = x => { x = Math.min(1, Math.max(0, x)); const s = 1.35; return 1 + (s + 1) * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2); };
-  const smooth = x => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
+  const DX = [-.10, 0, .12, -.06, .16, -.12, .22, 0], DY = [.08, 0, -.10, .05, -.12, .10, -.06, 0];
+  const ROT = [-24, 0, 38, 0, 120, -18, -150, 0], TILT = [-14, 0, 18, -8, 26, -20, 32, 0];
+  const START = [0, .07, .15, .27, .38, .5, .6, 1], DUR = .38;
+  const clamp = x => Math.min(1, Math.max(0, x));
+  const easeOut = x => 1 - Math.pow(1 - x, 3), expo = x => x >= 1 ? 1 : 1 - Math.pow(2, -10 * x);
+  const settle = x => { x = clamp(x); const s = 1.2; return 1 + (s + 1) * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2); };   // arrives with a soft seat
+  const smoother = x => { x = clamp(x); return x * x * x * (x * (x * 6 - 15) + 10); };
   let shown = 0, doneAt = 0, mid = 0, readyAt = 0; const t0 = performance.now(), imgs = [...cam.querySelectorAll("img")];
+  const landed = new Map(); box.__spin = 0; box.__lift = 0;
   box.querySelectorAll(".asm__p").forEach(e => { e.style.opacity = 0; });
   (function frame(now) {
     if (!box.isConnected && now - t0 > 3000) return;
     // nothing moves until every part has arrived (inside claude.ai some come from the asset store a beat later)
     if (!readyAt) { if (imgs.every(i => i.complete && i.naturalWidth) || now - t0 > 2500) readyAt = now; else { requestAnimationFrame(frame); return; } }
     const host = box.parentElement, want = host ? parseFloat(host.style.getPropertyValue("--p")) || 0 : 0;
-    shown += (Math.min(want, (now - readyAt) / 1500) - shown) * .14; if (want >= 1 && shown > .995) shown = 1;
-    const q = shown, cq = smooth(q * 1.05), drift = Math.sin((now - t0) / 1400) * 3 * (1 - cq);
-    // camera: three-quarter view, a touch from above, drifting; swings round to face-on as the parts come home
-    cam.style.transform = `scale(${(.62 + .38 * easeOut(cq)).toFixed(4)}) rotateX(${(14 * (1 - cq) + drift * .4).toFixed(2)}deg) rotateY(${(-58 * (1 - cq) + drift).toFixed(2)}deg) translateZ(${(-mid).toFixed(2)}px)`;   // turning about the middle of the parts keeps the whole group centred
+    shown += (Math.min(want, (now - readyAt) / 1700) - shown) * .12; if (want >= 1 && shown > .995) shown = 1;
+    const q = shown, cq = smoother(q), life = (now - t0) / 1000, calm = 1 - cq;
+    // camera: a slow crane from a high three-quarter view down to face-on, with a breath of hand-held drift that dies away
+    const ry = -64 * calm + Math.sin(life * 1.3) * 4 * calm + box.__spin, rx = 18 * calm + Math.sin(life * .9 + 1) * 2 * calm, roll = -6 * calm;
+    cam.style.transform = `translateY(${(-box.__lift).toFixed(2)}px) scale(${(.56 + .44 * easeOut(cq)).toFixed(4)}) rotateZ(${roll.toFixed(2)}deg) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translateZ(${(-mid).toFixed(2)}px)`;   // turning about the middle of the parts keeps the group centred
     let zsum = 0, zn = 0;
-    P.forEach((p, i) => {
-      if (p.k === 7) return;
-      const f = settle((q - START[p.k]) / .34), lin = Math.min(1, Math.max(0, (q - START[p.k]) / .34));
-      let z = (OUT[p.k] + (HOME[p.k] - OUT[p.k]) * f) * S, extra = "";
+    P.forEach(p => {
+      const k = p.k; if (k === 7) return;
+      const lin = clamp((q - START[k]) / DUR), e = expo(lin), f = settle(lin), off = 1 - e;
+      let z = (OUT[k] + (HOME[k] - OUT[k]) * f) * S, extra = "";
       if (p.side || p.top) { const j = p.top ? 4 : P.filter(o => o.side).indexOf(p); z += j * .007 * S; }
-      if (p.k === 1) extra = ` rotate(${p.el.style.getPropertyValue("--a")}) translateY(${(-.31 * S).toFixed(1)}px) rotateZ(${((1 - lin) * 900).toFixed(0)}deg)`;
-      p.el.style.transform = `translateZ(${z.toFixed(2)}px)${extra}`; if (p.k !== 1) { zsum += z; zn++; }
-      p.el.style.opacity = Math.min(1, Math.max(0, (now - readyAt - p.k * 45) / 380)).toFixed(3);   // the parts appear one after the other, already apart
-      const blur = (1 - lin) * Math.abs(OUT[p.k]) * .9;   // the ones far from the focus plane are a little soft p.el.style.filter = p.side ? "" : blur > .05 ? `blur(${blur.toFixed(2)}px)` : "";
+      if (k === 1) extra = ` rotate(${p.el.style.getPropertyValue("--a")}) translateY(${(-.31 * S).toFixed(1)}px) rotateZ(${((1 - lin) * 1080).toFixed(0)}deg)`;   // the screws drive home
+      const arc = Math.sin(lin * Math.PI) * .06 * S;   // a gentle lift over the middle of the travel
+      p.el.style.transform = `translate3d(${(DX[k] * S * off).toFixed(2)}px, ${(DY[k] * S * off - arc * (DY[k] < 0 ? 1 : -1) * (k === 1 ? 0 : 1)).toFixed(2)}px, ${z.toFixed(2)}px) rotateY(${(TILT[k] * off).toFixed(2)}deg) rotateX(${(TILT[k] * .45 * off).toFixed(2)}deg) rotateZ(${(ROT[k] * off).toFixed(2)}deg)${extra}`;
+      if (k !== 1) { zsum += z; zn++; }
+      p.el.style.opacity = clamp((now - readyAt - k * 55) / 420).toFixed(3);   // the parts appear one after the other, already apart
+      // depth of field on the parts still travelling, and a glint of light the moment each one seats
+      if (lin >= 1 && !landed.has(p.el)) landed.set(p.el, now);
+      const glow = landed.has(p.el) ? Math.exp(-(now - landed.get(p.el)) / 220) : 0, blur = (1 - lin) * Math.abs(OUT[k]) * 1.1;
+      p.el.style.filter = p.side ? "" : [blur > .05 ? `blur(${blur.toFixed(2)}px)` : "", glow > .02 ? `brightness(${(1 + glow * .45).toFixed(3)})` : ""].join(" ").trim();
     });
     mid = zn ? zsum / zn : 0;
     if (q >= 1 && !doneAt) { doneAt = now; box.classList.add("is-built"); }
@@ -420,12 +436,29 @@ const TURN = 1400; window.__logoLoader = logoLoader;
   const finish = () => { if (done) return; done = true; target = 1; };
   (document.readyState === "complete" ? Promise.resolve() : new Promise(ok => addEventListener("load", ok, { once: true }))).then(finish);
   setTimeout(finish, 6000);
+  // the hand-off: the finished logo leaves the loading screen and flies, with one turn, to where the page's own logo
+  // rests; the white behind it melts away on the way, so the page is simply there when it lands. No second page.
+  function land() {
+    const fl = document.querySelector("a.flylogo"), end = () => { splash.remove(); document.documentElement.classList.remove("is-splash"); window.__splashOver(); };
+    const to = fl?.getBoundingClientRect(), from = logo?.getBoundingClientRect();
+    if (!fl || !logo || !to?.width || REDUCED) { splash.classList.add("is-out"); fl?.classList.add("is-handed"); setTimeout(end, 650); return; }
+    const dx = to.left + to.width / 2 - (from.left + from.width / 2), dy = to.top + to.height / 2 - (from.top + from.height / 2), k = to.width / from.width;
+    const DUR = 1150, t1 = performance.now(), io = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    splash.classList.add("is-landing");
+    (function step(now) {
+      const t = Math.min(1, (now - t1) / DUR), e = io(t), lift = Math.sin(Math.PI * t) * Math.min(90, Math.abs(dy) * .35 + 30);
+      logo.style.transform = `translate(${(dx * e).toFixed(2)}px, ${(dy * e - lift).toFixed(2)}px) scale(${(1 + (k - 1) * e).toFixed(4)})`;
+      logo.__spin = 360 * e;
+      if (t > .86 && !fl.classList.contains("is-handed")) { fl.classList.add("is-handed"); logo.classList.add("is-handing"); }   // the page's logo takes over in the last few frames
+      if (t < 1) requestAnimationFrame(step); else setTimeout(end, 260);
+    })(t1);
+  }
   (function tick(now) {
     // the build keeps moving while the page loads (pushed on by what has really arrived, never standing still) and
     // the last part only seats when the page is ready; never faster than a short, readable sequence (~1.6 s)
     { const t = now - t0, creep = .92 * (1 - Math.exp(-t / 900)); shown = done ? Math.min(1, shown + Math.max((1 - shown) * .18, .025)) : Math.max(shown + .0008, Math.min(.95, Math.max(creep, target * .95))); shown = Math.min(done ? 1 : .97, shown, t / 1600); }
     splash.style.setProperty("--p", shown.toFixed(3));
-    if (done && shown >= 1 && (!logo || logo.classList.contains("is-built") || now - t0 > 7000)) { splash.style.setProperty("--p", 1); setTimeout(() => { splash.classList.add("is-out"); document.documentElement.classList.remove("is-splash"); setTimeout(() => splash.remove(), 700); }, 700); return; }
+    if (done && shown >= 1 && (!logo || logo.classList.contains("is-built") || now - t0 > 7000)) { splash.style.setProperty("--p", 1); setTimeout(land, 380); return; }
     requestAnimationFrame(tick);
   })(t0);
 }

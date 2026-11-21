@@ -2682,9 +2682,14 @@ html[data-theme="light"] .qs:not(.is-dark) .qs__cta:not(.qs__cta--main) { color:
 .map3d__logoin .flylogo__coin::before, .map3d__logoin .flylogo__coin::after, .map3d__logoin .flylogo__back::before, .map3d__logoin .flylogo__back::after { opacity: calc(var(--p) * .9); }
 
 /* page loading screen: the main logo fills with colour and turns once */
-.splash { --p: 0; position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: #ffffff; transition: opacity 650ms var(--ease), visibility 0s linear 650ms; }
+.splash { --p: 0; position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background-color: #ffffff; transition: opacity 650ms var(--ease), visibility 0s linear 650ms, background-color 900ms cubic-bezier(.4, 0, .2, 1); }
 .splash.is-out { opacity: 0; visibility: hidden; pointer-events: none; }
-html[data-theme="dark"] .splash { background: #0b0930; }
+html[data-theme="dark"] .splash { background-color: #0b0930; }
+.splash.is-landing, html[data-theme="dark"] .splash.is-landing { background-color: transparent; pointer-events: none; }
+.splash.is-landing .asm__shadow { opacity: 0; transition: opacity 400ms; }
+.splash .asm { will-change: transform; transform-origin: 50% 50%; }
+.splash .asm.is-handing { opacity: 0; transition: opacity 240ms ease; }
+.flylogo.is-handed { opacity: 1 !important; transition: opacity 240ms ease !important; }
 html.is-splash, html.is-splash body { overflow: hidden; }
 
 
