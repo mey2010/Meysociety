@@ -377,7 +377,7 @@ function logoLoader(px = 130) {
     // never jumps: the colour climbs toward what has really arrived, and keeps creeping while it waits
     shown += Math.min(.022, (Math.min(target, done ? 1 : .96) - shown) * .08 + (done ? 0 : .0008)); shown = Math.min(1, shown);   // at most ~1.4 s from grey to full colour: the turn is always seen whole
     splash.style.setProperty("--p", shown.toFixed(3));
-    if (done && shown > .995 && now - t0 > 1300) { splash.style.setProperty("--p", 1); setTimeout(() => { splash.classList.add("is-out"); document.documentElement.classList.remove("is-splash"); setTimeout(() => splash.remove(), 700); }, 380); return; }
+    if (done && shown > .995 && now - t0 > 1600 && (now - t0) % 1600 > 1540) { splash.style.setProperty("--p", 1); setTimeout(() => { splash.classList.add("is-out"); document.documentElement.classList.remove("is-splash"); setTimeout(() => splash.remove(), 700); }, 380); return; }
     requestAnimationFrame(tick);
   })(t0);
 }
