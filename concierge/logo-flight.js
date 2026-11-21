@@ -6,6 +6,7 @@ import { holo } from "./holo.js";
 
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeOut = t => 1 - Math.pow(1 - t, 2.2);   // starts moving immediately (the in-out curve sat still for the first part of the scroll)
 const clamp01 = v => Math.min(1, Math.max(0, v));
 const TRAIL = ["120,199,228", "171,80,219", "200,86,230", "106,47,133"]; // cyan → violet → magenta → plum
 
@@ -73,7 +74,7 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
     else {
       // adaptive follow: the further the page has run ahead (a fast scroll), the stiffer the spring
       for (let rem = dt; rem > 0; rem -= 1 / 240) {
-        const h = Math.min(rem, 1 / 240), gap = scrollY - S.sy, w = 12 + Math.min(14, Math.abs(gap) / 60);
+        const h = Math.min(rem, 1 / 240), gap = scrollY - S.sy, w = 34 + Math.min(20, Math.abs(gap) / 50);   // stiff: the coin moves with the very first pixel of scroll
         S.sv += (w * w * gap - 2 * w * S.sv) * h; S.sy += S.sv * h;
       }
       if (Math.abs(scrollY - S.sy) < .25 && Math.abs(S.sv) < 2) { S.sy = scrollY; S.sv = 0; } else busy = true;
@@ -83,7 +84,7 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
     else {
       // the flight itself has a top speed and a bounded acceleration, so even a violent flick plays out as one
       // clean toss (about 0.7 s at most speed) instead of a jump; slow scrolls stay 1:1 under the finger
-      const prev = S.kd, wk = 10, VMAX = 2.2, AMAX = 16;
+      const prev = S.kd, wk = 26, VMAX = 4, AMAX = 80;
       for (let rem = dt; rem > 0; rem -= 1 / 240) {
         const h = Math.min(rem, 1 / 240), acc = Math.max(-AMAX, Math.min(AMAX, wk * wk * (p - S.kd) - 2 * wk * S.kv));
         S.kv = Math.max(-VMAX, Math.min(VMAX, S.kv + acc * h)); S.kd += S.kv * h;
@@ -95,7 +96,7 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
       const ws = 11; for (let rem = dt; rem > 0; rem -= 1 / 240) { const h = Math.min(rem, 1 / 240); S.spinV += (ws * ws * (S.spinTo - S.spin) - 2 * ws * S.spinV) * h; S.spin += S.spinV * h; }
       if (Math.abs(S.spinTo - S.spin) > .05 || Math.abs(S.spinV) > .05) busy = true; else { S.spin = S.spinTo; S.spinV = 0; }
     }
-    const kd = clamp01(S.kd), k = ease(kd), { x, y, size } = at(k), sc = size / start.size;
+    const kd = clamp01(S.kd), k = easeOut(kd), { x, y, size } = at(k), sc = size / start.size;   // ease-out: it answers at once, then glides into the header
     const docked = clamp01(S.kd) > .995 && p > .995;
     if (docked !== S.docked) { S.docked = docked; fly.classList.toggle("is-docked", docked); }
     fly.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${sc.toFixed(4)})`;

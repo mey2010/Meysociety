@@ -5,6 +5,9 @@ import { createDepthRibbon } from "./depth-ribbon.js";
 import { FLEET, FLEET_TYPES, TYPE_NOTE } from "./fleet-data.js";
 import { initVillaTour, readingStops } from "./villa-tour.js";
 import { initFormenteraTour } from "./fx-tour.js";
+import { initChefPage } from "./chef.js";
+import { initTransferPage } from "./transfer.js";
+import { pick as blobPick } from "./fleet-blob.js";
 import { initAgenda } from "./agenda.js";
 import { initPlanner, CLUBS as CLUB_MUSIC } from "./planner.js";
 import { holo } from "./holo.js";
@@ -630,16 +633,23 @@ const SVC_TREE = [
     { value: "barcos-gran-yate", label: "Grandes yates", icon: "helm" }, { value: "barcos-superyate", label: "Superyate", icon: "crown" },
     { value: "barcos-catamaran", label: "Catamarán", icon: "helm" } ] },
   { label: "Motos de agua", svc: "motos", children: [
+    { value: "motos-all", label: "Ver toda la flota", icon: "jetski" },
     { value: "motos-sin-licencia", label: "Sin licencia", icon: "badge" }, { value: "motos-seadoo", label: "Sea-Doo", icon: "jetski" }, { value: "motos-yamaha", label: "Yamaha", icon: "jetski" } ] },
   { label: "Villas", svc: "villas", children: [
+    { value: "villas-ver", label: "Ver algunas villas", icon: "villa" },
     { value: "villa-aura", label: "Villa Aura", icon: "villa" }, { value: "villa-moli", label: "Villa Molí", icon: "villa2" } ] },
   { label: "Coches y motos", svc: "coches", children: [
+    { value: "coches-all", label: "Ver toda la flota", icon: "car" },
     { value: "coches-150", label: "Hasta 150 €/día", icon: "car" }, { value: "coches-300", label: "150 – 300 €/día", icon: "car2" },
     { value: "coches-600", label: "300 – 600 €/día", icon: "car3" }, { value: "coches-lujo", label: "Más de 600 €/día", icon: "crown" },
     { value: "motos-scooter", label: "Motos y scooters", icon: "moto" } ] },
+  { label: "Juguetes acuáticos", svc: "motos", children: [
+    { value: "juguetes-all", label: "Ver todos los juguetes", icon: "jetski" },
+    { value: "juguetes-motor", label: "Tablas a motor y eFoil", icon: "boat" }, { value: "juguetes-vuelo", label: "Vuelo sobre el agua", icon: "star" } ] },
   { label: "Transfers", svc: "transfers", children: [
-    { value: "transfer-2-4", label: "2 – 4 personas", icon: "users" }, { value: "transfer-6-7", label: "6 – 7 personas", icon: "van" },
-    { value: "transfer-8-9", label: "8 – 9 personas", icon: "bus" }, { value: "transfer-10-13", label: "10 – 13 personas", icon: "bus2" } ] },
+    { value: "transfer-all", label: "Ver toda la flota", icon: "van" },
+    { value: "transfer-7", label: "Up to 7 pers.", icon: "users" }, { value: "transfer-8", label: "Up to 8 pers.", icon: "van" },
+    { value: "transfer-12", label: "Up to 12 pers.", icon: "bus" } ] },
   { label: "Clubs", svc: "noche", children: [
     { value: "clubs-vip", label: "Mesas VIP", icon: "star" }, { value: "clubs-guestlist", label: "Guestlist", icon: "users" } ] },
   { label: "Chefs", value: "chefs", svc: "dining", icon: "chef" },
@@ -654,7 +664,12 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
     if (value.startsWith("motos-") && value !== "motos-scooter") { const brand = { "motos-seadoo": "Sea-Doo", "motos-yamaha": "Yamaha" }[value]; SM.set(false); setTimeout(() => openFleet("moto-agua", brand), 260); return; }   // jet skis: straight to their gallery (Sea-Doo / Yamaha: only that brand)   // jet skis: straight to their gallery
     if (value.startsWith("barcos-")) { const k = value.slice(7); SM.set(false); setTimeout(() => openFleet(k === "all" ? "open" : k), 260); return; }   // "Toda la flota" opens on the open boats; the other tabs stay one tap away
     if (value === "formentera") { SM.set(false); setTimeout(() => fxTour.open(), 300); return; }   // straight into the excursion page
-    if (value === "villa-aura") { SM.set(false); setTimeout(() => document.querySelector("[data-villa-tour]")?.click(), 300); return; }   // straight into the tour
+    if (value === "chefs") { SM.set(false); setTimeout(() => chefPage.open(), 300); return; }   // the private chef's page   // straight into the excursion page
+    if (value.startsWith("juguetes-")) { const g = value.slice(9); SM.set(false); setTimeout(() => openFleet(TOY, g === "all" ? "" : g), 260); return; }   // the water toys' gallery
+    if (value === "transfer-all") { SM.set(false); setTimeout(() => openFleet("transfer"), 260); return; }
+    if (value.startsWith("transfer-")) { SM.set(false); setTimeout(() => transferPage.open(+value.slice(9)), 300); return; }   // the transfer page, with the group size already chosen
+    if (value === "coches-all") { SM.set(false); setTimeout(() => openFleet("coche"), 260); return; }   // the cars' gallery
+    if (value === "villa-aura" || value === "villas-ver") { SM.set(false); setTimeout(() => document.querySelector("[data-villa-tour]")?.click(), 300); return; }   // straight into the tour
     if (value === "todos") { SM.set(false); scrollToEl(document.getElementById("servicios")); return; }   // the services section itself
     const sec = SVC_TREE.find(s => s.value === value || s.children?.some(k => k.value === value));
     select(sec.svc, true);
@@ -1357,6 +1372,7 @@ const REVIEWS = [
   { src: "data/reviews/pool-party.webp", thumb: "data/reviews/pool-party.webp", title: "Pool party de día", subtitle: "" },
   { src: "data/reviews/bmw-volante.webp", thumb: "data/reviews/bmw-volante.webp", title: "Al volante por Ibiza", subtitle: "" },
   { type: "video", src: "data/reviews/cueva-barco.mp4", ringSrc: "data/reviews/cueva-barco-ring.mp4", poster: "data/reviews/cueva-barco.webp", posterThumb: "data/reviews/cueva-barco.webp", title: "En barco hasta la cueva", subtitle: "" },
+  { src: "data/reviews/amg-volante.webp", thumb: "data/reviews/amg-volante.webp", title: "Mercedes-AMG por la autovía", subtitle: "" },
   { src: "data/reviews/villa-infinity.webp", thumb: "data/reviews/villa-infinity.webp", title: "Piscina infinita en la villa", subtitle: "" },
   { src: "data/reviews/ushuaia-noche.webp", thumb: "data/reviews/ushuaia-noche.webp", title: "Noche en Ushuaïa", subtitle: "" },
 ];
@@ -1422,12 +1438,12 @@ const CAT_LABEL = Object.fromEntries(FLEET_TYPES);
 const fleet = document.getElementById("fleet"), fleetInfo = document.getElementById("fleetInfo"), fleetChips = document.getElementById("fleetChips");
 document.getElementById("fleetClose").innerHTML = ICONS.close;
 document.getElementById("fleetPrev").innerHTML = ICONS.left; document.getElementById("fleetNext").innerHTML = ICONS.right;
-const cardSrc = b => b.img || `data/fleet/card/${b.id}.webp`, fullSrc = (b, k) => `data/fleet/4k/${b.id}-${k}.webp`;
-const JET = "moto-agua", SOLO = [JET, "coche", "transfer"];   // groups shown as their own fleet, apart from the boats
+const cardSrc = b => blobPick(b.img || `data/fleet/card/${b.id}.webp`), fullSrc = (b, k) => blobPick(`data/fleet/4k/${b.id}-${k}.webp`);
+const JET = "moto-agua", TOY = "juguete", SOLO = [JET, TOY, "coche", "transfer"];   // groups shown as their own fleet, apart from the boats
 const BOATS = FLEET.filter(b => !SOLO.includes(b.type)), JETS = FLEET.filter(b => b.type === JET);
-const typeIcon = ty => ty === JET ? ICONS.jetski : ty === "coche" ? ICONS.car : ty === "transfer" ? ICONS.van : ICONS.boat;
+const typeIcon = ty => ty === JET || ty === TOY ? ICONS.jetski : ty === "coche" ? ICONS.car : ty === "transfer" ? ICONS.van : ICONS.boat;
 let ribbon = null, fleetCat = "all", fleetBase = BOATS, fleetList = BOATS;
-const fleetItems = () => fleetList.map(b => ({ ...b, src: cardSrc(b), title: t(b.name), tag: t(CAT_LABEL[b.type]), whole: b.type === "moto-agua" }));   // jet skis are cut-outs: shown whole, not cropped
+const fleetItems = () => fleetList.map(b => ({ ...b, src: cardSrc(b), title: t(b.name), tag: t(CAT_LABEL[b.type]), whole: b.type === "moto-agua" || b.type === TOY || b.type === "transfer" }));   // jet skis are cut-outs: shown whole, not cropped
 const paxText = b => b.pax ? `${t("Hasta")} ${b.pax} ${t("personas")}` : "";
 function renderFleetInfo(b, i) {
   if (!b) return;
@@ -1438,17 +1454,24 @@ function renderFleetInfo(b, i) {
   document.getElementById("fleetCount").textContent = `${String(i + 1).padStart(2, "0")} / ${String(fleetList.length).padStart(2, "0")}`;
 }
 function setFleetCat(cat) {
-  fleetCat = FLEET_TYPES.some(([k]) => k === cat) ? cat : "all"; fleetList = fleetCat === "all" ? fleetBase : fleetBase.filter(b => b.type === fleetCat);
+  const isBrand = fleetBase.some(b => b.type === JET && b.name.startsWith(cat + " "));
+  fleetCat = isBrand || FLEET_TYPES.some(([k]) => k === cat) ? cat : "all";
+  fleetList = fleetCat === "all" ? fleetBase : isBrand ? fleetBase.filter(b => b.name.startsWith(cat + " ")) : fleetBase.filter(b => b.type === fleetCat);
   fleetChips.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.cat === fleetCat));
   ribbon.setItems(fleetItems());
   document.querySelector(".fleet__nav").classList.toggle("is-single", fleetList.length < 2);   // one boat: nothing to step through
 }
 function openFleet(cat = "all", brand = "") {
   fleet.hidden = false; document.body.style.overflow = "hidden";
-  const solo = SOLO.includes(cat); fleetBase = solo ? FLEET.filter(b => b.type === cat && (!brand || b.name.startsWith(brand))) : BOATS; if (solo) cat = "all";
+  const TOY_GROUP = { motor: ["fliteboard", "jetsurf", "radinn", "seabob-f5s", "scubajet"], vuelo: ["flyboard", "hoverboard", "flyride"] };
+  const solo = SOLO.includes(cat); fleetBase = solo ? FLEET.filter(b => b.type === cat && (!brand || (TOY_GROUP[brand] ? TOY_GROUP[brand].includes(b.id) : b.name.startsWith(brand)))) : BOATS; if (solo) cat = "all";
   // only the types that have boats, each with its count (jet skis, cars and transfers are one group each: no chips)
-  fleetChips.hidden = solo;
-  fleetChips.innerHTML = FLEET_TYPES.filter(([k]) => k === "all" || fleetBase.some(b => b.type === k))
+  // jet skis: one chip per brand (Sea-Doo and Yamaha never share a group); cars and transfers: no chips
+  const brands = cat === "all" && solo && fleetBase[0]?.type === JET && !brand ? [...new Set(fleetBase.map(b => b.name.split(" ")[0]))] : [];
+  fleetChips.hidden = solo && brands.length < 2;
+  fleetChips.innerHTML = brands.length > 1
+    ? [["all", t("Todas"), fleetBase.length], ...brands.map(n => [n, n, fleetBase.filter(b => b.name.startsWith(n)).length])].map(([k, l, c]) => `<button type="button" data-cat="${k}" aria-pressed="${k === "all"}">${l} <small>${c}</small></button>`).join("")
+    : FLEET_TYPES.filter(([k]) => k === "all" || fleetBase.some(b => b.type === k))
     .map(([k, l]) => `<button type="button" data-cat="${k}" aria-pressed="${k === cat}">${t(l)} <small>${k === "all" ? fleetBase.length : fleetBase.filter(b => b.type === k).length}</small></button>`).join("");
   if (!ribbon) ribbon = createDepthRibbon(document.getElementById("fleetRibbon").appendChild(document.createElement("div")), {
     items: [], label: t("Nuestra flota"),
@@ -1461,7 +1484,7 @@ function openFleet(cat = "all", brand = "") {
 function closeFleet() { fleet.hidden = true; document.body.style.overflow = ""; }
 function askFleet(b) {
   if (openWA([b.name, t(CAT_LABEL[b.type]), b.len, b.pax ? paxText(b) : ""].filter(Boolean).join(" · "), "flota")) return;
-  closeBoat(); closeFleet(); select({ [JET]: "motos", coche: "coches", transfer: "transfers" }[b.type] || "yates", true);
+  closeBoat(); closeFleet(); select({ [JET]: "motos", [TOY]: "motos", coche: "coches", transfer: "transfers" }[b.type] || "yates", true);
   document.getElementById("f-notes").value = `${t("Me interesa")}: ${b.name}${b.len ? " · " + b.len : ""} (${t(CAT_LABEL[b.type])}).`;
   scrollToEl(document.getElementById("contacto"));
 }
@@ -1480,7 +1503,7 @@ function showShot(k) {
   sheet.querySelectorAll(".boat__thumbs button").forEach((x, i) => x.setAttribute("aria-current", i + 1 === shot));
 }
 function openBoat(b) {
-  if (!b) return; if (b !== boatNow) track("view_item", { item_category: "barco", item_name: b.name || "" }); boatNow = b; shot = 1; sheet.classList.toggle("boat--whole", b.type === "moto-agua");
+  if (!b) return; if (b !== boatNow) track("view_item", { item_category: "barco", item_name: b.name || "" }); boatNow = b; shot = 1; sheet.classList.toggle("boat--whole", b.type === "moto-agua" || b.type === TOY || b.type === "transfer");
   const row = (label, v) => v ? `<div><dt>${t(label)}</dt><dd>${v}</dd></div>` : "";
   sheet.innerHTML = `<div class="boat__card">
     <button class="lightbox__close boat__close" type="button" data-close aria-label="${t("Cerrar")}">${ICONS.close}</button>
@@ -1813,6 +1836,9 @@ const MEY = (() => {
       gl: `Con cada servicio que reservas te regalamos guestlists: 1 con un servicio, 3 con dos y 4 o más con tres. Y si traes amigos, sumas más. Sujetas a disponibilidad del club, mayores de 18.`,
       dj: `Un DJ profesional con una sesión diseñada para ti, en tu villa, barco o evento privado. Dime qué música os gusta y la fecha.`,
       chef: `Chef privado en tu villa, con menú a tu medida. Dime cuántos sois y si hay alergias, y te paso propuestas.`,
+      jetsHp: (n, k) => `Con ${n} CV o más tengo ${k} ${k === 1 ? "moto" : "motos"} listas para ti. Si es tu primera vez, vas con monitor; con titulación, libre las horas que quieras.`,
+      toys: k => `Tengo ${k} juguetes acuáticos y te los llevo a tu barco o a la playa: seabob, eFoil, jetsurf, flyboard y más. ¿Para cuántos y qué día?`,
+      miss: `No lo veo en la web, pero lo más probable es que pueda conseguirlo. Escríbeme por WhatsApp contándome qué buscas, para cuántos y qué día, y te respondo enseguida.`,
       none: `Cuéntame un poco más y te lo resuelvo: ¿cuántos sois, qué fechas y qué os apetece?`,
       ask: "Pedir disponibilidad", seeFleet: "Ver flota", seeAgenda: "Ver agenda de clubs", seeVilla: "Ver Villa Aura", seeFx: "Ver excursión", thinking: "Mey está pensando…", askAi: "Preguntar a Mey", pax: n => `${n} pers.`,
       v4: "un Mercedes para hasta 4", v7: "un Mercedes Clase V de 7 plazas", v9: "una furgoneta de 8–9 plazas", v13: "un minibús de 10–13 plazas", vbig: "varios vehículos coordinados" },
@@ -1832,6 +1858,9 @@ const MEY = (() => {
       gl: `With every service you book you get complimentary guestlists: 1 with one service, 3 with two, 4 or more with three. Bring friends and you get more. Subject to club availability, 18+.`,
       dj: `A professional DJ with a set designed for you, at your villa, on a boat or at a private event. Tell me your music and the date.`,
       chef: `A private chef at your villa with a bespoke menu. Tell me how many you are and any allergies, and I'll send ideas.`,
+      jetsHp: (n, k) => `With ${n} hp or more I have ${k} ${k === 1 ? "jet ski" : "jet skis"} ready for you. First time? You ride with an instructor; with a licence, free for the hours you want.`,
+      toys: k => `I have ${k} water toys and bring them to your boat or the beach: Seabob, eFoil, jetsurf, flyboard and more. For how many and which day?`,
+      miss: `I can't see it on the site, but I can most likely get it. Message me on WhatsApp with what you're after, for how many and which day, and I'll reply right away.`,
       none: `Tell me a bit more and I'll sort it: how many of you, what dates and what do you fancy?`,
       ask: "Ask for availability", seeFleet: "See the fleet", seeAgenda: "See club agenda", seeVilla: "See Villa Aura", seeFx: "See the excursion", thinking: "Mey is thinking…", askAi: "Ask Mey", pax: n => `${n} ppl`,
       v4: "a Mercedes for up to 4", v7: "a 7-seat Mercedes V-Class", v9: "an 8–9 seat van", v13: "a 10–13 seat minibus", vbig: "several coordinated vehicles" },
@@ -1851,6 +1880,9 @@ const MEY = (() => {
       gl: `Con ogni servizio prenotato ti regaliamo guestlist: 1 con un servizio, 3 con due, 4 o più con tre. E se porti amici, ne aggiungi altre. Soggette a disponibilità del club, maggiorenni.`,
       dj: `Un DJ professionista con un set pensato per te, in villa, in barca o al tuo evento privato. Dimmi la musica e la data.`,
       chef: `Chef privato in villa con menù su misura. Dimmi quanti siete e le allergie, e ti mando proposte.`,
+      jetsHp: (n, k) => `Con ${n} CV o più ho ${k} moto d'acqua pronte per te. Prima volta? Vai con istruttore; con patente, libero per le ore che vuoi.`,
+      toys: k => `Ho ${k} giochi d'acqua e te li porto in barca o in spiaggia: Seabob, eFoil, jetsurf, flyboard e altro. Per quanti e che giorno?`,
+      miss: `Non lo vedo sul sito, ma molto probabilmente posso trovarlo. Scrivimi su WhatsApp cosa cerchi, per quanti e che giorno, e ti rispondo subito.`,
       none: `Raccontami un po' di più e lo risolvo: quanti siete, che date e cosa vi va di fare?`,
       ask: "Chiedi disponibilità", seeFleet: "Vedi la flotta", seeAgenda: "Vedi agenda club", seeVilla: "Vedi Villa Aura", seeFx: "Vedi l'escursione", thinking: "Mey sta pensando…", askAi: "Chiedi a Mey", pax: n => `${n} pers.`,
       v4: "una Mercedes fino a 4", v7: "una Mercedes Classe V da 7 posti", v9: "un van da 8–9 posti", v13: "un minibus da 10–13 posti", vbig: "più veicoli coordinati" },
@@ -1870,6 +1902,9 @@ const MEY = (() => {
       gl: `Avec chaque service réservé, nous offrons des guestlists : 1 avec un service, 3 avec deux, 4 ou plus avec trois. Et si vous amenez des amis, vous en gagnez plus. Selon disponibilité du club, 18 ans et plus.`,
       dj: `Un DJ professionnel avec un set pensé pour vous, à la villa, sur un bateau ou à votre événement privé. Dites-moi votre musique et la date.`,
       chef: `Un chef privé à la villa avec un menu sur mesure. Dites-moi combien vous êtes et vos allergies, je vous envoie des idées.`,
+      jetsHp: (n, k) => `Avec ${n} ch ou plus, j'ai ${k} jet-skis prêts pour vous. Première fois ? Vous partez avec un moniteur ; avec permis, libres les heures que vous voulez.`,
+      toys: k => `J'ai ${k} jouets nautiques et je les apporte à votre bateau ou à la plage : Seabob, eFoil, jetsurf, flyboard et plus. Pour combien et quel jour ?`,
+      miss: `Je ne le vois pas sur le site, mais je peux très probablement l'obtenir. Écrivez-moi sur WhatsApp ce que vous cherchez, pour combien et quel jour, et je vous réponds tout de suite.`,
       none: `Dites-m'en un peu plus et je m'en occupe : combien êtes-vous, quelles dates et qu'avez-vous envie de faire ?`,
       ask: "Demander la disponibilité", seeFleet: "Voir la flotte", seeAgenda: "Voir l'agenda des clubs", seeVilla: "Voir Villa Aura", seeFx: "Voir l'excursion", thinking: "Mey réfléchit…", askAi: "Demander à Mey", pax: n => `${n} pers.`,
       v4: "une Mercedes jusqu'à 4", v7: "un Mercedes Classe V 7 places", v9: "un van 8–9 places", v13: "un minibus 10–13 places", vbig: "plusieurs véhicules coordonnés" },
@@ -1889,6 +1924,9 @@ const MEY = (() => {
       gl: `Mit jedem gebuchten Service schenken wir dir Guestlists: 1 bei einem Service, 3 bei zwei, 4 oder mehr bei drei. Und wenn du Freunde mitbringst, gibt es mehr. Je nach Verfügbarkeit des Clubs, ab 18.`,
       dj: `Ein professioneller DJ mit einem Set nur für dich, in der Villa, an Bord oder bei deinem privaten Event. Sag mir eure Musik und das Datum.`,
       chef: `Ein Privatkoch in deiner Villa mit Menü nach Maß. Sag mir, wie viele ihr seid und ob es Allergien gibt, und ich schicke dir Vorschläge.`,
+      jetsHp: (n, k) => `Mit ${n} PS oder mehr habe ich ${k} Jetskis für dich bereit. Zum ersten Mal? Du fährst mit Guide; mit Führerschein frei für die gewünschten Stunden.`,
+      toys: k => `Ich habe ${k} Wasserspielzeuge und bringe sie zu deinem Boot oder an den Strand: Seabob, eFoil, Jetsurf, Flyboard und mehr. Für wie viele und an welchem Tag?`,
+      miss: `Ich sehe es nicht auf der Seite, aber ich kann es sehr wahrscheinlich besorgen. Schreib mir auf WhatsApp, was du suchst, für wie viele und an welchem Tag, und ich antworte sofort.`,
       none: `Erzähl mir ein bisschen mehr und ich kümmere mich: Wie viele seid ihr, welche Daten und worauf habt ihr Lust?`,
       ask: "Verfügbarkeit anfragen", seeFleet: "Flotte ansehen", seeAgenda: "Club-Agenda ansehen", seeVilla: "Villa Aura ansehen", seeFx: "Ausflug ansehen", thinking: "Mey denkt nach…", askAi: "Mey fragen", pax: n => `${n} Pers.`,
       v4: "ein Mercedes für bis zu 4", v7: "eine Mercedes V-Klasse mit 7 Sitzen", v9: "ein Van mit 8–9 Sitzen", v13: "ein Minibus mit 10–13 Sitzen", vbig: "mehrere abgestimmte Fahrzeuge" },
@@ -1907,8 +1945,18 @@ function meyAgent(qRaw) {
   const genres = Object.keys(GENRES).filter(g => GENRES[g].test(q));
   if (has(/precio|cuanto cuesta|cuanto vale|tarifa|price|cost|how much|prezzo|quanto costa|prix|combien|preis|kostet|€|euros?/)) { out.text = es.price; out.ctas = ["ask"]; return out; }
   if (has(/guest ?list|lista de invitad|cortesia|regalo|gratis|free entry|ingresso/)) { out.text = es.gl; out.ctas = ["ask"]; return out; }
-  if (has(/moto(s)? de agua|jet ?ski|moto d.acqua|wasserski|wassermotorrad|sea-?doo|scooter des mers/)) {
-    const js = FLEET.filter(b => b.type === "moto-agua"); out.cards = js.map(boatCard); out.text = es.jets(js.length); out.ctas = ["ask", "fleet:moto-agua"]; out.services = ["motos"]; return out; }
+  if (has(/moto(s)? de agua|jet ?ski|moto d.acqua|wasserski|wassermotorrad|sea-?doo|yamaha|waverunner|scooter des mers/) || (has(/\bmotos?\b/) && has(/\d{2,3}\s*(cv|hp|ps|ch|caballos)|potencia|potente|power/))) {
+    let js = FLEET.filter(b => b.type === "moto-agua");
+    if (has(/yamaha/)) js = js.filter(b => /yamaha/i.test(b.name)); else if (has(/sea-?doo/)) js = js.filter(b => /sea-doo/i.test(b.name));
+    const hp = q.match(/(\d{2,3})\s*(cv|hp|ps|ch|caballos|horsepower)/) || (has(/potencia|potente|power|potenza|puissan|leistung|rapid|fast|veloz/) ? [0, m ? m[1] : "300"] : null);
+    const pw = b => +((b.extra || b.name).match(/(\d{2,3})\s*CV/i)?.[1] || b.name.match(/\b(\d{2,3})\b/)?.[1] || 0);
+    if (hp) { const min = +hp[1]; const fit = js.filter(b => pw(b) >= min).sort((a, b) => pw(b) - pw(a)); const list = fit.length ? fit : js.slice().sort((a, b) => pw(b) - pw(a)).slice(0, 4);
+      out.cards = list.map(b => ({ ...boatCard(b), sub: [pw(b) ? pw(b) + " CV" : "", b.pax && x.pax(b.pax)].filter(Boolean).join(" · ") })); out.text = es.jetsHp(min, fit.length || list.length); }
+    else { out.cards = js.map(boatCard); out.text = es.jets(FLEET.filter(b => b.type === "moto-agua").length); }
+    out.ctas = ["ask", "fleet:moto-agua"]; out.services = ["motos"]; return out; }
+  if (has(/juguete|seabob|efoil|e-foil|foil|fliteboard|jetsurf|jet surf|radinn|jetboard|scubajet|flyboard|hoverboard|flyride|wakeboard|water ?toy|giochi d.acqua|jouets? nautique|wasserspielzeug|tabla electrica|surf a motor/)) {
+    let ts = FLEET.filter(b => b.type === "juguete"); const named = ts.filter(b => q.includes(f(b.name).split(" ")[0])); if (named.length) ts = named;
+    out.cards = ts.map(boatCard); out.text = es.toys(FLEET.filter(b => b.type === "juguete").length); out.ctas = ["ask", "fleet:juguete"]; out.services = ["motos"]; return out; }
   if (has(/barc|yat|lanch|catamar|velero|boat|yacht|bateau|barca|boot|superyate|charter|navegar/) || (nolic && !has(/coche|car/))) {
     let pool = BOATS.slice();
     if (nolic) pool = pool.filter(b => b.type === "sin-licencia");
@@ -1989,7 +2037,7 @@ Fleet:\n${fleet}\nClubs and their usual music: ${clubs}.`;
     document.querySelectorAll("main > section[id]").forEach(sec => { const h = sec.querySelector("h2, .display"); if (h) add(t("Sección"), txt(h), txt(sec.querySelector(".eyebrow")), () => scrollToEl(sec)); });
     const snaps = [...document.querySelectorAll(".stack__snap:not(.stack__snap--edge)")];
     document.querySelectorAll(".stack__card").forEach((c, i) => add(t("Servicio"), txt(c.querySelector("h3")), txt(c.querySelector(".stack__body")), () => scrollToEl(snaps[i] || c)));
-    FLEET.forEach(b => add(t(CAT_LABEL[b.type]), b.name, [b.len, b.cabins && t(b.cabins), b.extra, t("Flota")].join(" "), () => openBoat(b)));
+    FLEET.forEach(b => add(t(CAT_LABEL[b.type]), b.name, [b.len, b.cabins && t(b.cabins), b.extra, b.extra && /CV/.test(b.extra) ? "potencia power hp caballos" : "", b.pax ? `${b.pax} personas pax people` : "", b.port, (b.incl || []).map(t).join(" "), b.crew && t(b.crew), t(TYPE_NOTE[b.type] || ""), t("Flota")].join(" "), () => openBoat(b)));
     VENUES.forEach(v => add(t(KIND[v.type] || "Mapa"), v.name, v.area, () => {
       scrollToEl(document.getElementById("mapa")); startMap(); map3d.flyToVenue(v); setTimeout(() => openPop(v), 1100);
     }));
@@ -1997,12 +2045,12 @@ Fleet:\n${fleet}\nClubs and their usual music: ${clubs}.`;
     document.querySelectorAll(".pack").forEach(p => { const h = p.querySelector("h3"); if (h) add(t("Paquete"), txt(h), txt(p), () => scrollToEl(p)); });
     return out;
   };
-  const SUGGEST = ["Barco para 9 personas", "Moto de agua sin licencia", "Club de techno", "Transfer desde el aeropuerto para 6", "¿Cómo funcionan las guestlists?", "Villa con piscina"];
+  const SUGGEST = ["Barco para 9 personas", "Moto de agua de 300 CV", "Moto de agua sin licencia", "Club de techno", "Transfer desde el aeropuerto para 6", "¿Cómo funcionan las guestlists?", "Villa con piscina"];
   // ---- the assistant's answer: instant from the engine, or written by Claude for open questions ----
   const ai = box.querySelector(".qs__ai"), say = ai.querySelector(".qs__say"), cardsEl = ai.querySelector(".qs__cards"), ctasEl = ai.querySelector(".qs__ctas");
   let last = null, aiCtl = null, sampleP = null;
   const getSample = () => sampleP || (sampleP = (window.claude?.use ? claude.use("sample") : Promise.resolve(null)).catch(() => null));
-  const CTA = { "pack:": () => MEY.lx().seePack, ask: () => MEY.lx().ask, "fleet:open": () => MEY.lx().seeFleet, "fleet:moto-agua": () => MEY.lx().seeFleet, "fleet:coche": () => MEY.lx().seeFleet, agenda: () => MEY.lx().seeAgenda, villa: () => MEY.lx().seeVilla, fx: () => MEY.lx().seeFx };
+  const CTA = { "pack:": () => MEY.lx().seePack, ask: () => MEY.lx().ask, "fleet:open": () => MEY.lx().seeFleet, "fleet:moto-agua": () => MEY.lx().seeFleet, "fleet:juguete": () => MEY.lx().seeFleet, "fleet:coche": () => MEY.lx().seeFleet, agenda: () => MEY.lx().seeAgenda, villa: () => MEY.lx().seeVilla, fx: () => MEY.lx().seeFx };
   function showAnswer(ans, who = "") {
     last = ans; ai.hidden = !ans; if (!ans) return;
     ai.querySelector(".qs__who small").textContent = who;
@@ -2045,15 +2093,23 @@ ${local ? `Options the website already found for this request (mention the best 
   }
   let shown = [], sel = 0;
   const render = () => {
-    const q = fold(input.value).trim(), terms = q.split(/\s+/).filter(Boolean);
+    const q = fold(input.value).trim().replace(/(\d)(cv|hp|ps|ch|m|pax)\b/g, "$1 $2"), terms = q.split(/\s+/).filter(Boolean);
     chips.hidden = !!q; hint.hidden = true;
     aiCtl?.abort(); showAnswer(q.length > 2 ? meyAgent(input.value) : null);
     if (!terms.length) { list.replaceChildren(); return; }
-    shown = index.filter(r => terms.every(w => r.hay.includes(w)))
+    const STOP = new Set("de del la el los las un una unos unas para por con sin en y o a al que me mi quiero busco necesito hay tienes teneis for the a an with to of in i want need is are per con il lo un una le la les des du pour avec ich will mit fur ein eine der die das".split(" "));
+    const SYN = { coche: "coche car auto voiture", car: "coche car", moto: "moto jet ski", jet: "moto jet", barco: "barco boat yate yacht lancha", boat: "barco boat yate", yate: "yate yacht barco", potencia: "cv hp", caballos: "cv", hp: "cv hp", cv: "cv hp", villa: "villa casa", taxi: "transfer", chofer: "transfer", aeropuerto: "transfer aeropuerto airport", cena: "chef cocina", comida: "chef cocina", chef: "chef cocina" };
+    // typo-tolerant: one slip in a short word, two in a long one ("lamborgini" still finds the Lamborghini)
+    const lev = (a, b, max) => { if (Math.abs(a.length - b.length) > max) return max + 1; let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+      for (let i = 1; i <= a.length; i++) { const cur = [i]; let low = i; for (let j = 1; j <= b.length; j++) { cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); low = Math.min(low, cur[j]); } if (low > max) return max + 1; prev = cur; } return prev[b.length]; };
+    const near = (w, hay) => w.length > 3 && hay.split(" ").some(h => h.length > 3 && lev(w, h, w.length >= 8 ? 2 : 1) <= (w.length >= 8 ? 2 : 1));
+    const key = terms.filter(w => !STOP.has(w));
+    const hit = (r, w) => r.hay.includes(w) || (SYN[w] || "").split(" ").some(sw => sw && r.hay.includes(sw)) || near(w, r.hay);
+    shown = index.filter(r => key.length && key.every(w => hit(r, w)))
       .map(r => ({ r, s: (r.t.startsWith(q) ? 4 : 0) + (r.t.includes(q) ? 2 : 0) + (terms.every(w => r.t.includes(w)) ? 1 : 0) }))
       .sort((a, b) => b.s - a.s || a.r.title.length - b.r.title.length).slice(0, 14).map(x => x.r);
     sel = 0;
-    if (!shown.length) { list.replaceChildren(); if (!last) { hint.hidden = false; hint.textContent = t("Pulsa Enter y Mey te responde."); } return; }
+    if (!shown.length) { list.replaceChildren(); if (!last && q.length > 2) showAnswer({ text: MEY.lx().miss, cards: [], ctas: ["ask"], services: [] }); else if (!last) { hint.hidden = false; hint.textContent = t("Pulsa Enter y Mey te responde."); } return; }
     list.innerHTML = shown.map((r, i) => `<li role="option" id="qs-${i}" aria-selected="${i === 0}"><button type="button" data-i="${i}"><span class="qs__t"></span><span class="qs__k"></span></button></li>`).join("");
     list.querySelectorAll("li").forEach((li, i) => { li.querySelector(".qs__t").textContent = shown[i].title; li.querySelector(".qs__k").textContent = shown[i].kind; });
   };
@@ -2158,6 +2214,22 @@ const fxTour = initFormenteraTour({ onBook: () => {
   document.getElementById("f-notes").value = `${t("Me interesa")}: Formentera Experience.`;
   setTimeout(() => scrollToEl(document.getElementById("contacto")), 120);
 } });
+/* Transfers: why a private driver in Ibiza, and the request form (from, to, day, time, group, luggage, return) */
+const transferPage = initTransferPage({ onSend: ({ text, from, people }) => {
+  select("transfers", true); track("transfer_request", { people });
+  if (openWA(text, "transfer")) return;
+  document.getElementById("f-notes").value = text;
+  setTimeout(() => scrollToEl(document.getElementById("contacto")), 120);
+} });
+document.addEventListener("click", e => { if (e.target.closest("[data-transfer-page]")) { e.preventDefault(); track("transfer_open", {}); transferPage.open(); } });
+/* Alta cocina: the private chef's page, from the card ("Conocer a la chef") or the menu */
+const chefPage = initChefPage({ onBook: ({ kind, text }) => {
+  select("dining", true); track("chef_book", { kind });
+  if (openWA(text, "chef_privada")) return;
+  document.getElementById("f-notes").value = text + ".";
+  setTimeout(() => scrollToEl(document.getElementById("contacto")), 120);
+} });
+document.addEventListener("click", e => { if (e.target.closest("[data-chef-page]")) { e.preventDefault(); track("chef_open", {}); chefPage.open(); } });
 document.addEventListener("click", e => { if (e.target.closest("[data-fx-tour]")) { e.preventDefault(); track("formentera_open", {}); fxTour.open(); } });
 
 /* the plan or the agenda request goes to the concierge: straight into WhatsApp when the number is set, otherwise the
