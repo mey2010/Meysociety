@@ -252,6 +252,8 @@
         <button type="button" class="filter" data-kind="club" aria-pressed="true"><i class="dot dot--club"></i>Nightclubs <b data-count="club"></b></button>
         <button type="button" class="filter" data-kind="beachclub" aria-pressed="true"><i class="dot dot--beachclub"></i>Beach clubs <b data-count="beachclub"></b></button>
         <button type="button" class="filter" data-kind="beach" aria-pressed="true"><i class="dot dot--beach"></i>Playas <b data-count="beach"></b></button>
+        <button type="button" class="filter" data-kind="restaurant" aria-pressed="true"><i class="dot dot--restaurant"></i>Restaurantes <b data-count="restaurant"></b></button>
+        <button type="button" class="filter" data-kind="sunset" aria-pressed="true"><i class="dot dot--sunset"></i>Atardeceres <b data-count="sunset"></b></button>
       </div>
     </div>
     <div class="map map3d" id="map" aria-label="Mapa 3D de Ibiza y Formentera con clubs, beach clubs y playas">
@@ -276,6 +278,8 @@
           <p class="pop__kind" id="popKind"></p>
           <h3 id="popTitle"></h3>
           <p class="pop__info" id="popInfo"></p>
+          <p class="pop__sun" id="popSun" hidden></p>
+          <ul class="pop__tags" id="popTags"></ul>
           <p class="pop__coord" id="popCoord"></p>
           <button class="btn btn--primary" type="button" id="popBook">Reservar con Mey Society</button>
           <p class="pop__fine">Sujeto a disponibilidad de cada sala.</p>

@@ -137,7 +137,6 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     <ul class="ag__feat" role="list">${FEAT.map(f => `<li><button type="button" class="ag__fcard" ${f.club ? `data-club="${esc(f.club)}" aria-pressed="false"` : `data-act="${f.act}"`}>
       <img src="${f.img}" alt="${f.club ? esc(f.club) + " Ibiza" : ""}" loading="lazy" decoding="async"><span class="ag__fname">${f.club ? esc(f.club) : ""}</span><span class="ag__fsub"></span><span class="ag__arrow" aria-hidden="true"></span></button></li>`).join("")}</ul>
     <button type="button" class="ag__fnav" data-dir="1" aria-label="›">›</button></div>
-      <ol class="ag__nights" aria-live="polite"></ol>
     </div>
     <div class="ag__panel ag__cal">
       <p class="ag__fresh" hidden><span></span><button type="button" data-act="fresh"></button></p>
@@ -147,6 +146,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
       <div class="ag__calfoot"><span class="ag__leg"><i class="is-ev"></i><span class="ag__legev"></span></span><span class="ag__leg"><i class="is-sel"></i><span class="ag__legsel"></span></span></div>
       <div class="ag__calcta"><button type="button" class="ag__notify" data-act="notify" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16Zm4 3.5a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span></span></button><button type="button" class="ag__ics" data-act="ics"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 3.5v4M16 3.5v4M4 10h16M12 13v4M10 15h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span></span></button></div>
     </div>
+    <div class="ag__panel ag__panel--list"><ol class="ag__nights" aria-live="polite"></ol></div>
     <div class="ag__cta"><button type="button" class="btn btn--primary btn--lg" data-act="table"></button><button type="button" class="btn ag__ghost" data-act="alert"></button></div>
     <p class="ag__fine"></p>
   </div>`;
@@ -259,7 +259,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     if (a === "clear") { st.clubs.clear(); keep(); paint(); return; }
     if (a === "notify") { st.alert = !st.alert; if (st.alert) matching().forEach(x => st.seen.add(evKey(x))); keep(); paint(); navigator.vibrate?.(8); return; }
     if (a === "ics") { ics(); return; }
-    if (a === "fresh") { matching().forEach(x => st.seen.add(evKey(x))); keep(); paint(); $(".ag__panel--nights").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+    if (a === "fresh") { matching().forEach(x => st.seen.add(evKey(x))); keep(); paint(); $(".ag__panel--list").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if (a) onSend?.({ kind: a, text: message(a), from: st.from, to: st.to || st.from, clubs: [...st.clubs] });
   });
   root.addEventListener("dblclick", e => { const c = e.target.closest(".ag__club"); if (c) onVenue?.(clubs.find(v => v.name === c.dataset.club)); });

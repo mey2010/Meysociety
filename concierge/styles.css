@@ -2732,3 +2732,18 @@ img.asm__p { border-radius: 0; object-fit: contain; }
 .ag__panel--nights { margin-bottom: clamp(16px, 3vw, 26px); }
 .ag__panel--nights .ag__h--nights { margin-bottom: 14px; }
 .ag__panel--nights .ag__feat { margin: 0 0 16px; padding: 6px 6px 16px; scroll-padding-inline: 6px; }
+.ag__cal { margin-bottom: clamp(16px, 3vw, 26px); }
+.ag__panel--list { max-width: 980px; margin-inline: auto; }
+.ag__panel--nights .ag__feat { margin-bottom: 0; }
+/* restaurants and sunsets on the map */
+.dot--restaurant { background: #1fae7a; } .map3d__pin--restaurant { --pin: #1fae7a; }
+.dot--sunset { background: linear-gradient(135deg, #ffb347, #e8475f); } .map3d__pin--sunset { --pin: #e8475f; }
+.map3d__cluster[data-kind="restaurant"] .map3d__dot { box-shadow: 0 0 0 2.5px #1fae7a, 0 0 0 4.5px rgb(13 10 56 / .85), 0 6px 14px -3px rgb(0 0 0 / .6); } .map3d__cluster[data-kind="restaurant"] .map3d__dot::after { background: #1fae7a; }
+.map3d__cluster[data-kind="sunset"] .map3d__dot { box-shadow: 0 0 0 2.5px #e8475f, 0 0 0 4.5px rgb(13 10 56 / .85), 0 6px 14px -3px rgb(0 0 0 / .6); } .map3d__cluster[data-kind="sunset"] .map3d__dot::after { background: #e8475f; }
+.pop__tags { list-style: none; margin: 6px 0 2px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.pop__tags:empty { display: none; }
+.pop__tags li { padding: 4px 10px; border-radius: 99px; font-size: 11.5px; font-weight: 600; color: var(--royal, #2a2fb8); background: linear-gradient(135deg, rgb(120 199 228 / .22), rgb(171 80 219 / .18)); }
+.pop__sun { margin: 4px 0 0; padding: 10px 12px; border-radius: 14px; display: grid; gap: 2px; color: #fff; background: linear-gradient(120deg, #ff9f43, #e8475f 60%, #6a2fb5); }
+.pop__sun b { font-size: 15px; } .pop__sun span { font-size: 12.5px; opacity: .92; }
+.pop__sun[hidden] { display: none; }
+.pop__img img { filter: saturate(1.12) contrast(1.04); }

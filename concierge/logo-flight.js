@@ -1,3 +1,4 @@
+import { ART } from "./asm-art.js";
 /* The flying logo: it rests large under the intro buttons, and as the page scrolls (or the menu opens)
    it is tossed along an arc to the header corner, spinning like a coin and landing face-on, with a neon
    trail in the logo's own colours that fades as it arrives. The letters of the name light up and flicker
@@ -15,9 +16,9 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
   fly.className = "flylogo"; fly.href = headerLink.getAttribute("href") || "#top";
   fly.setAttribute("aria-label", headerLink.getAttribute("aria-label") || "Mey Society");
   // the letters stand proud of the white centre: a few cut-out layers make their sides, the top one their face
-  const LSRC = "assets/logo-letters.webp", LAYERS = 5;
-  const LET = `<img class="flylogo__let" src="${LSRC}" alt="" aria-hidden="true" draggable="false" decoding="async" onerror="this.onerror=null;this.src=window.__blobOf?.(this.getAttribute('src'))||''">`;
-  const LET_TOP = `<img class="flylogo__let flylogo__let--top" src="${LSRC}" alt="" aria-hidden="true" draggable="false" decoding="async" onerror="this.onerror=null;this.src=window.__blobOf?.(this.getAttribute('src'))||''">`;
+  const LSRC = ART.letters, LAYERS = 5;
+  const LET = `<img class="flylogo__let" src="${LSRC}" alt="" aria-hidden="true" draggable="false" decoding="async">`;
+  const LET_TOP = `<img class="flylogo__let flylogo__let--top" src="${LSRC}" alt="" aria-hidden="true" draggable="false" decoding="async">`;
   const LET_B = LET.replace("flylogo__let\"", "flylogo__let flylogo__let--back\""), LET_TOP_B = LET_TOP.replace("flylogo__let--top", "flylogo__let--top flylogo__let--back");
   const EDGES = 12; // discs stacked through the coin's thickness: they are its edge when it tilts or spins
   fly.innerHTML = `<span class="flylogo__shadow" aria-hidden="true"></span><span class="flylogo__spin">${'<span class="flylogo__edge" aria-hidden="true"></span>'.repeat(EDGES)}<span class="flylogo__coin"><img src="${src}" alt="" draggable="false" decoding="async"><span class="flylogo__socket" aria-hidden="true"></span><span class="flylogo__shine" aria-hidden="true"></span><span class="flylogo__glint" aria-hidden="true"></span></span>${'<span class="flylogo__core-edge" aria-hidden="true"></span>'.repeat(4)}<span class="flylogo__core" aria-hidden="true"><span class="flylogo__core-drop"></span><img src="${src}" alt="" draggable="false" decoding="async"><span class="flylogo__core-bevel"></span><span class="flylogo__shine"></span><span class="flylogo__glint"></span></span>${LET.repeat(LAYERS)}${LET_TOP}<span class="flylogo__back" aria-hidden="true"><img src="${src}" alt="" draggable="false" decoding="async"><span class="flylogo__socket" aria-hidden="true"></span></span>${'<span class="flylogo__core-edge flylogo__core-edge--back" aria-hidden="true"></span>'.repeat(4)}<span class="flylogo__core flylogo__core--back" aria-hidden="true"><span class="flylogo__core-drop"></span><img src="${src}" alt="" draggable="false" decoding="async"><span class="flylogo__core-bevel"></span></span>${LET_B.repeat(LAYERS)}${LET_TOP_B}</span>`;
