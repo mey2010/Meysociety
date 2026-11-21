@@ -90,10 +90,10 @@ const KEY = "mey-agenda";
 const CLUB_CARDS = [
   { club: "Ushuaïa Ibiza", img: "data/clubs/ushuaia.webp", credit: "Foto: Roberto Castaño for Ushuaïa Ibiza, CC BY-SA 4.0" },
   { club: "Hï Ibiza", img: "data/clubs/hi-ibiza.webp", credit: "Foto: Simone Martellarci, CC BY 3.0" },
-  { club: "Pacha", img: "data/clubs/pacha.webp", credit: "Foto: Maria marv, CC BY-SA 4.0" },
+  { club: "Pacha", img: "data/clubs/pacha.webp" },
   { club: "[UNVRS]", img: "data/reviews/unvrs-noche.webp" },
-  { club: "Amnesia", img: "data/clubs/amnesia.webp", credit: "Foto: tigrillagardenia, CC BY 2.0" },
-  { club: "DC10", img: "data/clubs/dc10.webp", credit: "Foto: Carol59, CC BY 4.0" },
+  { club: "Amnesia", img: "data/clubs/amnesia.webp" },
+  { club: "DC10", img: "data/clubs/dc10.webp" },
   { club: "O Beach", img: "data/clubs/o-beach.webp", credit: "Foto: O Beach Group, CC BY 4.0" },
   { club: "Ibiza Rocks", img: "data/clubs/ibiza-rocks.webp", credit: "Foto: Fensommd, CC BY-SA 4.0" },
   { club: "Bora Bora Ibiza", img: "data/clubs/bora-bora.webp", credit: "Foto: Sergey Kozak, CC BY 2.0" },
