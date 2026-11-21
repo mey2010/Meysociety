@@ -7,7 +7,7 @@ import * as THREE from "./vendor/three.module.js";
 import { OrbitControls } from "./vendor/OrbitControls.js";
 import { MAPDATA } from "./map3d.js";
 import { createLiveTiles, liveShader } from "./livetiles.js";
-import { hdPack } from "./hd-assets.js";
+import { hdPack, tileUrl } from "./hd-assets.js";
 
 const { WATERCUT, A, B, BB, EXAG, ISLE, LIMIT, toXZ, fromXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow } = MAPDATA;
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -38,7 +38,7 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
     await sliced(pos.count, i => { const x = pos.getX(i), z = pos.getZ(i), m = hAt(x, z); pos.setY(i, m > .4 ? m * EXAG / 1000 : -.02 - (1 - maskAt(x, z)) * .5); });
     await yieldNow(); g.computeVertexNormals();
     // the real island: the IGN aerial photo, with the street-level photo streamed in as the client zooms
-    const ortho = await new THREE.TextureLoader().loadAsync("data/ortho_lo.jpg"); ortho.colorSpace = THREE.SRGBColorSpace; ortho.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
+    const ortho = await new THREE.TextureLoader().loadAsync(renderer.capabilities.maxTextureSize >= 4096 ? "data/ortho_hi.jpg" : "data/ortho_lo.jpg"); ortho.colorSpace = THREE.SRGBColorSpace; ortho.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
     const mat = new THREE.MeshStandardMaterial({ map: ortho, roughness: .93, metalness: 0 });
     mat.onBeforeCompile = sh => {
       sh.uniforms.uNrm = { value: nrm }; sh.uniforms.uMaskT = { value: maskTex }; sh.uniforms.uA2 = { value: new THREE.Vector4(A.x, A.z, B.x - A.x, B.z - A.z) };
@@ -74,7 +74,7 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
   const controls = new OrbitControls(camera, renderer.domElement);
   renderer.domElement.style.touchAction = "pan-y";   // OrbitControls sets "none", which stopped one finger from scrolling the page
   controls.enableDamping = true; controls.dampingFactor = .1; controls.rotateSpeed = .55; controls.panSpeed = .9; controls.zoomSpeed = 1.1;
-  controls.minDistance = .28; controls.maxDistance = 90; controls.maxPolarAngle = 1.2; controls.minPolarAngle = .05;
+  controls.minDistance = .16; controls.maxDistance = 90; controls.maxPolarAngle = 1.2; controls.minPolarAngle = .05;
   controls.screenSpacePanning = false; controls.zoomToCursor = true;
   camera.position.set(-6, 34, 40); controls.target.set(.5, 0, -2);
   const cvs = renderer.domElement;
@@ -93,6 +93,57 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
             { vec2 wuv = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); if (WATERCUT(texture2D(map, vMapUv, 2.).rgb, texture2D(uMaskT, wuv).r, vWp.y)) discard; }`);
       };
       m.customProgramCacheKey = () => "route-live"; return m; } });
+  // ---- detail tiles (~2.7 m/px aerial photo), the same layer the home map uses between the whole-island view and
+  // the street-level photo: loaded only around the focus once the camera comes down ----
+  const detail = { index: MAPDATA.TILE_INDEX, live: new Map(), last: 0, max: small ? 16 : 26 };
+  const tileMat = tex => {
+    const m = new THREE.MeshStandardMaterial({ map: tex, roughness: .93, metalness: 0, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
+    m.onBeforeCompile = sh => {
+      liveShader(sh, { pull: .008, sharpen: .35 });
+      sh.uniforms.uNrm = { value: nrm }; sh.uniforms.uMaskT = { value: maskTex }; sh.uniforms.uA2 = { value: new THREE.Vector4(A.x, A.z, B.x - A.x, B.z - A.z) };
+      sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWp;").replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.)).xyz;");
+      sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nuniform sampler2D uNrm, uMaskT; uniform vec4 uA2; varying vec3 vWp;\n" + WATERCUT())
+        .replace("#include <map_fragment>", `#include <map_fragment>
+          { vec2 wuv = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); if (WATERCUT(texture2D(map, vMapUv, 2.).rgb, texture2D(uMaskT, wuv).r, vWp.y)) discard; }`)
+        .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
+          { vec2 wuv = vec2((vWp.x - uA2.x) / uA2.z, 1. - (vWp.z - uA2.y) / uA2.w); vec3 wn = texture2D(uNrm, wuv).xyz * 2. - 1.; normal = normalize(mat3(viewMatrix) * wn); }`);
+    };
+    m.customProgramCacheKey = () => "route-detail"; return m;
+  };
+  const tileMesh = (i, j, tex) => {
+    const ix = detail.index, a = ix.lon0 + ix.sx * i, b = a + ix.sx, top = ix.lat1 - ix.sy * j, bot = top - ix.sy;
+    const p0 = toXZ(a, top), p1 = toXZ(b, bot), N = small ? 40 : 64;
+    const g = new THREE.PlaneGeometry(p1.x - p0.x, p1.z - p0.z, N, N).rotateX(-Math.PI / 2); g.translate((p0.x + p1.x) / 2, 0, (p0.z + p1.z) / 2);
+    const pos = g.attributes.position;
+    for (let k = 0; k < pos.count; k++) { const x = pos.getX(k), z = pos.getZ(k), m = hAt(x, z); pos.setY(k, m > .4 ? m * EXAG / 1000 + .001 : .0006); }
+    return new THREE.Mesh(g, tileMat(tex));
+  };
+  const dBlocks = new Map();
+  const blockOf = (bi, bj) => { const k = bi + "_" + bj; let b = dBlocks.get(k);
+    if (!b) { b = { used: 0, img: tileUrl(k).then(u => new Promise((ok, no) => { const im = new Image(); im.decoding = "async"; im.onload = () => ok(im); im.onerror = no; im.src = u; })) }; b.img.catch(() => {}); dBlocks.set(k, b);
+      if (dBlocks.size > 6) { const old = [...dBlocks.entries()].sort((x, y) => x[1].used - y[1].used)[0]; dBlocks.delete(old[0]); } }
+    b.used = performance.now(); return b.img; };
+  function updateDetail(now) {
+    if (!detail.index || now - detail.last < 250) return; detail.last = now;
+    const tgt = controls.target, dist = camera.position.distanceTo(tgt), show = dist < 26;
+    detail.live.forEach(t => { if (t.mesh && t.mesh.visible !== show) { t.mesh.visible = show; wake(); } });
+    if (!show) return;
+    const ix = detail.index, R = Math.max(2.6, dist * 1.35), want = [];
+    for (const [i, j] of ix.tiles) { const c = toXZ(ix.lon0 + ix.sx * (i + .5), ix.lat1 - ix.sy * (j + .5)), d = Math.hypot(c.x - tgt.x, c.z - tgt.z); if (d < R) want.push({ key: i + "_" + j, i, j, d }); }
+    want.sort((x, y) => x.d - y.d);
+    for (const w of want.slice(0, detail.max)) {
+      if (detail.live.has(w.key)) { detail.live.get(w.key).used = now; continue; }
+      const entry = { used: now, mesh: null, tex: null }; detail.live.set(w.key, entry);
+      blockOf(w.i >> 1, w.j >> 1).then(im => {
+        if (!detail.live.has(w.key)) return;
+        const c = document.createElement("canvas"); c.width = c.height = 1024; c.getContext("2d").drawImage(im, (w.i & 1) * 1024, (w.j & 1) * 1024, 1024, 1024, 0, 0, 1024, 1024);
+        const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
+        entry.tex = tex; entry.mesh = tileMesh(w.i, w.j, tex); scene.add(entry.mesh); wake();
+      }).catch(() => {});
+    }
+    if (detail.live.size > detail.max * 1.6) [...detail.live.entries()].sort((x, y) => x[1].used - y[1].used).slice(0, detail.live.size - detail.max).forEach(([k, t]) => {
+      if (t.mesh) { scene.remove(t.mesh); t.mesh.geometry.dispose(); t.mesh.material.dispose(); } t.tex?.dispose(); detail.live.delete(k); });
+  }
   controls.addEventListener("change", wake);
   // the page keeps scrolling over the map; Ctrl/⌘ + wheel (or a trackpad pinch) zooms
   el.addEventListener("wheel", e => { if (e.ctrlKey || e.metaKey) { e.preventDefault(); flight = null; return; } e.stopImmediatePropagation(); }, { capture: true, passive: false });
@@ -188,7 +239,7 @@ export async function initRoute3D(el, { planeIcon = "" } = {}) {
     }
     const damping = controls.update();
     const floor = Math.max(0, groundY(camera.position.x, camera.position.z)) + Math.min(.3, .05 + camera.position.distanceTo(controls.target) * .08); if (camera.position.y < floor) camera.position.y = floor;
-    liveTiles.update(controls.target, now, !(moving || damping));
+    liveTiles.update(controls.target, now, !(moving || damping)); updateDetail(now);
     if (dirty || moving || damping) {
       renderer.render(scene, camera);
       for (const s of stops) {

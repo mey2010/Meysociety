@@ -93,7 +93,7 @@ function coastBand(M) {
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.NoColorSpace; t.minFilter = t.magFilter = THREE.LinearFilter; t.generateMipmaps = false;
   return (M.band = t);
 }
-export const MAPDATA = { coastBand, WATERCUT: () => WATERCUT_GLSL, A, B, BB, EXAG, ISLE, LIMIT, toXZ, fromXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow, nextFrame };
+export const MAPDATA = { get TILE_INDEX() { return TILE_INDEX; }, coastBand, WATERCUT: () => WATERCUT_GLSL, A, B, BB, EXAG, ISLE, LIMIT, toXZ, fromXZ, uvOf, bilinear, normalTexture, sharedHeights, sharedMask, sliced, yieldNow, nextFrame };
 
 /* The photographed sea, as it really is: the aerial photo's own water colours (turquoise over sand, deep blue
    over seagrass, the dark of deep water) are kept near the coast and lifted a little, because under the sun and

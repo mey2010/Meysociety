@@ -2747,3 +2747,7 @@ img.asm__p { border-radius: 0; object-fit: contain; }
 .pop__sun b { font-size: 15px; } .pop__sun span { font-size: 12.5px; opacity: .92; }
 .pop__sun[hidden] { display: none; }
 .pop__img img { filter: saturate(1.12) contrast(1.04); }
+/* the route map floats like the home map: no card, no frame, no rim; the island alone on the page */
+.mb-card--map { background: none !important; box-shadow: none !important; border: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+.mb-card--map > .mb-light, .mb-card--map > .mb-rim, .mb-card--map > .mb-border { display: none !important; }
+.mb-card--map .mb-content { padding-inline: 0; }

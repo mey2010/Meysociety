@@ -5,7 +5,7 @@
    every picture is a crisp real frame, and nothing is downloaded until the tour is opened. */
 import { getLang } from "./i18n.js";
 
-// two packs of the same film: 2560x1440 for laptops and tablets, a 1152x1440 (4:5) crop for phones held upright
+// two packs of the same film: 1920x1080 for laptops and tablets, a 960x1200 (4:5) crop for phones held upright
 const PHONE = matchMedia("(max-width: 720px) and (orientation: portrait)").matches;
 let PACK = PHONE ? "p" : "d";
 const SRC = k => `data/villa/aura-v-${PACK}-${k}.mp4`, HEAD = () => `data/villa/aura-v-${PACK}.json`;
@@ -196,7 +196,7 @@ function createFrames(onProgress) {
             desc = tab.avcC;
             const ok = await VideoDecoder.isConfigSupported(cfg()).catch(() => ({ supported: false }));
             if (!ok.supported) throw new Error("no-h264");
-            MAX = PACK === "d" ? 30 : 40;            // a decoded 2560x1440 picture is ~15 MB, a phone one ~7 MB
+            MAX = PACK === "d" ? 36 : 48;            // a decoded 1920x1080 picture is ~8 MB, a phone one ~4.6 MB
             onHead?.(head);
           }
         }
@@ -259,9 +259,13 @@ function createFrames(onProgress) {
     for (const x of extra) if (missingAt(x)) return job(x, x + 4);
   }
   const want = i => { if (has(i) && !cache.has(i)) plan(i, 1); };
-  return { ready, has, want, plan, get failed() { return failed; }, get: i => cache.get(i), setFocus: i => { focus = i; }, set onHead(f) { onHead = f; if (head) f(head); }, set onFrame(f) { onFrame = f; }, get head() { return head; } };
+  return { ready, has, want, plan, get failed() { return failed; }, get: i => cache.get(i), setFocus: i => { focus = i; }, set onHead(f) { onHead = f; if (head) queueMicrotask(() => f(head)); }, set onFrame(f) { onFrame = f; }, get head() { return head; } };
 }
 
+/* the film starts downloading as soon as the villa gallery is on screen, so by the time the tour is opened the
+   first rooms are already here (one download, shared with the tour when it opens) */
+let early = null, earlyCb = null, earlyP = 0;
+export function prewarmVillaTour() { if (!early && typeof VideoDecoder === "function") early = createFrames(p => { earlyP = p; earlyCb?.(p); }); }
 export function initVillaTour({ onAsk } = {}) {
   let root = null, api = null;
   function build() {
@@ -302,7 +306,8 @@ export function initVillaTour({ onAsk } = {}) {
     const HOLD = 0;                                     // no reading pauses: the film runs straight through (owner's choice)
     const toT = s => { let acc = 0; for (const h of holds) { if (s < h.at + acc) return s - acc; if (s < h.at + acc + HOLD) return h.at; acc += HOLD; } return s - acc; };
     const toS = t => { let acc = 0; for (const h of holds) { if (t <= h.at) return t + acc; acc += HOLD; } return t + acc; };
-    const frames = createFrames(f => { load.style.setProperty("--p", f.toFixed(3)); if (f >= 1) load.classList.add("is-done"); kick(); });
+    const onP = f => { load.style.setProperty("--p", f.toFixed(3)); if (f >= 1) load.classList.add("is-done"); kick(); };
+    const frames = early || createFrames(onP); if (early) { earlyCb = onP; if (earlyP) queueMicrotask(() => onP(earlyP)); }
     /* if the film cannot load (old browser, network), say so instead of an endless "preparing" */
     frames.ready.then(() => { if (!frames.failed || frames.head) return; load.classList.add("is-err"); load.querySelector("span").textContent = L.ui.fail; });
     frames.onFrame = () => kick();
