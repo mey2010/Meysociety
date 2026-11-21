@@ -2751,3 +2751,9 @@ img.asm__p { border-radius: 0; object-fit: contain; }
 .mb-card--map { background: none !important; box-shadow: none !important; border: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
 .mb-card--map > .mb-light, .mb-card--map > .mb-rim, .mb-card--map > .mb-border { display: none !important; }
 .mb-card--map .mb-content { padding-inline: 0; }
+/* galleries without a filter row (cars, villas, toys, transfers): the carousel and its card sit in the middle of the screen */
+.fleet:has(.fleet__chips[hidden]) { grid-template-rows: auto minmax(0, 1fr) auto auto auto minmax(0, 1fr); }
+.fleet:has(.fleet__chips[hidden]) .fleet__top { grid-row: 1; }
+.fleet:has(.fleet__chips[hidden]) .fleet__ribbon { grid-row: 3; }
+.fleet:has(.fleet__chips[hidden]) .fleet__info { grid-row: 4; min-height: 0; }
+.fleet:has(.fleet__chips[hidden]) .fleet__nav { grid-row: 5; }
