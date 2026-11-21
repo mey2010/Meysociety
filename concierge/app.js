@@ -156,16 +156,30 @@ mapEl.append(loader);
 let mapStarted = false;
 function startMap() {
   if (mapStarted) return; mapStarted = true;
-  const pct = loader.querySelector("b");
+  const pct = loader.querySelector("b") || { textContent: "" };
+  // the loader is the main logo itself (same coin, relief, edge and halo): a copy of it, in grey, that fills with its
+  // colours from the bottom up and turns once around as the map loads
+  const fly = document.querySelector(".flylogo .flylogo__spin");
+  if (fly) {
+    const host = fly.closest(".flylogo"), size = parseFloat(host.style.width) || 300;
+    const box = document.createElement("div"); box.className = "map3d__logo"; box.setAttribute("aria-hidden", "true");
+    const wrap = document.createElement("div"); wrap.className = "flylogo map3d__logoin";
+    ["--t", "--d"].forEach(k => wrap.style.setProperty(k, host.style.getPropertyValue(k)));
+    wrap.style.width = wrap.style.height = size + "px"; wrap.style.setProperty("--k", (130 / size).toFixed(4));
+    const spin = fly.cloneNode(true); spin.style.transform = ""; spin.classList.add("map3d__spin");
+    spin.querySelectorAll("img").forEach(im => { const c = im.cloneNode(); c.classList.add("map3d__fill"); im.classList.add("map3d__grey"); im.after(c); });
+    wrap.append(spin); box.append(wrap); loader.replaceChildren(box);
+    loader.style.setProperty("--p", 0);
+  }
   load3D().then(m => m.initMap3D(mapEl, {
     venues: VENUES, mapJson: MAP,
     onPick: (v) => { closeList(); openPop(v); },
     onList: (list, anchor) => openList(list, anchor),
     onEmpty: () => { closePop(); closeList(); },
-    onProgress: p => { pct.textContent = p; loader.setAttribute("aria-valuenow", p); },
+    onProgress: p => { pct.textContent = p; loader.setAttribute("aria-valuenow", p); loader.style.setProperty("--p", (p / 100).toFixed(3)); },
   })).then(m => {
     map3dReal = m; window.__map3d = m; mapQueue.splice(0).forEach(([k, a]) => m[k](...a));
-    pct.textContent = 100; loader.classList.add("is-done"); setTimeout(() => loader.remove(), 700);
+    pct.textContent = 100; loader.style.setProperty("--p", 1); setTimeout(() => { loader.classList.add("is-done"); setTimeout(() => loader.remove(), 700); }, 450);
   }).catch(err => { console.error(err); loader.classList.add("is-error"); });
 }
 new IntersectionObserver((es, io) => { if (es.some(e => e.isIntersecting)) { io.disconnect(); startMap(); } }, { rootMargin: "900px 0px" }).observe(mapEl);
