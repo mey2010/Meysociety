@@ -273,7 +273,7 @@ document.getElementById("popBook").addEventListener("click", () => {
   else {
     // each letter strikes on at its own moment, stutters 2-4 times, then holds
     let done = 0;
-    window.__afterSplash.then(() => chars.forEach((c, i) => {
+    window.__afterSplash.then(() => { setTimeout(lit, 120); }); window.__afterSplash.then(() => chars.forEach((c, i) => {   // the lines under the name come in with it, not after it
       const start = 80 + Math.random() * 650 + (i === chars.length - 1 ? 300 : 0); /* the name lights up quickly: it is the first thing people wait for */ let t = start;
       const flips = 2 + Math.floor(Math.random() * 3);
       for (let k = 0; k < flips; k++) {

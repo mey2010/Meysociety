@@ -353,8 +353,8 @@ input:focus, textarea:focus { outline: none; border-color: var(--cyan); backgrou
 .intro__line { margin: 0; font: italic 400 clamp(22px, 2.6vw, 38px)/1.2 var(--serif); color: var(--chrome); opacity: 0; transform: translateY(10px); }
 .intro__sub { margin: 0; max-width: 46ch; font-size: clamp(15px, 1.2vw, 18px); line-height: 1.55; color: var(--on-dark-soft); opacity: 0; transform: translateY(10px); }
 .intro__cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 10px; opacity: 0; transform: translateY(10px); }
-.intro.is-lit .intro__line, .intro.is-lit .intro__sub, .intro.is-lit .intro__cta { opacity: 1; transform: none; transition: opacity 900ms var(--ease), transform 900ms var(--ease); }
-.intro.is-lit .intro__sub { transition-delay: 180ms; } .intro.is-lit .intro__cta { transition-delay: 360ms; }
+.intro.is-lit .intro__line, .intro.is-lit .intro__sub, .intro.is-lit .intro__cta { opacity: 1; transform: none; transition: opacity 520ms var(--ease), transform 520ms var(--ease); }
+.intro.is-lit .intro__sub { transition-delay: 80ms; } .intro.is-lit .intro__cta { transition-delay: 160ms; }
 @media (max-width: 600px) { .signal { font-size: 12.4vw; letter-spacing: .03em; } }
 
 /* ---------------- services: cards that stack and fade as you scroll ---------------- */
@@ -1273,7 +1273,7 @@ html[data-theme="dark"] .flylogo__shadow { background: radial-gradient(closest-s
 .intro__title .signal { display: block; }
 .intro__kicker { margin: 0; font: 600 clamp(11px, 1vw, 13px)/1.2 var(--sans); letter-spacing: .32em; text-transform: uppercase; color: var(--indigo, #292467);
   opacity: 0; transform: translateY(6px); }
-.intro.is-lit .intro__kicker { opacity: .78; transform: none; transition: opacity 900ms var(--ease), transform 900ms var(--ease); }
+.intro.is-lit .intro__kicker { opacity: .78; transform: none; transition: opacity 520ms var(--ease), transform 520ms var(--ease); }
 html[data-theme="dark"] .intro__kicker { color: #c8e6f5; }
 /* footer legal links */
 .foot__legal { display: flex; flex-wrap: wrap; gap: 6px 18px; }
