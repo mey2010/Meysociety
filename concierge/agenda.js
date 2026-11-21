@@ -86,6 +86,20 @@ const L3 = {
 };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const KEY = "mey-agenda";
+/* one card per club: the user's own photos where there are, otherwise freely licensed photos (credited on the card) */
+const CLUB_CARDS = [
+  { club: "Ushuaïa Ibiza", img: "data/reviews/ushuaia-escenario.webp" },
+  { club: "Hï Ibiza", img: "data/clubs/hi-ibiza.webp", credit: "Foto: Simone Martellarci, CC BY 3.0" },
+  { club: "Pacha", img: "data/clubs/pacha.webp", credit: "Foto: Angel Abril Ruiz, CC BY 2.0" },
+  { club: "[UNVRS]", img: "data/reviews/unvrs-noche.webp" },
+  { club: "Amnesia", img: "data/clubs/amnesia.webp", credit: "Foto: tigrillagardenia, CC BY 2.0" },
+  { club: "DC10", img: "data/clubs/dc10.webp", credit: "Foto: Carol59, CC BY 4.0" },
+  { club: "O Beach", img: "data/clubs/o-beach.webp", credit: "Foto: O Beach Group, CC BY 4.0" },
+  { club: "Ibiza Rocks", img: "data/clubs/ibiza-rocks.webp", credit: "Foto: Fensommd, CC BY-SA 4.0" },
+  { club: "Bora Bora Ibiza", img: "data/clubs/bora-bora.webp", credit: "Foto: Sergey Kozak, CC BY 2.0" },
+  { club: "Eden", img: "data/clubs/eden.webp", credit: "Foto: Sergey Kozak, CC BY 2.0" },
+  { club: "Es Paradis", img: "data/clubs/es-paradis.webp", credit: "Foto: Sergey Kozak, CC BY 2.0" },
+];
 
 export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
   const clubs = venues.filter(v => v.type === "club" || v.type === "dayclub");
@@ -99,8 +113,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
 
   // the photo cards on top: the clubs we have real photos of, then two quick ways in (VIP tables, day clubs)
   const FEAT = [
-    { club: "Ushuaïa Ibiza", img: "data/reviews/ushuaia-escenario.webp" },
-    { club: "[UNVRS]", img: "data/reviews/unvrs-noche.webp" },
+    ...CLUB_CARDS.filter(c => clubs.some(v => v.name === c.club)),
     { act: "table", img: "data/services/clubs.webp", key: "vip" },
     { act: "day", img: "data/reviews/pool-party.webp", key: "day" },
   ];
@@ -113,8 +126,10 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
       <button type="button" class="ag__go" data-act="go"></button>
     </div>
     <p class="ag__status"><i aria-hidden="true"></i><span></span></p>
+    <div class="ag__featwrap"><button type="button" class="ag__fnav" data-dir="-1" aria-label="‹" disabled>‹</button>
     <ul class="ag__feat" role="list">${FEAT.map(f => `<li><button type="button" class="ag__fcard" ${f.club ? `data-club="${esc(f.club)}" aria-pressed="false"` : `data-act="${f.act}"`}>
-      <img src="${f.img}" alt="" loading="lazy" decoding="async"><span class="ag__fname">${f.club ? esc(f.club) : ""}</span><span class="ag__fsub"></span><span class="ag__arrow" aria-hidden="true"></span></button></li>`).join("")}</ul>
+      <img src="${f.img}" alt="${f.club ? esc(f.club) + " Ibiza" : ""}" loading="lazy" decoding="async">${f.credit ? `<small class="ag__fcredit">${esc(f.credit)}</small>` : ""}<span class="ag__fname">${f.club ? esc(f.club) : ""}</span><span class="ag__fsub"></span><span class="ag__arrow" aria-hidden="true"></span></button></li>`).join("")}</ul>
+    <button type="button" class="ag__fnav" data-dir="1" aria-label="›">›</button></div>
     <div class="ag__panel ag__cal">
       <p class="ag__fresh" hidden><span></span><button type="button" data-act="fresh"></button></p>
       <div class="ag__calhead"><button type="button" class="ag__nav" data-nav="-1"><i aria-hidden="true">‹</i></button><div><h3 class="ag__h ag__calt"></h3><p class="ag__calsub"></p></div><button type="button" class="ag__nav" data-nav="1"><i aria-hidden="true">›</i></button></div>
@@ -140,6 +155,10 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     <p class="ag__fine"></p>
   </div>`;
   const $ = s => root.querySelector(s);
+  { const row = root.querySelector(".ag__feat"), navs = root.querySelectorAll(".ag__fnav");
+    const sync = () => { navs[0].disabled = row.scrollLeft < 8; navs[1].disabled = row.scrollLeft + row.clientWidth > row.scrollWidth - 8; };
+    navs.forEach(b => b.addEventListener("click", () => row.scrollBy({ left: +b.dataset.dir * row.clientWidth * .8, behavior: "smooth" })));
+    row.addEventListener("scroll", sync, { passive: true }); requestAnimationFrame(sync); }
   const inFrom = $('[data-f="from"]'), inTo = $('[data-f="to"]');
 
   function nights() {

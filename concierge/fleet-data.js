@@ -148,5 +148,5 @@ export const FLEET = [
   { id: "flyride", type: "juguete", name: "Flyride", crew: "Con monitor", incl: ["Asiento volador de propulsión acuática", "Para quien quiere volar sin hacer equilibrios", "En tu barco, en Ibiza o Formentera"], photos: 4 },
   { id: "wakeboard", type: "juguete", name: "Wakeboard", crew: "Remolcado por tu barco", incl: ["Tabla, fijaciones y cabo", "Entre el snowboard y el esquí acuático", "Para tu día de barco"], photos: 4 },
   { id: "lamborghini-huracan", type: "coche", name: "Lamborghini Huracán", photos: 1, img: "data/services/coches.webp" },
-  { id: "mercedes-v-250", type: "transfer", name: "Mercedes-Benz V 250", pax: 7, crew: "Chófer privado", incl: ["Up to 7 pers.", "Asientos de piel enfrentados", "Espacio para el equipaje", "Aire acondicionado"], photos: 3 },
+  { id: "mercedes-v-250", type: "transfer", name: "Mercedes-Benz V 250", pax: 7, crew: "Chófer privado", incl: ["Up to 7 pers.", "Asientos de piel enfrentados", "Espacio para el equipaje", "Aire acondicionado"], photos: 2 },
 ];

@@ -22,6 +22,8 @@ const D = {
   "Noche en [UNVRS]": ["A night at [UNVRS]", "Una notte al [UNVRS]", "Une nuit au [UNVRS]", "Eine Nacht im [UNVRS]"],
   "En moto por la isla": ["Riding around the island", "In moto per l'isola", "À moto sur l'île", "Mit dem Roller über die Insel"],
   "Mercedes-AMG por la autovía": ["A Mercedes-AMG on the motorway", "Mercedes-AMG in superstrada", "En Mercedes-AMG sur la voie rapide", "Im Mercedes-AMG auf der Schnellstraße"],
+  "Aguas cristalinas desde el barco": ["Crystal-clear water from the boat", "Acque cristalline dalla barca", "Eaux cristallines depuis le bateau", "Kristallklares Wasser vom Boot aus"],
+  "Pool party entre flotadores": ["Pool party among the floats", "Pool party tra i gonfiabili", "Pool party entre les bouées", "Poolparty zwischen Schwimmringen"],
   "Al volante por Ibiza": ["Behind the wheel in Ibiza", "Al volante per Ibiza", "Au volant à Ibiza", "Am Steuer durch Ibiza"],
   "1 camarote": ["1 cabin", "1 cabina", "1 cabine", "1 Kabine"],
   "1 camarote + salón, 1 baño": ["1 cabin + saloon, 1 bathroom", "1 cabina + salone, 1 bagno", "1 cabine + salon, 1 salle de bain", "1 Kabine + Salon, 1 Bad"],

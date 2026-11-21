@@ -200,6 +200,7 @@ export const CLUBS = [
   { n: "Keeper Ibiza", z: "town", g: ["commercial", "hiphop"] }, { n: "Lola's", z: "town", g: ["commercial", "disco"] },
   { n: "Pikes", z: "west", g: ["disco", "house"] }, { n: "Cova Santa", z: "south", g: ["afro", "melodic"] },
   { n: "Las Dalias · Akasha", z: "north", g: ["afro", "melodic", "house"] }, { n: "528 Ibiza", z: "west", g: ["melodic", "techno", "afro"] },
+  { n: "Bora Bora Ibiza", z: "south", g: ["house", "techhouse", "commercial"] },
 ];
 // how far apart the island's areas are (0 = same area, 1 = next door, 2 = across the island)
 const ZD = { town: { town: 0, south: 1, centre: 1, west: 2, north: 2 }, south: { town: 1, south: 0, centre: 1, west: 2, north: 2 },
