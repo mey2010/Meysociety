@@ -365,7 +365,7 @@ function logoLoader(px = 130) {
   (function turn(now) { if (!box.isConnected && now - t0 > 2000) return; spin.style.transform = `rotateX(8deg) rotateY(${(((now - t0) / TURN) * 360) % 360}deg)`; requestAnimationFrame(turn); })(t0);
   return box;
 }
-const TURN = 1000;
+const TURN = 1400;
 /* the page's own loading screen: the same logo fills and turns while the first screen (fonts, logo, first photos)
    arrives, then the page appears. Never longer than a few seconds, even on a slow line. */
 {
