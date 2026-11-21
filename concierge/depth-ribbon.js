@@ -48,7 +48,7 @@ export function createDepthRibbon(root, opts = {}) {
     stage.style.perspective = P + "px";
     cards.forEach(c => { c.style.width = cw + "px"; c.style.height = ch + "px"; c.style.marginLeft = -cw / 2 + "px"; c.style.marginTop = -ch / 2 + "px"; });
   }
-  const rel = i => { if (N < 2) return i - st.pos; let u = (i - st.pos) % N; if (u < -1.5) u += N; if (u > N - 1.5) u -= N; return u; };   // (one boat: no wrap-around, it sits in front)
+  const rel = i => { if (N < 2) return i - st.pos; let u = (((i - st.pos) % N) + N) % N; if (u > N / 2) u -= N; return u; };   // balanced: as many boats wait on the left as on the right   // (one boat: no wrap-around, it sits in front)
 
   function drawBand() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
@@ -66,23 +66,21 @@ export function createDepthRibbon(root, opts = {}) {
     if (!N) return;
     cards.forEach((c, i) => {
       const u = rel(i), e = st.enter, uu = u + (1 - e) * 1.2; // entrance: a short glide forward along the ribbon (the boat is there at once)
-      const p = path(uu), d = .02, q = path(uu + d);
-      const away = Math.min(1, Math.abs(uu) * 1.4); // the card in focus faces you squarely
-      const yaw = Math.atan2(q.x - p.x, -(q.z - p.z)) * 180 / Math.PI * .55 * away;
-      const roll = Math.sin(uu * .85 + .35) * 7 * away;
-      // cards that have passed slide out to the side and fade instead of swelling toward the camera
-      let x = p.x, y = p.y, z = p.z;
-      if (uu < 0) { const k = -uu; x = -k * cw * .95; y = k * ch * .1; z = k * cw * .25; }
-      const op = clamp((uu + .75) / .6, 0, 1) * (N < 2 ? 1 : clamp((N >= 4 ? N - 1.5 - uu : N - .6 - uu) / 1.1, 0, 1)) * clamp(1.15 - uu * .12, 0, 1) * e;   // (a single boat is never faded as "the last one")
+      // a centred coverflow: the boat in focus faces you in the middle of the screen, the next ones step back to the
+      // right and the previous ones to the left, mirrored, so the gallery is balanced on both sides
+      const k = Math.abs(uu), sgn = Math.sign(uu) || 0, kk = Math.min(k, 1);
+      const x = sgn * (kk * cw * .58 + Math.max(0, k - 1) * cw * .26), y = k * ch * .015, z = -(kk * cw * .42 + Math.max(0, k - 1) * cw * .22);
+      const yaw = -sgn * kk * 34, roll = 0;
+      const op = clamp(1.35 - k * .42, 0, 1) * (N < 2 ? 1 : 1) * e;
       // only touch what changed, and take invisible cards out of compositing altogether
       const L = c._last, on = op > .002;
       if (L.on !== on) { c.style.visibility = on ? "" : "hidden"; L.on = on; }
       if (on) {
-        c.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) rotateY(${(uu < 0 ? -uu * 28 : yaw).toFixed(2)}deg) rotateZ(${roll.toFixed(2)}deg)`;
+        c.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) rotateY(${yaw.toFixed(2)}deg)`;
         // depth dimming is folded into the card's own opacity (the fleet sits on a dark background): an opacity change is
         // done by the compositor, while a darkening layer inside the card had its photo repainted on every frame
         const o = (op * (1 - clamp(Math.abs(uu) * .22, 0, .6) * .75)).toFixed(2); if (L.o !== o) { c.style.opacity = o; L.o = o; }
-        const zi = String(1000 - Math.round(uu * 100)); if (L.z !== zi) { c.style.zIndex = zi; L.z = zi; }
+        const zi = String(1000 - Math.round(Math.abs(uu) * 100)); if (L.z !== zi) { c.style.zIndex = zi; L.z = zi; }
       }
       const pe = op > .25 ? "auto" : "none"; if (L.pe !== pe) { c.style.pointerEvents = pe; L.pe = pe; }
       const ti = Math.round(u) === 0 ? 0 : -1; if (L.ti !== ti) { c.tabIndex = ti; L.ti = ti; }
@@ -124,9 +122,9 @@ export function createDepthRibbon(root, opts = {}) {
   root.addEventListener("pointermove", e => {
     const d = st.drag; if (!d || d.id !== e.pointerId) return;
     const dx = e.clientX - d.x, dy = e.clientY - d.y;
-    if (!d.moved) { if (Math.hypot(dx, dy) < 6) return; if (e.pointerType !== "mouse" && Math.abs(dy) > Math.abs(dx) * 1.3) { st.drag = null; return; } d.moved = true; root.dataset.dragging = ""; try { root.setPointerCapture(e.pointerId); } catch {} }
+    if (!d.moved) { if (Math.hypot(dx, dy) < 6) return; if (e.pointerType !== "mouse" && Math.abs(dy) > Math.abs(dx) * 1.8) { st.drag = null; return; } d.moved = true; root.dataset.dragging = ""; try { root.setPointerCapture(e.pointerId); } catch {} }
     if (N < 2) return;   // a single boat stays put in front: nothing to browse
-    st.pos = d.pos - dx / (cw * .9); st.target = st.pos;
+    st.pos = d.pos - dx / (cw * .62); st.target = st.pos;   // more travel per pixel: a short swipe already moves the ribbon
     const now = performance.now(); d.samples.push({ t: now, p: st.pos }); while (d.samples.length > 2 && now - d.samples[0].t > 100) d.samples.shift();
     wake();
   });
@@ -134,7 +132,9 @@ export function createDepthRibbon(root, opts = {}) {
     const d = st.drag; if (!d || d.id !== e.pointerId) return; st.drag = null; delete root.dataset.dragging;
     if (!d.moved) { const c = e.target.closest?.(".ribbon__card"); if (c) { const i = +c.dataset.i; if (i === st.active && Math.abs(st.pos - Math.round(st.pos)) < .35) o.onItemClick?.(items[i], i); else goTo(i); } return; }
     const a = d.samples[0], b = d.samples[d.samples.length - 1], v = a && b && b.t > a.t ? (b.p - a.p) / ((b.t - a.t) / 1000) : 0;
-    st.target = N < 2 ? 0 : Math.round(st.pos + clamp(v, -6, 6) * .28); st.vel = N < 2 ? 0 : v * .4; st.idleAt = performance.now() + 6000; wake();
+    // a light swipe is enough: once it has moved a little, it carries on to the next card (or further with a flick)
+    const start = Math.round(d.pos), delta = st.pos + clamp(v, -8, 8) * .34 - start, steps = Math.sign(delta) * Math.max(Math.abs(st.pos - d.pos) > .08 || Math.abs(v) > .6 ? 1 : 0, Math.round(Math.abs(delta)));
+    st.target = N < 2 ? 0 : start + steps; st.vel = N < 2 ? 0 : v * .5; st.idleAt = performance.now() + 6000; wake();
   };
   root.addEventListener("pointerup", up); root.addEventListener("pointercancel", up);
   root.addEventListener("click", e => { if (e.detail === 0) { const c = e.target.closest?.(".ribbon__card"); if (c) { const i = +c.dataset.i; i === st.active ? o.onItemClick?.(items[i], i) : goTo(i); } } }); // keyboard activation

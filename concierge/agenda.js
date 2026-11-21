@@ -88,9 +88,9 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;",
 const KEY = "mey-agenda";
 /* one card per club: the user's own photos where there are, otherwise freely licensed photos (credited on the card) */
 const CLUB_CARDS = [
-  { club: "Ushuaïa Ibiza", img: "data/reviews/ushuaia-escenario.webp" },
+  { club: "Ushuaïa Ibiza", img: "data/clubs/ushuaia.webp", credit: "Foto: Roberto Castaño for Ushuaïa Ibiza, CC BY-SA 4.0" },
   { club: "Hï Ibiza", img: "data/clubs/hi-ibiza.webp", credit: "Foto: Simone Martellarci, CC BY 3.0" },
-  { club: "Pacha", img: "data/clubs/pacha.webp", credit: "Foto: Angel Abril Ruiz, CC BY 2.0" },
+  { club: "Pacha", img: "data/clubs/pacha.webp", credit: "Foto: Maria marv, CC BY-SA 4.0" },
   { club: "[UNVRS]", img: "data/reviews/unvrs-noche.webp" },
   { club: "Amnesia", img: "data/clubs/amnesia.webp", credit: "Foto: tigrillagardenia, CC BY 2.0" },
   { club: "DC10", img: "data/clubs/dc10.webp", credit: "Foto: Carol59, CC BY 4.0" },

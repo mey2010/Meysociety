@@ -267,12 +267,12 @@ export function createCircularCarousel(root, opts = {}) {
     const delta = S.axis === "x" ? e.clientY - p.y : e.clientX - p.x, cross = S.axis === "x" ? e.clientX - p.x : e.clientY - p.y;
     if (!p.moved) {
       if (Math.abs(delta) < DRAG_THRESHOLD) return;
-      if (Math.abs(cross) > Math.abs(delta) * 1.2 && e.pointerType !== "mouse") { state.press = null; return; }
+      if (Math.abs(cross) > Math.abs(delta) * 1.8 && e.pointerType !== "mouse") { state.press = null; return; }
       p.moved = true; p.origin = delta; state.drag = true; state.target = null; state.velocity = 0; root.dataset.dragging = "";
       try { root.setPointerCapture(e.pointerId); } catch {}
     }
     const per = 180 / (Math.PI * S.radius * state.fit);
-    state.angle = p.angle + (delta - p.origin) * per * (S.layout.inward ? -1 : 1);
+    state.angle = p.angle + (delta - p.origin) * per * 1.45 * (S.layout.inward ? -1 : 1);   // more turn per pixel: a short swipe moves the ring
     const now = performance.now(); p.samples.push({ time: now, angle: state.angle });
     while (p.samples.length > 2 && now - p.samples[0].time > 110) p.samples.shift();
     wake();
@@ -284,7 +284,12 @@ export function createCircularCarousel(root, opts = {}) {
     const v = span > .008 ? clamp((b.angle - a.angle) / span, -1400, 1400) : 0;
     state.velocity = v; if (Math.abs(v) > 60) state.dir = Math.sign(v);
     const coasting = S.autoplay === "drift" && !(S.pauseOnHover && state.hover && e.pointerType === "mouse");
-    if (S.snap && !coasting) state.target = Math.round((state.angle + v * (.18 + S.momentum * 1.5) * .55) / S.step) * S.step;
+    if (S.snap && !coasting) {
+      // a light swipe is enough: once it has turned a little it carries on to the next card (further with a flick)
+      const start = Math.round(p.angle / S.step), proj = (state.angle + v * (.18 + S.momentum * 1.5) * .65) / S.step - start;
+      const moved = Math.abs(state.angle - p.angle) / S.step;
+      state.target = (start + Math.sign(proj) * Math.max(moved > .08 || Math.abs(v) > 90 ? 1 : 0, Math.round(Math.abs(proj)))) * S.step;
+    }
     wake();
   };
   root.addEventListener("pointerup", release); root.addEventListener("pointercancel", release);
