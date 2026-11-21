@@ -17,7 +17,35 @@ const y2lat = (y, n) => Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n))) * 180 / 
      underneath, which used to poke through on slopes as blurry brown smudges.
    - SHARPEN: a light unsharp mask on the photo, sized to the pixel on screen, so the water over sand, the foam and
      the rocks of every cove read crisp. */
+
+/* Memory: a phone (Safari above all) closes the page when it holds too many decoded pictures. So the photo files are
+   kept compressed (a few hundred KB each) and only the 1024 px piece on screen is decoded, straight into a texture
+   whose pixels are dropped from memory as soon as the GPU has them. */
+const fileCache = new Map();
+export function fileBlob(url, keep = 10) {
+  let f = fileCache.get(url);
+  if (!f) { f = { used: 0, blob: fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); }) }; f.blob.catch(() => fileCache.delete(url)); fileCache.set(url, f);
+    if (fileCache.size > keep) { const old = [...fileCache.entries()].sort((a, b) => a[1].used - b[1].used)[0]; fileCache.delete(old[0]); } }
+  f.used = performance.now(); return f.blob;
+}
+// a w x h piece of a stored picture as a texture (image top at v = 0: the meshes using it map their uv accordingly)
+export async function pieceTexture(THREE, blob, x, y, w, h, aniso = 1) {
+  let src;
+  try { src = await createImageBitmap(blob, x, y, w, h); }
+  catch { // older browsers: decode, cut on a canvas
+    const u = URL.createObjectURL(blob);
+    try { const im = new Image(); im.decoding = "async"; im.src = u; await im.decode(); src = document.createElement("canvas"); src.width = w; src.height = h; src.getContext("2d").drawImage(im, x, y, w, h, 0, 0, w, h); }
+    finally { URL.revokeObjectURL(u); }
+  }
+  const tex = new THREE.Texture(src); tex.flipY = false; tex.needsUpdate = true; tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = aniso;
+  tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter; tex.magFilter = THREE.LinearFilter;
+  tex.onUpdate = () => { src.close?.(); if (src.width) { src.width = src.height = 1; } tex.image = { width: w, height: h }; };   // on the GPU now: free the CPU copy
+  return tex;
+}
+
 export function liveShader(sh, { pull = .015, sharpen = .6 } = {}) {
+  sh.fragmentShader = sh.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>
+    { vec3 t = texture2D(map, vMapUv).rgb; if (all(greaterThan(t, vec3(.0080, .0550, .1330))) && all(lessThan(t, vec3(.0190, .0840, .1800)))) discard; }`);   // the padding blue (30,74,110) of the stored blocks
   sh.vertexShader = sh.vertexShader.replace("#include <project_vertex>", `#include <project_vertex>
     mvPosition.xyz *= ${(1 - pull).toFixed(4)}; gl_Position = projectionMatrix * mvPosition;`);
   if (sharpen) sh.fragmentShader = sh.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>
@@ -26,38 +54,19 @@ export function liveShader(sh, { pull = .015, sharpen = .6 } = {}) {
                  + texture2D(map, vMapUv + vec2(0., px.y)).rgb + texture2D(map, vMapUv - vec2(0., px.y)).rgb) * .25;
       diffuseColor.rgb = max(diffuseColor.rgb + (diffuseColor.rgb - blur) * ${sharpen.toFixed(2)}, 0.); }`);
 }
-// the stored blocks pad the open sea (never photographed at this scale) with one flat blue: made see-through
-function knockOutPad(c) {
-  const cx = c.getContext("2d", { willReadFrequently: true }), im = cx.getImageData(0, 0, c.width, c.height), d = im.data;
-  let hit = 0;
-  for (let i = 0; i < d.length; i += 4) if (Math.abs(d[i] - 30) < 7 && Math.abs(d[i + 1] - 74) < 7 && Math.abs(d[i + 2] - 110) < 7) { d[i + 3] = 0; hit++; }
-  if (hit) cx.putImageData(im, 0, 0);
-}
-
 export function createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, heightAt, material, small = false, onChange, bounds, minZ = 16, maxZ = 20, pack = null }) {
   /* pack: the same photo, pre-cut into 2048 px blocks of 8x8 zoom-18 tiles and stored with the page (inside claude.ai,
      where outside image hosts are not reachable). { url(bx, by) -> string | null }. Each 1024 px patch is a quarter
      of a block; the last few blocks stay decoded so neighbouring patches come for free. */
-  const blocks = new Map();
   // a stored file holds one block, or two side by side (url ending "#0" = left half, "#1" = right half)
-  const blockImg = (bx, by, z) => {
-    const full = pack.url(bx, by, z) || "", [u0, half] = full.split("#"), k = u0; let b = blocks.get(k);
-    if (b) b.used = performance.now();
-    const off = half === "1" ? 2048 : 0;
-    if (!b) {
-      const u = u0;
-      b = { used: 0, img: u ? new Promise((ok, no) => { const im = new Image(); im.decoding = "async"; im.onload = () => ok(im); im.onerror = no; im.src = u; }) : Promise.reject(0) };
-      b.img.catch(() => {}); blocks.set(k, b);
-      if (blocks.size > (small ? 4 : 8)) { const old = [...blocks.entries()].sort((x, y) => x[1].used - y[1].used)[0]; blocks.delete(old[0]); }
-    }
-    b.used = performance.now(); return b.img.then(im => ({ im, off }));
-  };
+  const blockFile = (bx, by, z) => { const full = pack.url(bx, by, z) || "", [u, half] = full.split("#");
+    return u ? fileBlob(u, small ? 8 : 16).then(blob => ({ blob, off: half === "1" ? 2048 : 0 })) : Promise.reject(0); };
   const live = new Map(), queue = [];
   let inflight = 0, ok = 0, fails = 0, dead = false, last = 0;
-  const MAX = small ? 30 : 42, PAR = small ? 6 : 10, N = small ? 32 : 48;
+  const MAX = small ? 18 : 40, PAR = small ? 4 : 10, N = small ? 32 : 48;
   const aniso = Math.min(16, renderer.capabilities.getMaxAnisotropy());
 
-  function patchMesh(z, sx, sy, tex) {
+  function patchMesh(z, sx, sy, tex, topDown = false) {
     const n = 2 ** z, x0 = sx * SUPER, y0 = sy * SUPER;
     const p0 = toXZ(x2lon(x0, n), y2lat(y0, n)), p1 = toXZ(x2lon(x0 + SUPER, n), y2lat(y0 + SUPER, n));
     const g = new THREE.PlaneGeometry(p1.x - p0.x, p1.z - p0.z, N, N).rotateX(-Math.PI / 2); g.translate((p0.x + p1.x) / 2, 0, (p0.z + p1.z) / 2);
@@ -65,7 +74,7 @@ export function createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, 
     for (let k = 0; k < pos.count; k++) {
       const x = pos.getX(k), zz = pos.getZ(k); pos.setY(k, heightAt(x, zz));
       // Mercator rows are not evenly spaced in latitude: each vertex samples the photo exactly where it is
-      const ll = fromXZ(x, zz); uv.setY(k, 1 - (lat2y(ll.lat, n) - y0) / SUPER);
+      const ll = fromXZ(x, zz), v = (lat2y(ll.lat, n) - y0) / SUPER; uv.setY(k, topDown ? v : 1 - v);
     }
     const mesh = new THREE.Mesh(g, material(tex, z)); mesh.receiveShadow = true; mesh.renderOrder = z; return mesh;
   }
@@ -73,14 +82,9 @@ export function createLiveTiles({ THREE, scene, renderer, camera, toXZ, fromXZ, 
   function load(e) {
     inflight++;
     if (pack) {   // a quarter of a stored block
-      blockImg(e.sx >> 1, e.sy >> 1, e.z).then(({ im, off }) => {
-        const c = document.createElement("canvas"); c.width = c.height = 1024;
-        c.getContext("2d", { willReadFrequently: true }).drawImage(im, off + (e.sx & 1) * 1024, (e.sy & 1) * 1024, 1024, 1024, 0, 0, 1024, 1024);
-        knockOutPad(c);
-        inflight--; pump(); if (!live.has(e.key) || e.cancel) return; ok++;
-        const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = aniso;
-        tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter; tex.magFilter = THREE.LinearFilter;
-        e.tex = tex; e.mesh = patchMesh(e.z, e.sx, e.sy, tex); e.mesh.visible = e.want; scene.add(e.mesh); onChange?.();
+      blockFile(e.sx >> 1, e.sy >> 1, e.z).then(({ blob, off }) => pieceTexture(THREE, blob, off + (e.sx & 1) * 1024, (e.sy & 1) * 1024, 1024, 1024, aniso)).then(tex => {
+        inflight--; pump(); if (!live.has(e.key) || e.cancel) { tex.image.close?.(); tex.dispose(); return; } ok++;
+        e.tex = tex; e.mesh = patchMesh(e.z, e.sx, e.sy, tex, true); e.mesh.visible = e.want; scene.add(e.mesh); onChange?.();
       }).catch(() => { inflight--; e.failed = true; pump(); });
       return;
     }

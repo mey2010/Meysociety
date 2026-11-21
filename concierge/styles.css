@@ -2757,3 +2757,11 @@ img.asm__p { border-radius: 0; object-fit: contain; }
 .fleet:has(.fleet__chips[hidden]) .fleet__ribbon { grid-row: 3; }
 .fleet:has(.fleet__chips[hidden]) .fleet__info { grid-row: 4; min-height: 0; }
 .fleet:has(.fleet__chips[hidden]) .fleet__nav { grid-row: 5; }
+/* the finished coin has the same face on both sides */
+img.asm__p { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.asm__bk { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; backface-visibility: hidden; -webkit-backface-visibility: hidden; opacity: 0; transition: opacity 160ms linear; }
+.asm.is-built .asm__bk { opacity: 1; }
+.asm__edge { border-radius: 50%; background: linear-gradient(135deg, #c856e6, #1e24bb 55%, #78c7e4); backface-visibility: visible; -webkit-backface-visibility: visible; }
+img.asm__bk.asm__let--side { filter: brightness(.34) saturate(1.4) hue-rotate(-8deg); }
+img.asm__bk.asm__let--top { filter: drop-shadow(-.5px -.6px 0 rgb(255 255 255 / .7)) drop-shadow(.7px 1.2px .8px rgb(14 10 60 / .6)); }
+.asm__edge { -webkit-mask-image: radial-gradient(circle closest-side, transparent 92%, #000 93%); mask-image: radial-gradient(circle closest-side, transparent 92%, #000 93%); }

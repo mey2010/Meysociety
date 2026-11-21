@@ -5,7 +5,7 @@
    Touch: one finger scrolls the page, two fingers move, pinch-zoom and turn the island. */
 import * as THREE from "./vendor/three.module.js";
 import { OrbitControls } from "./vendor/OrbitControls.js";
-import { createLiveTiles, liveShader } from "./livetiles.js";
+import { createLiveTiles, liveShader, fileBlob, pieceTexture } from "./livetiles.js";
 import { hdPack, tileUrl } from "./hd-assets.js";
 
 const BB = { lon0: 1.17, lon1: 1.65, lat0: 38.63, lat1: 39.13 };
@@ -186,7 +186,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     const mesh = new THREE.Mesh(g, mat); mesh.castShadow = mesh.receiveShadow = true; scene.add(mesh);
   }
   // ---- detail tiles: ~2.7 m/px aerial photo, loaded only around the focus when zoomed in ----
-  const detail = { index: null, live: new Map(), last: 0, max: small ? 18 : 30 };
+  const detail = { index: null, live: new Map(), last: 0, max: small ? 12 : 30 };
   detail.index = TILE_INDEX;   // (the tile index ships inside this file: one request and one published file fewer)
   const tileMat = tex => {
     const m = new THREE.MeshStandardMaterial({ map: tex, roughness: .93, metalness: 0, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
@@ -214,24 +214,14 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     const g = new THREE.PlaneGeometry(p1.x - p0.x, p1.z - p0.z, N, N).rotateX(-Math.PI / 2); g.translate((p0.x + p1.x) / 2, 0, (p0.z + p1.z) / 2);
     const pos = g.attributes.position;
     for (let k = 0; k < pos.count; k++) { const x = pos.getX(k), z = pos.getZ(k), m = hAt(x, z); pos.setY(k, m > .4 ? m * EXAG / 1000 + .001 : .0006); }  // flat under the water: no walls at the shoreline
+    { const uv = g.attributes.uv; for (let k = 0; k < uv.count; k++) uv.setY(k, 1 - uv.getY(k)); }
     const mesh = new THREE.Mesh(g, tileMat(tex)); mesh.receiveShadow = true; mesh.renderOrder = 0; return mesh;
   }
   /* the aerial tiles travel four to a file (2x2 blocks of 2048 px, data/tiles/<bi>_<bj>.webp): each tile is cut out
      of its block when it is needed; the last few blocks stay decoded so the neighbouring tiles come for free */
-  const blocks = new Map();
-  const blockOf = (bi, bj) => {
-    const k = bi + "_" + bj; let b = blocks.get(k);
-    if (!b) {
-      b = { used: 0, img: tileUrl(k).then(u => new Promise((ok, no) => { const im = new Image(); im.decoding = "async"; im.onload = () => ok(im); im.onerror = no; im.src = u; })) };
-      blocks.set(k, b);
-      if (blocks.size > 6) { const old = [...blocks.entries()].sort((x, y) => x[1].used - y[1].used)[0]; blocks.delete(old[0]); }
-    }
-    b.used = performance.now(); return b.img;
-  };
-  const tileImage = (i, j) => blockOf(i >> 1, j >> 1).then(im => {
-    const c = document.createElement("canvas"); c.width = c.height = 1024;
-    c.getContext("2d").drawImage(im, (i & 1) * 1024, (j & 1) * 1024, 1024, 1024, 0, 0, 1024, 1024); return c;
-  });
+  // the aerial tiles travel four to a file (2x2 blocks of 2048 px): each tile is decoded on its own, straight from the
+  // compressed file, so a phone never holds a whole decoded block
+  const tileTex = (i, j) => tileUrl((i >> 1) + "_" + (j >> 1)).then(u => fileBlob(u, small ? 6 : 12)).then(blob => pieceTexture(THREE, blob, (i & 1) * 1024, (j & 1) * 1024, 1024, 1024, Math.min(16, renderer.capabilities.getMaxAnisotropy())));
   function updateDetail(now) {
     if (!detail.index || now - detail.last < 250) return; detail.last = now;
     const tgt = controls.target, dist = camera.position.distanceTo(tgt), show = dist < 26;   // the sharp aerial tiles take over from the second zoom step
@@ -246,11 +236,8 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
     for (const w of want.slice(0, detail.max)) {
       if (detail.live.has(w.key)) { detail.live.get(w.key).used = now; continue; }
       const entry = { used: now, mesh: null, tex: null }; detail.live.set(w.key, entry);
-      tileImage(w.i, w.j).then(img => {
-        if (!detail.live.has(w.key)) { img.close?.(); return; }
-        const tex = new THREE.Texture(img); tex.needsUpdate = true; tex.flipY = true;
-        tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
-        tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tileTex(w.i, w.j).then(tex => {
+        if (!detail.live.has(w.key)) { tex.dispose(); return; }
         entry.tex = tex; entry.mesh = tileMesh(w.i, w.j, tex); scene.add(entry.mesh);
       }).catch(() => {});
     }

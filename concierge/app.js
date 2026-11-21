@@ -381,11 +381,17 @@ logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.que
 function logoLoader(px = 130) {
   const box = document.createElement("div"); box.className = "map3d__logo asm"; box.setAttribute("aria-hidden", "true"); box.style.width = box.style.height = px + "px";
   const im = (c, src) => `<img class="asm__p ${c}" src="${src}" alt="" draggable="false">`;
+  // the back of the finished coin: the same face, ring, relief letters and bezel, turned round, with a coloured edge
+  // between both sides (only once it is built: while it assembles the parts are seen apart)
+  const S0 = px, BZ = -.15 * S0, bk = (src, z, c = "") => `<img class="asm__bk ${c}" src="${src}" alt="" draggable="false" style="transform: translateZ(${z.toFixed(2)}px) rotateY(180deg)">`;
+  const BACK = Array.from({ length: 12 }, (_, i) => `<span class="asm__bk asm__edge" style="transform: translateZ(${(BZ + (.018 * S0 - BZ) * (i + .5) / 12).toFixed(2)}px)"></span>`).join("")
+    + bk(ART.face, BZ) + bk(ART.ring, BZ - .032 * S0) + [0, 1, 2, 3].map(j => bk(ART.letters, BZ - .05 * S0 - j * .007 * S0, "asm__let--side")).join("")
+    + bk(ART.letters, BZ - .078 * S0, "asm__let--top") + bk(ART.bezel, BZ - .038 * S0);
   box.innerHTML = `<span class="asm__shadow"></span><div class="asm__cam">
     <span class="asm__p asm__plate"></span>${[0, 1, 2].map(i => `<span class="asm__p asm__screw" style="--a:${90 + i * 120}deg"></span>`).join("")}
     ${im("asm__panel", ART.panel)}${im("asm__face", ART.face)}${im("asm__ring", ART.ring)}
     ${[0, 1, 2, 3].map(() => im("asm__let asm__let--side", ART.letters)).join("")}${im("asm__let asm__let--top", ART.letters)}
-    ${im("asm__bezel", ART.bezel)}</div><span class="asm__sweep"></span>`;
+    ${im("asm__bezel", ART.bezel)}${BACK}</div><span class="asm__sweep"></span>`;
   const cam = box.querySelector(".asm__cam"), S = px;
   const P = [...cam.querySelectorAll(".asm__p")].map(el => {
     const c = el.classList, k = c.contains("asm__plate") ? 0 : c.contains("asm__screw") ? 1 : c.contains("asm__panel") ? 2 : c.contains("asm__face") ? 3 : c.contains("asm__ring") ? 4 : c.contains("asm__let") ? 5 : c.contains("asm__bezel") ? 6 : 7;
@@ -433,7 +439,7 @@ function logoLoader(px = 130) {
       const glow = landed.has(p.el) ? Math.exp(-(now - landed.get(p.el)) / 220) : 0, blur = (1 - lin) * Math.abs(OUT[k]) * 1.1;
       p.el.style.filter = p.side ? "" : [blur > .05 ? `blur(${blur.toFixed(2)}px)` : "", glow > .02 ? `brightness(${(1 + glow * .45).toFixed(3)})` : ""].join(" ").trim();
     });
-    mid = zn ? zsum / zn : 0;
+    mid = doneAt ? mid + (-.06 * S - mid) * .08 : (zn ? zsum / zn : 0);   // built: turn about the middle of the whole coin
     if (q >= 1 && !doneAt) { doneAt = now; box.classList.add("is-built"); }
     requestAnimationFrame(frame);
   })(t0);
