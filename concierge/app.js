@@ -2224,6 +2224,15 @@ const fxTour = initFormenteraTour({ onBook: () => {
   document.getElementById("f-notes").value = `${t("Me interesa")}: Formentera Experience.`;
   setTimeout(() => scrollToEl(document.getElementById("contacto")), 120);
 } });
+/* "Ver clubs" on the clubs service card: straight to the club cards of the agenda */
+document.addEventListener("click", e => { if (!e.target.closest("[data-goto-clubs]")) return; e.preventDefault(); track("clubs_open", {});
+  const row = document.querySelector("#agenda .ag__featwrap"); if (!row) return scrollToEl(document.getElementById("agenda"));
+  row.querySelector(".ag__feat").scrollLeft = 0;   // from the first club
+  const y = row.getBoundingClientRect().top + scrollY - Math.max(96, (innerHeight - row.offsetHeight) / 2);   // centred, clear of the header
+  REDUCED ? scrollTo({ top: y, behavior: "auto" }) : fastScroll(Math.max(0, y)); });
+/* service card photos: decoded ahead, in idle time, so a card never slides in half-drawn */
+{ const warm = () => document.querySelectorAll(".stack__media img").forEach(im => { if (im.complete && im.naturalWidth) im.decode?.().catch(() => {}); else im.addEventListener("load", () => im.decode?.().catch(() => {}), { once: true }); });
+  (window.requestIdleCallback || (f => setTimeout(f, 600)))(warm, { timeout: 2500 }); }
 /* Transfers: why a private driver in Ibiza, and the request form (from, to, day, time, group, luggage, return) */
 const transferPage = initTransferPage({ onSend: ({ text, from, people }) => {
   select("transfers", true); track("transfer_request", { people });

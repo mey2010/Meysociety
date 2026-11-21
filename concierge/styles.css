@@ -2660,3 +2660,6 @@ html[data-theme="light"] .qs:not(.is-dark) .qs__cta:not(.qs__cta--main) { color:
 .ag__fnav[data-dir="-1"] { left: -12px; } .ag__fnav[data-dir="1"] { right: -12px; }
 .ag__fnav:disabled { opacity: 0; pointer-events: none; }
 @media (hover: none) { .ag__fnav { display: none; } }
+/* service cards: a dark brand tone holds the place until the photo is in, and the photo never flashes white */
+.stack__media { background: radial-gradient(120% 90% at 50% 30%, #2a1f6b, #0d0a38 70%); }
+.stack__media img { backface-visibility: hidden; transform: translateZ(0); }

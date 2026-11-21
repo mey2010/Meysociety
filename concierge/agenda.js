@@ -88,17 +88,22 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;",
 const KEY = "mey-agenda";
 /* one card per club: the user's own photos where there are, otherwise freely licensed photos (credited on the card) */
 const CLUB_CARDS = [
-  { club: "Ushuaïa Ibiza", img: "data/clubs/ushuaia.webp", credit: "Foto: Roberto Castaño for Ushuaïa Ibiza, CC BY-SA 4.0" },
-  { club: "Hï Ibiza", img: "data/clubs/hi-ibiza.webp", credit: "Foto: Simone Martellarci, CC BY 3.0" },
+  { club: "Ushuaïa Ibiza", img: "data/clubs/ushuaia.webp" },
+  { club: "Hï Ibiza", img: "data/clubs/hi-ibiza.webp" },
   { club: "Pacha", img: "data/clubs/pacha.webp" },
   { club: "[UNVRS]", img: "data/reviews/unvrs-noche.webp" },
   { club: "Amnesia", img: "data/clubs/amnesia.webp" },
   { club: "DC10", img: "data/clubs/dc10.webp" },
-  { club: "O Beach", img: "data/clubs/o-beach.webp", credit: "Foto: O Beach Group, CC BY 4.0" },
-  { club: "Ibiza Rocks", img: "data/clubs/ibiza-rocks.webp", credit: "Foto: Fensommd, CC BY-SA 4.0" },
-  { club: "Bora Bora Ibiza", img: "data/clubs/bora-bora.webp", credit: "Foto: Sergey Kozak, CC BY 2.0" },
-  { club: "Eden", img: "data/clubs/eden.webp", credit: "Foto: Sergey Kozak, CC BY 2.0" },
-  { club: "Es Paradis", img: "data/clubs/es-paradis.webp", credit: "Foto: Sergey Kozak, CC BY 2.0" },
+  { club: "O Beach", img: "data/clubs/o-beach.webp" },
+  { club: "Ibiza Rocks", img: "data/clubs/ibiza-rocks.webp" },
+  { club: "Lío Ibiza", img: "data/clubs/lio.webp" },
+  { club: "Chinois Ibiza", img: "data/clubs/chinois.webp" },
+  { club: "Tantra Ibiza", img: "data/clubs/tantra.webp" },
+  { club: "Swag Ibiza", img: "data/clubs/swag.webp" },
+  { club: "Destino Five Ibiza", img: "data/clubs/destino.webp" },
+  { club: "Bora Bora Ibiza", img: "data/clubs/bora-bora.webp" },
+  { club: "Eden", img: "data/clubs/eden.webp" },
+  { club: "Es Paradis", img: "data/clubs/es-paradis.webp" },
 ];
 
 export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
@@ -128,7 +133,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     <p class="ag__status"><i aria-hidden="true"></i><span></span></p>
     <div class="ag__featwrap"><button type="button" class="ag__fnav" data-dir="-1" aria-label="‹" disabled>‹</button>
     <ul class="ag__feat" role="list">${FEAT.map(f => `<li><button type="button" class="ag__fcard" ${f.club ? `data-club="${esc(f.club)}" aria-pressed="false"` : `data-act="${f.act}"`}>
-      <img src="${f.img}" alt="${f.club ? esc(f.club) + " Ibiza" : ""}" loading="lazy" decoding="async">${f.credit ? `<small class="ag__fcredit">${esc(f.credit)}</small>` : ""}<span class="ag__fname">${f.club ? esc(f.club) : ""}</span><span class="ag__fsub"></span><span class="ag__arrow" aria-hidden="true"></span></button></li>`).join("")}</ul>
+      <img src="${f.img}" alt="${f.club ? esc(f.club) + " Ibiza" : ""}" loading="lazy" decoding="async"><span class="ag__fname">${f.club ? esc(f.club) : ""}</span><span class="ag__fsub"></span><span class="ag__arrow" aria-hidden="true"></span></button></li>`).join("")}</ul>
     <button type="button" class="ag__fnav" data-dir="1" aria-label="›">›</button></div>
     <div class="ag__panel ag__cal">
       <p class="ag__fresh" hidden><span></span><button type="button" data-act="fresh"></button></p>
