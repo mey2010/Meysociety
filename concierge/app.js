@@ -357,6 +357,7 @@ function logoLoader(px = 130) {
   wrap.style.width = wrap.style.height = size + "px"; wrap.style.setProperty("--k", (px / size).toFixed(4));
   const spin = fly.cloneNode(true); spin.style.transform = ""; spin.classList.add("map3d__spin");
   spin.querySelectorAll("img").forEach(im => { const c = im.cloneNode(); c.classList.add("map3d__fill"); im.classList.add("map3d__grey"); im.after(c); });
+  spin.querySelectorAll(".flylogo__coin, .flylogo__back, .flylogo__core").forEach(f => f.insertAdjacentHTML("beforeend", '<span class="map3d__glass"></span>'));   // a glass bottle
   wrap.append(spin); box.append(wrap); return box;
 }
 /* the page's own loading screen: the same logo fills and turns while the first screen (fonts, logo, first photos)

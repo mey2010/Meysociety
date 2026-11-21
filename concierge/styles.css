@@ -2668,10 +2668,16 @@ html[data-theme="light"] .qs:not(.is-dark) .qs__cta:not(.qs__cta--main) { color:
 .map3d__logo { width: 130px; height: 130px; perspective: 900px; }
 .map3d__logoin.flylogo { position: relative; left: auto; top: auto; opacity: 1 !important; z-index: auto; transform-origin: 0 0; transform: scale(var(--k)); will-change: auto; --fly-p: 0; pointer-events: none; }
 .map3d__spin { transform: rotateX(8deg) rotateY(calc(var(--p) * 360deg)) !important; transition: transform 450ms cubic-bezier(.3, .7, .3, 1); }
-.map3d__logoin .map3d__grey { filter: grayscale(1) brightness(.72) contrast(.9) !important; }
+.map3d__logoin .map3d__grey { filter: grayscale(1) brightness(1.7) contrast(1.5) !important; opacity: .26; }   /* the part still to fill: clear glass */
 .map3d__logoin .map3d__fill { position: absolute !important; inset: 0; width: 100%; height: 100%;
-  -webkit-mask-image: linear-gradient(to top, #000 calc(var(--p) * 100%), transparent calc(var(--p) * 100% + 3%)); mask-image: linear-gradient(to top, #000 calc(var(--p) * 100%), transparent calc(var(--p) * 100% + 3%)); transition: -webkit-mask-position 300ms; }
-.map3d__logoin .flylogo__edge, .map3d__logoin .flylogo__core-edge { filter: grayscale(calc(1 - var(--p) * var(--p))); }
+  /* the liquid: the logo's own colours, its surface a gentle moving wave that rises with the load */
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 20 C 25 6 75 6 100 20 S 175 34 200 20 V40 H0Z' fill='%23000'/%3E%3C/svg%3E"), linear-gradient(#000, #000); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 20 C 25 6 75 6 100 20 S 175 34 200 20 V40 H0Z' fill='%23000'/%3E%3C/svg%3E"), linear-gradient(#000, #000);
+  -webkit-mask-repeat: repeat-x, no-repeat; mask-repeat: repeat-x, no-repeat;
+  -webkit-mask-size: 34% 13%, 100% calc(var(--p) * 100%); mask-size: 34% 13%, 100% calc(var(--p) * 100%);
+  -webkit-mask-position: 0 calc((1 - var(--p)) * 110% - 4%), 0 100%; mask-position: 0 calc((1 - var(--p)) * 110% - 4%), 0 100%;
+  animation: liquidWave 1.6s linear infinite; }
+@keyframes liquidWave { to { -webkit-mask-position: 100% calc((1 - var(--p)) * 110% - 4%), 0 100%; mask-position: 100% calc((1 - var(--p)) * 110% - 4%), 0 100%; } }
+.map3d__logoin .flylogo__edge, .map3d__logoin .flylogo__core-edge { filter: grayscale(calc(1 - var(--p) * var(--p))) brightness(calc(1.6 - var(--p) * .6)); opacity: calc(.35 + var(--p) * .65); }
 .map3d__logoin .flylogo__coin::before, .map3d__logoin .flylogo__coin::after, .map3d__logoin .flylogo__back::before, .map3d__logoin .flylogo__back::after { opacity: calc(var(--p) * .9); }
 @media (prefers-reduced-motion: reduce) { .map3d__spin { transition: none; } }
 /* page loading screen: the main logo fills with colour and turns once */
@@ -2679,3 +2685,16 @@ html[data-theme="light"] .qs:not(.is-dark) .qs__cta:not(.qs__cta--main) { color:
 .splash.is-out { opacity: 0; visibility: hidden; pointer-events: none; }
 html[data-theme="dark"] .splash { background: #0b0930; }
 html.is-splash, html.is-splash body { overflow: hidden; }
+
+
+/* glass: each face of the coin carries its own clear shine (it turns with the coin), fading as the liquid fills it */
+.map3d__glass { position: absolute; inset: 0; border-radius: 50%; z-index: 4; pointer-events: none; opacity: calc(1 - var(--p) * .75);
+  background: radial-gradient(70% 45% at 32% 20%, rgb(255 255 255 / .85), rgb(255 255 255 / .15) 55%, transparent 70%), radial-gradient(80% 50% at 70% 95%, rgb(120 199 228 / .25), transparent 70%);
+  box-shadow: inset 0 2px 2px rgb(255 255 255 / .95), inset 0 0 0 2px rgb(255 255 255 / .6), inset 0 -18px 30px rgb(120 199 228 / .25), inset 0 10px 24px rgb(255 255 255 / .35); }
+.map3d__glass::after { content: ""; position: absolute; left: 18%; top: 10%; width: 22%; height: 46%; border-radius: 50%; background: linear-gradient(180deg, rgb(255 255 255 / .9), rgb(255 255 255 / 0)); transform: rotate(28deg); filter: blur(1px); }
+@media (prefers-reduced-motion: reduce) { .map3d__logoin .map3d__fill { animation: none; } }
+.map3d__logoin .flylogo__core-drop, .map3d__logoin .flylogo__core-bevel, .map3d__logoin .flylogo__socket, .map3d__logoin .flylogo__shadow { opacity: calc(.15 + var(--p) * .85); }
+.map3d__logoin .map3d__grey { opacity: .2; }
+.map3d__logoin .flylogo__core-edge { opacity: calc(.03 + var(--p) * var(--p) * var(--p) * .97); }
+.map3d__logoin .flylogo__edge { opacity: calc(.18 + var(--p) * .82); }
+.map3d__logoin .holo__overlay { opacity: var(--p); }
