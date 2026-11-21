@@ -390,9 +390,11 @@ const TURN = 1400;
   setTimeout(finish, 6000);
   (function tick(now) {
     // never jumps: the colour climbs toward what has really arrived, and keeps creeping while it waits
-    { const k = Math.min(1, (now - t0) / (TURN * .92)); shown = Math.max(shown, k * k * (3 - 2 * k)); }   // the liquid rises steadily over one turn and never stalls halfway; if the page is still on its way, the full logo keeps turning
+    // the liquid keeps rising while the page loads (pushed on by what has really arrived, never standing still)
+    // and only reaches the brim when the page is ready: then the home appears at once
+    { const t = now - t0, creep = .92 * (1 - Math.exp(-t / 900)); shown = done ? Math.min(1, shown + Math.max((1 - shown) * .18, .025)) : Math.max(shown + .0008, Math.min(.95, Math.max(creep, target * .95))); shown = Math.min(done ? 1 : .97, shown); }
     splash.style.setProperty("--p", shown.toFixed(3));
-    if (done && shown > .995 && now - t0 > TURN * .96 && (now - t0) % TURN > TURN * .94) { splash.style.setProperty("--p", 1); setTimeout(() => { splash.classList.add("is-out"); document.documentElement.classList.remove("is-splash"); setTimeout(() => splash.remove(), 700); }, 380); return; }
+    if (done && shown >= 1) { splash.style.setProperty("--p", 1); setTimeout(() => { splash.classList.add("is-out"); document.documentElement.classList.remove("is-splash"); setTimeout(() => splash.remove(), 700); }, 180); return; }
     requestAnimationFrame(tick);
   })(t0);
 }
