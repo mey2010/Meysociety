@@ -2667,7 +2667,8 @@ html[data-theme="light"] .qs:not(.is-dark) .qs__cta:not(.qs__cta--main) { color:
 .map3d__loader { --p: 0; }
 .map3d__logo { width: 130px; height: 130px; perspective: 900px; }
 .map3d__logoin.flylogo { position: relative; left: auto; top: auto; opacity: 1 !important; z-index: auto; transform-origin: 0 0; transform: scale(var(--k)); will-change: auto; --fly-p: 0; pointer-events: none; }
-.map3d__spin { transform: rotateX(8deg) rotateY(calc(var(--p) * 360deg)) !important; transition: transform 450ms cubic-bezier(.3, .7, .3, 1); }
+.map3d__spin { transform: rotateX(8deg) rotateY(0deg); animation: logoTurn 2.2s linear infinite; }   /* a steady turn, whatever the load */
+@keyframes logoTurn { to { transform: rotateX(8deg) rotateY(360deg); } }
 .map3d__logoin .map3d__grey { filter: grayscale(1) brightness(1.7) contrast(1.5) !important; opacity: .26; }   /* the part still to fill: clear glass */
 .map3d__logoin .map3d__fill { position: absolute !important; inset: 0; width: 100%; height: 100%;
   /* the liquid: the logo's own colours, its surface a gentle moving wave that rises with the load */
@@ -2679,7 +2680,7 @@ html[data-theme="light"] .qs:not(.is-dark) .qs__cta:not(.qs__cta--main) { color:
 @keyframes liquidWave { to { -webkit-mask-position: 100% calc((1 - var(--p)) * 110% - 4%), 0 100%; mask-position: 100% calc((1 - var(--p)) * 110% - 4%), 0 100%; } }
 .map3d__logoin .flylogo__edge, .map3d__logoin .flylogo__core-edge { filter: grayscale(calc(1 - var(--p) * var(--p))) brightness(calc(1.6 - var(--p) * .6)); opacity: calc(.35 + var(--p) * .65); }
 .map3d__logoin .flylogo__coin::before, .map3d__logoin .flylogo__coin::after, .map3d__logoin .flylogo__back::before, .map3d__logoin .flylogo__back::after { opacity: calc(var(--p) * .9); }
-@media (prefers-reduced-motion: reduce) { .map3d__spin { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .map3d__spin { animation: none; } }
 /* page loading screen: the main logo fills with colour and turns once */
 .splash { --p: 0; position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: #ffffff; transition: opacity 650ms var(--ease), visibility 0s linear 650ms; }
 .splash.is-out { opacity: 0; visibility: hidden; pointer-events: none; }
