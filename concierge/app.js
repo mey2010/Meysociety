@@ -358,8 +358,14 @@ function logoLoader(px = 130) {
   const spin = fly.cloneNode(true); spin.style.transform = ""; spin.classList.add("map3d__spin");
   spin.querySelectorAll("img").forEach(im => { const c = im.cloneNode(); c.classList.add("map3d__fill"); im.classList.add("map3d__grey"); im.after(c); });
   spin.querySelectorAll(".flylogo__coin, .flylogo__back, .flylogo__core").forEach(f => f.insertAdjacentHTML("beforeend", '<span class="map3d__glass"></span>'));   // a glass bottle
-  wrap.append(spin); box.append(wrap); return box;
+  wrap.append(spin); box.append(wrap);
+  // the turn is driven frame by frame (a CSS animation was switched off on phones set to reduce motion, and some
+  // browsers froze it inside the 3D coin): one full turn every TURN ms, steady, whatever the load
+  const t0 = performance.now();
+  (function turn(now) { if (!box.isConnected && now - t0 > 2000) return; spin.style.transform = `rotateX(8deg) rotateY(${(((now - t0) / TURN) * 360) % 360}deg)`; requestAnimationFrame(turn); })(t0);
+  return box;
 }
+const TURN = 1000;
 /* the page's own loading screen: the same logo fills and turns while the first screen (fonts, logo, first photos)
    arrives, then the page appears. Never longer than a few seconds, even on a slow line. */
 {
@@ -375,9 +381,9 @@ function logoLoader(px = 130) {
   setTimeout(finish, 6000);
   (function tick(now) {
     // never jumps: the colour climbs toward what has really arrived, and keeps creeping while it waits
-    shown += Math.min(.022, (Math.min(target, done ? 1 : .96) - shown) * .08 + (done ? 0 : .0008)); shown = Math.min(1, shown);   // at most ~1.4 s from grey to full colour: the turn is always seen whole
+    shown += Math.min(.06, (Math.min(target, done ? 1 : .96) - shown) * .16 + (done ? 0 : .002)); shown = Math.min(1, shown);   // at most ~1.4 s from grey to full colour: the turn is always seen whole
     splash.style.setProperty("--p", shown.toFixed(3));
-    if (done && shown > .995 && now - t0 > 1600 && (now - t0) % 1600 > 1540) { splash.style.setProperty("--p", 1); setTimeout(() => { splash.classList.add("is-out"); document.documentElement.classList.remove("is-splash"); setTimeout(() => splash.remove(), 700); }, 380); return; }
+    if (done && shown > .995 && now - t0 > TURN * .96 && (now - t0) % TURN > TURN * .94) { splash.style.setProperty("--p", 1); setTimeout(() => { splash.classList.add("is-out"); document.documentElement.classList.remove("is-splash"); setTimeout(() => splash.remove(), 700); }, 380); return; }
     requestAnimationFrame(tick);
   })(t0);
 }
