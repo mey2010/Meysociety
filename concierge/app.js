@@ -157,20 +157,8 @@ let mapStarted = false;
 function startMap() {
   if (mapStarted) return; mapStarted = true;
   const pct = loader.querySelector("b") || { textContent: "" };
-  // the loader is the main logo itself (same coin, relief, edge and halo): a copy of it, in grey, that fills with its
-  // colours from the bottom up and turns once around as the map loads
-  const fly = document.querySelector(".flylogo .flylogo__spin");
-  if (fly) {
-    const host = fly.closest(".flylogo"), size = parseFloat(host.style.width) || 300;
-    const box = document.createElement("div"); box.className = "map3d__logo"; box.setAttribute("aria-hidden", "true");
-    const wrap = document.createElement("div"); wrap.className = "flylogo map3d__logoin";
-    ["--t", "--d"].forEach(k => wrap.style.setProperty(k, host.style.getPropertyValue(k)));
-    wrap.style.width = wrap.style.height = size + "px"; wrap.style.setProperty("--k", (130 / size).toFixed(4));
-    const spin = fly.cloneNode(true); spin.style.transform = ""; spin.classList.add("map3d__spin");
-    spin.querySelectorAll("img").forEach(im => { const c = im.cloneNode(); c.classList.add("map3d__fill"); im.classList.add("map3d__grey"); im.after(c); });
-    wrap.append(spin); box.append(wrap); loader.replaceChildren(box);
-    loader.style.setProperty("--p", 0);
-  }
+  // the loader is the main logo itself (same coin, relief, edge and halo), filling with colour as the map loads
+  { const logo = logoLoader(); if (logo) { loader.replaceChildren(logo); loader.style.setProperty("--p", 0); } }
   load3D().then(m => m.initMap3D(mapEl, {
     venues: VENUES, mapJson: MAP,
     onPick: (v) => { closeList(); openPop(v); },
@@ -357,6 +345,41 @@ return elasticLettering;
 shatterType(document.getElementById("signal"));
 elasticLettering(document.getElementById("introLine"));
 logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.querySelector(".sm-logo-img"), headerLink: document.querySelector(".sm-logo"), src: "assets/logo-neon-512.webp", menu: document.querySelector(".staggered-menu-wrapper"), letters: document.getElementById("signal") });
+
+/* a copy of the main logo (coin, relief, edge, halo) for loaders: grey, it fills with colour from the bottom and
+   turns once as the --p custom property (0..1) of its container rises */
+function logoLoader(px = 130) {
+  const fly = document.querySelector(".flylogo .flylogo__spin"); if (!fly) return null;
+  const host = fly.closest(".flylogo"), size = parseFloat(host.style.width) || px;
+  const box = document.createElement("div"); box.className = "map3d__logo"; box.setAttribute("aria-hidden", "true"); box.style.width = box.style.height = px + "px";
+  const wrap = document.createElement("div"); wrap.className = "flylogo map3d__logoin";
+  ["--t", "--d"].forEach(k => wrap.style.setProperty(k, host.style.getPropertyValue(k)));
+  wrap.style.width = wrap.style.height = size + "px"; wrap.style.setProperty("--k", (px / size).toFixed(4));
+  const spin = fly.cloneNode(true); spin.style.transform = ""; spin.classList.add("map3d__spin");
+  spin.querySelectorAll("img").forEach(im => { const c = im.cloneNode(); c.classList.add("map3d__fill"); im.classList.add("map3d__grey"); im.after(c); });
+  wrap.append(spin); box.append(wrap); return box;
+}
+/* the page's own loading screen: the same logo fills and turns while the first screen (fonts, logo, first photos)
+   arrives, then the page appears. Never longer than a few seconds, even on a slow line. */
+{
+  const splash = document.createElement("div"); splash.className = "splash"; splash.setAttribute("role", "progressbar"); splash.setAttribute("aria-label", "Mey Society");
+  const logo = logoLoader(150); if (logo) splash.append(logo);
+  document.body.append(splash); document.documentElement.classList.add("is-splash");
+  let shown = 0, target = .08, done = false; const t0 = performance.now();
+  const imgs = [...document.querySelectorAll("img")].filter(im => { const r = im.getBoundingClientRect(); return r.top < innerHeight * 1.2 && r.width > 0; }).slice(0, 10);
+  const parts = [document.fonts?.ready || Promise.resolve(), ...imgs.map(im => im.complete ? Promise.resolve() : new Promise(ok => { im.addEventListener("load", ok, { once: true }); im.addEventListener("error", ok, { once: true }); }))];
+  let got = 0; parts.forEach(pr => pr.then(() => { got++; target = Math.max(target, .1 + .8 * got / parts.length); }));
+  const finish = () => { if (done) return; done = true; target = 1; };
+  (document.readyState === "complete" ? Promise.resolve() : new Promise(ok => addEventListener("load", ok, { once: true }))).then(finish);
+  setTimeout(finish, 6000);
+  (function tick(now) {
+    // never jumps: the colour climbs toward what has really arrived, and keeps creeping while it waits
+    shown += Math.min(.022, (Math.min(target, done ? 1 : .96) - shown) * .08 + (done ? 0 : .0008)); shown = Math.min(1, shown);   // at most ~1.4 s from grey to full colour: the turn is always seen whole
+    splash.style.setProperty("--p", shown.toFixed(3));
+    if (done && shown > .995 && now - t0 > 1300) { splash.style.setProperty("--p", 1); setTimeout(() => { splash.classList.add("is-out"); document.documentElement.classList.remove("is-splash"); setTimeout(() => splash.remove(), 700); }, 380); return; }
+    requestAnimationFrame(tick);
+  })(t0);
+}
 
 /* ---------------- tap the big logo: "what is a concierge" ----------------
    A glass card grows out of the logo while it is big on the first screen. It opens on a tap, stays until
