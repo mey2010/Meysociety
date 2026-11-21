@@ -131,10 +131,14 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
       <button type="button" class="ag__go" data-act="go"></button>
     </div>
     <p class="ag__status"><i aria-hidden="true"></i><span></span></p>
+    <div class="ag__panel ag__panel--nights">
+      <h3 class="ag__h ag__h--nights"></h3>
     <div class="ag__featwrap"><button type="button" class="ag__fnav" data-dir="-1" aria-label="‹" disabled>‹</button>
     <ul class="ag__feat" role="list">${FEAT.map(f => `<li><button type="button" class="ag__fcard" ${f.club ? `data-club="${esc(f.club)}" aria-pressed="false"` : `data-act="${f.act}"`}>
       <img src="${f.img}" alt="${f.club ? esc(f.club) + " Ibiza" : ""}" loading="lazy" decoding="async"><span class="ag__fname">${f.club ? esc(f.club) : ""}</span><span class="ag__fsub"></span><span class="ag__arrow" aria-hidden="true"></span></button></li>`).join("")}</ul>
     <button type="button" class="ag__fnav" data-dir="1" aria-label="›">›</button></div>
+      <ol class="ag__nights" aria-live="polite"></ol>
+    </div>
     <div class="ag__panel ag__cal">
       <p class="ag__fresh" hidden><span></span><button type="button" data-act="fresh"></button></p>
       <div class="ag__calhead"><button type="button" class="ag__nav" data-nav="-1"><i aria-hidden="true">‹</i></button><div><h3 class="ag__h ag__calt"></h3><p class="ag__calsub"></p></div><button type="button" class="ag__nav" data-nav="1"><i aria-hidden="true">›</i></button></div>
@@ -142,19 +146,6 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
       <div class="ag__grid" role="grid"></div>
       <div class="ag__calfoot"><span class="ag__leg"><i class="is-ev"></i><span class="ag__legev"></span></span><span class="ag__leg"><i class="is-sel"></i><span class="ag__legsel"></span></span></div>
       <div class="ag__calcta"><button type="button" class="ag__notify" data-act="notify" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16Zm4 3.5a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span></span></button><button type="button" class="ag__ics" data-act="ics"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 3.5v4M16 3.5v4M4 10h16M12 13v4M10 15h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span></span></button></div>
-    </div>
-    <div class="ag__panel ag__panel--nights">
-      <h3 class="ag__h ag__h--nights"></h3>
-      <div class="ag__drop">
-        <button type="button" class="ag__dropbtn" aria-expanded="false" aria-controls="agDrop"><span class="ag__dropl"><b class="ag__h--clubs"></b><small class="ag__count"></small></span><span class="ag__chips"></span><i class="ag__chev" aria-hidden="true"></i></button>
-        <div class="ag__dropbody" id="agDrop" hidden>
-          <p class="ag__pick"></p>
-          <ul class="ag__clubs">${clubs.map((c, i) => `<li><button type="button" class="ag__club" data-club="${esc(c.name)}" aria-pressed="false" style="--bg:${PASTEL[i % 4]}">
-            <span class="ag__ctype">${c.type === "dayclub" ? "Day club" : "Club"}</span><span class="ag__cname">${esc(c.name)}</span><span class="ag__carea">${esc(c.area)}</span><span class="ag__tick" aria-hidden="true"></span></button></li>`).join("")}</ul>
-          <div class="ag__dropfoot"><button type="button" class="ag__clear" data-act="clear"></button><button type="button" class="ag__done" data-act="done"></button></div>
-        </div>
-      </div>
-      <ol class="ag__nights" aria-live="polite"></ol>
     </div>
     <div class="ag__cta"><button type="button" class="btn btn--primary btn--lg" data-act="table"></button><button type="button" class="btn ag__ghost" data-act="alert"></button></div>
     <p class="ag__fine"></p>
@@ -238,12 +229,9 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
   function paint() {
     const t = tx();
     $(".ag__eyebrow").textContent = t.eyebrow; $(".ag__title").textContent = t.title; $(".ag__em").textContent = t.em; $(".ag__lede").textContent = t.lede;
-    $(".ag__status span").textContent = t.status; $(".ag__h--nights").textContent = t.nights; $(".ag__h--clubs").textContent = t.clubs;
-    $(".ag__l-from").textContent = t.from; $(".ag__l-to").textContent = t.to; $(".ag__pick").textContent = t.pick;
+    $(".ag__status span").textContent = t.status; $(".ag__h--nights").textContent = t.clubs;
+    $(".ag__l-from").textContent = t.from; $(".ag__l-to").textContent = t.to; 
     $('.ag__cta [data-act="alert"]').textContent = t.alert; $('.ag__cta [data-act="table"]').textContent = t.table; $(".ag__fine").textContent = t.fine;
-    $(".ag__count").textContent = t.picked(st.clubs.size);
-    $(".ag__chips").innerHTML = [...st.clubs].slice(0, 3).map(n => `<span>${esc(n)}</span>`).join("") + (st.clubs.size > 3 ? `<span>+${st.clubs.size - 3}</span>` : "");
-    $(".ag__clear").textContent = (L2[getLang()] || L2.es).clear; $(".ag__done").textContent = (L2[getLang()] || L2.es).done;
     const X = L2[getLang()] || L2.es; $(".ag__go").textContent = X.go;
     root.querySelectorAll(".ag__fcard").forEach(c => {
       const a = c.dataset.act; if (a) { c.querySelector(".ag__fname").textContent = a === "table" ? X.vip : X.day; c.querySelector(".ag__fsub").textContent = a === "table" ? X.vipSub : X.daySub; }
@@ -262,16 +250,13 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     st[f] = e.target.value; if (f === "from" && (!st.to || st.to < st.from)) st.to = st.from;
     keep(); paint();
   });
-  const drop = open => { const b = $(".ag__dropbtn"), body = $(".ag__dropbody"); open = open ?? body.hidden; body.hidden = !open; b.setAttribute("aria-expanded", open); };
-  root.addEventListener("click", e => { if (e.target.closest(".ag__dropbtn")) drop(); });
   root.addEventListener("click", e => {
     const c = e.target.closest("[data-club]");
     if (c) { const n = c.dataset.club; st.clubs.has(n) ? st.clubs.delete(n) : st.clubs.add(n); keep(); paint(); navigator.vibrate?.(4); return; }
     const a = e.target.closest("[data-act]")?.dataset.act;
     if (a === "go") { $(".ag__panel--nights").scrollIntoView({ behavior: "smooth", block: "start" }); if (!st.from) inFrom.showPicker?.(); return; }
-    if (a === "day") { clubs.filter(v => v.type === "dayclub").forEach(v => st.clubs.add(v.name)); keep(); paint(); drop(true); $(".ag__panel--nights").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+    if (a === "day") { clubs.filter(v => v.type === "dayclub").forEach(v => st.clubs.add(v.name)); keep(); paint(); $(".ag__panel--nights").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if (a === "clear") { st.clubs.clear(); keep(); paint(); return; }
-    if (a === "done") { drop(false); return; }
     if (a === "notify") { st.alert = !st.alert; if (st.alert) matching().forEach(x => st.seen.add(evKey(x))); keep(); paint(); navigator.vibrate?.(8); return; }
     if (a === "ics") { ics(); return; }
     if (a === "fresh") { matching().forEach(x => st.seen.add(evKey(x))); keep(); paint(); $(".ag__panel--nights").scrollIntoView({ behavior: "smooth", block: "start" }); return; }

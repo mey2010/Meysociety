@@ -2728,3 +2728,7 @@ img.asm__p { border-radius: 0; object-fit: contain; }
 .asm.is-built .asm__cam { animation: asm-seat 520ms cubic-bezier(.3, 1.5, .5, 1); }
 @keyframes asm-seat { 0% { scale: 1; } 40% { scale: 1.045; } 100% { scale: 1; } }
 .asm__shadow { position: absolute; left: 12%; right: 12%; bottom: -16%; height: 14%; border-radius: 50%; background: radial-gradient(closest-side, rgb(30 24 90 / .28), transparent); filter: blur(4px); }
+/* the club photos now live inside the "Your clubs" panel, above the calendar */
+.ag__panel--nights { margin-bottom: clamp(16px, 3vw, 26px); }
+.ag__panel--nights .ag__h--nights { margin-bottom: 14px; }
+.ag__panel--nights .ag__feat { margin: 0 0 16px; padding: 6px 6px 16px; scroll-padding-inline: 6px; }
