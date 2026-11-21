@@ -10,7 +10,7 @@ export const EVENTS = [];
 
 const L = {
   es: {
-    eyebrow: "Agenda de clubs 2027", title: "Las noches que quieres,", em: "antes que nadie.",
+    eyebrow: "Agenda de clubs 2027", title: "Las fiestas que quieres,", em: "antes que nadie.",
     lede: "Dinos tus fechas y tus clubs. Te avisamos en cuanto salga cada line-up y te guardamos mesa antes de que vuele.",
     status: "Temporada 2027: los clubs anuncian sus line-ups entre enero y marzo. Los publicamos aquí en cuanto son oficiales.",
     from: "Primera noche", to: "Última noche", nights: "Tus noches", clubs: "Tus clubs", pick: "Toca los clubs que te interesan",
@@ -20,7 +20,7 @@ const L = {
     msgAlert: "Hola Mey Society, quiero alerta de line-up", msgTable: "Hola Mey Society, quiero mesa VIP o guestlist", msgDates: "Fechas", msgClubs: "Clubs", msgOpen: "abierto a propuestas",
   },
   en: {
-    eyebrow: "Club agenda 2027", title: "The nights you want,", em: "before anyone else.",
+    eyebrow: "Club agenda 2027", title: "The parties you want,", em: "before anyone else.",
     lede: "Tell us your dates and your clubs. We let you know the moment each line-up drops and hold your table before it goes.",
     status: "2027 season: clubs announce their line-ups between January and March. We publish them here as soon as they're official.",
     from: "First night", to: "Last night", nights: "Your nights", clubs: "Your clubs", pick: "Tap the clubs you like",
@@ -30,7 +30,7 @@ const L = {
     msgAlert: "Hi Mey Society, I'd like a line-up alert", msgTable: "Hi Mey Society, I'd like a VIP table or guestlist", msgDates: "Dates", msgClubs: "Clubs", msgOpen: "open to suggestions",
   },
   it: {
-    eyebrow: "Agenda dei club 2027", title: "Le notti che vuoi,", em: "prima di tutti.",
+    eyebrow: "Agenda dei club 2027", title: "Le feste che vuoi,", em: "prima di tutti.",
     lede: "Dicci le tue date e i tuoi club. Ti avvisiamo appena esce ogni line-up e ti teniamo il tavolo prima che vada esaurito.",
     status: "Stagione 2027: i club annunciano i line-up tra gennaio e marzo. Li pubblichiamo qui appena sono ufficiali.",
     from: "Prima notte", to: "Ultima notte", nights: "Le tue notti", clubs: "I tuoi club", pick: "Tocca i club che ti interessano",
@@ -40,7 +40,7 @@ const L = {
     msgAlert: "Ciao Mey Society, vorrei l'avviso line-up", msgTable: "Ciao Mey Society, vorrei un tavolo VIP o guestlist", msgDates: "Date", msgClubs: "Club", msgOpen: "aperto a proposte",
   },
   fr: {
-    eyebrow: "Agenda des clubs 2027", title: "Les nuits que vous voulez,", em: "avant tout le monde.",
+    eyebrow: "Agenda des clubs 2027", title: "Les fêtes que vous voulez,", em: "avant tout le monde.",
     lede: "Donnez-nous vos dates et vos clubs. Nous vous prévenons dès que chaque line-up sort et vous gardons une table avant qu'elle parte.",
     status: "Saison 2027 : les clubs annoncent leurs line-ups entre janvier et mars. Nous les publions ici dès qu'ils sont officiels.",
     from: "Première nuit", to: "Dernière nuit", nights: "Vos nuits", clubs: "Vos clubs", pick: "Touchez les clubs qui vous intéressent",
@@ -50,7 +50,7 @@ const L = {
     msgAlert: "Bonjour Mey Society, je veux une alerte line-up", msgTable: "Bonjour Mey Society, je veux une table VIP ou une guestlist", msgDates: "Dates", msgClubs: "Clubs", msgOpen: "ouvert aux propositions",
   },
   de: {
-    eyebrow: "Club-Agenda 2027", title: "Die Nächte, die du willst,", em: "vor allen anderen.",
+    eyebrow: "Club-Agenda 2027", title: "Die Partys, die du willst,", em: "vor allen anderen.",
     lede: "Sag uns deine Daten und deine Clubs. Wir melden uns, sobald jedes Line-up erscheint, und halten deinen Tisch, bevor er weg ist.",
     status: "Saison 2027: Die Clubs geben ihre Line-ups zwischen Januar und März bekannt. Wir veröffentlichen sie hier, sobald sie offiziell sind.",
     from: "Erste Nacht", to: "Letzte Nacht", nights: "Deine Nächte", clubs: "Deine Clubs", pick: "Tippe auf die Clubs, die dich interessieren",

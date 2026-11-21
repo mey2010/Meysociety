@@ -332,7 +332,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   const controls = new OrbitControls(camera, renderer.domElement);
   renderer.domElement.style.touchAction = "pan-y";   // OrbitControls sets "none", which stopped one finger from scrolling the page
   controls.enableDamping = true; controls.dampingFactor = .09; controls.rotateSpeed = .55; controls.panSpeed = .9; controls.zoomSpeed = 1.1;
-  controls.minDistance = .28; controls.maxDistance = 110; controls.maxPolarAngle = 1.2; controls.minPolarAngle = .05;
+  controls.minDistance = .16; controls.maxDistance = 110; controls.maxPolarAngle = 1.2; controls.minPolarAngle = .05;
   controls.screenSpacePanning = false; controls.zoomToCursor = true; controls.autoRotate = !reduced; controls.autoRotateSpeed = .3;
   const HOME = { pos: new THREE.Vector3(-8, 40, 46), target: new THREE.Vector3(.5, 0, -2) };
   { const a = el.clientWidth / Math.max(1, el.clientHeight); if (a < 1.2) HOME.pos.sub(HOME.target).multiplyScalar(Math.min(1.9, Math.pow(1.2 / a, .9))).add(HOME.target); } // portrait screens see the whole island

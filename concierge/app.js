@@ -7,7 +7,7 @@ import { initVillaTour, readingStops } from "./villa-tour.js";
 import { initFormenteraTour } from "./fx-tour.js";
 import { initChefPage } from "./chef.js";
 import { initTransferPage } from "./transfer.js";
-import { pick as blobPick } from "./fleet-blob.js";
+import { pick as blobPick, ONERR } from "./fleet-blob.js";
 import { initAgenda } from "./agenda.js";
 import { initPlanner, CLUBS as CLUB_MUSIC } from "./planner.js";
 import { holo } from "./holo.js";
@@ -165,7 +165,7 @@ function startMap() {
     if (!loader.isConnected) return;
     mapShown = Math.min(mapReady ? 1 : .97, mapShown + Math.max((mapTarget - mapShown) * .1, mapReady ? .03 : .006));
     loader.style.setProperty("--p", mapShown.toFixed(3));
-    if (mapReady && mapShown >= 1) { setTimeout(() => { loader.classList.add("is-done"); setTimeout(() => loader.remove(), 700); }, 350); return; }
+    if (mapReady && mapShown >= 1 && (!loader.querySelector(".asm") || loader.querySelector(".asm.is-built"))) { setTimeout(() => { loader.classList.add("is-done"); setTimeout(() => loader.remove(), 700); }, 350); return; }
     requestAnimationFrame(rise);
   })();
   load3D().then(m => m.initMap3D(mapEl, {
@@ -355,26 +355,58 @@ shatterType(document.getElementById("signal"));
 elasticLettering(document.getElementById("introLine"));
 logoFlight({ slot: document.getElementById("introLogo"), headerImg: document.querySelector(".sm-logo-img"), headerLink: document.querySelector(".sm-logo"), src: "assets/logo-neon-512.webp", menu: document.querySelector(".staggered-menu-wrapper"), letters: document.getElementById("signal") });
 
-/* a copy of the main logo (coin, relief, edge, halo) for loaders: grey, it fills with colour from the bottom and
-   turns once as the --p custom property (0..1) of its container rises */
+/* the loader: the logo builds itself from its parts, like an exploded drawing closing up. Seen at first from three
+   quarters, the parts stand apart along the logo's axis: backing plate, screws, aluminium panel, white face, chrome
+   ring, the MS letters, the swirl bezel. As the page (or the map) loads, the camera swings round to face it and each
+   part slides home in turn, back to front, with a short settle; a last light sweep marks it complete.
+   It reads the --p (0..1) its container is given. */
 function logoLoader(px = 130) {
-  const fly = document.querySelector(".flylogo .flylogo__spin"); if (!fly) return null;
-  const host = fly.closest(".flylogo"), size = parseFloat(host.style.width) || px;
-  const box = document.createElement("div"); box.className = "map3d__logo"; box.setAttribute("aria-hidden", "true"); box.style.width = box.style.height = px + "px";
-  const wrap = document.createElement("div"); wrap.className = "flylogo map3d__logoin";
-  ["--t", "--d"].forEach(k => wrap.style.setProperty(k, host.style.getPropertyValue(k)));
-  wrap.style.width = wrap.style.height = size + "px"; wrap.style.setProperty("--k", (px / size).toFixed(4));
-  const spin = fly.cloneNode(true); spin.style.transform = ""; spin.classList.add("map3d__spin");
-  spin.querySelectorAll("img").forEach(im => { const c = im.cloneNode(); c.classList.add("map3d__fill"); im.classList.add("map3d__grey"); im.after(c); });
-  spin.querySelectorAll(".flylogo__coin, .flylogo__back, .flylogo__core").forEach(f => f.insertAdjacentHTML("beforeend", '<span class="map3d__glass"></span>'));   // a glass bottle
-  wrap.append(spin); box.append(wrap);
-  // the turn is driven frame by frame (a CSS animation was switched off on phones set to reduce motion, and some
-  // browsers froze it inside the 3D coin): one full turn every TURN ms, steady, whatever the load
-  const t0 = performance.now();
-  (function turn(now) { if (!box.isConnected && now - t0 > 2000) return; spin.style.transform = `rotateX(8deg) rotateY(${(((now - t0) / TURN) * 360) % 360}deg)`; requestAnimationFrame(turn); })(t0);
+  const box = document.createElement("div"); box.className = "map3d__logo asm"; box.setAttribute("aria-hidden", "true"); box.style.width = box.style.height = px + "px";
+  const im = (c, src) => `<img class="asm__p ${c}" src="${src}" alt="" draggable="false" decoding="async" ${ONERR}>`;
+  box.innerHTML = `<span class="asm__shadow"></span><div class="asm__cam">
+    <span class="asm__p asm__plate"></span>${[0, 1, 2].map(i => `<span class="asm__p asm__screw" style="--a:${90 + i * 120}deg"></span>`).join("")}
+    ${im("asm__panel", "assets/asm/panel.webp")}${im("asm__face", "assets/asm/face.webp")}${im("asm__ring", "assets/asm/ring.webp")}
+    ${[0, 1, 2, 3].map(() => im("asm__let asm__let--side", "assets/logo-letters.webp")).join("")}${im("asm__let asm__let--top", "assets/logo-letters.webp")}
+    ${im("asm__bezel", "assets/asm/bezel.webp")}</div><span class="asm__sweep"></span>`;
+  const cam = box.querySelector(".asm__cam"), S = px;
+  const P = [...cam.querySelectorAll(".asm__p")].map(el => {
+    const c = el.classList, k = c.contains("asm__plate") ? 0 : c.contains("asm__screw") ? 1 : c.contains("asm__panel") ? 2 : c.contains("asm__face") ? 3 : c.contains("asm__ring") ? 4 : c.contains("asm__let") ? 5 : c.contains("asm__bezel") ? 6 : 7;
+    return { el, k, side: c.contains("asm__let--side"), top: c.contains("asm__let--top") };
+  });
+  // seated depth of each part (px), and where it waits in the exploded view (in logo widths along the axis)
+  const HOME = [-.075, -.09, -.05, -.02, .012, .03, .018, .045], OUT = [-1.05, -1.5, -.62, -.2, .28, .75, 1.25, 0];
+  const START = [0, .06, .14, .26, .38, .5, .62, 1];
+  const easeOut = x => 1 - Math.pow(1 - x, 3), settle = x => { x = Math.min(1, Math.max(0, x)); const s = 1.35; return 1 + (s + 1) * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2); };
+  const smooth = x => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
+  let shown = 0, doneAt = 0, mid = 0, readyAt = 0; const t0 = performance.now(), imgs = [...cam.querySelectorAll("img")];
+  box.querySelectorAll(".asm__p").forEach(e => { e.style.opacity = 0; });
+  (function frame(now) {
+    if (!box.isConnected && now - t0 > 3000) return;
+    // nothing moves until every part has arrived (inside claude.ai some come from the asset store a beat later)
+    if (!readyAt) { if (imgs.every(i => i.complete && i.naturalWidth) || now - t0 > 2500) readyAt = now; else { requestAnimationFrame(frame); return; } }
+    const host = box.parentElement, want = host ? parseFloat(host.style.getPropertyValue("--p")) || 0 : 0;
+    shown += (Math.min(want, (now - readyAt) / 1500) - shown) * .14; if (want >= 1 && shown > .995) shown = 1;
+    const q = shown, cq = smooth(q * 1.05), drift = Math.sin((now - t0) / 1400) * 3 * (1 - cq);
+    // camera: three-quarter view, a touch from above, drifting; swings round to face-on as the parts come home
+    cam.style.transform = `scale(${(.62 + .38 * easeOut(cq)).toFixed(4)}) rotateX(${(14 * (1 - cq) + drift * .4).toFixed(2)}deg) rotateY(${(-58 * (1 - cq) + drift).toFixed(2)}deg) translateZ(${(-mid).toFixed(2)}px)`;   // turning about the middle of the parts keeps the whole group centred
+    let zsum = 0, zn = 0;
+    P.forEach((p, i) => {
+      if (p.k === 7) return;
+      const f = settle((q - START[p.k]) / .34), lin = Math.min(1, Math.max(0, (q - START[p.k]) / .34));
+      let z = (OUT[p.k] + (HOME[p.k] - OUT[p.k]) * f) * S, extra = "";
+      if (p.side || p.top) { const j = p.top ? 4 : P.filter(o => o.side).indexOf(p); z += j * .007 * S; }
+      if (p.k === 1) extra = ` rotate(${p.el.style.getPropertyValue("--a")}) translateY(${(-.31 * S).toFixed(1)}px) rotateZ(${((1 - lin) * 900).toFixed(0)}deg)`;
+      p.el.style.transform = `translateZ(${z.toFixed(2)}px)${extra}`; if (p.k !== 1) { zsum += z; zn++; }
+      p.el.style.opacity = Math.min(1, Math.max(0, (now - readyAt - p.k * 45) / 380)).toFixed(3);   // the parts appear one after the other, already apart
+      const blur = (1 - lin) * Math.abs(OUT[p.k]) * .9;   // the ones far from the focus plane are a little soft p.el.style.filter = p.side ? "" : blur > .05 ? `blur(${blur.toFixed(2)}px)` : "";
+    });
+    mid = zn ? zsum / zn : 0;
+    if (q >= 1 && !doneAt) { doneAt = now; box.classList.add("is-built"); }
+    requestAnimationFrame(frame);
+  })(t0);
   return box;
 }
-const TURN = 1400;
+const TURN = 1400; window.__logoLoader = logoLoader;
 /* the page's own loading screen: the same logo fills and turns while the first screen (fonts, logo, first photos)
    arrives, then the page appears. Never longer than a few seconds, even on a slow line. */
 {
@@ -389,12 +421,11 @@ const TURN = 1400;
   (document.readyState === "complete" ? Promise.resolve() : new Promise(ok => addEventListener("load", ok, { once: true }))).then(finish);
   setTimeout(finish, 6000);
   (function tick(now) {
-    // never jumps: the colour climbs toward what has really arrived, and keeps creeping while it waits
-    // the liquid keeps rising while the page loads (pushed on by what has really arrived, never standing still)
-    // and only reaches the brim when the page is ready: then the home appears at once
-    { const t = now - t0, creep = .92 * (1 - Math.exp(-t / 900)); shown = done ? Math.min(1, shown + Math.max((1 - shown) * .18, .025)) : Math.max(shown + .0008, Math.min(.95, Math.max(creep, target * .95))); shown = Math.min(done ? 1 : .97, shown); }
+    // the build keeps moving while the page loads (pushed on by what has really arrived, never standing still) and
+    // the last part only seats when the page is ready; never faster than a short, readable sequence (~1.6 s)
+    { const t = now - t0, creep = .92 * (1 - Math.exp(-t / 900)); shown = done ? Math.min(1, shown + Math.max((1 - shown) * .18, .025)) : Math.max(shown + .0008, Math.min(.95, Math.max(creep, target * .95))); shown = Math.min(done ? 1 : .97, shown, t / 1600); }
     splash.style.setProperty("--p", shown.toFixed(3));
-    if (done && shown >= 1) { splash.style.setProperty("--p", 1); setTimeout(() => { splash.classList.add("is-out"); document.documentElement.classList.remove("is-splash"); setTimeout(() => splash.remove(), 700); }, 180); return; }
+    if (done && shown >= 1 && (!logo || logo.classList.contains("is-built") || now - t0 > 7000)) { splash.style.setProperty("--p", 1); setTimeout(() => { splash.classList.add("is-out"); document.documentElement.classList.remove("is-splash"); setTimeout(() => splash.remove(), 700); }, 700); return; }
     requestAnimationFrame(tick);
   })(t0);
 }
