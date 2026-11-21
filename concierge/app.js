@@ -396,9 +396,9 @@ function logoLoader(px = 130) {
      DX/DY: a sideways offset it glides in from (an arc, never a straight push)   ROT: the turn it unwinds as it comes
      TILT: how far off-square it floats, levelling as it seats   START: when it sets off (share of the load) */
   const HOME = [-.075, -.09, -.05, -.02, .012, .03, .018, .045], OUT = [-1.05, -1.5, -.62, -.2, .28, .75, 1.25, 0];
-  const DX = [-.10, 0, .12, -.06, .16, -.12, .22, 0], DY = [.08, 0, -.10, .05, -.12, .10, -.06, 0];
-  const ROT = [-24, 0, 38, 0, 120, -18, -150, 0], TILT = [-14, 0, 18, -8, 26, -20, 32, 0];
-  const START = [0, .07, .15, .27, .38, .5, .6, 1], DUR = .38;
+  const DX = [0, 0, 0, 0, 0, 0, 0, 0], DY = [0, 0, 0, 0, 0, 0, 0, 0];   // every part travels straight along the logo's axis
+  const ROT = [-60, 0, -60, -60, -60, -60, -60, 0], TILT = [0, 0, 0, 0, 0, 0, 0, 0];   // and turns the same quarter-and-a-bit into place
+  const START = [0, .09, .18, .27, .36, .45, .54, 1], DUR = .46;   // evenly spaced, all the same length: one steady rhythm
   const clamp = x => Math.min(1, Math.max(0, x));
   const easeOut = x => 1 - Math.pow(1 - x, 3), expo = x => x >= 1 ? 1 : 1 - Math.pow(2, -10 * x);
   const settle = x => { x = clamp(x); const s = 1.2; return 1 + (s + 1) * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2); };   // arrives with a soft seat
@@ -411,19 +411,20 @@ function logoLoader(px = 130) {
     // nothing moves until every part has arrived (inside claude.ai some come from the asset store a beat later)
     if (!readyAt) { if (imgs.every(i => i.complete && i.naturalWidth) || now - t0 > 2500) readyAt = now; else { requestAnimationFrame(frame); return; } }
     const host = box.parentElement, want = host ? parseFloat(host.style.getPropertyValue("--p")) || 0 : 0;
-    shown += (Math.min(want, (now - readyAt) / 1700) - shown) * .12; if (want >= 1 && shown > .995) shown = 1;
+    { const goal = Math.min(want, (now - readyAt) / 1700), dt = Math.min(50, now - (frame.last || now)); frame.last = now;   // a steady pace: never jumps ahead when the page arrives in bursts
+      shown = Math.min(goal, shown + Math.max(0, goal - shown) * .08 + dt / 2600, shown + dt / 900); } if (want >= 1 && shown > .995) shown = 1;
     const q = shown, cq = smoother(q), life = (now - t0) / 1000, calm = 1 - cq;
     // camera: a slow crane from a high three-quarter view down to face-on, with a breath of hand-held drift that dies away
-    const ry = -64 * calm + Math.sin(life * 1.3) * 4 * calm + box.__spin, rx = 18 * calm + Math.sin(life * .9 + 1) * 2 * calm, roll = -6 * calm;
+    const ry = -64 * calm + box.__spin, rx = 18 * calm, roll = -6 * calm;   // one smooth camera move, no shake
     cam.style.transform = `translateY(${(-box.__lift).toFixed(2)}px) scale(${(.56 + .44 * easeOut(cq)).toFixed(4)}) rotateZ(${roll.toFixed(2)}deg) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translateZ(${(-mid).toFixed(2)}px)`;   // turning about the middle of the parts keeps the group centred
     let zsum = 0, zn = 0;
     P.forEach(p => {
       const k = p.k; if (k === 7) return;
-      const lin = clamp((q - START[k]) / DUR), e = expo(lin), f = settle(lin), off = 1 - e;
+      const lin = clamp((q - START[k]) / DUR), e = smoother(lin), f = e, off = 1 - e;   // the same gentle ease in and out for every part
       let z = (OUT[k] + (HOME[k] - OUT[k]) * f) * S, extra = "";
       if (p.side || p.top) { const j = p.top ? 4 : P.filter(o => o.side).indexOf(p); z += j * .007 * S; }
       if (k === 1) extra = ` rotate(${p.el.style.getPropertyValue("--a")}) translateY(${(-.31 * S).toFixed(1)}px) rotateZ(${((1 - lin) * 1080).toFixed(0)}deg)`;   // the screws drive home
-      const arc = Math.sin(lin * Math.PI) * .06 * S;   // a gentle lift over the middle of the travel
+      const arc = 0;   // a gentle lift over the middle of the travel
       p.el.style.transform = `translate3d(${(DX[k] * S * off).toFixed(2)}px, ${(DY[k] * S * off - arc * (DY[k] < 0 ? 1 : -1) * (k === 1 ? 0 : 1)).toFixed(2)}px, ${z.toFixed(2)}px) rotateY(${(TILT[k] * off).toFixed(2)}deg) rotateX(${(TILT[k] * .45 * off).toFixed(2)}deg) rotateZ(${(ROT[k] * off).toFixed(2)}deg)${extra}`;
       if (k !== 1) { zsum += z; zn++; }
       p.el.style.opacity = clamp((now - readyAt - k * 55) / 420).toFixed(3);   // the parts appear one after the other, already apart
