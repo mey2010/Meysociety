@@ -1466,6 +1466,9 @@ function setFleetCat(cat) {
 }
 function openFleet(cat = "all", brand = "") {
   fleet.hidden = false; document.body.style.overflow = "hidden";
+  // the villa gallery warms up the tour: its index and first part start downloading while the visitor looks at the card
+  if (cat === VILLA && !openFleet.warm) { openFleet.warm = true; const pk = matchMedia("(max-width: 720px) and (orientation: portrait)").matches ? "p" : "d";
+    [`data/villa/aura-v-${pk}.json`, `data/villa/aura-v-${pk}-1.mp4`].forEach(u => fetch(u, { priority: "low" }).then(r => r.arrayBuffer()).catch(() => {})); }
   { const [eb, tt] = cat === VILLA ? ["Villas privadas · Ibiza", "Nuestras villas"] : ["Barcos y yates · Ibiza", "Nuestra flota"];   // the gallery's own title
     fleet.querySelector(".fleet__top .eyebrow").textContent = t(eb); document.getElementById("fleetTitle").textContent = t(tt); }
   const TOY_GROUP = { motor: ["fliteboard", "jetsurf", "radinn", "seabob-f5s", "scubajet"], vuelo: ["flyboard", "hoverboard", "flyride"] };
