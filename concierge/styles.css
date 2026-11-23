@@ -2766,3 +2766,19 @@ img.asm__bk.asm__let--side { filter: brightness(.34) saturate(1.4) hue-rotate(-8
 img.asm__bk.asm__let--top { filter: drop-shadow(-.5px -.6px 0 rgb(255 255 255 / .7)) drop-shadow(.7px 1.2px .8px rgb(14 10 60 / .6)); }
 .asm__edge { -webkit-mask-image: radial-gradient(circle closest-side, transparent 92%, #000 93%); mask-image: radial-gradient(circle closest-side, transparent 92%, #000 93%); }
 .ag__search[hidden] { display: none !important; }
+.ag__panel--nights .ag__hint { margin: -6px 0 12px; font-size: 14px; color: var(--ink-soft, #5a5a7a); }
+.ag__calsub, .pl__lede { text-align: center; margin-inline: auto; }
+.pl .sec__head { text-align: center; } .pl .sec__head .lede { margin-inline: auto; }
+.ag__calhead > div { flex: 1; text-align: center; } .ag__calhead .ag__calsub { max-width: 34ch; margin-inline: auto; }
+/* footer: the credits stay one tap away instead of filling the screen */
+.foot__credits { width: 100%; font-size: 12px; opacity: .7; }
+.foot__credits summary { cursor: pointer; list-style: none; text-decoration: underline; text-underline-offset: 3px; }
+.foot__credits summary::-webkit-details-marker { display: none; }
+.foot__credits[open] summary { margin-bottom: 8px; }
+.foot__credits .credits { display: block; margin-top: 6px; }
+.routemap__maps { display: inline-flex; align-items: center; gap: 8px; margin: 12px auto 0; } .routemap__maps svg { flex: none; }
+/* the resting coin, flattened into one picture: the hidden back and the side layers are not drawn at all */
+.flylogo__spin.is-flat { transform-style: flat; transform: none !important; }
+.flylogo__spin.is-flat > .flylogo__edge, .flylogo__spin.is-flat > .flylogo__core-edge, .flylogo__spin.is-flat > .flylogo__back, .flylogo__spin.is-flat > .flylogo__core--back,
+.flylogo__spin.is-flat > .flylogo__let:not(.flylogo__let--top), .flylogo__spin.is-flat > .flylogo__let--back { display: none; }
+.flylogo__spin.is-flat > * { transform: none !important; translate: none !important; isolation: isolate; }

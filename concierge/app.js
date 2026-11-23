@@ -45,12 +45,12 @@ const SM = (() => {
     const sTitle = panel.querySelector(".sm-socials-title"), sLinks = [...panel.querySelectorAll(".sm-socials-link")];
     gsap.set(items, { yPercent: 140, rotate: 10 }); gsap.set(nums, { "--sm-num-opacity": 0 }); if (sTitle) gsap.set(sTitle, { opacity: 0 }); gsap.set(sLinks, { y: 25, opacity: 0 });
     const tl = gsap.timeline({ paused: true });
-    layers.forEach((el, i) => tl.fromTo(el, { xPercent: offscreen }, { xPercent: 0, duration: .5, ease: "power4.out" }, i * .07));
-    const panelAt = (layers.length - 1) * .07 + (layers.length ? .08 : 0), panelDur = .65;
+    layers.forEach((el, i) => tl.fromTo(el, { xPercent: offscreen }, { xPercent: 0, duration: .38, ease: "power4.out" }, i * .05));
+    const panelAt = (layers.length - 1) * .05 + (layers.length ? .05 : 0), panelDur = .45;
     tl.fromTo(panel, { xPercent: offscreen }, { xPercent: 0, duration: panelDur, ease: "power4.out" }, panelAt);
     const itemsAt = panelAt + panelDur * .15;
-    tl.to(items, { yPercent: 0, rotate: 0, duration: 1, ease: "power4.out", stagger: { each: .1, from: "start" } }, itemsAt);
-    tl.to(nums, { duration: .6, ease: "power2.out", "--sm-num-opacity": 1, stagger: { each: .08, from: "start" } }, itemsAt + .1);
+    tl.to(items, { yPercent: 0, rotate: 0, duration: .6, ease: "power4.out", stagger: { each: .045, from: "start" } }, itemsAt);
+    tl.to(nums, { duration: .4, ease: "power2.out", "--sm-num-opacity": 1, stagger: { each: .04, from: "start" } }, itemsAt + .06);
     const socAt = panelAt + panelDur * .4;
     if (sTitle) tl.to(sTitle, { opacity: 1, duration: .5, ease: "power2.out" }, socAt);
     tl.to(sLinks, { y: 0, opacity: 1, duration: .55, ease: "power3.out", stagger: { each: .08, from: "start" }, onComplete: () => gsap.set(sLinks, { clearProps: "opacity" }) }, socAt + .04);
@@ -78,6 +78,7 @@ const SM = (() => {
     if (o === open) return; open = o;
     root.toggleAttribute("data-open", o); btn.setAttribute("aria-expanded", o); btn.setAttribute("aria-label", o ? "Cerrar menú" : "Abrir menú"); panel.setAttribute("aria-hidden", !o);
     o ? playOpen() : playClose(); animateIcon(o); animateColor(o); animateText(o);
+    document.documentElement.classList.toggle("sm-open", o);   // the 3D map behind the menu stops drawing while it is open
   }
   btn.addEventListener("click", () => set(!open));
   // swipe right anywhere on the open menu to close it (no need to reach for the button)
@@ -603,6 +604,13 @@ const TURN = 1400; window.__logoLoader = logoLoader;
     let ticking = false, stuck = [], tops = [];
     // a dark veil per card stands in for the old brightness() filter: only its opacity changes, which the
     // compositor does on its own without repainting the card (photo, blurred backdrop and glass panel)
+    /* each card's own background is the average colour of its photo: if a phone is a beat late drawing a card on a
+       very fast flick, what shows for that instant is the photo's own tone, never a dark flash */
+    cards.forEach(c => { const im = c.querySelector(".stack__media > img:not(.stack__media-bg)") || c.querySelector("img"); if (!im) return;
+      const tint = () => { try { const cv = document.createElement("canvas"); cv.width = cv.height = 6; const g = cv.getContext("2d", { willReadFrequently: true }); g.drawImage(im, 0, 0, 6, 6);
+        const d = g.getImageData(0, 0, 6, 6).data; let r = 0, gg = 0, bb = 0; for (let k = 0; k < d.length; k += 4) { r += d[k]; gg += d[k + 1]; bb += d[k + 2]; } const n = d.length / 4;
+        c.style.backgroundColor = `rgb(${r / n | 0} ${gg / n | 0} ${bb / n | 0})`; c.querySelector(".stack__media")?.style.setProperty("background-color", c.style.backgroundColor); } catch {} };
+      im.complete && im.naturalWidth ? tint() : im.addEventListener("load", tint, { once: true }); });
     const veils = cards.map(c => { const v = document.createElement("span"); v.className = "stack__veil"; v.setAttribute("aria-hidden", "true"); c.appendChild(v); return v; });
     const last = cards.map(() => ({ s: "1", o: "", v: "" }));
     // one transform per card: the stack's scale plus the 3D tilt of the paused card (written straight to
@@ -641,10 +649,10 @@ const TURN = 1400; window.__logoLoader = logoLoader;
            the front one, or still more than a screen below, is not drawn at all; on iPhone too many large layers at
            once run out of tile memory and come up as black areas. */
         const level = Math.min(Math.round(k * 2) / 2, 4), s = (1 - level * .05).toFixed(3);
-        const far = tops[i] - sy > vh * 1.6, buried = k >= 3.2, live = !far && !buried;
+        const far = tops[i] - sy > vh * 3, buried = k >= 6, live = !far && !buried;   // ready three screens ahead: a fast flick never reaches a card before it is drawn
         const L = last[i];
         if (L.s !== s) { L.s = s; paintCard(i); }
-        if (L.live !== live) { L.live = live; c.classList.toggle("is-live", live); c.style.visibility = buried ? "hidden" : ""; }
+        if (L.live !== live) { L.live = live; c.classList.toggle("is-live", live); }   // never hidden: the deep cards just stop having their own GPU layer (their thin edges in the deck stay drawn, no pop when scrolling back)
       });
     }
     addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
@@ -798,7 +806,7 @@ const SVC_TREE = [
   { label: "DJ", value: "dj", svc: "dj", icon: "dj" },
   { label: "Formentera Experience", value: "formentera", svc: "formentera", icon: "boat" },
 ];
-const svcMenu = BranchedMenu(document.getElementById("bm"), {
+const SVC_OPTS = {
   items: SVC_TREE, defaultOpen: -1, defaultActive: "__none__",
   color: "#0d0a38", accentColor: "#ab50db", lineColor: "#c9cce8", width: 340, rowHeight: 38, fontSize: 15, indent: 42,
 
@@ -821,7 +829,10 @@ const svcMenu = BranchedMenu(document.getElementById("bm"), {
     document.getElementById("f-notes").value = item && sec.children ? `${t("Me interesa")}: ${t(sec.label)} · ${t(item.label)}.` : `${t("Me interesa")}: ${t(sec.label)}.`;
     setTimeout(() => { SM.set(false); setTimeout(() => scrollToEl(document.getElementById("contacto")), 250); }, 380);
   },
-});
+};
+const svcMenu = BranchedMenu(document.getElementById("bm"), SVC_OPTS);
+// the same choice made from inside a gallery (its sub-options shown as chips at the top)
+const goMenu = value => { const sec = SVC_TREE.find(s => s.children?.some(k => k.value === value)); SVC_OPTS.onSelect(value, sec?.children.find(k => k.value === value)); };
 {
   const t = document.getElementById("svcToggle"), tree = document.getElementById("svcTree");
   t.addEventListener("click", () => { const o = t.getAttribute("aria-expanded") !== "true"; t.setAttribute("aria-expanded", o); tree.toggleAttribute("data-closed", !o); });
@@ -1250,6 +1261,14 @@ function renderRoute(tl) {
   }).join("");
   if (!REDUCED) map.querySelectorAll(".leg").forEach((l, i) => gsap.fromTo(l, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: .5, delay: .15 + i * .12, ease: "power2.out", clearProps: "strokeDashoffset" }));
   showRoute3D(pts.map(p => ({ ll: PLACES[p.place].ll, status: p.status, days: p.days, label: t(PLACES[p.place].name).split(" · ")[0] })), { today: viewingDay, here });
+  // the same route in Google Maps (the app on a phone): the day being viewed, from the stop before it; else the whole stay
+  { const day = pts.map((p, i) => ({ p, i })).filter(x => x.p.days.has(viewingDay)), first = day.length ? day[0].i : 0;
+    let list = day.length ? [pts[Math.max(0, first - 1)], ...day.map(x => x.p)] : pts;
+    list = list.filter((p, i) => i === 0 || p.place !== list[i - 1].place); if (list.length < 2) list = pts;
+    list = list.slice(0, 10); const ll = p => `${PLACES[p.place].ll[1]},${PLACES[p.place].ll[0]}`;
+    const u = new URL("https://www.google.com/maps/dir/"); u.searchParams.set("api", "1"); u.searchParams.set("origin", ll(list[0])); u.searchParams.set("destination", ll(list[list.length - 1]));
+    if (list.length > 2) u.searchParams.set("waypoints", list.slice(1, -1).map(ll).join("|")); u.searchParams.set("travelmode", "driving");
+    const btn = document.getElementById("routeMaps"); if (btn) btn.href = u.toString(); }
 }
 // the same route in 3D (turn, zoom, pan); the flat map above stays only as a fallback for devices without WebGL
 let route3d = null, route3dStarted = false, route3dLast = null;
@@ -1613,7 +1632,7 @@ function openFleet(cat = "all", brand = "") {
   { const [eb, tt] = cat === VILLA ? ["Villas privadas · Ibiza", "Nuestras villas"] : ["Barcos y yates · Ibiza", "Nuestra flota"];   // the gallery's own title
     fleet.querySelector(".fleet__top .eyebrow").textContent = t(eb); document.getElementById("fleetTitle").textContent = t(tt); }
   const TOY_GROUP = { motor: ["fliteboard", "jetsurf", "radinn", "seabob-f5s", "scubajet"], vuelo: ["flyboard", "hoverboard", "flyride"] };
-  const solo = SOLO.includes(cat); fleetBase = solo ? FLEET.filter(b => b.type === cat && (!brand || (TOY_GROUP[brand] ? TOY_GROUP[brand].includes(b.id) : b.name.startsWith(brand)))) : BOATS; if (solo) cat = "all";
+  const solo = SOLO.includes(cat); const soloType = solo ? cat : null; fleetBase = solo ? FLEET.filter(b => b.type === cat) : BOATS; if (solo) cat = "all";
   // only the types that have boats, each with its count (jet skis, cars and transfers are one group each: no chips)
   // jet skis: one chip per brand (Sea-Doo and Yamaha never share a group); cars and transfers: no chips
   const brands = cat === "all" && solo && fleetBase[0]?.type === JET && !brand ? [...new Set(fleetBase.map(b => b.name.split(" ")[0]))] : [];
@@ -1628,6 +1647,24 @@ function openFleet(cat = "all", brand = "") {
     onItemClick: (b, i) => openBoat(fleetList[i]),   // tapping the boat in front opens its sheet
   });
   setFleetCat(cat);
+  /* a single-kind gallery (jet skis, toys, villas, cars, transfers) shows the same sub-options as its menu, on top,
+     like the boats' tabs: the ones that are a group of this gallery filter it in place, the others go where the menu goes */
+  if (soloType) {
+    const SEC = { [JET]: "Motos de agua", [TOY]: "Juguetes acuáticos", [VILLA]: "Villas", coche: "Coches y motos", transfer: "Transfers" }[soloType];
+    const kids = SVC_TREE.find(s => s.label === SEC)?.children || [];
+    const groupOf = v => ({ "motos-seadoo": b => b.name.startsWith("Sea-Doo"), "motos-yamaha": b => b.name.startsWith("Yamaha"),
+      "juguetes-motor": b => TOY_GROUP.motor.includes(b.id), "juguetes-vuelo": b => TOY_GROUP.vuelo.includes(b.id) })[v] || (/-(all|ver|sin-licencia)$/.test(v) ? () => true : null);
+    const start = { "Sea-Doo": "motos-seadoo", Yamaha: "motos-yamaha", motor: "juguetes-motor", vuelo: "juguetes-vuelo" }[brand] || kids[0]?.value;
+    const pick = v => { const f = groupOf(v); if (!f) return false;
+      fleetChips.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.sub === v));
+      fleetList = fleetBase.filter(f); ribbon.setItems(fleetItems()); document.querySelector(".fleet__nav").classList.toggle("is-single", fleetList.length < 2);
+      const on = fleetChips.querySelector(`[data-sub="${v}"]`); if (on) fleetChips.scrollTo({ left: on.offsetLeft - (fleetChips.clientWidth - on.offsetWidth) / 2, behavior: "smooth" }); return true; };
+    if (soloType !== VILLA) { fleetChips.closest(".fleet").querySelector(".fleet__top .eyebrow").textContent = `${t("Nuestra flota")} · Ibiza`; document.getElementById("fleetTitle").textContent = t(SEC); }
+    fleetChips.hidden = kids.length < 2;
+    fleetChips.innerHTML = kids.map(k => { const f = groupOf(k.value); return `<button type="button" data-sub="${k.value}" aria-pressed="false">${t(k.label)}${f ? ` <small>${fleetBase.filter(f).length}</small>` : ""}</button>`; }).join("");
+    fleetChips.onclick = e => { const b = e.target.closest("button[data-sub]"); if (!b) return; e.stopImmediatePropagation(); if (!pick(b.dataset.sub)) { closeFleet(); goMenu(b.dataset.sub); } };
+    pick(start);
+  } else fleetChips.onclick = null;
   requestAnimationFrame(() => document.querySelector("#fleetRibbon .ribbon").focus({ preventScroll: true }));
 }
 function closeFleet() { fleet.hidden = true; document.body.style.overflow = ""; }
@@ -2133,9 +2170,9 @@ function meyAgent(qRaw) {
     out.ctas = ["ask", "agenda"]; out.services = ["vip"]; return out;
   }
   // occasions: the package made for it, shown as a card that opens it
-  const OCCS = [[/despedida de soltera|hen|bachelorette|nubilato|evjf|junggesellinnen/, "Despedida de soltera"], [/despedida|stag|bachelor|celibato|evg|junggesellen/, "Despedida de soltero"],
+  const OCCS = [[/despedida|stag|bachelor|celibato|evg|junggesellen/, "Despedida de soltero"],
     [/cumple|birthday|compleanno|anniversaire|geburtstag/, "Cumpleaños"], [/pedida|propos|proposta|demande en mariage|heiratsantrag|anillo|ring/, "Pedida de mano"],
-    [/luna de miel|honeymoon|luna di miele|lune de miel|flitterwochen|recien casad/, "Luna de miel"], [/aniversario|anniversary|anniversario|jahrestag/, "Aniversario"],
+    [/aniversario|anniversary|anniversario|jahrestag/, "Aniversario"],
     [/familia|ninos|kids|children|famiglia|bambini|famille|enfants|familie|kinder/, "Family Days"], [/romant|pareja|couple|coppia|amoureux/, "Sunset Lovers"]];
   const occ = OCCS.find(([rx]) => rx.test(q));
   if (occ) {

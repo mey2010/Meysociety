@@ -13,7 +13,7 @@ const L = {
     eyebrow: "Agenda de clubs 2027", title: "Las fiestas que quieres,", em: "antes que nadie.",
     lede: "Dinos tus clubs y tus fechas. Te avisamos en cuanto salga cada line-up y te guardamos mesa o entrada antes de que vuele.",
     status: "Temporada 2027: los clubs anuncian sus line-ups entre enero y marzo. Los publicamos aquí en cuanto son oficiales.",
-    from: "Primera noche", to: "Última noche", nights: "Tus noches", clubs: "Tus clubs", pick: "Toca los clubs que te interesan",
+    pickHint: "Selecciona una o varias opciones", from: "Primera noche", to: "Última noche", nights: "Tus noches", clubs: "Tus clubs", pick: "Toca los clubs que te interesan",
     tba: "Line-up por anunciar", soon: "Aviso activado al elegir el club", any: "Elige tus fechas para ver tus noches",
     alert: "Activar mi alerta de line-up", table: "Pedir mesa VIP o guestlist", picked: n => n ? `${n} ${n === 1 ? "club elegido" : "clubs elegidos"}` : "Ningún club elegido",
     fine: "Guestlists de cortesía sujetas a disponibilidad del club. Mayores de 18.", source: "Fuente oficial",
@@ -23,7 +23,7 @@ const L = {
     eyebrow: "Club agenda 2027", title: "The parties you want,", em: "before anyone else.",
     lede: "Tell us your clubs and your dates. We let you know the moment each line-up drops and hold your table or ticket before it goes.",
     status: "2027 season: clubs announce their line-ups between January and March. We publish them here as soon as they're official.",
-    from: "First night", to: "Last night", nights: "Your nights", clubs: "Your clubs", pick: "Tap the clubs you like",
+    pickHint: "Select one or more options", from: "First night", to: "Last night", nights: "Your nights", clubs: "Your clubs", pick: "Tap the clubs you like",
     tba: "Line-up to be announced", soon: "Alert on once you pick the club", any: "Choose your dates to see your nights",
     alert: "Turn on my line-up alert", table: "Ask for a VIP table or guestlist", picked: n => n ? `${n} ${n === 1 ? "club picked" : "clubs picked"}` : "No club picked",
     fine: "Complimentary guestlists subject to club availability. 18+ only.", source: "Official source",
@@ -33,7 +33,7 @@ const L = {
     eyebrow: "Agenda dei club 2027", title: "Le feste che vuoi,", em: "prima di tutti.",
     lede: "Dicci i tuoi club e le tue date. Ti avvisiamo appena esce ogni line-up e ti teniamo il tavolo o l'ingresso prima che vada esaurito.",
     status: "Stagione 2027: i club annunciano i line-up tra gennaio e marzo. Li pubblichiamo qui appena sono ufficiali.",
-    from: "Prima notte", to: "Ultima notte", nights: "Le tue notti", clubs: "I tuoi club", pick: "Tocca i club che ti interessano",
+    pickHint: "Seleziona una o più opzioni", from: "Prima notte", to: "Ultima notte", nights: "Le tue notti", clubs: "I tuoi club", pick: "Tocca i club che ti interessano",
     tba: "Line-up da annunciare", soon: "Avviso attivo scegliendo il club", any: "Scegli le date per vedere le tue notti",
     alert: "Attiva il mio avviso line-up", table: "Chiedi tavolo VIP o guestlist", picked: n => n ? `${n} ${n === 1 ? "club scelto" : "club scelti"}` : "Nessun club scelto",
     fine: "Guestlist di cortesia soggette a disponibilità del club. Solo maggiorenni.", source: "Fonte ufficiale",
@@ -43,7 +43,7 @@ const L = {
     eyebrow: "Agenda des clubs 2027", title: "Les fêtes que vous voulez,", em: "avant tout le monde.",
     lede: "Donnez-nous vos clubs et vos dates. Nous vous prévenons dès que chaque line-up sort et vous gardons une table ou une entrée avant qu'elle parte.",
     status: "Saison 2027 : les clubs annoncent leurs line-ups entre janvier et mars. Nous les publions ici dès qu'ils sont officiels.",
-    from: "Première nuit", to: "Dernière nuit", nights: "Vos nuits", clubs: "Vos clubs", pick: "Touchez les clubs qui vous intéressent",
+    pickHint: "Sélectionnez une ou plusieurs options", from: "Première nuit", to: "Dernière nuit", nights: "Vos nuits", clubs: "Vos clubs", pick: "Touchez les clubs qui vous intéressent",
     tba: "Line-up à annoncer", soon: "Alerte activée en choisissant le club", any: "Choisissez vos dates pour voir vos nuits",
     alert: "Activer mon alerte line-up", table: "Demander table VIP ou guestlist", picked: n => n ? `${n} ${n === 1 ? "club choisi" : "clubs choisis"}` : "Aucun club choisi",
     fine: "Guestlists offertes selon disponibilité du club. Réservé aux plus de 18 ans.", source: "Source officielle",
@@ -53,7 +53,7 @@ const L = {
     eyebrow: "Club-Agenda 2027", title: "Die Partys, die du willst,", em: "vor allen anderen.",
     lede: "Sag uns deine Clubs und deine Daten. Wir melden uns, sobald jedes Line-up erscheint, und halten deinen Tisch oder dein Ticket, bevor alles weg ist.",
     status: "Saison 2027: Die Clubs geben ihre Line-ups zwischen Januar und März bekannt. Wir veröffentlichen sie hier, sobald sie offiziell sind.",
-    from: "Erste Nacht", to: "Letzte Nacht", nights: "Deine Nächte", clubs: "Deine Clubs", pick: "Tippe auf die Clubs, die dich interessieren",
+    pickHint: "Wähle eine oder mehrere Optionen", from: "Erste Nacht", to: "Letzte Nacht", nights: "Deine Nächte", clubs: "Deine Clubs", pick: "Tippe auf die Clubs, die dich interessieren",
     tba: "Line-up folgt", soon: "Alarm aktiv, sobald du den Club wählst", any: "Wähle deine Daten, um deine Nächte zu sehen",
     alert: "Meinen Line-up-Alarm aktivieren", table: "VIP-Tisch oder Guestlist anfragen", picked: n => n ? `${n} ${n === 1 ? "Club gewählt" : "Clubs gewählt"}` : "Kein Club gewählt",
     fine: "Kostenlose Guestlists je nach Verfügbarkeit des Clubs. Ab 18.", source: "Offizielle Quelle",
@@ -132,6 +132,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     <p class="ag__status"><i aria-hidden="true"></i><span></span></p>
     <div class="ag__panel ag__panel--nights">
       <h3 class="ag__h ag__h--nights"></h3>
+      <p class="ag__hint"></p>
     <div class="ag__featwrap"><button type="button" class="ag__fnav" data-dir="-1" aria-label="‹" disabled>‹</button>
     <ul class="ag__feat" role="list">${FEAT.map(f => `<li><button type="button" class="ag__fcard" ${f.club ? `data-club="${esc(f.club)}" aria-pressed="false"` : `data-act="${f.act}"`}>
       <img src="${f.img}" alt="${f.club ? esc(f.club) + " Ibiza" : ""}" loading="lazy" decoding="async"><span class="ag__fname">${f.club ? esc(f.club) : ""}</span><span class="ag__fsub"></span><span class="ag__arrow" aria-hidden="true"></span></button></li>`).join("")}</ul>
@@ -228,7 +229,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
   function paint() {
     const t = tx();
     $(".ag__eyebrow").textContent = t.eyebrow; $(".ag__title").textContent = t.title; $(".ag__em").textContent = t.em; $(".ag__lede").textContent = t.lede;
-    $(".ag__status span").textContent = t.status; $(".ag__h--nights").textContent = t.clubs;
+    $(".ag__status span").textContent = t.status; $(".ag__h--nights").textContent = t.clubs; $(".ag__hint").textContent = t.pickHint;
     $(".ag__l-from").textContent = t.from; $(".ag__l-to").textContent = t.to; 
     $('.ag__cta [data-act="alert"]').textContent = t.alert; $('.ag__cta [data-act="table"]').textContent = t.table; $(".ag__fine").textContent = t.fine;
     const X = L2[getLang()] || L2.es; $(".ag__go").textContent = X.go;

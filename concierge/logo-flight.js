@@ -99,7 +99,7 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
       }
       if (Math.abs(p - S.kd) < 1e-4 && Math.abs(S.kv) < 1e-3) { S.kd = p; S.kv = 0; } else busy = true;
       // the coin rolls with the travel: one and a half turns across the whole flight, then settles face-on
-      const dk = S.kd - prev; S.spinTo += dk * 540;
+      const dk = S.kd - prev; if (!fT0 && !forced) S.spinTo += dk * 540;   // (the menu toss just slides: no turn, so it stays one flat picture)
       if (Math.abs(dk) < 2e-4) { if ((S.still += dt) > .12) S.spinTo = Math.round(S.spinTo / 180) * 180; } else S.still = 0;
       const ws = 11; for (let rem = dt; rem > 0; rem -= 1 / 240) { const h = Math.min(rem, 1 / 240); S.spinV += (ws * ws * (S.spinTo - S.spin) - 2 * ws * S.spinV) * h; S.spin += S.spinV * h; }
       if (Math.abs(S.spinTo - S.spin) > .05 || Math.abs(S.spinV) > .05) busy = true; else { S.spin = S.spinTo; S.spinV = 0; }
@@ -123,9 +123,14 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
     }
     S.lastPt = { x: mx, y: my, k, t: now };
     if (drawTrail(now)) busy = true;
+    // at rest and face-on the coin is drawn flat, as one picture (dozens of 3D layers cost every frame on a phone)
+    const flat = !hovered && Math.abs(S.spin % 180) < .01 && Math.abs(S.spinTo - S.spin) < .01;
+    if (flat !== S.flat) { S.flat = flat; spinEl.classList.toggle("is-flat", flat); }
     if (busy) raf = requestAnimationFrame(frame); else S.last = 0;
   }
-  const wake = force => { if (!raf) raf = requestAnimationFrame(frame); if (force) S.lastPt = null; };
+  let hovered = false;
+  const wake = force => { if (S.flat) { S.flat = false; spinEl.classList.remove("is-flat"); } if (!raf) raf = requestAnimationFrame(frame); if (force) S.lastPt = null; };
+  fly.addEventListener("pointerenter", () => { hovered = true; wake(); }); fly.addEventListener("pointerleave", () => { hovered = false; wake(); });
 
   const LIFE = 520;
   // pre-rendered soft glow dots, one per colour: stamping them densely along the path gives a seamless ribbon
@@ -181,7 +186,7 @@ export function logoFlight({ slot, headerImg, headerLink, src, menu, letters }) 
 
   // 3D tilt + silver glare (no colour), stronger while it is big
   // (the whole coin tilts, so its thickness shows; the glare is painted on the face)
-  holo(spinEl, { media: coin, tiltMax: 16, hoverScale: 1.04, glare: .8, intensity: 0, edgeSparkle: 0, frame: 0, idle: false }); // no idle drift: nothing runs while nobody touches it
+  if (matchMedia("(hover: hover) and (pointer: fine)").matches) holo(spinEl, { media: coin, tiltMax: 16, hoverScale: 1.04, glare: .8, intensity: 0, edgeSparkle: 0, frame: 0, idle: false }); // no idle drift: nothing runs while nobody touches it
   // a press sends a fine reflection across the face
   const shine = () => { [coin, core].forEach(el => el.classList.remove("is-shining")); void coin.offsetWidth; [coin, core].forEach(el => el.classList.add("is-shining")); };
   fly.addEventListener("pointerdown", shine);

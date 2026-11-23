@@ -382,7 +382,9 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   function clampTarget(t) { t.x = THREE.MathUtils.clamp(t.x, LIMIT.x0, LIMIT.x1); t.z = THREE.MathUtils.clamp(t.z, LIMIT.z0, LIMIT.z1); t.y = Math.max(0, groundY(t.x, t.z)); return t; }
 
   // ---- loop ----
-  const v3 = new THREE.Vector3(); let W = 1, Hh = 1, visible = true, t = 0, last = performance.now();
+  const v3 = new THREE.Vector3(); let W = 1, Hh = 1, visible = true, t = 0, last = performance.now(), touchedAt = 0, drawnAt = 0;
+  controls.addEventListener("change", () => { touchedAt = performance.now(); });
+  ["pointerdown", "wheel", "touchstart"].forEach(ev => el.addEventListener(ev, () => { touchedAt = performance.now(); }, { passive: true }));
   const resize = () => { W = el.clientWidth; Hh = el.clientHeight; renderer.setSize(W, Hh, false); camera.aspect = W / Hh; camera.updateProjectionMatrix(); };
   new ResizeObserver(resize).observe(el); resize();
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(el);
@@ -424,7 +426,9 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   // shaders compile in parallel (where the browser supports it) instead of stalling the first frame
   try { await renderer.compileAsync(scene, camera); } catch {}
   (function loop(now) {
-    requestAnimationFrame(loop); if (!visible || document.hidden || document.documentElement.classList.contains("is-covered")) { last = now; return; }
+    requestAnimationFrame(loop); if (!visible || document.hidden || document.documentElement.classList.contains("is-covered") || document.documentElement.classList.contains("sm-open")) { last = now; return; }
+    // nobody touching it: the sea keeps moving at ~24 fps instead of 60 (half the work for the phone, same look)
+    if (!flight && now - touchedAt > 1500 && now - drawnAt < 40) return; drawnAt = now;
     const dt = Math.min(.05, (now - last) / 1000); last = now; t += dt; seaU.uTime.value = t;
     if (flight) {
       const k = Math.min(1, (now - flight.t0) / flight.dur), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
