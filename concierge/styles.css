@@ -1301,7 +1301,7 @@ body:has(.fleet:not([hidden])) .fab-wa, body:has(.dash:not([hidden])) .fab-wa, b
 /* service cards: each card is its own GPU layer; the veil darkens it without repainting anything */
 .stack__card { contain: layout paint; }
 .stack__card.is-live { will-change: transform; }   /* a GPU layer only for the cards that can be seen (see app.js) */
-.stack__veil { position: absolute; inset: 0; z-index: 6; border-radius: inherit; background: #07051e; opacity: 0; pointer-events: none; will-change: opacity; }
+.stack__veil { position: absolute; inset: 0; z-index: 6; border-radius: inherit; background: #07051e; opacity: 0; pointer-events: none; }
 .stack__media-bg { will-change: auto; } /* painted once into the card, not blurred again on every frame */
 /* the slow float of the glass buttons only runs while a button is on screen (set by JS) */
 .btn { animation-play-state: paused; }

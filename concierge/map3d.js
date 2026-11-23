@@ -425,10 +425,16 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   const off = new THREE.Vector3();
   // shaders compile in parallel (where the browser supports it) instead of stalling the first frame
   try { await renderer.compileAsync(scene, camera); } catch {}
+  // first picture right away, even off screen: the textures go up to the GPU now, not when the island scrolls in
+  try { controls.update(); renderer.render(scene, camera); } catch {}
   (function loop(now) {
     requestAnimationFrame(loop); if (!visible || document.hidden || document.documentElement.classList.contains("is-covered") || document.documentElement.classList.contains("sm-open")) { last = now; return; }
     // nobody touching it: the sea keeps moving at ~24 fps instead of 60 (half the work for the phone, same look)
-    if (!flight && now - touchedAt > 1500 && now - drawnAt < 40) return; drawnAt = now;
+    if (!flight && now - touchedAt > 1500 && now - drawnAt < 40) return;
+    /* while the page itself is being scrolled the island holds its last picture: no new frame and no tile uploads
+       (on a phone each one is a full-size canvas to re-send to the GPU, and a fast swipe stalled on them) */
+    if (drawnAt && !flight && now - touchedAt > 600 && now - (window.__scrolledAt || 0) < 220) return;
+    drawnAt = now;
     const dt = Math.min(.05, (now - last) / 1000); last = now; t += dt; seaU.uTime.value = t;
     if (flight) {
       const k = Math.min(1, (now - flight.t0) / flight.dur), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;

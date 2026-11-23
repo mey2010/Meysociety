@@ -181,7 +181,12 @@ function startMap() {
     pct.textContent = 100; mapTarget = 1; mapReady = true;
   }).catch(err => { console.error(err); loader.classList.add("is-error"); });
 }
-new IntersectionObserver((es, io) => { if (es.some(e => e.isIntersecting)) { io.disconnect(); startMap(); } }, { rootMargin: "900px 0px" }).observe(mapEl);
+/* the map is built (and its first picture sent to the GPU) a few screens ahead, at a moment the visitor is not
+   scrolling, so a fast swipe never runs into it; once it is right there it starts regardless */
+{ let armed = false;
+  const calm = () => { if (mapStarted) return; const r = mapEl.getBoundingClientRect(), near = r.top < innerHeight * 1.2 && r.bottom > -innerHeight * .2;
+    if (near || performance.now() - (window.__scrolledAt || 0) > 260) startMap(); else setTimeout(calm, 120); };
+  new IntersectionObserver((es, io) => { if (!armed && es.some(e => e.isIntersecting)) { armed = true; io.disconnect(); calm(); } }, { rootMargin: "3000px 0px" }).observe(mapEl); }
 // warm the map up in the background, but only during a pause: never while the visitor is scrolling
 { const later = () => performance.now() - (window.__scrolledAt || 0) < 400 ? setTimeout(later, 600) : startMap();
   (window.requestIdleCallback || (f => setTimeout(f, 2500)))(() => setTimeout(later, 1500), { timeout: 4000 }); }
@@ -624,7 +629,7 @@ const TURN = 1400; window.__logoLoader = logoLoader;
     const stack = cards[0].parentElement; let holdW = 0, snapY = [];
     const snaps = cards.map(() => { const n = document.createElement("i"); n.className = "stack__snap"; n.setAttribute("aria-hidden", "true"); stack.appendChild(n); return n; });
     function measure() {
-      if (innerWidth !== holdW) { holdW = innerWidth; stack.style.setProperty("--hold", Math.round(document.documentElement.clientHeight * (innerWidth <= 900 ? .22 : .3)) + "px"); }
+      if (innerWidth !== holdW) { holdW = innerWidth; stack.style.setProperty("--hold", Math.round(document.documentElement.clientHeight * (innerWidth <= 900 ? .12 : .16)) + "px"); }
       const hold = parseFloat(stack.style.getPropertyValue("--hold")) || 0;
       stuck = cards.map(c => parseFloat(getComputedStyle(c).top) || 0);
       // natural (un-stuck) position of each card: read once with sticky switched off for the measurement
@@ -691,8 +696,11 @@ const TURN = 1400; window.__logoLoader = logoLoader;
        second motion). Snapping is switched on only while the page is inside the stack, between a stop at the top of
        the section and one at the start of the next, so the rest of the page scrolls freely.
        Mouse wheel and trackpad keep the scripted pager below (snapping fights a wheel). */
-    const COARSE = matchMedia("(pointer: coarse)").matches;
-    if (COARSE && !REDUCED) {
+    /* Free scrolling: the forced stops (snapping with a stop on every card, and the wheel pager) braked a fast
+       swipe and made the page jump; the stack now follows the finger at any speed, and the short hold keeps each
+       card on screen a moment without catching the scroll. */
+    const COARSE = matchMedia("(pointer: coarse)").matches, FREE = true;
+    if (!FREE && COARSE && !REDUCED) {
       const root = document.documentElement, sec = stack.closest("section"), next = sec?.nextElementSibling;
       const edge = [document.createElement("i"), document.createElement("i")];
       edge.forEach(n => { n.className = "stack__snap stack__snap--edge"; n.setAttribute("aria-hidden", "true"); stack.appendChild(n); });
@@ -709,7 +717,7 @@ const TURN = 1400; window.__logoLoader = logoLoader;
       addEventListener("scroll", onScrollSnap, { passive: true });
       onRealResize(place); addEventListener("load", place); new ResizeObserver(place).observe(stack); place();
     }
-    readingStops(window, { centers: () => snaps.map(n => n.getBoundingClientRect().top + scrollY), half: () => (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2, pager: true,
+    if (!FREE) readingStops(window, { centers: () => snaps.map(n => n.getBoundingClientRect().top + scrollY), half: () => (parseFloat(stack.style.getPropertyValue("--hold")) || 0) / 2, pager: true,
       touch: !COARSE || REDUCED, active: () => !document.documentElement.classList.contains("is-covered") });
     /* the next card's photos are fetched and decoded while the reader is still on the one before (not all at once:
        eight decoded photos together are a lot of memory for a phone) */
