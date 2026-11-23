@@ -4,7 +4,7 @@ export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Fran�
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
   "Ideal para grupos y eventos": ["Ideal for groups and events", "Ideale per gruppi ed eventi", "Idéal pour les groupes et les événements", "Ideal für Gruppen und Events"],
-  "Abrir la ruta en Google Maps": ["Open the route in Google Maps", "Apri il percorso in Google Maps", "Ouvrir l'itinéraire dans Google Maps", "Route in Google Maps öffnen"],
+  "Abrir la ruta en Maps": ["Open the route in Maps", "Apri il percorso in Mappe", "Ouvrir l'itinéraire dans Plans", "Route in Karten öffnen"],
   "Créditos de fotos y mapas": ["Photo and map credits", "Crediti di foto e mappe", "Crédits photos et cartes", "Foto- und Kartennachweise"],
   "Selecciona una o varias opciones": ["Select one or more options", "Seleziona una o più opzioni", "Sélectionnez une ou plusieurs options", "Wähle eine oder mehrere Optionen"],
   "Restaurante italiano en Marina Botafoch, frente a los barcos del puerto y con vistas a Dalt Vila.": ["Italian restaurant in Marina Botafoch, facing the yachts in the harbour with views of Dalt Vila.", "Ristorante italiano a Marina Botafoch, davanti agli yacht del porto con vista su Dalt Vila.", "Restaurant italien à Marina Botafoch, face aux yachts du port avec vue sur Dalt Vila.", "Italienisches Restaurant in der Marina Botafoch, gegenüber den Yachten im Hafen, mit Blick auf Dalt Vila."],
@@ -815,6 +815,7 @@ const D = {
   "Buscar cliente, email o código": ["Search client, email or code", "Cerca cliente, email o codice", "Rechercher client, email ou code", "Gast, E-Mail oder Code suchen"],
   "Tipo de barco": ["Boat type", "Tipo di barca", "Type de bateau", "Bootstyp"],
   "Anterior": ["Previous", "Precedente", "Précédent", "Zurück"],
+  "Ver en pantalla completa": ["View full screen", "Vedi a schermo intero", "Voir en plein écran", "Vollbild anzeigen"],
   "Siguiente": ["Next", "Successivo", "Suivant", "Weiter"],
   "Reseña": ["Review", "Recensione", "Avis", "Bewertung"],
   "Clientes en la isla ahora": ["Clients on the island now", "Clienti sull'isola ora", "Clients sur l'île maintenant", "Gäste jetzt auf der Insel"],

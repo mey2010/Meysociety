@@ -2922,3 +2922,35 @@ img.asm__bk.asm__let--top { filter: drop-shadow(-.5px -.6px 0 rgb(255 255 255 / 
 .sm-panel-list { gap: 1.15rem; }
 @media (max-width: 600px) { .sm-panel-list { gap: 1rem; } }
 .sm-panel-list[data-numbering] .sm-panel-item::after { font-size: 12px; }
+/* boat sheet: the photos presented like a yacht brochure: never cropped (an ambient fill of the same picture
+   behind), a counter, glass arrows, a thumbnail strip and a full-screen viewer */
+.boat__main { aspect-ratio: 16 / 10; border-radius: 22px; box-shadow: 0 30px 60px -30px rgb(0 0 0 / .8), inset 0 0 0 1px rgb(255 255 255 / .08); cursor: zoom-in; isolation: isolate; }
+.boat__amb { position: absolute; inset: -12%; z-index: -1; background: #0b0930 center / cover no-repeat; filter: blur(28px) saturate(1.25) brightness(.62); transform: translateZ(0); transition: background-image .4s ease; }
+.boat__main .boat__pic { position: relative; width: 100%; height: 100%; object-fit: contain; display: block; animation: boat-img 420ms var(--ease) both; filter: drop-shadow(0 14px 30px rgb(0 0 0 / .35)); }
+.boat__main::before { content: ""; position: absolute; inset: auto 0 0; height: 30%; z-index: 1; background: linear-gradient(transparent, rgb(6 5 30 / .45)); pointer-events: none; }
+.boat__nav { z-index: 2; width: 44px; height: 44px; color: #fff; background: rgb(255 255 255 / .14); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .28); -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3); transition: opacity .3s ease, background .25s ease, scale .25s ease; }
+.boat__nav:hover { background: rgb(255 255 255 / .26); scale: 1.06; }
+@media (hover: hover) and (pointer: fine) { .boat__main .boat__nav { opacity: 0; } .boat__main:hover .boat__nav, .boat__main:focus-within .boat__nav { opacity: 1; } }
+.boat__main.is-single .boat__nav, .boat__main.is-single .boat__count { display: none; }
+.boat__count { position: absolute; left: 14px; bottom: 12px; z-index: 2; padding: 5px 11px; border-radius: 99px; font: 600 12.5px/1 var(--sans); letter-spacing: .06em; font-variant-numeric: tabular-nums; color: #fff;
+  background: rgb(6 5 30 / .5); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.boat__expand { position: absolute; right: 12px; bottom: 10px; z-index: 2; width: 38px; height: 38px; border: 0; border-radius: 12px; display: grid; place-items: center; cursor: pointer; color: #fff;
+  background: rgb(6 5 30 / .5); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: background .25s ease; }
+.boat__expand:hover { background: rgb(6 5 30 / .75); }
+.boat__thumbs { display: flex; grid-template-columns: none; gap: 10px; overflow-x: auto; scrollbar-width: none; padding: 2px 2px 4px; scroll-snap-type: x proximity; }
+.boat__thumbs::-webkit-scrollbar { display: none; }
+.boat__thumbs button { flex: 0 0 clamp(84px, 22%, 132px); aspect-ratio: 4 / 3; border-radius: 12px; opacity: .55; scroll-snap-align: start; transition: opacity .25s ease, box-shadow .25s ease, transform .25s ease; }
+.boat__thumbs button:hover { opacity: .85; }
+.boat__thumbs button[aria-current="true"] { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #8a5cf0; transform: translateY(-1px); }
+.boat__thumbs:has(button:only-child) { display: none; }
+/* full-screen viewer */
+.boat__fs { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; padding: calc(env(safe-area-inset-top, 0px) + 64px) 16px calc(env(safe-area-inset-bottom, 0px) + 56px); background: #04031a; animation: boat-fs .28s ease both; touch-action: pan-y; }
+.boat__fs[hidden] { display: none; }
+.boat__fs img { max-width: min(1600px, 100%); max-height: calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 130px); width: auto; height: auto; object-fit: contain; border-radius: 12px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .9); }
+.boat__fs .boat__nav--prev { left: max(12px, env(safe-area-inset-left, 0px)); } .boat__fs .boat__nav--next { right: max(12px, env(safe-area-inset-right, 0px)); }
+.boat__fs .boat__count { left: 50%; translate: -50% 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); }
+.boat__fsx { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); right: 14px; z-index: 3; }
+@keyframes boat-fs { from { opacity: 0; } }
+@media (max-width: 760px) { .boat__main { aspect-ratio: 4 / 3; border-radius: 18px; } .boat__nav { width: 38px; height: 38px; } .boat__fs .boat__nav { display: none; } }
+@media (prefers-reduced-motion: reduce) { .boat__fs, .boat__main .boat__pic { animation: none; } }
+.boat--whole .boat__amb { display: none; } .boat--whole .boat__main .boat__pic { filter: none; }

@@ -1269,14 +1269,18 @@ function renderRoute(tl) {
   }).join("");
   if (!REDUCED) map.querySelectorAll(".leg").forEach((l, i) => gsap.fromTo(l, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: .5, delay: .15 + i * .12, ease: "power2.out", clearProps: "strokeDashoffset" }));
   showRoute3D(pts.map(p => ({ ll: PLACES[p.place].ll, status: p.status, days: p.days, label: t(PLACES[p.place].name).split(" · ")[0] })), { today: viewingDay, here });
-  // the same route in Google Maps (the app on a phone): the day being viewed, from the stop before it; else the whole stay
+  // the same route in the phone's maps app: the day being viewed, from the stop before it; else the whole stay
   { const day = pts.map((p, i) => ({ p, i })).filter(x => x.p.days.has(viewingDay)), first = day.length ? day[0].i : 0;
     let list = day.length ? [pts[Math.max(0, first - 1)], ...day.map(x => x.p)] : pts;
     list = list.filter((p, i) => i === 0 || p.place !== list[i - 1].place); if (list.length < 2) list = pts;
     list = list.slice(0, 10); const ll = p => `${PLACES[p.place].ll[1]},${PLACES[p.place].ll[0]}`;
     const u = new URL("https://www.google.com/maps/dir/"); u.searchParams.set("api", "1"); u.searchParams.set("origin", ll(list[0])); u.searchParams.set("destination", ll(list[list.length - 1]));
     if (list.length > 2) u.searchParams.set("waypoints", list.slice(1, -1).map(ll).join("|")); u.searchParams.set("travelmode", "driving");
-    const btn = document.getElementById("routeMaps"); if (btn) btn.href = u.toString(); }
+    // iPhone / iPad: Apple Maps (the Maps app opens with the stops chained); Android and computers: Google Maps
+    const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    let href = u.toString();
+    if (IOS) { const a = new URL("https://maps.apple.com/"); a.searchParams.set("saddr", ll(list[0])); a.searchParams.set("daddr", list.slice(1).map(ll).join(" to:")); a.searchParams.set("dirflg", "d"); href = a.toString(); }
+    const btn = document.getElementById("routeMaps"); if (btn) btn.href = href; }
 }
 // the same route in 3D (turn, zoom, pan); the flat map above stays only as a fallback for devices without WebGL
 let route3d = null, route3dStarted = false, route3dLast = null;
@@ -1699,13 +1703,29 @@ const sheet = document.createElement("div"); sheet.className = "boat"; sheet.hid
 sheet.setAttribute("role", "dialog"); sheet.setAttribute("aria-modal", "true"); sheet.setAttribute("aria-labelledby", "boatName");
 document.body.appendChild(sheet);
 let boatNow = null, shot = 1;
+/* the photos a boat shows: a few catalogue pictures were the same shot enlarged or re-framed, those are left out */
+const shotsOf = b => Array.from({ length: b.photos || 0 }, (_, i) => i + 1).filter(k => !(b.drop || []).includes(k));
 function showShot(k) {
-  const b = boatNow; if (!b) return; shot = ((k - 1 + b.photos) % b.photos) + 1;
-  const main = sheet.querySelector(".boat__main img"), next = new Image();
-  next.decoding = "async"; next.src = fullSrc(b, shot); next.alt = `${b.name}, ${t("foto")} ${shot}`;
-  sheet.querySelector(".boat__main").classList.add("is-loading");
-  (next.decode ? next.decode() : Promise.resolve()).catch(() => {}).then(() => { if (boatNow !== b) return; main.replaceWith(next); sheet.querySelector(".boat__main").classList.remove("is-loading"); });
-  sheet.querySelectorAll(".boat__thumbs button").forEach((x, i) => x.setAttribute("aria-current", i + 1 === shot));
+  const b = boatNow; if (!b) return; const list = shotsOf(b); if (!list.length) return;
+  const at = ((k % list.length) + list.length) % list.length; shot = list[at];
+  const main = sheet.querySelector(".boat__main"), src = fullSrc(b, shot), next = new Image();
+  next.decoding = "async"; next.src = src; next.alt = `${b.name}, ${t("foto")} ${at + 1}`; next.className = "boat__pic";
+  main.classList.add("is-loading");
+  (next.decode ? next.decode() : Promise.resolve()).catch(() => {}).then(() => {
+    if (boatNow !== b || shot !== list[at]) return;
+    const amb = main.querySelector(".boat__amb"); amb.style.backgroundImage = `url("${src}")`;
+    main.querySelector(".boat__pic").replaceWith(next); main.classList.remove("is-loading");
+  });
+  const cnt = `${at + 1} / ${list.length}`; sheet.querySelectorAll(".boat__count").forEach(c => c.textContent = cnt);
+  const fs = sheet.querySelector(".boat__fs"); if (fs && !fs.hidden) { const im = fs.querySelector("img"); im.src = src; im.alt = next.alt; }
+  sheet.querySelectorAll(".boat__thumbs button").forEach(x => { const on = +x.dataset.go === shot; x.setAttribute("aria-current", on); if (on) x.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" }); });
+  // the next photo is fetched while this one is looked at
+  if (list.length > 1) { const pre = new Image(); pre.decoding = "async"; pre.src = fullSrc(b, list[(at + 1) % list.length]); }
+}
+const EXPAND = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>';
+function boatFull(on) {
+  const fs = sheet.querySelector(".boat__fs"); if (!fs) return; fs.hidden = !on; sheet.classList.toggle("is-full", on);
+  if (on) { const im = fs.querySelector("img"); im.src = fullSrc(boatNow, shot); fs.querySelector(".boat__fsx").focus({ preventScroll: true }); }
 }
 function openBoat(b) {
   if (b?.type === VILLA) { closeFleet(); setTimeout(() => window.__villaTours?.[b.id]?.(), 120); return; }   // a villa opens its own page
@@ -1714,10 +1734,12 @@ function openBoat(b) {
   sheet.innerHTML = `<div class="boat__card">
     <button class="lightbox__close boat__close" type="button" data-close aria-label="${t("Cerrar")}">${ICONS.close}</button>
     <div class="boat__gallery">
-      <div class="boat__main"><img src="${cardSrc(b)}" alt="${b.name}" decoding="async">
+      <div class="boat__main${shotsOf(b).length < 2 ? " is-single" : ""}"><span class="boat__amb" aria-hidden="true" style="background-image:url('${cardSrc(b)}')"></span><img class="boat__pic" src="${cardSrc(b)}" alt="${b.name}" decoding="async">
         <button class="boat__nav boat__nav--prev" type="button" data-shot="-1" aria-label="${t("Anterior")}">${ICONS.left}</button>
-        <button class="boat__nav boat__nav--next" type="button" data-shot="1" aria-label="${t("Siguiente")}">${ICONS.right}</button></div>
-      <div class="boat__thumbs">${Array.from({ length: b.photos }, (_, i) => `<button type="button" data-go="${i + 1}" aria-label="${t("foto")} ${i + 1}"><img src="${i === 0 ? cardSrc(b) : fullSrc(b, i + 1)}" alt="" loading="lazy" decoding="async"></button>`).join("")}</div>
+        <button class="boat__nav boat__nav--next" type="button" data-shot="1" aria-label="${t("Siguiente")}">${ICONS.right}</button>
+        <span class="boat__count" aria-live="polite"></span>
+        <button class="boat__expand" type="button" data-full aria-label="${t("Ver en pantalla completa")}">${EXPAND}</button></div>
+      <div class="boat__thumbs">${shotsOf(b).map((k, i) => `<button type="button" data-go="${k}" aria-label="${t("foto")} ${i + 1}"><img src="${k === 1 ? cardSrc(b) : fullSrc(b, k)}" alt="" loading="lazy" decoding="async"></button>`).join("")}</div>
     </div>
     <div class="boat__info">
       <p class="eyebrow eyebrow--light">${t(CAT_LABEL[b.type])}</p>
@@ -1732,23 +1754,31 @@ function openBoat(b) {
       ${!b.len && !b.pax ? `<p class="boat__note">${t("Te confirmamos eslora, capacidad y condiciones al pedir disponibilidad.")}</p>` : ""}
       <button class="btn btn--primary" type="button" data-ask>${t("Pedir disponibilidad")}</button>
       <p class="boat__fine">${t("Precio según fecha, duración y extras: te lo enviamos al pedir disponibilidad.")}</p>
-    </div></div>`;
-  sheet.hidden = false; showShot(1);
+    </div></div>
+    <div class="boat__fs" hidden role="dialog" aria-modal="true" aria-label="${b.name}">
+      <img alt="" decoding="async">
+      <button class="boat__nav boat__nav--prev" type="button" data-shot="-1" aria-label="${t("Anterior")}">${ICONS.left}</button>
+      <button class="boat__nav boat__nav--next" type="button" data-shot="1" aria-label="${t("Siguiente")}">${ICONS.right}</button>
+      <span class="boat__count"></span>
+      <button class="lightbox__close boat__fsx" type="button" data-full-close aria-label="${t("Cerrar")}">${ICONS.close}</button></div>`;
+  sheet.hidden = false; showShot(0);
   requestAnimationFrame(() => sheet.querySelector(".boat__close").focus());
 }
-function closeBoat() { if (sheet.hidden) return; sheet.hidden = true; boatNow = null; }
+function closeBoat() { if (sheet.hidden) return; sheet.hidden = true; sheet.classList.remove("is-full"); boatNow = null; }
 sheet.addEventListener("click", e => {
+  if (e.target.closest("[data-full-close]") || e.target.classList.contains("boat__fs")) return boatFull(false);
+  if (e.target.closest("[data-full]") || (e.target.classList.contains("boat__pic") && !matchMedia("(pointer: coarse)").matches)) return boatFull(true);
   if (e.target === sheet || e.target.closest("[data-close]")) return closeBoat();
-  const s = e.target.closest("[data-shot]"); if (s) return showShot(shot + +s.dataset.shot);
-  const g = e.target.closest("[data-go]"); if (g) return showShot(+g.dataset.go);
+  const s = e.target.closest("[data-shot]"); if (s) return showShot(shotsOf(boatNow).indexOf(shot) + +s.dataset.shot);
+  const g = e.target.closest("[data-go]"); if (g) return showShot(shotsOf(boatNow).indexOf(+g.dataset.go));
   if (e.target.closest("[data-ask]")) askFleet(boatNow);
 });
 // swipe between photos on touch screens
-{ let sx = null; sheet.addEventListener("pointerdown", e => { if (e.target.closest(".boat__main")) sx = e.clientX; });
-  sheet.addEventListener("pointerup", e => { if (sx === null) return; const d = e.clientX - sx; sx = null; if (Math.abs(d) > 40) showShot(shot + (d < 0 ? 1 : -1)); }); }
+{ let sx = null; sheet.addEventListener("pointerdown", e => { if (e.target.closest(".boat__main, .boat__fs")) sx = e.clientX; });
+  sheet.addEventListener("pointerup", e => { if (sx === null) return; const d = e.clientX - sx; sx = null; if (Math.abs(d) > 40) showShot(shotsOf(boatNow).indexOf(shot) + (d < 0 ? 1 : -1)); }); }
 document.addEventListener("keydown", e => {
   if (sheet.hidden) return;
-  if (e.key === "Escape") { e.stopImmediatePropagation(); closeBoat(); } else if (e.key === "ArrowRight") showShot(shot + 1); else if (e.key === "ArrowLeft") showShot(shot - 1);
+  if (e.key === "Escape") { e.stopImmediatePropagation(); if (sheet.classList.contains("is-full")) boatFull(false); else closeBoat(); } else if (e.key === "ArrowRight") showShot(shotsOf(boatNow).indexOf(shot) + 1); else if (e.key === "ArrowLeft") showShot(shotsOf(boatNow).indexOf(shot) - 1);
 }, true);
 
 fleetChips.addEventListener("click", e => { const b = e.target.closest("button[data-cat]"); if (b) setFleetCat(b.dataset.cat); });
