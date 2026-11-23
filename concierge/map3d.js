@@ -41,15 +41,17 @@ async function loadHeights(url, onBytes) {
   const w = bmp.width, h = bmp.height, c = document.createElement("canvas"); c.width = w; c.height = h;
   const cx = c.getContext("2d", { willReadFrequently: true }); cx.drawImage(bmp, 0, 0);
   const d = cx.getImageData(0, 0, w, h).data, a = new Float32Array(w * h);
+  c.width = c.height = 0; bmp.close?.();   // the 19 MB scratch canvas is given back at once (iOS Safari caps total canvas memory)
   await sliced(h, i => { for (let j = i * w, e = j + w; j < e; j++) a[j] = ((d[j * 4] << 8) | d[j * 4 + 1]) / 10 - 100; });
   return { w, h, a };
 }
 async function loadGray(url) {
   const bmp = await createImageBitmap(await (await fetch(url)).blob(), { colorSpaceConversion: "none" });
   const c = document.createElement("canvas"); c.width = bmp.width; c.height = bmp.height; const cx = c.getContext("2d", { willReadFrequently: true });
-  cx.drawImage(bmp, 0, 0); const d = cx.getImageData(0, 0, c.width, c.height).data, g = new Float32Array(c.width * c.height);
+  cx.drawImage(bmp, 0, 0); bmp.close?.(); const d = cx.getImageData(0, 0, c.width, c.height).data, g = new Float32Array(c.width * c.height);
   for (let i = 0; i < g.length; i++) g[i] = d[i * 4] / 255;
-  return { w: c.width, h: c.height, g, canvas: c };
+  const w = c.width, h = c.height; c.width = c.height = 0;   // scratch canvas given back at once
+  return { w, h, g };
 }
 const bilinear = (arr, w, h, u, v, out = 0) => {
   if (u < 0 || v < 0 || u > 1 || v > 1) return out;
@@ -120,8 +122,9 @@ const REALWATER_GLSL = `vec3 REALWATER(vec3 c) {
 export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgress }) {
   const prog = { h: 0, o: 0, build: 0 }, report = () => onProgress?.(Math.round(prog.h * 30 + prog.o * 45 + prog.build * 25));
   const small = matchMedia("(max-width: 900px)").matches, reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance", premultipliedAlpha: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); // full retina sharpness (1.5 left a 3x phone drawing at half its resolution, upscaled and soft) renderer.outputColorSpace = THREE.SRGBColorSpace;
+  // multisampling only on standard screens: on a retina phone it quadruples the drawing buffer for edges nobody can see
+  const renderer = new THREE.WebGLRenderer({ antialias: devicePixelRatio < 2, alpha: true, powerPreference: "high-performance", premultipliedAlpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.outputColorSpace = THREE.SRGBColorSpace;   // full retina sharpness (1.5 left a 3x phone drawing at half its resolution, upscaled and soft)
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12; renderer.setClearColor(0x000000, 0);
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   // the sun and the island never move: the shadow map is drawn once, not on every frame

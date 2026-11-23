@@ -188,7 +188,8 @@ function startMap() {
     if (near || performance.now() - (window.__scrolledAt || 0) > 260) startMap(); else setTimeout(calm, 120); };
   new IntersectionObserver((es, io) => { if (!armed && es.some(e => e.isIntersecting)) { armed = true; io.disconnect(); calm(); } }, { rootMargin: "3000px 0px" }).observe(mapEl); }
 // warm the map up in the background, but only during a pause: never while the visitor is scrolling
-{ const later = () => performance.now() - (window.__scrolledAt || 0) < 400 ? setTimeout(later, 600) : startMap();
+// (not on phones: there the map is only built when the visitor gets near it, so the first screen keeps its memory)
+if (!matchMedia("(pointer: coarse)").matches) { const later = () => performance.now() - (window.__scrolledAt || 0) < 400 ? setTimeout(later, 600) : startMap();
   (window.requestIdleCallback || (f => setTimeout(f, 2500)))(() => setTimeout(later, 1500), { timeout: 4000 }); }
 /* "Ver clubs" / "Ver beach clubs" on the service cards: straight to the map, showing only that kind of place */
 document.addEventListener("click", e => {
@@ -614,7 +615,7 @@ const TURN = 1400; window.__logoLoader = logoLoader;
     cards.forEach(c => { const im = c.querySelector(".stack__media > img:not(.stack__media-bg)") || c.querySelector("img"); if (!im) return;
       const tint = () => { try { const cv = document.createElement("canvas"); cv.width = cv.height = 6; const g = cv.getContext("2d", { willReadFrequently: true }); g.drawImage(im, 0, 0, 6, 6);
         const d = g.getImageData(0, 0, 6, 6).data; let r = 0, gg = 0, bb = 0; for (let k = 0; k < d.length; k += 4) { r += d[k]; gg += d[k + 1]; bb += d[k + 2]; } const n = d.length / 4;
-        c.style.backgroundColor = `rgb(${r / n | 0} ${gg / n | 0} ${bb / n | 0})`; c.querySelector(".stack__media")?.style.setProperty("background-color", c.style.backgroundColor); } catch {} };
+        cv.width = cv.height = 0; c.style.backgroundColor = `rgb(${r / n | 0} ${gg / n | 0} ${bb / n | 0})`; c.querySelector(".stack__media")?.style.setProperty("background-color", c.style.backgroundColor); } catch {} };
       im.complete && im.naturalWidth ? tint() : im.addEventListener("load", tint, { once: true }); });
     const veils = cards.map(c => { const v = document.createElement("span"); v.className = "stack__veil"; v.setAttribute("aria-hidden", "true"); c.appendChild(v); return v; });
     const last = cards.map(() => ({ s: "1", o: "", v: "" }));

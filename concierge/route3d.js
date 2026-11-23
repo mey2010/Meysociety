@@ -15,7 +15,7 @@ const C_DONE = new THREE.Color("#c856e6"), C_NEXT = new THREE.Color("#b9bde0"), 
 
 export async function initRoute3D(el, { planeIcon = "" } = {}) {
   const small = matchMedia("(max-width: 900px)").matches;
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: true });
+  const renderer = new THREE.WebGLRenderer({ antialias: devicePixelRatio < 2, alpha: true, premultipliedAlpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.setClearColor(0, 0);
   renderer.domElement.className = "route3d__gl"; el.prepend(renderer.domElement);
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(38, 1, .05, 400);
