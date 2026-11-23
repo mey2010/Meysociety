@@ -2954,3 +2954,45 @@ img.asm__bk.asm__let--top { filter: drop-shadow(-.5px -.6px 0 rgb(255 255 255 / 
 @media (max-width: 760px) { .boat__main { aspect-ratio: 4 / 3; border-radius: 18px; } .boat__nav { width: 38px; height: 38px; } .boat__fs .boat__nav { display: none; } }
 @media (prefers-reduced-motion: reduce) { .boat__fs, .boat__main .boat__pic { animation: none; } }
 .boat--whole .boat__amb { display: none; } .boat--whole .boat__main .boat__pic { filter: none; }
+/* ---------- club cards as Parallax Tickets (ticket-cards.js) ---------- */
+.ag__feat > li { perspective: 900px; }
+.ag__fcard.tk { display: block; padding: 0; overflow: visible; isolation: auto; background: none; box-shadow: none; transform-style: preserve-3d; will-change: auto; transition: none; }
+.ag__fcard.tk.is-vis { will-change: transform; }
+.ag__fcard.tk::before { content: none; }
+.ag__fcard.tk:hover { transform: none; }
+.ag__fcard.tk:hover img { transform: none; }
+.ag__fcard.tk[aria-pressed="true"] { box-shadow: none; }
+.tk__side { position: absolute; inset: 0; border-radius: 26px; overflow: hidden; -webkit-backface-visibility: hidden; backface-visibility: hidden; background: var(--indigo);
+  box-shadow: 0 30px 56px -30px rgb(13 10 56 / .85), inset 0 0 0 1px rgb(255 255 255 / .08); }
+.tk__layer { position: absolute; inset: 0; pointer-events: none; }
+.tk__bg { inset: -14px; }
+.tk__bg img { position: absolute; inset: 0; z-index: auto; width: 100%; height: 100%; object-fit: cover; }
+.tk__shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgb(13 10 56 / .05) 30%, rgb(13 10 56 / .35) 58%, rgb(8 6 36 / .88)); }
+.tk__txt { display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; padding: 18px 18px 20px; }
+.tk .ag__fname { font: 700 clamp(30px, 2.9vw, 40px)/.95 var(--sans); letter-spacing: -.04em; color: #fff; text-wrap: balance; }
+.tk__meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 12.5px; color: rgb(255 255 255 / .78); }
+.tk__meta b { color: #fff; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: .02em; white-space: nowrap; }
+.tk .ag__fsub { font-size: 12.5px; color: inherit; }
+.tk__glare { position: absolute; inset: 0; pointer-events: none; opacity: 0; mix-blend-mode: screen;
+  background: radial-gradient(240px circle at var(--gx, 50%) var(--gy, 30%), rgb(255 255 255 / .24), transparent 60%); }
+.tk .ag__arrow { z-index: 2; }
+.tk__back { transform: rotateY(180deg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 20px;
+  background: radial-gradient(120% 90% at 50% 0%, #2a2580 0%, #151146 60%, #0b0930 100%); box-shadow: 0 0 0 3px var(--violet), 0 30px 56px -26px rgb(171 80 219 / .8); }
+.tk__qr { width: min(62%, 168px); aspect-ratio: 1; border-radius: 18px; background: #fff; padding: 11px; }
+.tk__qr svg { display: block; width: 100%; height: 100%; }
+.tk__club { font: 700 20px/1.1 var(--sans); letter-spacing: -.02em; color: #fff; text-align: center; }
+.tk__seat { display: flex; gap: 20px; text-align: center; }
+.tk__seat > span { display: grid; gap: 2px; }
+.tk__seat i { font-style: normal; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: rgb(255 255 255 / .6); }
+.tk__seat b { font-size: 15px; font-weight: 600; color: #fff; }
+.tk__hint { font-size: 11.5px; color: rgb(255 255 255 / .62); text-align: center; }
+.ag__feat > li { transition: none; }
+@media (prefers-reduced-motion: reduce) { .ag__fcard.tk { transform: none !important; } .tk__back { display: none; } .tk[aria-pressed="true"] .tk__front { box-shadow: 0 0 0 3px var(--violet); } }
+
+/* ---------- the tagline decodes letter by letter (Scramble Text) ---------- */
+.intro__sub.scramble { font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 500; letter-spacing: -.01em; white-space: pre-wrap; }
+.scramble .c { opacity: .42; }
+.scramble .c.ok { opacity: 1; }
+.scramble .caret { display: inline-block; width: .56em; height: 1.08em; margin-left: .12em; vertical-align: -.18em; border-radius: 2px; background: currentColor; transition: opacity .2s; }
+.tk__seat { gap: 14px; }
+.tk__seat i { font-size: 9.5px; letter-spacing: .04em; white-space: nowrap; }

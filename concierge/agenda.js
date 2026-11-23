@@ -3,6 +3,123 @@
    "line-up por anunciar" and the visitor can leave an alert instead. Nothing here is invented. */
 import { getLang } from "./i18n.js";
 
+/* Club cards as "Parallax Ticket" (DesignBookmark Motion Studies): each card tilts toward the pointer with depth
+   (the photo and the title move by their own amount), a glare follows the pointer, it floats gently when nobody
+   touches it, and when the club is picked it flips on a spring to its back: the ticket stub with a code.
+   The row of cards arrives like "Fan Cards": stacked under the first one, then fanned out into place.
+   One small spring engine, running only while something moves. */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const FINE = matchMedia("(hover: hover) and (pointer: fine)").matches;
+const S = (x, k, c) => ({ x, v: 0, t: x, k, c: REDUCED ? 2 * Math.sqrt(k) : c });
+const step = (s, dt) => { const a = -s.k * (s.x - s.t) - s.c * s.v; s.v += a * dt; s.x += s.v * dt; };
+const still = s => Math.abs(s.x - s.t) < .01 && Math.abs(s.v) < .01;
+const TILT = 14, DEPTH = 12;
+
+// a code-looking pattern for the stub: three finder squares and a stable pseudo-random field (seeded per club)
+function qr(seed) {
+  const N = 25; let s = seed, cells = "";
+  const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  const finder = (x, y) => `<rect x="${x}" y="${y}" width="7" height="7" fill="#0b0930"/><rect x="${x + 1}" y="${y + 1}" width="5" height="5" fill="#fff"/><rect x="${x + 2}" y="${y + 2}" width="3" height="3" fill="#0b0930"/>`;
+  const inF = (x, y) => (x < 8 && y < 8) || (x > N - 9 && y < 8) || (x < 8 && y > N - 9);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (!inF(x, y) && rnd() > .52) cells += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
+  return `<svg viewBox="0 0 ${N} ${N}" shape-rendering="crispEdges" aria-hidden="true"><g fill="#0b0930">${cells}</g>${finder(0, 0)}${finder(N - 7, 0)}${finder(0, N - 7)}</svg>`;
+}
+const hash = s => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 233280, 7);
+
+function ticketCards(row, labels) {
+  const cards = [...row.querySelectorAll(".ag__fcard")].map((el, i) => {
+    // front: photo layer, shade, text layer, glare; back: the stub (only for a club, which can be picked)
+    const img = el.querySelector("img"); if (img && i < 5) img.loading = "eager";   // the first cards are seen as they fan out
+    const name = el.querySelector(".ag__fname"), sub = el.querySelector(".ag__fsub"), arrow = el.querySelector(".ag__arrow");
+    const front = document.createElement("span"); front.className = "tk__side tk__front";
+    const bg = document.createElement("span"); bg.className = "tk__layer tk__bg"; if (img) bg.append(img);
+    const txt = document.createElement("span"); txt.className = "tk__layer tk__txt";
+    const meta = document.createElement("span"); meta.className = "tk__meta";
+    const no = document.createElement("b"); no.textContent = `No. ${String(i + 1).padStart(4, "0")}`;
+    meta.append(sub, no); txt.append(name, meta);
+    const glare = document.createElement("span"); glare.className = "tk__glare";
+    front.append(bg, Object.assign(document.createElement("span"), { className: "tk__shade" }), txt, glare); if (arrow) front.append(arrow);
+    el.prepend(front); el.classList.add("tk");
+    let back = null;
+    if (el.dataset.club) {
+      back = document.createElement("span"); back.className = "tk__side tk__back"; back.setAttribute("aria-hidden", "true");
+      back.innerHTML = `<span class="tk__qr">${qr(hash(el.dataset.club))}</span><span class="tk__club"></span><span class="tk__seat"><span><i></i><b>2027</b></span><span><i></i><b>VIP</b></span><span><i></i><b>18+</b></span></span><span class="tk__hint"></span>`;
+      el.append(back);
+    }
+    return { el, bg, txt, glare, back, rx: S(0, 220, 18), ry: S(0, 220, 18), f: S(0, 170, 15), g: S(0, 300, 26), lift: S(1, 300, 18), hover: false, nx: 0, ny: 0, vis: false, ph: Math.random() * 6 };
+  });
+
+  const paintLabels = () => cards.forEach(c => { if (!c.back) return; const L = labels();
+    c.back.querySelector(".tk__club").textContent = c.el.dataset.club;
+    const seat = c.back.querySelectorAll(".tk__seat i"); seat[0].textContent = L.season; seat[1].textContent = L.access; seat[2].textContent = L.age;
+    c.back.querySelector(".tk__hint").textContent = L.hint; });
+  paintLabels();
+
+  // one loop, alive only while a card moves (pointer, flip, float of the cards on screen)
+  let raf = 0, last = 0, clock = 0;
+  const kick = () => { if (!raf) { last = performance.now(); raf = requestAnimationFrame(loop); } };
+  function loop(now) {
+    raf = 0; const dt = Math.min(.033, (now - last) / 1000); last = now; clock += dt; let busy = false;
+    for (const c of cards) {
+      const flipT = c.el.getAttribute("aria-pressed") === "true" ? 180 : 0; c.f.t = flipT;
+      if (c.hover) { c.rx.t = -c.ny * TILT; c.ry.t = c.nx * TILT; c.g.t = 1; }
+      else if (c.vis && !REDUCED) { c.rx.t = Math.sin(clock * .9 + c.ph) * 3; c.ry.t = Math.cos(clock * .7 + c.ph) * 5; c.g.t = .22; busy = true; }
+      else { c.rx.t = c.ry.t = 0; c.g.t = 0; }
+      for (let k = 0; k < 4; k++) [c.rx, c.ry, c.f, c.g, c.lift].forEach(s => step(s, dt / 4));
+      if (!(still(c.rx) && still(c.ry) && still(c.f) && still(c.g) && still(c.lift))) busy = true;
+      c.el.style.transform = `rotateX(${c.rx.x.toFixed(2)}deg) rotateY(${(c.ry.x + c.f.x).toFixed(2)}deg) scale(${c.lift.x.toFixed(4)})`;
+      const ox = c.ry.x / TILT, oy = -c.rx.x / TILT;
+      c.bg.style.transform = `translate3d(${(ox * DEPTH * .25).toFixed(2)}px, ${(oy * DEPTH * .25).toFixed(2)}px, 0) scale(1.08)`;
+      c.txt.style.transform = `translate3d(${(ox * DEPTH * .9).toFixed(2)}px, ${(oy * DEPTH * .9).toFixed(2)}px, 0)`;
+      c.glare.style.opacity = Math.max(0, Math.min(1, c.g.x)).toFixed(3);
+      if (!c.hover) { c.glare.style.setProperty("--gx", (50 + ox * 30).toFixed(1) + "%"); c.glare.style.setProperty("--gy", (30 + oy * 30).toFixed(1) + "%"); }
+    }
+    if (busy) raf = requestAnimationFrame(loop);
+  }
+
+  cards.forEach(c => {
+    const at = e => { const r = c.el.getBoundingClientRect(); c.nx = Math.max(-1, Math.min(1, (e.clientX - r.left) / r.width * 2 - 1)); c.ny = Math.max(-1, Math.min(1, (e.clientY - r.top) / r.height * 2 - 1));
+      c.glare.style.setProperty("--gx", ((c.nx + 1) * 50).toFixed(1) + "%"); c.glare.style.setProperty("--gy", ((c.ny + 1) * 50).toFixed(1) + "%"); };
+    if (FINE) {
+      c.el.addEventListener("pointermove", e => { at(e); c.hover = true; kick(); });
+      c.el.addEventListener("pointerleave", () => { c.hover = false; kick(); });
+    }
+    c.el.addEventListener("pointerdown", e => { c.lift.t = .97; if (!FINE) { at(e); c.hover = true; } kick(); });
+    const up = () => { c.lift.t = 1; if (!FINE) c.hover = false; kick(); };
+    c.el.addEventListener("pointerup", up); c.el.addEventListener("pointercancel", up);
+    // picked or unpicked (by a tap here, or from anywhere else): flip with a little bounce
+    new MutationObserver(() => { c.lift.v += 1.5; kick(); }).observe(c.el, { attributes: true, attributeFilter: ["aria-pressed"] });
+  });
+  // only the cards on screen float (and hold a GPU layer); the rest stay flat and still
+  const io = new IntersectionObserver(es => { es.forEach(e => { const c = cards.find(x => x.el === e.target); if (c) { c.vis = e.isIntersecting; c.el.classList.toggle("is-vis", c.vis); } }); kick(); }, { threshold: .05 });
+  cards.forEach(c => io.observe(c.el));
+
+  // Fan Cards entrance: the first time the row comes into view the cards start stacked under the first one, a
+  // little turned, and fan out into their places one after another (a spring with a small overshoot)
+  if (!REDUCED) {
+    const lis = [...row.children];
+    lis.forEach((li, i) => { li.style.transform = `translate3d(0, 40px, 0) rotate(${(i % 2 ? 1 : -1) * 4}deg)`; li.style.opacity = "0"; });
+    const fanIo = new IntersectionObserver(es => {
+      if (!es.some(e => e.isIntersecting)) return; fanIo.disconnect();
+      const x0 = lis[0].offsetLeft;
+      lis.forEach((li, i) => {
+        const dx = x0 - li.offsetLeft, d = Math.min(i, 5);
+        li.style.transition = "none"; li.style.zIndex = String(50 - i);
+        li.style.transform = `translate3d(${dx + d * 10}px, ${d * 8}px, 0) rotate(${d * -4 + 2}deg) scale(${1 - d * .03})`; li.style.opacity = "1";
+      });
+      row.offsetWidth;   // the stacked pose is drawn before the fan starts
+      requestAnimationFrame(() => lis.forEach((li, i) => {
+        li.style.transition = `transform 820ms cubic-bezier(.2, 1.28, .38, 1) ${120 + i * 70}ms`;
+        li.style.transform = "none";
+        li.addEventListener("transitionend", () => { li.style.transition = li.style.transform = li.style.zIndex = ""; }, { once: true });
+      }));
+    }, { threshold: .25 });
+    fanIo.observe(row);
+  }
+  kick();
+  return { relabel: paintLabels };
+}
+
 /* Official line-ups, added as the clubs announce them. One entry per party night:
    { date: "2027-06-14", club: "Pacha", title: "Nombre de la fiesta", artists: ["DJ 1", "DJ 2"], url: "https://… (fuente oficial)" }
    The club name must match the map (Pacha, Hï Ibiza, Ushuaïa Ibiza, DC10, Amnesia, [UNVRS], Eden, Es Paradis…). */
@@ -61,11 +178,11 @@ const L = {
   },
 };
 const L2 = {
-  es: { clear: "Quitar todos", done: "Listo", go: "Ver mis noches", vip: "Mesas VIP", vipSub: "Pide la tuya en un mensaje", day: "Day clubs", daySub: "Fiestas de día y piscina", feat: "Toca para elegir" },
-  en: { clear: "Clear all", done: "Done", go: "See my nights", vip: "VIP tables", vipSub: "Ask for yours in one message", day: "Day clubs", daySub: "Daytime and pool parties", feat: "Tap to pick" },
-  it: { clear: "Togli tutti", done: "Fatto", go: "Vedi le mie notti", vip: "Tavoli VIP", vipSub: "Chiedi il tuo in un messaggio", day: "Day club", daySub: "Feste di giorno e in piscina", feat: "Tocca per scegliere" },
-  fr: { clear: "Tout retirer", done: "Terminé", go: "Voir mes nuits", vip: "Tables VIP", vipSub: "Demandez la vôtre en un message", day: "Day clubs", daySub: "Fêtes de jour et pool parties", feat: "Touchez pour choisir" },
-  de: { clear: "Alle entfernen", done: "Fertig", go: "Meine Nächte ansehen", vip: "VIP-Tische", vipSub: "Frag deinen mit einer Nachricht an", day: "Day Clubs", daySub: "Tages- und Poolpartys", feat: "Zum Auswählen tippen" },
+  es: { clear: "Quitar todos", done: "Listo", go: "Ver mis noches", vip: "Mesas VIP", vipSub: "Pide la tuya en un mensaje", day: "Day clubs", daySub: "Fiestas de día y piscina", feat: "Toca para elegir", tk: { season: "Temporada", access: "Acceso", age: "Edad", hint: "En tu selección · toca para quitar" } },
+  en: { clear: "Clear all", done: "Done", go: "See my nights", vip: "VIP tables", vipSub: "Ask for yours in one message", day: "Day clubs", daySub: "Daytime and pool parties", feat: "Tap to pick", tk: { season: "Season", access: "Access", age: "Age", hint: "In your picks · tap to remove" } },
+  it: { clear: "Togli tutti", done: "Fatto", go: "Vedi le mie notti", vip: "Tavoli VIP", vipSub: "Chiedi il tuo in un messaggio", day: "Day club", daySub: "Feste di giorno e in piscina", feat: "Tocca per scegliere", tk: { season: "Stagione", access: "Accesso", age: "Età", hint: "Nella tua selezione · tocca per togliere" } },
+  fr: { clear: "Tout retirer", done: "Terminé", go: "Voir mes nuits", vip: "Tables VIP", vipSub: "Demandez la vôtre en un message", day: "Day clubs", daySub: "Fêtes de jour et pool parties", feat: "Touchez pour choisir", tk: { season: "Saison", access: "Accès", age: "Âge", hint: "Dans votre sélection · touchez pour retirer" } },
+  de: { clear: "Alle entfernen", done: "Fertig", go: "Meine Nächte ansehen", vip: "VIP-Tische", vipSub: "Frag deinen mit einer Nachricht an", day: "Day Clubs", daySub: "Tages- und Poolpartys", feat: "Zum Auswählen tippen", tk: { season: "Saison", access: "Zugang", age: "Alter", hint: "In deiner Auswahl · zum Entfernen tippen" } },
 };
 const L3 = {
   es: { cal: "Calendario de fiestas 2027", calSub: "Toca tu primera noche y después la última. Los días con punto ya tienen line-up oficial.", prev: "Mes anterior", next: "Mes siguiente",
@@ -151,6 +268,8 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     <p class="ag__fine"></p>
   </div>`;
   const $ = s => root.querySelector(s);
+  // the club cards are tickets: tilt with depth, glare, gentle float, flip to the stub when picked, fan-out entrance
+  const tickets = ticketCards(root.querySelector(".ag__feat"), () => (L2[getLang()] || L2.es).tk);
   { const row = root.querySelector(".ag__feat"), navs = root.querySelectorAll(".ag__fnav");
     const sync = () => { navs[0].disabled = row.scrollLeft < 8; navs[1].disabled = row.scrollLeft + row.clientWidth > row.scrollWidth - 8; };
     navs.forEach(b => b.addEventListener("click", () => row.scrollBy({ left: +b.dataset.dir * row.clientWidth * .8, behavior: "smooth" })));
@@ -238,6 +357,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
       else c.querySelector(".ag__fsub").textContent = X.feat;
     });
     root.querySelectorAll("[data-club]").forEach(b => b.setAttribute("aria-pressed", st.clubs.has(b.dataset.club)));
+    tickets.relabel();
     inFrom.value = st.from; inTo.value = st.to; inFrom.min = today; inTo.min = st.from || today;
     paintNights(); paintCal();
   }

@@ -2525,3 +2525,45 @@ initPlanner(document.getElementById("planner"), {
   },
   onSend: p => sendRequest({ ...p, place: "planner" }),
 });
+
+/* =====================================================================
+   SCRAMBLE TEXT (DesignBookmark Motion Studies) — the tagline under the name decodes letter by letter: each letter
+   flickers through random glyphs and settles on the right one, left to right with a little randomness; a caret
+   blinks while it decodes. Monospace, so a flickering letter never moves the line. Hover replays it.
+   ===================================================================== */
+{
+  const el = document.getElementById("introSub"), ES = "Ibiza tiene sus reglas. Nosotros conocemos el juego.";
+  if (el) {
+    el.setAttribute("data-no-i18n", ""); el.classList.add("scramble"); el.setAttribute("role", "text");
+    const GL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789#%&*+=/<>";
+    const glyph = () => GL[(Math.random() * GL.length) | 0];
+    let cells = [], raf = 0, running = false, caret = null;
+    const decode = text => {
+      el.setAttribute("aria-label", text);
+      if (REDUCED) { el.textContent = text; return; }
+      cancelAnimationFrame(raf);
+      if (!caret) { el.textContent = ""; caret = document.createElement("span"); caret.className = "caret"; caret.setAttribute("aria-hidden", "true"); el.append(caret); }
+      while (cells.length < text.length) { const s = document.createElement("span"); s.className = "c"; s.setAttribute("aria-hidden", "true"); el.insertBefore(s, caret); cells.push({ el: s }); }
+      const t0 = performance.now() / 1000;
+      cells.forEach((c, i) => { c.to = text[i] ?? ""; c.at = t0 + .18 + i * .035 + Math.random() * .28; c.tick = 0; c.done = false; c.el.classList.remove("ok"); });
+      running = true; caret.style.opacity = 1;
+      const frame = now => {
+        const tt = now / 1000; let left = 0;
+        for (const c of cells) {
+          if (c.done) continue;
+          if (tt >= c.at) { c.done = true; if (c.to === "") c.el.remove(); else { c.el.textContent = c.to; c.el.classList.add("ok"); } }
+          else { left++; if (c.to === " ") { c.el.textContent = " "; c.el.classList.add("ok"); } else if (tt >= c.tick) { c.el.textContent = glyph(); c.tick = tt + .055; } }
+        }
+        if (left) { caret.style.opacity = 1; raf = requestAnimationFrame(frame); return; }
+        cells = cells.filter(c => c.to !== ""); running = false;
+        // the caret blinks a few times after the line has settled, then rests
+        let n = 0; const blink = () => { caret.style.opacity = n % 2 ? 1 : 0; if (++n < 7) setTimeout(blink, 480); else caret.style.opacity = 0; }; blink();
+      };
+      raf = requestAnimationFrame(frame);
+    };
+    el.textContent = t(ES);   // readable straight away (and for search engines), decoded once the name lights up
+    window.__afterSplash.then(() => setTimeout(() => decode(t(ES)), 260));
+    el.addEventListener("pointerenter", () => { if (!running && matchMedia("(hover: hover)").matches) decode(t(ES)); });
+    document.addEventListener("langchange", () => decode(t(ES)));
+  }
+}
