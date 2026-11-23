@@ -3,6 +3,45 @@
    included, the open bar, life on board, the free time on the island, check-in and the timetable. Nothing is
    downloaded until the page is opened. */
 import { getLang } from "./i18n.js";
+import { pick } from "./fleet-blob.js";
+
+/* stills taken from the excursion film, upscaled ×2: the full file for the photo viewer, the -m file on the page */
+const PH = n => pick(`data/formentera/fx-${n}-m.webp`), PHF = n => pick(`data/formentera/fx-${n}.webp`);
+const REEL = ["slide", "snorkel", "paddle", "swim", "illetes", "shore", "party", "sunset"];
+const SEC_IMG = ["breakfast", "party", "slide", "illetes", null, null];       // photo heading each chapter
+const PLAN_IMG = ["aerial", "paddle", "illetes", "shore", "swim", "sunset", "dj"];
+const X = {
+  es: { stats: [["12", "h", "de experiencia todo incluido"], ["6", "h", "libres en Formentera"], ["2", "", "paradas de baño en aguas cristalinas"], ["DJ", "", "en directo y open bar todo el día"]],
+    reelH: "Así se vive el día", reelP: "Imágenes de la excursión. Desliza y elige tu momento favorito.",
+    cap: { slide: "Tobogán acuático directo al mar", snorkel: "Snorkel en aguas cristalinas", paddle: "Paddle surf sobre el turquesa", swim: "Baños en aguas transparentes", illetes: "Arena blanca y agua turquesa", shore: "Agua clara hasta la orilla", party: "Ambiente a bordo con DJ en directo", sunset: "Sunset party de vuelta a Ibiza", breakfast: "Desayuno buffet a bordo", aerial: "Fondeo en aguas turquesas", dj: "DJ en directo" },
+    waterH: "Al agua", waterP: "Tobogán, paddle surf y equipo de snorkel incluidos: en cada parada el mar es tuyo.",
+    sunH: "Sunset Party", sunP: "De vuelta a Ibiza, el sol cae sobre el mar mientras el DJ sube el ritmo. Cava, prosecco y la mejor luz del día.",
+    bar: "12 h · todo incluido", book: "Reservar", open: "Ampliar foto" },
+  en: { stats: [["12", "h", "all-inclusive experience"], ["6", "h", "free time in Formentera"], ["2", "", "swim stops in crystal-clear water"], ["DJ", "", "live, plus an open bar all day"]],
+    reelH: "How the day feels", reelP: "Images from the excursion. Swipe and pick your favourite moment.",
+    cap: { slide: "A water slide straight into the sea", snorkel: "Snorkelling in crystal-clear water", paddle: "Paddle boarding on the turquoise", swim: "Swims in see-through water", illetes: "White sand and turquoise water", shore: "Clear water right to the shore", party: "Live DJ vibes on board", sunset: "Sunset party on the way back", breakfast: "Breakfast buffet on board", aerial: "Anchored in turquoise water", dj: "Live DJ" },
+    waterH: "Into the water", waterP: "Water slide, paddle boards and snorkelling gear included: at every stop the sea is yours.",
+    sunH: "Sunset Party", sunP: "On the way back to Ibiza the sun sinks into the sea while the DJ lifts the tempo. Cava, prosecco and the best light of the day.",
+    bar: "12 h · all inclusive", book: "Book", open: "Enlarge photo" },
+  it: { stats: [["12", "h", "di esperienza all-inclusive"], ["6", "h", "di tempo libero a Formentera"], ["2", "", "soste per il bagno in acque cristalline"], ["DJ", "", "dal vivo e open bar tutto il giorno"]],
+    reelH: "Come si vive la giornata", reelP: "Immagini dell'escursione. Scorri e scegli il tuo momento preferito.",
+    cap: { slide: "Scivolo acquatico dritto in mare", snorkel: "Snorkeling in acque cristalline", paddle: "Paddle board sul turchese", swim: "Bagni in acque trasparenti", illetes: "Sabbia bianca e acqua turchese", shore: "Acqua limpida fino a riva", party: "Atmosfera a bordo con DJ dal vivo", sunset: "Sunset party sulla via del ritorno", breakfast: "Colazione a buffet a bordo", aerial: "All'ancora in acque turchesi", dj: "DJ dal vivo" },
+    waterH: "In acqua", waterP: "Scivolo, paddle board e attrezzatura da snorkeling inclusi: a ogni sosta il mare è tuo.",
+    sunH: "Sunset Party", sunP: "Sulla via del ritorno a Ibiza il sole cala sul mare mentre il DJ alza il ritmo. Cava, prosecco e la luce più bella del giorno.",
+    bar: "12 h · tutto incluso", book: "Prenota", open: "Ingrandisci foto" },
+  fr: { stats: [["12", "h", "d'expérience tout compris"], ["6", "h", "de temps libre à Formentera"], ["2", "", "arrêts baignade en eaux cristallines"], ["DJ", "", "en live et open bar toute la journée"]],
+    reelH: "La journée en images", reelP: "Images de l'excursion. Faites défiler et choisissez votre moment préféré.",
+    cap: { slide: "Toboggan aquatique direct dans la mer", snorkel: "Snorkeling en eaux cristallines", paddle: "Paddle sur le turquoise", swim: "Baignades en eaux transparentes", illetes: "Sable blanc et eau turquoise", shore: "Une eau claire jusqu'au rivage", party: "Ambiance à bord avec DJ en live", sunset: "Sunset party sur le retour", breakfast: "Petit-déjeuner buffet à bord", aerial: "Au mouillage en eaux turquoise", dj: "DJ en live" },
+    waterH: "À l'eau", waterP: "Toboggan, paddle et équipement de snorkeling inclus : à chaque arrêt, la mer est à vous.",
+    sunH: "Sunset Party", sunP: "Sur le retour vers Ibiza, le soleil plonge dans la mer pendant que le DJ monte le rythme. Cava, prosecco et la plus belle lumière de la journée.",
+    bar: "12 h · tout compris", book: "Réserver", open: "Agrandir la photo" },
+  de: { stats: [["12", "h", "All-inclusive-Erlebnis"], ["6", "h", "Freizeit auf Formentera"], ["2", "", "Badestopps in kristallklarem Wasser"], ["DJ", "", "live und Open Bar den ganzen Tag"]],
+    reelH: "So fühlt sich der Tag an", reelP: "Bilder vom Ausflug. Wisch dich durch und finde deinen Lieblingsmoment.",
+    cap: { slide: "Wasserrutsche direkt ins Meer", snorkel: "Schnorcheln in kristallklarem Wasser", paddle: "Paddleboarden auf Türkis", swim: "Baden in glasklarem Wasser", illetes: "Weißer Sand und türkises Wasser", shore: "Klares Wasser bis zum Ufer", party: "Stimmung an Bord mit Live-DJ", sunset: "Sunset-Party auf der Rückfahrt", breakfast: "Frühstücksbuffet an Bord", aerial: "Vor Anker in türkisem Wasser", dj: "Live-DJ" },
+    waterH: "Ab ins Wasser", waterP: "Wasserrutsche, Paddleboards und Schnorchelausrüstung inklusive: an jedem Stopp gehört das Meer dir.",
+    sunH: "Sunset-Party", sunP: "Auf der Rückfahrt nach Ibiza versinkt die Sonne im Meer, während der DJ das Tempo anzieht. Cava, Prosecco und das schönste Licht des Tages.",
+    bar: "12 h · alles inklusive", book: "Buchen", open: "Foto vergrößern" },
+};
 
 const T = {
   es: {
@@ -130,18 +169,34 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;",
 const list = a => `<ul>${a.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
 
 export function initFormenteraTour({ onBook } = {}) {
-  let root = null, video = null, lastFocus = null;
+  let root = null, video = null, lastFocus = null, scroller = null, raf = 0;
+  const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const img = (n, alt, cls = "", sz = "100vw") => `<img class="${cls}" src="${PH(n)}" srcset="${PH(n)} 928w, ${PHF(n)} 1856w" sizes="${sz}" alt="${esc(alt)}" loading="lazy" decoding="async" width="928" height="1664" draggable="false">`;
+  const zoom = (n, cap, inner, cls = "") => `<button type="button" class="fx__zoom ${cls}" data-fx-full="${n}" aria-label="${esc(cap)}">${inner}</button>`;
   const build = () => {
-    const tx = T[getLang()] || T.es;
-    const sec = s => `<section class="fx__sec">
+    const tx = T[getLang()] || T.es, x = X[getLang()] || X.es;
+    const banner = (n, h) => n ? `<figure class="fx__ph">${zoom(n, x.cap[n], img(n, x.cap[n], "fx__par", "(min-width: 900px) 600px, 100vw"))}<figcaption>${esc(x.cap[n])}</figcaption></figure>` : "";
+    const sec = (s, i) => `<section class="fx__sec${SEC_IMG[i] ? " fx__sec--ph" : ""}${s.plan ? " fx__sec--plan" : ""}">
+        ${banner(SEC_IMG[i])}
+        <div class="fx__body">
         <h3>${esc(s.h)}</h3>
         ${s.groups ? s.groups.map(g => `<p class="fx__sub">${esc(g.t)}</p>${list(g.li)}`).join("") : ""}
         ${s.p ? `<p>${esc(s.p)}</p>` : ""}${s.li ? list(s.li) : ""}
         ${s.p2 ? `<p class="fx__sub">${esc(s.p2)}</p>` : ""}${s.li2 ? list(s.li2) : ""}
+        ${i === 2 ? `<div class="fx__mosaic">${["snorkel", "paddle", "swim"].map(n => zoom(n, x.cap[n], img(n, x.cap[n], "", "(min-width: 900px) 300px, 50vw") + `<span>${esc(x.cap[n])}</span>`)).join("")}</div>` : ""}
         ${s.rows ? `<dl class="fx__rows">${s.rows.map(([a, b]) => `<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join("")}</dl>` : ""}
         ${s.note ? `<p class="fx__note">${esc(s.note)}</p>` : ""}
-        ${s.plan ? `<ol class="fx__plan">${s.plan.map(([a, b]) => `<li><b>${esc(a)}</b><span>${esc(b)}</span></li>`).join("")}</ol>` : ""}
+        ${s.plan ? `<ol class="fx__plan">${s.plan.map(([a, b], k) => `<li><i class="fx__dot">${img(PLAN_IMG[k], x.cap[PLAN_IMG[k]], "", "44px")}</i><div><b>${esc(a)}</b><span>${esc(b)}</span></div></li>`).join("")}</ol>` : ""}
+        </div>
       </section>`;
+    const reel = `<section class="fx__reelwrap" aria-label="${esc(x.reelH)}">
+        <div class="fx__reelhead"><h3>${esc(x.reelH)}</h3><p>${esc(x.reelP)}</p></div>
+        <div class="fx__reel">${REEL.map((n, k) => zoom(n, x.cap[n], img(n, x.cap[n], "", "(min-width: 900px) 250px, 72vw") + `<span class="fx__cap"><em>${String(k + 1).padStart(2, "0")}</em>${esc(x.cap[n])}</span>`, "fx__card")).join("")}</div>
+        <div class="fx__dots" aria-hidden="true">${REEL.map(() => "<i></i>").join("")}</div>
+      </section>`;
+    const sunset = `<section class="fx__sun">${zoom("sunset", x.cap.sunset, img("sunset", x.cap.sunset, "fx__par", "(min-width: 900px) 600px, 100vw"))}<div class="fx__suntx"><h3>${esc(x.sunH)}</h3><p>${esc(x.sunP)}</p></div></section>`;
+    const water = `<header class="fx__intro"><h3>${esc(x.waterH)}</h3><p>${esc(x.waterP)}</p></header>`;
+    const secs = tx.sections.map(sec);
     root.querySelector(".fx__content").innerHTML = `
       <header class="fx__hero">
         <p class="fx__kicker">${esc(tx.kicker)}</p>
@@ -149,31 +204,107 @@ export function initFormenteraTour({ onBook } = {}) {
         ${tx.lead.map((p, i) => `<p class="${i ? "fx__p" : "fx__lead"}">${esc(p)}</p>`).join("")}
         <p class="fx__hint" aria-hidden="true">${esc(tx.scroll)}</p>
       </header>
-      ${tx.sections.map(sec).join("")}
+      <ul class="fx__stats">${x.stats.map(([n, u, l]) => `<li><b data-n="${/^\d+$/.test(n) ? n : ""}">${esc(n)}</b>${u ? `<small>${esc(u)}</small>` : ""}<span>${esc(l)}</span></li>`).join("")}</ul>
+      ${reel}
+      ${secs[0]}${secs[1]}${water}${secs[2]}${secs[3]}${sunset}${secs[5]}${secs[4]}
       <div class="fx__end"><button type="button" class="btn btn--primary fx__book">${esc(tx.cta)}</button></div>`;
     root.querySelector(".fx__x").setAttribute("aria-label", tx.close);
+    root.querySelector(".fx__barbtn").textContent = x.book;
+    root.querySelector(".fx__bartx").textContent = x.bar;
+    root.querySelector(".fx__lb").setAttribute("aria-label", x.open);
+    wire();
   };
+
+  /* --- motion: reveal, count-up, parallax, reel focus, timeline progress, booking bar --- */
+  let io = null, reelIo = null, parEls = [], planEl = null;
+  const countUp = b => {
+    const n = +b.dataset.n; if (!n || REDUCED) return;
+    const t0 = performance.now(), d = 1100;
+    const step = t => { const k = Math.min(1, (t - t0) / d); b.textContent = Math.round(n * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
+    b.textContent = "0"; requestAnimationFrame(step);
+  };
+  function wire() {
+    io?.disconnect(); reelIo?.disconnect();
+    io = new IntersectionObserver(es => es.forEach(en => {
+      if (!en.isIntersecting) return;
+      const el = en.target; el.classList.add("is-in"); io.unobserve(el);
+      if (el.classList.contains("fx__stats")) el.querySelectorAll("b[data-n]").forEach((b, k) => setTimeout(() => countUp(b), k * 120));
+    }), { root: scroller, threshold: .14 });
+    root.querySelectorAll(".fx__sec, .fx__end, .fx__stats, .fx__reelwrap, .fx__sun, .fx__intro, .fx__plan li").forEach(s => io.observe(s));
+    const reel = root.querySelector(".fx__reel"), dots = [...root.querySelectorAll(".fx__dots i")], cards = [...reel.children];
+    reelIo = new IntersectionObserver(es => es.forEach(en => {
+      const k = cards.indexOf(en.target); en.target.classList.toggle("is-on", en.intersectionRatio > .6); dots[k]?.classList.toggle("is-on", en.intersectionRatio > .6);
+    }), { root: reel, threshold: [0, .6, 1] });
+    cards.forEach(c => reelIo.observe(c));
+    parEls = [...root.querySelectorAll(".fx__par")]; planEl = root.querySelector(".fx__plan");
+    onScroll();
+  }
+  const bar = () => root.querySelector(".fx__bar");
+  function frame() {
+    raf = 0; const vh = scroller.clientHeight, top = scroller.scrollTop;
+    if (!REDUCED) for (const im of parEls) {       // the photos drift a little slower than the page
+      const r = im.parentElement.getBoundingClientRect(); if (r.bottom < -50 || r.top > vh + 50) continue;
+      const k = (r.top + r.height / 2 - vh / 2) / vh; im.style.transform = `translate3d(0, ${(k * -9).toFixed(2)}%, 0) scale(1.18)`;
+    }
+    if (planEl) { const r = planEl.getBoundingClientRect(); planEl.style.setProperty("--p", Math.max(0, Math.min(1, (vh * .62 - r.top) / r.height)).toFixed(3)); }
+    const end = root.querySelector(".fx__end").getBoundingClientRect().top < vh;
+    bar().classList.toggle("is-on", top > vh * .7 && !end);
+  }
+  const onScroll = () => { if (!raf) raf = requestAnimationFrame(frame); };
+
+  /* --- photo viewer: the full-resolution still, swipe or arrows for the next --- */
+  let lbList = [], lbK = 0;
+  const lbShow = k => {
+    const lb = root.querySelector(".fx__lb"), x = X[getLang()] || X.es; lbK = (k + lbList.length) % lbList.length;
+    const n = lbList[lbK], im = lb.querySelector("img");
+    im.removeAttribute("srcset"); im.src = PH(n); im.alt = x.cap[n]; const full = new Image(); full.onload = () => { if (lbList[lbK] === n) im.src = full.src; }; full.src = PHF(n);
+    lb.querySelector("figcaption").textContent = x.cap[n];
+  };
+  const lbOpen = n => {
+    lbList = [...new Set([...root.querySelectorAll("[data-fx-full]")].map(b => b.dataset.fxFull))];
+    root.querySelector(".fx__lb").hidden = false; lbShow(lbList.indexOf(n));
+    root.querySelector(".fx__lbx").focus({ preventScroll: true });
+  };
+  const lbClose = () => { const lb = root.querySelector(".fx__lb"); if (!lb.hidden) { lb.hidden = true; return true; } return false; };
+
   const create = () => {
     root = document.createElement("div"); root.className = "fx"; root.hidden = true;
     root.setAttribute("role", "dialog"); root.setAttribute("aria-modal", "true"); root.setAttribute("aria-label", "Formentera Experience");
+    const chev = d => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
     root.innerHTML = `<div class="fx__media"><video class="fx__video" muted loop playsinline preload="none" poster="data/formentera/fx-poster.webp"></video><span class="fx__shade" aria-hidden="true"></span></div>
       <div class="fx__scroll"><div class="fx__content"></div></div>
-      <button type="button" class="fx__x"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`;
+      <div class="fx__bar"><span class="fx__bartx"></span><button type="button" class="btn btn--primary fx__book fx__barbtn"></button></div>
+      <button type="button" class="fx__x"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="fx__lb" role="dialog" aria-modal="true" hidden><figure><img alt="" decoding="async"><figcaption></figcaption></figure>
+        <button type="button" class="fx__lbnav fx__lbprev" aria-label="‹">${chev("M15 5l-7 7 7 7")}</button><button type="button" class="fx__lbnav fx__lbnext" aria-label="›">${chev("M9 5l7 7-7 7")}</button>
+        <button type="button" class="fx__x fx__lbx" aria-label="×">${chev("M6 6l12 12M18 6L6 18")}</button></div>`;
     document.body.appendChild(root);
-    video = root.querySelector("video");
+    video = root.querySelector("video"); scroller = root.querySelector(".fx__scroll");
+    scroller.addEventListener("scroll", onScroll, { passive: true }); addEventListener("resize", () => root && !root.hidden && onScroll());
     root.querySelector(".fx__x").addEventListener("click", close);
-    root.addEventListener("click", e => { if (e.target.closest(".fx__book")) { close(); onBook?.(); } });
-    addEventListener("keydown", e => { if (e.key === "Escape" && root && !root.hidden) close(); });
+    root.addEventListener("click", e => {
+      if (e.target.closest(".fx__book")) { close(); onBook?.(); return; }
+      const z = e.target.closest("[data-fx-full]"); if (z) { lbOpen(z.dataset.fxFull); return; }
+      if (e.target.closest(".fx__lbprev")) return lbShow(lbK - 1);
+      if (e.target.closest(".fx__lbnext")) return lbShow(lbK + 1);
+      if (e.target.closest(".fx__lbx") || e.target.classList.contains("fx__lb")) lbClose();
+    });
+    let sx = 0; const lb = root.querySelector(".fx__lb");
+    lb.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, { passive: true });
+    lb.addEventListener("touchend", e => { const d = e.changedTouches[0].clientX - sx; if (Math.abs(d) > 50) lbShow(lbK + (d < 0 ? 1 : -1)); }, { passive: true });
+    addEventListener("keydown", e => {
+      if (!root || root.hidden) return;
+      if (e.key === "Escape") { if (!lbClose()) close(); }
+      else if (!lb.hidden && e.key === "ArrowRight") lbShow(lbK + 1);
+      else if (!lb.hidden && e.key === "ArrowLeft") lbShow(lbK - 1);
+    });
     document.addEventListener("langchange", () => { if (root) build(); });
-    // the sections rise in as they reach the screen
-    const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) en.target.classList.add("is-in"); }), { root: root.querySelector(".fx__scroll"), threshold: .12 });
-    new MutationObserver(() => root.querySelectorAll(".fx__sec, .fx__end").forEach(s => io.observe(s))).observe(root.querySelector(".fx__content"), { childList: true });
   };
   function open() {
     if (!root) create();
     build(); lastFocus = document.activeElement;
     root.hidden = false; document.documentElement.classList.add("fx-open");
-    root.querySelector(".fx__scroll").scrollTop = 0;
+    scroller.scrollTop = 0; root.querySelector(".fx__lb").hidden = true; onScroll();
     if (!video.src) { video.src = "data/formentera/fx-film.mp4"; video.load(); }
     video.play().catch(() => {});
     requestAnimationFrame(() => root.querySelector(".fx__x").focus({ preventScroll: true }));
