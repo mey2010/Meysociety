@@ -7,7 +7,7 @@ import { getLang } from "./i18n.js";
 const T = {
   es: {
     kicker: "Transfers privados · Ibiza",
-    title: ["En Ibiza, llegar", "también es parte del plan."],
+    title: ["En Ibiza, llegar a tiempo", "también es parte del plan."],
     lead: "En verano la isla se llena y los taxis no dan abasto: colas en el aeropuerto, esperas a la salida de los clubs y cenas que empiezan tarde porque nadie viene a buscarte. Con un chófer privado, tu coche ya te está esperando.",
     whyH: "Te suena alguna de estas",
     cases: [
@@ -31,7 +31,7 @@ const T = {
   },
   en: {
     kicker: "Private transfers · Ibiza",
-    title: ["In Ibiza, getting there", "is part of the plan."],
+    title: ["In Ibiza, getting there on time", "is part of the plan."],
     lead: "In summer the island fills up and taxis can't keep up: queues at the airport, long waits outside the clubs and dinners that start late because nobody came to pick you up. With a private driver, your car is already waiting.",
     whyH: "Sound familiar?",
     cases: [
@@ -55,7 +55,7 @@ const T = {
   },
   it: {
     kicker: "Transfer privati · Ibiza",
-    title: ["A Ibiza, arrivare", "fa parte del piano."],
+    title: ["A Ibiza, arrivare in orario", "fa parte del piano."],
     lead: "D'estate l'isola si riempie e i taxi non bastano: code all'aeroporto, attese all'uscita dei club e cene che iniziano tardi perché nessuno è venuto a prenderti. Con un autista privato, la tua auto ti sta già aspettando.",
     whyH: "Ti suona familiare?",
     cases: [
@@ -79,7 +79,7 @@ const T = {
   },
   fr: {
     kicker: "Transferts privés · Ibiza",
-    title: ["À Ibiza, arriver", "fait partie du plan."],
+    title: ["À Ibiza, arriver à l'heure", "fait partie du plan."],
     lead: "L'été, l'île se remplit et les taxis ne suivent pas : files à l'aéroport, attentes à la sortie des clubs et dîners qui commencent tard parce que personne n'est venu vous chercher. Avec un chauffeur privé, votre voiture vous attend déjà.",
     whyH: "Ça vous parle ?",
     cases: [
@@ -103,7 +103,7 @@ const T = {
   },
   de: {
     kicker: "Private Transfers · Ibiza",
-    title: ["Auf Ibiza gehört das Ankommen", "zum Plan."],
+    title: ["Auf Ibiza gehört pünktliches Ankommen", "zum Plan."],
     lead: "Im Sommer ist die Insel voll und die Taxis kommen nicht hinterher: Schlangen am Flughafen, Warten vor den Clubs und Dinner, die spät beginnen, weil dich niemand abgeholt hat. Mit einem privaten Fahrer wartet dein Wagen schon.",
     whyH: "Kommt dir bekannt vor?",
     cases: [

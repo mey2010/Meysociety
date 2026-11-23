@@ -7,7 +7,7 @@ import { initVillaTour, readingStops, prewarmVillaTour } from "./villa-tour.js";
 import { initFormenteraTour } from "./fx-tour.js";
 import { initChefPage } from "./chef.js";
 import { initTransferPage } from "./transfer.js";
-import { pick as blobPick } from "./fleet-blob.js";
+import { pick as blobPick, blobReady } from "./fleet-blob.js";
 import { ART } from "./asm-art.js";
 import { initAgenda } from "./agenda.js";
 import { initPlanner, CLUBS as CLUB_MUSIC } from "./planner.js";
@@ -1568,7 +1568,10 @@ document.getElementById("lbClose").addEventListener("click", closeLightbox);
 lb.addEventListener("click", e => { if (e.target === lb) closeLightbox(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !lb.hidden) closeLightbox(); });
 const thumbOf = (p, r = "-r") => p ? "data/thumbs/" + p.split("/").pop().replace(/\.(jpe?g|png|webp)$/i, "") + r + ".webp" : p;
-const reviewsItems = () => REVIEWS.map(r => ({ ...r, src: r.type === "video" ? (r.ringSrc || r.src) : (r.thumb || thumbOf(r.src)), poster: r.posterThumb || (r.poster && thumbOf(r.poster)), title: t(r.title), subtitle: t(r.subtitle), alt: t(r.title) }));
+/* the ring shows light 600 px copies (each card is split into strips that all hold the picture: full-size photos here
+   cost hundreds of MB once decoded and made iPhones reload the page); the viewer opens the originals */
+const ringOf = p => p && blobPick(p.replace("data/reviews/", "data/reviews/ring/"));
+const reviewsItems = () => REVIEWS.map(r => ({ ...r, src: r.type === "video" ? (r.ringSrc || r.src) : ringOf(r.thumb || r.src), poster: ringOf(r.posterThumb || r.poster), title: t(r.title), subtitle: t(r.subtitle), alt: t(r.title) }));
 const ringEl = document.getElementById("reviewsRing");
 /* With only a few real clips the turning ring would look empty: they stand side by side as framed videos that play
    silently in place (a tap opens them full size). From three items on, the 3D ring takes over again. */
@@ -1593,8 +1596,10 @@ const mountReviews = () => {
     onItemClick: (it, i, front) => { if (front) openLightbox(REVIEWS[i]); },
   });
 };
-mountReviews();
-document.addEventListener("langchange", mountReviews);
+// the ring is only built when the visitor gets close to the reviews (never while the services and the map load)
+let reviewsOn = false;
+new IntersectionObserver((es, io) => { if (!es.some(e => e.isIntersecting)) return; io.disconnect(); blobReady.then(() => { reviewsOn = true; mountReviews(); }); }, { rootMargin: "600px 0px" }).observe(ringEl);
+document.addEventListener("langchange", () => { if (reviewsOn) mountReviews(); });
 
 /* ---------------- FLEET: Depth Ribbon of the real boats, grouped by type ---------------- */
 // Data in fleet-data.js (from the operators' 2026 catalogue, without prices).
