@@ -152,5 +152,5 @@ export const FLEET = [
   // ---- villas (their own gallery; tapping one opens its own page) ----
   { id: "villa-aura", type: "villa", name: "Villa Aura", crew: "Tour completo en vídeo", photos: 1 },
   { id: "lamborghini-huracan", type: "coche", name: "Lamborghini Huracán", photos: 1, img: "data/services/coches.webp" },
-  { id: "mercedes-v-250", type: "transfer", name: "Mercedes-Benz V 250", pax: 7, crew: "Chófer privado", incl: ["Up to 7 pers.", "Asientos de piel enfrentados", "Espacio para el equipaje", "Aire acondicionado"], photos: 2 },
+  { id: "mercedes-v-250", type: "transfer", name: "Mercedes-Benz V-Class", pax: 7, crew: "Chófer privado", incl: ["Up to 7 pers.", "Asientos de piel enfrentados", "Espacio para el equipaje", "Aire acondicionado"], photos: 2 },
 ];

@@ -2426,6 +2426,7 @@ initPlanner(document.getElementById("planner"), {
     if (k === "agenda") return scrollToEl(document.getElementById("agenda"));
     if (k === "svc") return scrollToEl(cardOf(a));
     if (k === "map") { scrollToEl(document.getElementById("mapa")); startMap(); }
+    if (k === "place") { const v = VENUES.find(x => x.name === a); scrollToEl(document.getElementById("mapa")); startMap(); if (v) { map3d.flyToVenue(v); setTimeout(() => openPop(v), 900); } }   // straight to that place on the map, its card open
   },
   onSend: p => sendRequest({ ...p, place: "planner" }),
 });

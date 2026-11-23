@@ -175,19 +175,52 @@ const L = {
     waHead: "Hallo, ich habe meine Reise auf eurer Website geplant:",
   },
 };
-// what each plan item is, when it happens, which styles it suits and which service it books
+// what each plan item is, when it happens, which service it books and where "see" takes the guest
 const ITEMS = {
-  boat:      { slot: "m", tags: ["relax", "sea", "celeb", "family"], svc: "yates", go: "fleet:open", day: true },
-  formentera:{ slot: "m", tags: ["relax", "party", "sea", "celeb"], svc: "formentera", go: "fx", day: true },
-  jetski:    { slot: "a", tags: ["sea", "party"], svc: "motos", go: "fleet:moto-agua" },
-  beach:     { slot: "a", tags: ["relax", "party", "food", "celeb"], svc: null, go: "map:beachclub" },
-  car:       { slot: "m", tags: ["relax", "family"], svc: "coches", go: "fleet:coche", day: true },
-  sunset:    { slot: "e", tags: ["relax", "celeb", "family", "food"], svc: null, go: "map:beach" },
-  daltvila:  { slot: "e", tags: ["family", "food", "relax"], svc: null, go: null },
-  club:      { slot: "n", tags: ["party", "celeb"], svc: "vip", go: "agenda", adult: true },
-  chef:      { slot: "e", tags: ["food", "celeb", "family"], svc: "dining", go: "svc:dining" },
-  dj:        { slot: "n", tags: ["celeb", "party"], svc: "dj", go: "svc:dj", adult: true },
+  W_boat:    { slot: "m", svc: "yates", go: "fleet:open" },
+  W_comte:   { slot: "m", go: "place:Cala Comte" },
+  W_bassa:   { slot: "a", go: "place:Cala Bassa" },
+  W_jet:     { slot: "a", svc: "motos", go: "fleet:moto-agua", season: true },
+  W_sunset:  { slot: "e", go: "place:Sunset Strip" },
+  SW_vedra:  { slot: "m", go: "place:Es Vedrà" },
+  SW_boat:   { slot: "m", svc: "yates", go: "fleet:open" },
+  SW_jondal: { slot: "a", go: "place:Blue Marlin Ibiza", season: true },
+  SW_sunset: { slot: "e", go: "place:Es Vedrà" },
+  S_salines: { slot: "m", go: "place:Ses Salines" },
+  S_lunch:   { slot: "a", go: "place:Sa Trinxa", season: true },
+  S_jet:     { slot: "a", svc: "motos", go: "fleet:moto-agua", season: true },
+  S_sunset:  { slot: "e", go: "place:Experimental Beach", season: true },
+  T_dalt:    { slot: "m", go: null },
+  T_tala:    { slot: "a", go: "place:Talamanca" },
+  T_marina:  { slot: "e", go: null },
+  T_michelin:{ slot: "n", go: "place:La Gaia" },
+  N_car:     { slot: "m", svc: "coches", go: "fleet:coche" },
+  N_villages:{ slot: "m", go: null },
+  N_dalias:  { slot: "a", go: null },
+  N_xarraca: { slot: "a", go: "place:Cala Xarraca" },
+  N_paloma:  { slot: "a", go: "place:La Paloma" },
+  N_benirras:{ slot: "e", go: "place:Benirràs" },
+  E_santa:   { slot: "m", go: null },
+  E_mastella:{ slot: "a", go: "place:Cala Mastella" },
+  E_amante:  { slot: "e", go: "place:Amante", season: true },
+  formentera:{ slot: "m", svc: "formentera", go: "fx", season: true },
+  club:      { slot: "n", svc: "vip", go: "agenda", adult: true, season: true },
+  chef:      { slot: "n", svc: "dining", go: "svc:dining" },
+  dj:        { slot: "n", svc: "dj", go: "svc:dj", adult: true },
 };
+/* the island by areas: each day stays in one of them (a morning, an afternoon and a sunset that are minutes apart),
+   so nobody drives from one end of Ibiza to the other and back. Each area brings its classics and its services. */
+const AREAS = {
+  west:  c => c.boat ? ["W_boat", "W_sunset"] : ["W_comte", c.motos ? "W_jet" : "W_bassa", "W_sunset"],   // the boat already calls at Cala Bassa and Cala Comte
+  sw:    c => [c.boat ? "SW_boat" : "SW_vedra", "SW_jondal", "SW_sunset"],
+  south: c => ["S_salines", c.motos ? "S_jet" : "S_lunch", "S_sunset"],
+  town:  c => ["T_dalt", "T_tala", "T_marina", ...(c.food ? ["T_michelin"] : [])],
+  north: c => [c.car ? "N_car" : "N_villages", ...(c.food ? ["N_paloma"] : []), c.sat ? "N_dalias" : "N_xarraca", "N_benirras"],
+  east:  c => ["E_santa", "E_mastella", "E_amante"],
+  formentera: () => ["formentera"],
+};
+const CLUB_AREAS = { west: ["west"], south: ["south", "centre"], town: ["town", "centre"], north: ["north"] };   // where a club night fits that day
+const STYLE_AREAS = { party: ["south", "town", "west"], relax: ["sw", "north", "west", "east"], food: ["town", "sw", "north"], celeb: ["town", "sw", "west"], family: ["east", "town", "north", "west"], sea: ["west", "sw", "south"] };
 /* what each club usually plays and where it is, so a club night fits the group's music and the day before it
    (a night is always confirmed against that date's actual party and line-up) */
 export const CLUBS = [
@@ -202,17 +235,163 @@ export const CLUBS = [
   { n: "Las Dalias · Akasha", z: "north", g: ["afro", "melodic", "house"] }, { n: "528 Ibiza", z: "west", g: ["melodic", "techno", "afro"] },
   { n: "Bora Bora Ibiza", z: "south", g: ["house", "techhouse", "commercial"] },
 ];
-// how far apart the island's areas are (0 = same area, 1 = next door, 2 = across the island)
-const ZD = { town: { town: 0, south: 1, centre: 1, west: 2, north: 2 }, south: { town: 1, south: 0, centre: 1, west: 2, north: 2 },
-  centre: { town: 1, south: 1, centre: 0, west: 1, north: 1 }, west: { town: 2, south: 2, centre: 1, west: 0, north: 2 }, north: { town: 2, south: 2, centre: 1, west: 2, north: 0 } };
-const DAYZONE = { boat: "west", sunset: "west", jetski: "south", beach: "south", car: "north", daltvila: "town" };   // where each daytime plan ends up
 const GIFT_SVC = new Set(["yates", "motos", "moto", "coches", "villas", "vip", "dining", "transfers", "dj", "formentera"]);
 const giftFor = k => k >= 3 ? 4 : k === 2 ? 3 : k === 1 ? 1 : 0;   // the same ladder as the form
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+// Planner: days built around one area of the island at a time, so a guest never crosses Ibiza back and forth in a day.
+// Each area mixes the island's classic plans, real places worth seeing and Mey Society's services where they fit.
+const PLAN_TX = {
+  es: {
+    welcome: ["Cena de bienvenida en Marina Botafoch", "Mesa con vistas a Dalt Vila iluminada para empezar el viaje."],
+    W_boat: ["Barco a Cala Bassa y Cala Comte", "Salida con patrón por la costa oeste: baño en las calas más turquesa y comida a bordo."],
+    W_comte: ["Mañana en Cala Comte", "Aguas transparentes entre islotes; mejor a primera hora, antes de que llegue la gente."],
+    W_bassa: ["Tarde en Cala Bassa", "Arena entre sabinas y agua muy tranquila, a diez minutos de Cala Comte."],
+    W_jet: ["Moto de agua por la bahía de Sant Antoni", "Ruta por la costa oeste hasta las calas; con monitor si no tienes licencia."],
+    W_sunset: ["Atardecer en el Sunset Strip", "Café del Mar y Café Mambo en Caló des Moro, con música mientras el sol cae al mar."],
+    SW_vedra: ["Mirador de Es Vedrà", "Paseo corto hasta la Torre des Savinar, con el islote más famoso de Ibiza enfrente."],
+    SW_boat: ["Barco a Es Vedrà y Cala d'Hort", "Navegación al pie de Es Vedrà y baño en las calas de Sant Josep, con patrón."],
+    SW_jondal: ["Comida en Cala Jondal", "Blue Marlin o Es Xarcu: pies en el agua y los barcos fondeados delante."],
+    SW_sunset: ["Atardecer frente a Es Vedrà", "La puesta de sol más famosa de la isla, desde los acantilados de Cala d'Hort."],
+    S_salines: ["Mañana en Ses Salines", "Parque natural: las salinas, la torre de Ses Portes y la playa de arena blanca."],
+    S_lunch: ["Comida en la playa de Ses Salines", "Sa Trinxa, Beso Beach o Jockey Club, en la misma arena."],
+    S_jet: ["Moto de agua en Platja d'en Bossa", "Desde la playa más larga de Ibiza hacia Ses Salines; con monitor si no tienes licencia."],
+    S_sunset: ["Atardecer en Experimental Beach", "Cócteles junto a las salinas de Cap des Falcó mientras el sol cae al mar."],
+    T_dalt: ["Mañana en Dalt Vila", "La ciudad amurallada, Patrimonio de la Humanidad: baluartes, catedral y vistas al puerto."],
+    T_tala: ["Tarde en Talamanca", "Playa tranquila a cinco minutos de Eivissa, con Dalt Vila enfrente."],
+    T_marina: ["Aperitivo en Marina Botafoch", "Yates, tiendas y Dalt Vila iluminándose al otro lado del puerto."],
+    T_michelin: ["Cena con estrella Michelin", "La Gaia u Omakase by Walt, a pocos minutos del puerto; te reservamos mesa."],
+    N_car: ["Ruta en coche por el norte", "Santa Gertrudis, Sant Joan y los pueblos blancos del interior, a tu ritmo."],
+    N_villages: ["Pueblos del norte", "Santa Gertrudis y Sant Joan: plazas, iglesias blancas y cafés de pueblo."],
+    N_dalias: ["Mercadillo de Las Dalias", "El mercadillo hippie de Sant Carles, cada sábado: artesanía, moda y música."],
+    N_xarraca: ["Baño en Cala Xarraca", "Cala del norte entre acantilados, de agua cristalina, perfecta para snorkel."],
+    N_paloma: ["Comida en La Paloma", "Jardín entre naranjos en Sant Llorenç, con cocina mediterránea e italiana."],
+    N_benirras: ["Atardecer en Benirràs", "La cala del islote Cap Bernat; los domingos, tambores al caer el sol."],
+    E_santa: ["Mañana en Santa Eulària", "Paseo marítimo y el Puig de Missa, con su iglesia blanca sobre el pueblo."],
+    E_mastella: ["Comida en Cala Mastella", "Cala pequeña entre pinos, famosa por su guiso de pescado junto a las rocas."],
+    E_amante: ["Tarde en Amante", "Beach club sobre el acantilado de Sol d'en Serra, con vistas al mar abierto."],
+  },
+  en: {
+    welcome: ["Welcome dinner in Marina Botafoch", "A table facing Dalt Vila lit up at night to start the trip."],
+    W_boat: ["Boat to Cala Bassa and Cala Comte", "With a skipper along the west coast: swims in the most turquoise coves and lunch on board."],
+    W_comte: ["Morning at Cala Comte", "Clear water between islets; best early, before the crowds."],
+    W_bassa: ["Afternoon at Cala Bassa", "Sand among juniper trees and very calm water, ten minutes from Cala Comte."],
+    W_jet: ["Jet ski around Sant Antoni bay", "Along the west coast to the coves; with an instructor if you have no licence."],
+    W_sunset: ["Sunset on the Sunset Strip", "Café del Mar and Café Mambo in Caló des Moro, with music as the sun drops into the sea."],
+    SW_vedra: ["Es Vedrà viewpoint", "A short walk to Torre des Savinar, with Ibiza's most famous islet in front of you."],
+    SW_boat: ["Boat to Es Vedrà and Cala d'Hort", "Sailing at the foot of Es Vedrà and swims in the coves of Sant Josep, with a skipper."],
+    SW_jondal: ["Lunch at Cala Jondal", "Blue Marlin or Es Xarcu: feet in the water and yachts anchored in front."],
+    SW_sunset: ["Sunset facing Es Vedrà", "The island's most famous sunset, from the cliffs above Cala d'Hort."],
+    S_salines: ["Morning at Ses Salines", "Nature park: the salt flats, the Ses Portes tower and the white-sand beach."],
+    S_lunch: ["Lunch on Ses Salines beach", "Sa Trinxa, Beso Beach or Jockey Club, right on the sand."],
+    S_jet: ["Jet ski at Platja d'en Bossa", "From Ibiza's longest beach towards Ses Salines; with an instructor if you have no licence."],
+    S_sunset: ["Sunset at Experimental Beach", "Cocktails by the Cap des Falcó salt flats as the sun sinks into the sea."],
+    T_dalt: ["Morning in Dalt Vila", "The walled old town, a World Heritage Site: bastions, cathedral and harbour views."],
+    T_tala: ["Afternoon at Talamanca", "A quiet beach five minutes from Ibiza town, facing Dalt Vila."],
+    T_marina: ["Aperitif in Marina Botafoch", "Yachts, shops and Dalt Vila lighting up across the harbour."],
+    T_michelin: ["Michelin-star dinner", "La Gaia or Omakase by Walt, minutes from the harbour; we book your table."],
+    N_car: ["Drive through the north", "Santa Gertrudis, Sant Joan and the white villages inland, at your own pace."],
+    N_villages: ["Villages of the north", "Santa Gertrudis and Sant Joan: squares, white churches and village cafés."],
+    N_dalias: ["Las Dalias market", "Sant Carles' hippie market, every Saturday: crafts, fashion and music."],
+    N_xarraca: ["Swim at Cala Xarraca", "A northern cove between cliffs, with crystal-clear water made for snorkelling."],
+    N_paloma: ["Lunch at La Paloma", "A garden among orange trees in Sant Llorenç, with Mediterranean and Italian cooking."],
+    N_benirras: ["Sunset at Benirràs", "The cove of the Cap Bernat islet; on Sundays, drums as the sun goes down."],
+    E_santa: ["Morning in Santa Eulària", "The seafront and the Puig de Missa, its white church above the town."],
+    E_mastella: ["Lunch at Cala Mastella", "A small cove among the pines, famous for its fish stew by the rocks."],
+    E_amante: ["Afternoon at Amante", "A beach club on the Sol d'en Serra cliff, looking out to the open sea."],
+  },
+  it: {
+    welcome: ["Cena di benvenuto a Marina Botafoch", "Un tavolo davanti a Dalt Vila illuminata per iniziare il viaggio."],
+    W_boat: ["Barca a Cala Bassa e Cala Comte", "Con skipper lungo la costa ovest: bagni nelle calette più turchesi e pranzo a bordo."],
+    W_comte: ["Mattina a Cala Comte", "Acqua trasparente tra gli isolotti; meglio presto, prima della folla."],
+    W_bassa: ["Pomeriggio a Cala Bassa", "Sabbia tra i ginepri e acqua calmissima, a dieci minuti da Cala Comte."],
+    W_jet: ["Moto d'acqua nella baia di Sant Antoni", "Lungo la costa ovest fino alle calette; con istruttore se non hai la patente."],
+    W_sunset: ["Tramonto sul Sunset Strip", "Café del Mar e Café Mambo a Caló des Moro, con musica mentre il sole scende nel mare."],
+    SW_vedra: ["Belvedere di Es Vedrà", "Breve passeggiata fino alla Torre des Savinar, con l'isolotto più famoso di Ibiza davanti."],
+    SW_boat: ["Barca a Es Vedrà e Cala d'Hort", "Navigazione ai piedi di Es Vedrà e bagni nelle calette di Sant Josep, con skipper."],
+    SW_jondal: ["Pranzo a Cala Jondal", "Blue Marlin o Es Xarcu: piedi nell'acqua e yacht alla fonda davanti."],
+    SW_sunset: ["Tramonto davanti a Es Vedrà", "Il tramonto più famoso dell'isola, dalle scogliere sopra Cala d'Hort."],
+    S_salines: ["Mattina a Ses Salines", "Parco naturale: le saline, la torre di Ses Portes e la spiaggia di sabbia bianca."],
+    S_lunch: ["Pranzo sulla spiaggia di Ses Salines", "Sa Trinxa, Beso Beach o Jockey Club, direttamente sulla sabbia."],
+    S_jet: ["Moto d'acqua a Platja d'en Bossa", "Dalla spiaggia più lunga di Ibiza verso Ses Salines; con istruttore se non hai la patente."],
+    S_sunset: ["Tramonto all'Experimental Beach", "Cocktail accanto alle saline di Cap des Falcó mentre il sole cala nel mare."],
+    T_dalt: ["Mattina a Dalt Vila", "La città murata, Patrimonio dell'Umanità: bastioni, cattedrale e vista sul porto."],
+    T_tala: ["Pomeriggio a Talamanca", "Spiaggia tranquilla a cinque minuti da Ibiza città, davanti a Dalt Vila."],
+    T_marina: ["Aperitivo a Marina Botafoch", "Yacht, negozi e Dalt Vila che si illumina dall'altra parte del porto."],
+    T_michelin: ["Cena stellata Michelin", "La Gaia o Omakase by Walt, a pochi minuti dal porto; ti prenotiamo il tavolo."],
+    N_car: ["Giro in auto nel nord", "Santa Gertrudis, Sant Joan e i paesi bianchi dell'interno, con calma."],
+    N_villages: ["Paesi del nord", "Santa Gertrudis e Sant Joan: piazze, chiese bianche e caffè di paese."],
+    N_dalias: ["Mercatino di Las Dalias", "Il mercatino hippie di Sant Carles, ogni sabato: artigianato, moda e musica."],
+    N_xarraca: ["Bagno a Cala Xarraca", "Caletta del nord tra le scogliere, con acqua cristallina perfetta per lo snorkeling."],
+    N_paloma: ["Pranzo a La Paloma", "Un giardino tra gli aranci a Sant Llorenç, con cucina mediterranea e italiana."],
+    N_benirras: ["Tramonto a Benirràs", "La caletta dell'isolotto Cap Bernat; la domenica, tamburi al calar del sole."],
+    E_santa: ["Mattina a Santa Eulària", "Il lungomare e il Puig de Missa, con la sua chiesa bianca sopra il paese."],
+    E_mastella: ["Pranzo a Cala Mastella", "Piccola caletta tra i pini, famosa per la zuppa di pesce accanto agli scogli."],
+    E_amante: ["Pomeriggio all'Amante", "Beach club sulla scogliera di Sol d'en Serra, affacciato sul mare aperto."],
+  },
+  fr: {
+    welcome: ["Dîner de bienvenue à Marina Botafoch", "Une table face à Dalt Vila illuminée pour commencer le voyage."],
+    W_boat: ["Bateau vers Cala Bassa et Cala Comte", "Avec skipper le long de la côte ouest : baignades dans les criques les plus turquoise et déjeuner à bord."],
+    W_comte: ["Matinée à Cala Comte", "Eau transparente entre les îlots ; mieux tôt, avant la foule."],
+    W_bassa: ["Après-midi à Cala Bassa", "Sable entre les genévriers et eau très calme, à dix minutes de Cala Comte."],
+    W_jet: ["Jet-ski dans la baie de Sant Antoni", "Le long de la côte ouest jusqu'aux criques ; avec moniteur si vous n'avez pas de permis."],
+    W_sunset: ["Coucher de soleil sur le Sunset Strip", "Café del Mar et Café Mambo à Caló des Moro, en musique pendant que le soleil plonge dans la mer."],
+    SW_vedra: ["Belvédère d'Es Vedrà", "Courte balade jusqu'à la Torre des Savinar, face à l'îlot le plus célèbre d'Ibiza."],
+    SW_boat: ["Bateau vers Es Vedrà et Cala d'Hort", "Navigation au pied d'Es Vedrà et baignades dans les criques de Sant Josep, avec skipper."],
+    SW_jondal: ["Déjeuner à Cala Jondal", "Blue Marlin ou Es Xarcu : les pieds dans l'eau et les yachts au mouillage devant."],
+    SW_sunset: ["Coucher de soleil face à Es Vedrà", "Le coucher de soleil le plus célèbre de l'île, depuis les falaises de Cala d'Hort."],
+    S_salines: ["Matinée à Ses Salines", "Parc naturel : les salines, la tour de Ses Portes et la plage de sable blanc."],
+    S_lunch: ["Déjeuner sur la plage de Ses Salines", "Sa Trinxa, Beso Beach ou Jockey Club, directement sur le sable."],
+    S_jet: ["Jet-ski à Platja d'en Bossa", "De la plus longue plage d'Ibiza vers Ses Salines ; avec moniteur si vous n'avez pas de permis."],
+    S_sunset: ["Coucher de soleil à l'Experimental Beach", "Cocktails près des salines de Cap des Falcó pendant que le soleil se couche sur la mer."],
+    T_dalt: ["Matinée à Dalt Vila", "La ville fortifiée, classée au patrimoine mondial : bastions, cathédrale et vue sur le port."],
+    T_tala: ["Après-midi à Talamanca", "Plage tranquille à cinq minutes d'Ibiza ville, face à Dalt Vila."],
+    T_marina: ["Apéritif à Marina Botafoch", "Yachts, boutiques et Dalt Vila qui s'illumine de l'autre côté du port."],
+    T_michelin: ["Dîner étoilé Michelin", "La Gaia ou Omakase by Walt, à quelques minutes du port ; nous réservons votre table."],
+    N_car: ["Route en voiture dans le nord", "Santa Gertrudis, Sant Joan et les villages blancs de l'intérieur, à votre rythme."],
+    N_villages: ["Villages du nord", "Santa Gertrudis et Sant Joan : places, églises blanches et cafés de village."],
+    N_dalias: ["Marché de Las Dalias", "Le marché hippie de Sant Carles, chaque samedi : artisanat, mode et musique."],
+    N_xarraca: ["Baignade à Cala Xarraca", "Crique du nord entre les falaises, à l'eau cristalline idéale pour le snorkeling."],
+    N_paloma: ["Déjeuner à La Paloma", "Un jardin parmi les orangers à Sant Llorenç, cuisine méditerranéenne et italienne."],
+    N_benirras: ["Coucher de soleil à Benirràs", "La crique de l'îlot Cap Bernat ; le dimanche, tambours au coucher du soleil."],
+    E_santa: ["Matinée à Santa Eulària", "Le front de mer et le Puig de Missa, avec son église blanche au-dessus du village."],
+    E_mastella: ["Déjeuner à Cala Mastella", "Petite crique entre les pins, célèbre pour son ragoût de poisson au bord des rochers."],
+    E_amante: ["Après-midi à l'Amante", "Beach club sur la falaise de Sol d'en Serra, face au large."],
+  },
+  de: {
+    welcome: ["Willkommensdinner in der Marina Botafoch", "Ein Tisch mit Blick auf das beleuchtete Dalt Vila zum Start der Reise."],
+    W_boat: ["Boot nach Cala Bassa und Cala Comte", "Mit Skipper an der Westküste: Baden in den türkisesten Buchten und Mittagessen an Bord."],
+    W_comte: ["Vormittag in Cala Comte", "Klares Wasser zwischen kleinen Inseln; am besten früh, vor dem Andrang."],
+    W_bassa: ["Nachmittag in Cala Bassa", "Sand zwischen Wacholderbäumen und sehr ruhiges Wasser, zehn Minuten von Cala Comte."],
+    W_jet: ["Jetski in der Bucht von Sant Antoni", "Entlang der Westküste zu den Buchten; mit Instruktor, wenn du keinen Führerschein hast."],
+    W_sunset: ["Sonnenuntergang am Sunset Strip", "Café del Mar und Café Mambo in Caló des Moro, mit Musik, während die Sonne ins Meer sinkt."],
+    SW_vedra: ["Aussichtspunkt Es Vedrà", "Kurzer Spaziergang zur Torre des Savinar, mit Ibizas berühmtester Insel vor dir."],
+    SW_boat: ["Boot nach Es Vedrà und Cala d'Hort", "Fahrt am Fuß von Es Vedrà und Baden in den Buchten von Sant Josep, mit Skipper."],
+    SW_jondal: ["Mittagessen in Cala Jondal", "Blue Marlin oder Es Xarcu: Füße im Wasser und ankernde Yachten vor dir."],
+    SW_sunset: ["Sonnenuntergang vor Es Vedrà", "Der berühmteste Sonnenuntergang der Insel, von den Klippen über Cala d'Hort."],
+    S_salines: ["Vormittag in Ses Salines", "Naturpark: die Salinen, der Turm Ses Portes und der weiße Sandstrand."],
+    S_lunch: ["Mittagessen am Strand von Ses Salines", "Sa Trinxa, Beso Beach oder Jockey Club, direkt im Sand."],
+    S_jet: ["Jetski in Platja d'en Bossa", "Vom längsten Strand Ibizas Richtung Ses Salines; mit Instruktor, wenn du keinen Führerschein hast."],
+    S_sunset: ["Sonnenuntergang im Experimental Beach", "Cocktails an den Salinen von Cap des Falcó, während die Sonne ins Meer sinkt."],
+    T_dalt: ["Vormittag in Dalt Vila", "Die ummauerte Altstadt, UNESCO-Welterbe: Bastionen, Kathedrale und Blick auf den Hafen."],
+    T_tala: ["Nachmittag in Talamanca", "Ruhiger Strand fünf Minuten von Ibiza-Stadt, mit Blick auf Dalt Vila."],
+    T_marina: ["Aperitif in der Marina Botafoch", "Yachten, Boutiquen und das abends leuchtende Dalt Vila auf der anderen Hafenseite."],
+    T_michelin: ["Dinner mit Michelin-Stern", "La Gaia oder Omakase by Walt, wenige Minuten vom Hafen; wir reservieren deinen Tisch."],
+    N_car: ["Autotour durch den Norden", "Santa Gertrudis, Sant Joan und die weißen Dörfer im Inland, in deinem Tempo."],
+    N_villages: ["Dörfer im Norden", "Santa Gertrudis und Sant Joan: Plätze, weiße Kirchen und Dorfcafés."],
+    N_dalias: ["Markt von Las Dalias", "Der Hippiemarkt von Sant Carles, jeden Samstag: Kunsthandwerk, Mode und Musik."],
+    N_xarraca: ["Baden in Cala Xarraca", "Bucht im Norden zwischen Klippen, mit kristallklarem Wasser zum Schnorcheln."],
+    N_paloma: ["Mittagessen im La Paloma", "Ein Garten zwischen Orangenbäumen in Sant Llorenç, mit mediterraner und italienischer Küche."],
+    N_benirras: ["Sonnenuntergang in Benirràs", "Die Bucht mit der Insel Cap Bernat; sonntags Trommeln bei Sonnenuntergang."],
+    E_santa: ["Vormittag in Santa Eulària", "Die Strandpromenade und der Puig de Missa mit seiner weißen Kirche über dem Ort."],
+    E_mastella: ["Mittagessen in Cala Mastella", "Kleine Bucht zwischen Pinien, berühmt für ihren Fischeintopf an den Felsen."],
+    E_amante: ["Nachmittag im Amante", "Beach Club auf der Klippe von Sol d'en Serra, mit Blick aufs offene Meer."],
+  },
+};
+
 export function initPlanner(root, { onGo, onSend, icons = {} } = {}) {
   const st = { step: 0, from: "", to: "", people: 4, kids: false, music: new Set(), styles: new Set(), musts: new Set(["transfers"]), plan: null };
-  const tx = () => L[getLang()] || L.es;
+  const tx = () => { const l = L[getLang()] || L.es; return { ...l, items: { ...l.items, ...(PLAN_TX[getLang()] || PLAN_TX.es) } }; };
   const today = new Date(); today.setHours(12);
   const iso = d => d.toISOString().slice(0, 10);
   const fmt = d => d.toLocaleDateString(getLang(), { weekday: "short", day: "numeric", month: "short" });
@@ -221,53 +400,60 @@ export function initPlanner(root, { onGo, onSend, icons = {} } = {}) {
     const t = tx(), D = [], start = new Date(st.from + "T12:00"), end = new Date(st.to + "T12:00");
     const nights = Math.max(1, Math.round((end - start) / 864e5));
     for (let i = 0; i <= nights; i++) D.push({ date: new Date(start.getTime() + i * 864e5), items: [] });
-    const add = (d, key) => d.items.push({ key, ...(ITEMS[key] || {}) });
+    const add = (d, key, extra = {}) => d.items.push({ key, ...(ITEMS[key] || {}), ...extra });
+    const inSeason = d => d.date.getMonth() >= 4 && d.date.getMonth() <= 9;   // clubs, beach clubs and Formentera: May to October
+    const ok = (d, k) => ITEMS[k] && !(st.kids && ITEMS[k].adult) && (!ITEMS[k].season || inSeason(d));
     // first and last day
     D[0].items.push({ key: "arrive", slot: "a", svc: "transfers", go: "fleet:transfer" });
     if (st.musts.has("villas")) D[0].items.push({ key: "checkin", slot: "a", svc: "villas", go: "villa" });
-    D[0].items.push({ key: "welcome", slot: "n", svc: null, go: null });
+    add(D[0], "welcome", { slot: "n", go: null });
     D[D.length - 1].items.push({ key: "depart", slot: "m", svc: "transfers", go: "fleet:transfer" });
-    // the middle days: must-haves first, then what suits the chosen styles, never the same thing twice in a row
     const middle = D.slice(1, -1);
-    const pool = Object.keys(ITEMS).filter(k => !(st.kids && ITEMS[k].adult));
+    // which areas the stay visits: the must-haves first (each where it belongs), then the chosen styles
+    const has = m => st.musts.has(m), party = has("vip") || st.styles.has("party");
+    const likes = st.music.has("any") || !st.music.size ? null : st.music;
+    const g = c => likes ? c.g.filter(x => likes.has(x)) : c.g;
+    const clubArea = () => { const best = CLUBS.filter(c => ["west", "south", "town", "centre"].includes(c.z)).sort((a, b) => g(b).length - g(a).length)[0]; return best.z === "centre" ? "town" : best.z; };
     const want = [];
-    const mustMap = { yates: "boat", formentera: "formentera", motos: "jetski", vip: "club", dining: "chef", dj: "dj", coches: "car" };
-    st.musts.forEach(m => { const k = mustMap[m]; if (k && pool.includes(k)) want.push(k); });
-    const score = k => ITEMS[k].tags.filter(x => st.styles.has(x)).length;
-    pool.filter(k => !want.includes(k)).sort((a, b) => score(b) - score(a)).forEach(k => { if (score(k) > 0) want.push(k); });
-    if (!want.length) want.push("boat", "beach", "sunset");
-    // each day gets one daytime block (a full-day outing, or two half-day plans together) and one evening/night
-    // moment; must-haves come first, long stays repeat the favourites and keep one slow day in the middle
-    const full = want.filter(k => ITEMS[k].day), half = want.filter(k => ITEMS[k].slot === "a"), eve = want.filter(k => ["e", "n"].includes(ITEMS[k].slot));
-    const blocks = full.map(k => [k]);
-    for (let i = 0; i < half.length; i += 2) blocks.splice(Math.min(blocks.length, 1 + i), 0, half.slice(i, i + 2));
+    if (has("formentera")) want.push("formentera");
+    if (has("yates")) want.push("west");
+    if (has("motos")) want.push("south");
+    if (has("coches")) want.push("north");
+    if (party && !st.kids) want.push(clubArea());
+    [...st.styles].forEach(s => (STYLE_AREAS[s] || []).forEach(z => want.push(z)));
+    ["town", "west", "sw", "south", "north", "east"].forEach(z => want.push(z));
+    const order = [...new Set(want)];
     const slow = middle.length >= 6 ? Math.floor(middle.length / 2) : -1;
-    let bi = 0, ei = 0;
-    // the clubs, beach clubs and the Formentera excursion only run in season (May to October): out of season they are skipped
-    const SEASONAL = new Set(["club", "formentera", "beach"]);
-    const fits = (d, k) => !SEASONAL.has(k) || (d.date.getMonth() >= 4 && d.date.getMonth() <= 9);
-    const pick = (list, from, d) => { for (let n = 0; n < list.length; n++) { const x = list[(from + n) % list.length]; if ([].concat(x).every(k => fits(d, k))) return [x, from + n + 1]; } return [null, from]; };
+    let boatsLeft = has("yates") ? 1 + Math.floor(middle.length / 5) : 0, oi = 0, chefDone = false;
+    const clubUsed = new Map();
     middle.forEach((d, i) => {
-      if (i === slow) add(d, "free");
-      else if (blocks.length) { const [blk, nx] = pick(blocks, bi, d); bi = nx; blk?.forEach(k => add(d, k)); }
-      // Formentera fills the whole day and ends with its own sunset party: nothing else is planned that night
-      if (eve.length && !d.items.some(it => it.key === "formentera")) { const [k, nx] = pick(eve, ei, d); ei = nx; if (k) add(d, k); }
-      if (!d.items.length) add(d, "free");
+      if (i === slow) { add(d, "free"); return; }
+      let area = order[oi % order.length]; oi++;
+      if (area === "formentera" && !inSeason(d)) { area = order[oi % order.length]; oi++; }
+      const c = { boat: boatsLeft > 0 && (area === "west" || area === "sw"), motos: has("motos"), car: has("coches"), food: st.styles.has("food") || st.styles.has("celeb"), sat: d.date.getDay() === 6 };
+      if (c.boat) boatsLeft--;
+      AREAS[area](c).filter(k => ok(d, k)).forEach(k => add(d, k));
+      d.area = area;
+      // the night stays in the same area: a club there if the group is going out, else a private chef at the villa
+      if (area === "formentera") return;   // the excursion ends with its own sunset party
+      const clubs = CLUB_AREAS[area] && party ? CLUBS.filter(cl => CLUB_AREAS[area].includes(cl.z)) : [];
+      const quiet = area === "sw" || area === "east" || area === "north" || !clubs.length;   // the calm areas: a dinner at the villa suits them
+      if (has("dining") && !chefDone && quiet && !d.items.some(x => x.slot === "n")) { add(d, "chef"); chefDone = true; }
+      else if (clubs.length && ok(d, "club") && !d.items.some(x => x.slot === "n")) {
+        const best = clubs.map(cl => ({ cl, s: g(cl).length * 10 - (clubUsed.get(cl.n) || 0) * 8 })).sort((a, b) => b.s - a.s)[0].cl;
+        clubUsed.set(best.n, (clubUsed.get(best.n) || 0) + 1);
+        add(d, "club", { club: best.n, genres: g(best).length ? g(best) : best.g, near: true });
+      } else if (has("dining") && !chefDone && !d.items.some(x => x.slot === "n")) { add(d, "chef"); chefDone = true; }
     });
-    if (!middle.length && want.length) add(D[0], want.find(k => ["e", "n"].includes(ITEMS[k].slot)) || want[0]);
-    // club nights: the club whose music matches and that is close to that day's plan; a different club each night
-    const likes = st.music.has("any") || !st.music.size ? null : st.music, used = new Map();
-    D.forEach(d => d.items.forEach(it => {
-      if (it.key !== "club" && it.key !== "dj") return;
-      const g = c => likes ? c.g.filter(x => likes.has(x)) : c.g;
-      if (it.key === "dj") { it.genres = likes ? [...likes] : []; return; }
-      const zone = [...d.items].reverse().map(x => DAYZONE[x.key]).find(Boolean) || null;
-      const best = CLUBS.map(c => ({ c, s: g(c).length * 10 - (zone ? ZD[zone][c.z] * 4 : 0) - (used.get(c.n) || 0) * 8 })).sort((a, b) => b.s - a.s)[0].c;
-      used.set(best.n, (used.get(best.n) || 0) + 1);
-      it.club = best.n; it.genres = g(best).length ? g(best) : best.g; it.near = !!zone && ZD[zone][best.z] === 0;
-    }));
-    const order = { m: 0, a: 1, e: 2, n: 3 };
-    D.forEach(d => d.items.sort((a, b) => order[a.slot] - order[b.slot]));
+    // a private DJ closes the stay at the villa, the last night before leaving
+    if (has("dj") && !st.kids && middle.length) { const d = middle[middle.length - 1]; d.items = d.items.filter(x => x.slot !== "n"); add(d, "dj", { genres: likes ? [...likes] : [] }); }
+    if (has("dining") && !chefDone && middle.length) {   // no calm evening left: the chef takes the place of one of the nights out (never the only one)
+      const nightsOut = middle.filter(x => x.items.some(y => y.key === "club" || y.key === "T_michelin"));
+      const d = middle.find(x => !x.items.some(y => y.slot === "n")) || (nightsOut.length > 1 ? nightsOut[nightsOut.length - 1] : null);
+      if (d) { d.items = d.items.filter(y => y.slot !== "n"); add(d, "chef"); } }
+    middle.forEach(d => { if (!d.items.length) add(d, "free"); });
+    const slotOrder = { m: 0, a: 1, e: 2, n: 3 };
+    D.forEach(d => d.items.sort((a, b) => slotOrder[a.slot] - slotOrder[b.slot]));
     const svcs = new Set(); D.forEach(d => d.items.forEach(it => it.svc && svcs.add(it.svc))); st.musts.forEach(m => svcs.add(m));
     return { days: D, nights, svcs: [...svcs], gifts: giftFor([...svcs].filter(s => GIFT_SVC.has(s)).length) };
   }

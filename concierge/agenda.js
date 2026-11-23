@@ -11,7 +11,7 @@ export const EVENTS = [];
 const L = {
   es: {
     eyebrow: "Agenda de clubs 2027", title: "Las fiestas que quieres,", em: "antes que nadie.",
-    lede: "Dinos tus fechas y tus clubs. Te avisamos en cuanto salga cada line-up y te guardamos mesa antes de que vuele.",
+    lede: "Dinos tus clubs y tus fechas. Te avisamos en cuanto salga cada line-up y te guardamos mesa o entrada antes de que vuele.",
     status: "Temporada 2027: los clubs anuncian sus line-ups entre enero y marzo. Los publicamos aquí en cuanto son oficiales.",
     from: "Primera noche", to: "Última noche", nights: "Tus noches", clubs: "Tus clubs", pick: "Toca los clubs que te interesan",
     tba: "Line-up por anunciar", soon: "Aviso activado al elegir el club", any: "Elige tus fechas para ver tus noches",
@@ -21,7 +21,7 @@ const L = {
   },
   en: {
     eyebrow: "Club agenda 2027", title: "The parties you want,", em: "before anyone else.",
-    lede: "Tell us your dates and your clubs. We let you know the moment each line-up drops and hold your table before it goes.",
+    lede: "Tell us your clubs and your dates. We let you know the moment each line-up drops and hold your table or ticket before it goes.",
     status: "2027 season: clubs announce their line-ups between January and March. We publish them here as soon as they're official.",
     from: "First night", to: "Last night", nights: "Your nights", clubs: "Your clubs", pick: "Tap the clubs you like",
     tba: "Line-up to be announced", soon: "Alert on once you pick the club", any: "Choose your dates to see your nights",
@@ -31,7 +31,7 @@ const L = {
   },
   it: {
     eyebrow: "Agenda dei club 2027", title: "Le feste che vuoi,", em: "prima di tutti.",
-    lede: "Dicci le tue date e i tuoi club. Ti avvisiamo appena esce ogni line-up e ti teniamo il tavolo prima che vada esaurito.",
+    lede: "Dicci i tuoi club e le tue date. Ti avvisiamo appena esce ogni line-up e ti teniamo il tavolo o l'ingresso prima che vada esaurito.",
     status: "Stagione 2027: i club annunciano i line-up tra gennaio e marzo. Li pubblichiamo qui appena sono ufficiali.",
     from: "Prima notte", to: "Ultima notte", nights: "Le tue notti", clubs: "I tuoi club", pick: "Tocca i club che ti interessano",
     tba: "Line-up da annunciare", soon: "Avviso attivo scegliendo il club", any: "Scegli le date per vedere le tue notti",
@@ -41,7 +41,7 @@ const L = {
   },
   fr: {
     eyebrow: "Agenda des clubs 2027", title: "Les fêtes que vous voulez,", em: "avant tout le monde.",
-    lede: "Donnez-nous vos dates et vos clubs. Nous vous prévenons dès que chaque line-up sort et vous gardons une table avant qu'elle parte.",
+    lede: "Donnez-nous vos clubs et vos dates. Nous vous prévenons dès que chaque line-up sort et vous gardons une table ou une entrée avant qu'elle parte.",
     status: "Saison 2027 : les clubs annoncent leurs line-ups entre janvier et mars. Nous les publions ici dès qu'ils sont officiels.",
     from: "Première nuit", to: "Dernière nuit", nights: "Vos nuits", clubs: "Vos clubs", pick: "Touchez les clubs qui vous intéressent",
     tba: "Line-up à annoncer", soon: "Alerte activée en choisissant le club", any: "Choisissez vos dates pour voir vos nuits",
@@ -51,7 +51,7 @@ const L = {
   },
   de: {
     eyebrow: "Club-Agenda 2027", title: "Die Partys, die du willst,", em: "vor allen anderen.",
-    lede: "Sag uns deine Daten und deine Clubs. Wir melden uns, sobald jedes Line-up erscheint, und halten deinen Tisch, bevor er weg ist.",
+    lede: "Sag uns deine Clubs und deine Daten. Wir melden uns, sobald jedes Line-up erscheint, und halten deinen Tisch oder dein Ticket, bevor alles weg ist.",
     status: "Saison 2027: Die Clubs geben ihre Line-ups zwischen Januar und März bekannt. Wir veröffentlichen sie hier, sobald sie offiziell sind.",
     from: "Erste Nacht", to: "Letzte Nacht", nights: "Deine Nächte", clubs: "Deine Clubs", pick: "Tippe auf die Clubs, die dich interessieren",
     tba: "Line-up folgt", soon: "Alarm aktiv, sobald du den Club wählst", any: "Wähle deine Daten, um deine Nächte zu sehen",
@@ -120,12 +120,11 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
   const FEAT = [
     ...CLUB_CARDS.filter(c => clubs.some(v => v.name === c.club)),
     { act: "table", img: "data/services/clubs.webp", key: "vip" },
-    { act: "day", img: "data/reviews/pool-party.webp", key: "day" },
   ];
   const PASTEL = ["#e4defe", "#d9ecfa", "#f1dcfb", "#dcdffe"];   // the logo's violet, cyan, magenta and royal blue, as pastels
   root.innerHTML = `<div class="wrap ag">
     <header class="sec__head ag__head"><p class="eyebrow ag__eyebrow"></p><h2 class="display display--md"><span class="ag__title"></span> <em class="ag__em"></em></h2><p class="lede lede--dark ag__lede"></p></header>
-    <div class="ag__search" role="group">
+    <div class="ag__search" role="group" hidden>
       <label><span class="ag__l-from"></span><input type="date" data-f="from"></label>
       <label><span class="ag__l-to"></span><input type="date" data-f="to"></label>
       <button type="button" class="ag__go" data-act="go"></button>

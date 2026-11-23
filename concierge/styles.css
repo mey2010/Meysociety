@@ -2765,3 +2765,4 @@ img.asm__p { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 img.asm__bk.asm__let--side { filter: brightness(.34) saturate(1.4) hue-rotate(-8deg); }
 img.asm__bk.asm__let--top { filter: drop-shadow(-.5px -.6px 0 rgb(255 255 255 / .7)) drop-shadow(.7px 1.2px .8px rgb(14 10 60 / .6)); }
 .asm__edge { -webkit-mask-image: radial-gradient(circle closest-side, transparent 92%, #000 93%); mask-image: radial-gradient(circle closest-side, transparent 92%, #000 93%); }
+.ag__search[hidden] { display: none !important; }
