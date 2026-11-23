@@ -784,7 +784,7 @@ const SVC_TREE = [
     { value: "barcos-catamaran", label: "Catamarán", icon: "helm" } ] },
   { label: "Motos de agua", svc: "motos", children: [
     { value: "motos-all", label: "Ver toda la flota", icon: "jetski" },
-    { value: "motos-sin-licencia", label: "Sin licencia", icon: "badge" }, { value: "motos-seadoo", label: "Sea-Doo", icon: "jetski" }, { value: "motos-yamaha", label: "Yamaha", icon: "jetski" } ] },
+    { value: "motos-seadoo", label: "Sea-Doo", icon: "jetski" }, { value: "motos-yamaha", label: "Yamaha", icon: "jetski" } ] },
   { label: "Villas", svc: "villas", children: [
     { value: "villas-ver", label: "Ver algunas villas", icon: "villa" },
     { value: "villa-aura", label: "Villa Aura", icon: "villa" }, { value: "villa-moli", label: "Villa Molí", icon: "villa2" } ] },
@@ -799,7 +799,7 @@ const SVC_TREE = [
   { label: "Transfers", svc: "transfers", children: [
     { value: "transfer-all", label: "Ver toda la flota", icon: "van" },
     { value: "transfer-7", label: "Up to 7 pers.", icon: "users" }, { value: "transfer-8", label: "Up to 8 pers.", icon: "van" },
-    { value: "transfer-12", label: "Up to 12 pers.", icon: "bus" } ] },
+    { value: "transfer-18", label: "Up to 18 pers.", icon: "bus" } ] },
   { label: "Clubs", svc: "noche", children: [
     { value: "clubs-vip", label: "Mesas VIP", icon: "star" }, { value: "clubs-guestlist", label: "Guestlist", icon: "users" } ] },
   { label: "Chefs", value: "chefs", svc: "dining", icon: "chef" },

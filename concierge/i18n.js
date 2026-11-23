@@ -3,6 +3,7 @@
 export const LANGS = { es: "Español", en: "English", it: "Italiano", fr: "Français", de: "Deutsch" };
 const ORDER = ["en", "it", "fr", "de"];
 const D = {
+  "Ideal para grupos y eventos": ["Ideal for groups and events", "Ideale per gruppi ed eventi", "Idéal pour les groupes et les événements", "Ideal für Gruppen und Events"],
   "Abrir la ruta en Google Maps": ["Open the route in Google Maps", "Apri il percorso in Google Maps", "Ouvrir l'itinéraire dans Google Maps", "Route in Google Maps öffnen"],
   "Créditos de fotos y mapas": ["Photo and map credits", "Crediti di foto e mappe", "Crédits photos et cartes", "Foto- und Kartennachweise"],
   "Selecciona una o varias opciones": ["Select one or more options", "Seleziona una o più opzioni", "Sélectionnez une ou plusieurs options", "Wähle eine oder mehrere Optionen"],
@@ -188,6 +189,7 @@ const D = {
   "Up to 7 pers.": ["Up to 7 pers.", "Fino a 7 pers.", "Jusqu'à 7 pers.", "Bis 7 Pers."],
   "Up to 8 pers.": ["Up to 8 pers.", "Fino a 8 pers.", "Jusqu'à 8 pers.", "Bis 8 Pers."],
   "Up to 12 pers.": ["Up to 12 pers.", "Fino a 12 pers.", "Jusqu'à 12 pers.", "Bis 12 Pers."],
+  "Up to 18 pers.": ["Up to 18 pers.", "Fino a 18 pers.", "Jusqu'à 18 pers.", "Bis 18 Pers."],
   "Seabob, eFoil, jetsurf, flyboard y más.": ["Seabob, eFoil, jetsurf, flyboard and more.", "Seabob, eFoil, jetsurf, flyboard e altro.", "Seabob, eFoil, jetsurf, flyboard et plus.", "Seabob, eFoil, Jetsurf, Flyboard und mehr."],
   "Te los llevamos a tu barco o a la playa.": ["We bring them to your boat or the beach.", "Te li portiamo in barca o in spiaggia.", "Nous les apportons à votre bateau ou à la plage.", "Wir bringen sie zu deinem Boot oder an den Strand."],
   "9 juguetes para todos los niveles": ["9 toys for every level", "9 giochi per tutti i livelli", "9 jouets pour tous les niveaux", "9 Spielzeuge für jedes Level"],
