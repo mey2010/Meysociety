@@ -129,32 +129,41 @@ const T = {
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const sizeFor = (pax, bags) => { const load = pax + Math.max(0, bags - pax) * .5; return load <= 7 ? 7 : load <= 8 ? 8 : load <= 18 ? 18 : 0; };
 
-export function initTransferPage({ onSend } = {}) {
-  let root = null, lastFocus = null, preset = 0;
-  const tx = () => T[getLang()] || T.es;
+/* extra copy for the page as it sits under the vehicles: a promise strip, how it works, and the jump to the form */
+const X = {
+  es: { trust: ["Precio cerrado antes de reservar", "Seguimiento de tu vuelo", "Chófer con tu nombre en llegadas", "Disponible 24 h"],
+    howH: "Así de fácil", steps: [["Cuéntanos el trayecto", "Recogida, destino, día y cuántos sois. Lo que no sepas aún, déjalo en blanco."], ["Te confirmamos vehículo y precio", "Te respondemos con el vehículo que encaja con tu grupo y un precio cerrado, sin sorpresas."], ["Tu chófer te espera", "Puntual, con tu nombre, el equipaje a bordo y directo a tu destino."]],
+    jump: "Pedir mi transfer", closing: "Aterriza, sal del club o vuelve de cenar sin pensar en cómo llegar: de eso nos ocupamos nosotros." },
+  en: { trust: ["Fixed price before you book", "Flight tracking", "Driver with your name at arrivals", "Available 24 h"],
+    howH: "As easy as this", steps: [["Tell us the trip", "Pick-up, destination, day and how many you are. Leave blank whatever you don't know yet."], ["We confirm vehicle and price", "We reply with the vehicle that fits your group and a fixed price, no surprises."], ["Your driver is waiting", "On time, with your name, luggage on board and straight to your destination."]],
+    jump: "Request my transfer", closing: "Land, leave the club or head home from dinner without thinking about how to get there: we take care of that." },
+  it: { trust: ["Prezzo chiuso prima di prenotare", "Monitoraggio del volo", "Autista con il tuo nome agli arrivi", "Disponibile 24 h"],
+    howH: "Facile così", steps: [["Raccontaci il tragitto", "Partenza, destinazione, giorno e quanti siete. Ciò che non sai ancora, lascialo vuoto."], ["Ti confermiamo veicolo e prezzo", "Ti rispondiamo con il veicolo adatto al tuo gruppo e un prezzo chiuso, senza sorprese."], ["Il tuo autista ti aspetta", "Puntuale, con il tuo nome, i bagagli a bordo e dritto a destinazione."]],
+    jump: "Richiedi il mio transfer", closing: "Atterra, esci dal club o torna da cena senza pensare a come arrivare: a questo pensiamo noi." },
+  fr: { trust: ["Prix fixe avant de réserver", "Suivi de votre vol", "Chauffeur avec votre nom à l'arrivée", "Disponible 24 h/24"],
+    howH: "Aussi simple que ça", steps: [["Dites-nous le trajet", "Prise en charge, destination, jour et nombre de personnes. Ce que vous ne savez pas encore, laissez-le vide."], ["Nous confirmons véhicule et prix", "Nous répondons avec le véhicule adapté à votre groupe et un prix fixe, sans surprise."], ["Votre chauffeur vous attend", "À l'heure, avec votre nom, les bagages à bord et direct à destination."]],
+    jump: "Demander mon transfert", closing: "Atterrissez, sortez du club ou rentrez du dîner sans penser au trajet : on s'en occupe." },
+  de: { trust: ["Festpreis vor der Buchung", "Flugverfolgung", "Fahrer mit Namensschild bei der Ankunft", "Rund um die Uhr"],
+    howH: "So einfach geht's", steps: [["Sag uns die Strecke", "Abholung, Ziel, Tag und wie viele ihr seid. Was du noch nicht weißt, lass einfach frei."], ["Wir bestätigen Fahrzeug und Preis", "Wir antworten mit dem passenden Fahrzeug für deine Gruppe und einem Festpreis, ohne Überraschungen."], ["Dein Fahrer wartet", "Pünktlich, mit deinem Namen, Gepäck an Bord und direkt ans Ziel."]],
+    jump: "Meinen Transfer anfragen", closing: "Lande, verlass den Club oder komm vom Dinner zurück, ohne an den Weg zu denken: Darum kümmern wir uns." },
+};
+
+/* The page lives under the transfer vehicles in the fleet gallery: mount() draws it into the given element. */
+let UID = 0;
+/* compact: only the request form (with the promise strip), for the home page */
+export function initTransferPage({ onSend, compact = false } = {}) {
+  let root = null, preset = 0; const uid = `tr${++UID}`;
+  const tx = () => T[getLang()] || T.es, xx = () => X[getLang()] || X.es;
   const today = new Date().toISOString().slice(0, 10);
   const build = () => {
-    const t = tx();
-    root.querySelector(".tr__content").innerHTML = `
-      <header class="tr__hero">
-        <p class="tr__kicker">${esc(t.kicker)}</p>
-        <h2 class="tr__title">${esc(t.title[0])}<br><em>${esc(t.title[1])}</em></h2>
-        <p class="tr__lead">${esc(t.lead)}</p>
-      </header>
-      <section class="tr__sec"><h3>${esc(t.whyH)}</h3>
-        <ul class="tr__cases">${t.cases.map(([h, p]) => `<li><b>${esc(h)}</b><p>${esc(p)}</p></li>`).join("")}</ul></section>
-      <section class="tr__sec tr__net"><h3>${esc(t.netH)}</h3><p class="tr__p">${esc(t.net)}</p>
-        <ul class="tr__tags">${t.netTags.map(x => `<li><i aria-hidden="true"></i>${esc(x)}</li>`).join("")}</ul></section>
-      <section class="tr__sec"><h3>${esc(t.plusH)}</h3>
-        <ul class="tr__plus">${t.plus.map(x => `<li>${esc(x)}</li>`).join("")}</ul></section>
-      <section class="tr__sec tr__formsec" id="trForm"><h3>${esc(t.formH)}</h3><p class="tr__p">${esc(t.formP)}</p>
-        <form class="tr__form" novalidate>
-          <datalist id="trPlaces">${t.places.map(p => `<option value="${esc(p)}">`).join("")}</datalist>
-          <label class="tr__w2"><span>${esc(t.from)}</span><input name="from" list="trPlaces" placeholder="${esc(t.phFrom)}" autocomplete="off"></label>
-          <label class="tr__w2"><span>${esc(t.to)}</span><input name="to" list="trPlaces" placeholder="${esc(t.phTo)}" autocomplete="off"></label>
+    const t = tx(), x = xx();
+    const form = `<form class="tr__form" novalidate>
+          <datalist id="${uid}Places">${t.places.map(p => `<option value="${esc(p)}">`).join("")}</datalist>
+          <label class="tr__w2"><span>${esc(t.from)}</span><input name="from" list="${uid}Places" placeholder="${esc(t.phFrom)}" autocomplete="off"></label>
+          <label class="tr__w2"><span>${esc(t.to)}</span><input name="to" list="${uid}Places" placeholder="${esc(t.phTo)}" autocomplete="off"></label>
           <label><span>${esc(t.date)}</span><input name="date" type="date" min="${today}"></label>
           <label><span>${esc(t.time)}</span><input name="time" type="time"></label>
-          <label><span>${esc(t.pax)}</span><input name="pax" type="number" min="1" max="40" value="${preset ? Math.min(preset, 4) : 2}" inputmode="numeric"></label>
+          <label><span>${esc(t.pax)}</span><input name="pax" type="number" min="1" max="40" value="${preset || 2}" inputmode="numeric"></label>
           <label><span>${esc(t.bags)}</span><input name="bags" type="number" min="0" max="40" value="2" inputmode="numeric"></label>
           <label class="tr__w2"><span>${esc(t.flight)}</span><input name="flight" autocomplete="off"></label>
           <label class="tr__check tr__w2"><input name="ret" type="checkbox"><span>${esc(t.ret)}</span></label>
@@ -166,11 +175,40 @@ export function initTransferPage({ onSend } = {}) {
           <p class="tr__sug tr__w2" aria-live="polite"></p>
           <p class="tr__err tr__w2" role="alert" hidden>${esc(t.need)}</p>
           <button type="submit" class="btn btn--primary btn--lg tr__w2">${esc(t.send)}</button>
-        </form></section>`;
-    root.querySelector(".tr__x").setAttribute("aria-label", t.close);
-    root.setAttribute("aria-label", t.kicker);
-    if (preset) { const f = root.querySelector("form"); f.pax.value = preset; }
+        </form>`;
+    root.innerHTML = compact ? `
+      <div class="tr__content">
+      <header class="tr__hero tr__hero--home">
+        <p class="eyebrow eyebrow--light">${esc(t.kicker)}</p>
+        <h2 class="display display--md">${esc(t.formH)}</h2>
+        <p class="tr__lead">${esc(t.formP)}</p>
+        <ul class="tr__trust">${x.trust.map(v => `<li>${esc(v)}</li>`).join("")}</ul>
+      </header>
+      <section class="tr__sec tr__formsec" id="${uid}Form">${form}<p class="tr__closing">${esc(x.closing)}</p></section>
+      </div>` : `
+      <div class="tr__content">
+      <header class="tr__hero">
+        <p class="tr__kicker">${esc(t.kicker)}</p>
+        <h2 class="tr__title">${esc(t.title[0])} <em>${esc(t.title[1])}</em></h2>
+        <p class="tr__lead">${esc(t.lead)}</p>
+        <ul class="tr__trust">${x.trust.map(v => `<li>${esc(v)}</li>`).join("")}</ul>
+        <a class="btn btn--primary tr__jump" href="#${uid}Form">${esc(x.jump)}</a>
+      </header>
+      <section class="tr__sec"><h3>${esc(t.whyH)}</h3>
+        <ul class="tr__cases">${t.cases.map(([h, p], k) => `<li><span class="tr__no">${String(k + 1).padStart(2, "0")}</span><b>${esc(h)}</b><p>${esc(p)}</p></li>`).join("")}</ul></section>
+      <section class="tr__sec tr__net"><h3>${esc(t.netH)}</h3><p class="tr__p">${esc(t.net)}</p>
+        <ul class="tr__tags">${t.netTags.map(v => `<li><i aria-hidden="true"></i><span>${esc(v)}</span></li>`).join("")}</ul></section>
+      <section class="tr__sec"><h3>${esc(t.plusH)}</h3>
+        <ul class="tr__plus">${t.plus.map(v => `<li>${esc(v)}</li>`).join("")}</ul></section>
+      <section class="tr__sec"><h3>${esc(x.howH)}</h3>
+        <ol class="tr__steps">${x.steps.map(([h, p], k) => `<li><span>${k + 1}</span><div><b>${esc(h)}</b><p>${esc(p)}</p></div></li>`).join("")}</ol></section>
+      <section class="tr__sec tr__formsec" id="${uid}Form"><h3>${esc(t.formH)}</h3><p class="tr__p">${esc(t.formP)}</p>
+        ${form}
+        <p class="tr__closing">${esc(x.closing)}</p></section>
+      </div>`;
     suggest();
+    const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { en.target.classList.add("is-in"); io.unobserve(en.target); } }), { root: root.closest(".fleet") || null, threshold: .12 });
+    root.querySelectorAll(".tr__sec, .tr__hero").forEach(el => io.observe(el));
   };
   function suggest() {
     const t = tx(), f = root.querySelector("form"), pax = +f.pax.value || 1, bags = +f.bags.value || 0;
@@ -178,16 +216,10 @@ export function initTransferPage({ onSend } = {}) {
     root.querySelector(".tr__sug").innerHTML = `<i aria-hidden="true"></i>${esc(n ? t.sug(t.sizes[n]) : t.sugMany)}`;
     return n;
   }
-  const create = () => {
-    root = document.createElement("div"); root.className = "tr"; root.hidden = true;
-    root.setAttribute("role", "dialog"); root.setAttribute("aria-modal", "true");
-    root.innerHTML = `<div class="tr__media" aria-hidden="true"><img src="data/services/transfers.webp" alt="" decoding="async"><span class="tr__shade"></span></div>
-      <div class="tr__scroll"><div class="tr__content"></div></div>
-      <button type="button" class="tr__x"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`;
-    document.body.appendChild(root);
-    root.querySelector(".tr__x").addEventListener("click", close);
+  const wire = () => {
     root.addEventListener("input", e => { if (e.target.name === "pax" || e.target.name === "bags") suggest(); });
     root.addEventListener("change", e => { if (e.target.name === "ret") root.querySelectorAll(".tr__ret").forEach(l => l.hidden = !e.target.checked); });
+    root.addEventListener("click", e => { if (e.target.closest(".tr__jump")) { e.preventDefault(); scrollToForm(); } });
     root.addEventListener("submit", e => {
       e.preventDefault(); const t = tx(), f = e.target, v = k => (f[k].value || "").trim();
       if (!v("from") || !v("to") || !v("date")) { root.querySelector(".tr__err").hidden = false; f[!v("from") ? "from" : !v("to") ? "to" : "date"].focus(); return; }
@@ -197,26 +229,28 @@ export function initTransferPage({ onSend } = {}) {
         v("flight") && `${t.flight.replace(/ \(.*\)/, "")}: ${v("flight")}`,
         f.ret.checked && `${t.ret}: ${t.yes}${v("rdate") ? " · " + v("rdate") : ""}${v("rtime") ? " · " + v("rtime") : ""}`,
         +v("kids") > 0 && `${t.kids}: ${v("kids")}`, v("notes") && `${t.notes.replace(/ \(.*\)/, "")}: ${v("notes")}`, v("name") && `${t.name}: ${v("name")}`].filter(Boolean);
-      close(); onSend?.({ text: lines.join("\n"), from: v("date"), people: +v("pax") || 1 });
+      onSend?.({ text: lines.join("\n"), from: v("date"), people: +v("pax") || 1 });
     });
-    addEventListener("keydown", e => { if (e.key === "Escape" && root && !root.hidden) close(); });
-    document.addEventListener("langchange", () => { if (root && !root.hidden) build(); });
-    const sc = root.querySelector(".tr__scroll");
-    sc.addEventListener("scroll", () => root.style.setProperty("--dim", Math.min(1, sc.scrollTop / (sc.clientHeight * .8)).toFixed(3)), { passive: true });
   };
-  function open(size = 0) {
-    if (!root) create();
+  /* draws the page into host (once per language), with the group size chosen in the menu or the chips */
+  function mount(host, size = 0) {
     preset = [7, 8, 18].includes(size) ? size : 0;
-    build(); lastFocus = document.activeElement;
-    root.hidden = false; document.documentElement.classList.add("fx-open");
-    const sc = root.querySelector(".tr__scroll"); sc.scrollTop = 0; root.style.setProperty("--dim", 0);
-    if (preset) requestAnimationFrame(() => root.querySelector("#trForm").scrollIntoView({ block: "start" }));
-    requestAnimationFrame(() => root.querySelector(".tr__x").focus({ preventScroll: true }));
+    if (!root || root.parentElement !== host) { root?.remove(); root = document.createElement("div"); root.className = "tr"; host.appendChild(root); wire(); }
+    if (root.dataset.lang !== getLang()) { root.dataset.lang = getLang(); build(); }
+    setPreset(preset);
   }
-  function close() {
-    if (!root || root.hidden) return;
-    root.hidden = true; document.documentElement.classList.remove("fx-open");
-    lastFocus?.focus?.({ preventScroll: true });
+  function setPreset(size) {
+    preset = [7, 8, 18].includes(size) ? size : 0;
+    if (!root) return; const f = root.querySelector("form");
+    if (preset) f.pax.value = preset;
+    suggest();
   }
-  return { open, close };
+  function scrollToForm() {
+    const el = root?.querySelector(`#${uid}Form`), sc = root?.closest(".fleet"); if (!el) return;
+    if (!sc) return el.scrollIntoView({ behavior: "smooth", block: "start" });
+    const y = el.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 16;
+    sc.scrollTo({ top: y, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }
+  document.addEventListener("langchange", () => { if (root?.isConnected) { root.dataset.lang = getLang(); build(); setPreset(preset); } });
+  return { mount, setPreset, scrollToForm };
 }

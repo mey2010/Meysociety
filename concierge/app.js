@@ -817,7 +817,7 @@ const SVC_OPTS = {
     if (value === "chefs") { SM.set(false); setTimeout(() => chefPage.open(), 300); return; }   // the private chef's page   // straight into the excursion page
     if (value.startsWith("juguetes-")) { const g = value.slice(9); SM.set(false); setTimeout(() => openFleet(TOY, g === "all" ? "" : g), 260); return; }   // the water toys' gallery
     if (value === "transfer-all") { SM.set(false); setTimeout(() => openFleet("transfer"), 260); return; }
-    if (value.startsWith("transfer-")) { SM.set(false); setTimeout(() => transferPage.open(+value.slice(9)), 300); return; }   // the transfer page, with the group size already chosen
+    if (value.startsWith("transfer-")) { SM.set(false); setTimeout(() => openFleet("transfer", value), 300); return; }   // the transfer vans, with the group size already chosen
     if (value === "coches-all") { SM.set(false); setTimeout(() => openFleet("coche"), 260); return; }   // the cars' gallery
     if (value === "villas-ver") { SM.set(false); setTimeout(() => openFleet(VILLA), 260); return; }   // the villas' gallery
     if (value === "villa-aura") { SM.set(false); setTimeout(() => document.querySelector("[data-villa-tour]")?.click(), 300); return; }   // straight into the tour   // straight into the tour
@@ -1599,7 +1599,7 @@ document.addEventListener("langchange", mountReviews);
 /* ---------------- FLEET: Depth Ribbon of the real boats, grouped by type ---------------- */
 // Data in fleet-data.js (from the operators' 2026 catalogue, without prices).
 const CAT_LABEL = Object.fromEntries(FLEET_TYPES);
-const fleet = document.getElementById("fleet"), fleetInfo = document.getElementById("fleetInfo"), fleetChips = document.getElementById("fleetChips");
+const fleet = document.getElementById("fleet"), fleetInfo = document.getElementById("fleetInfo"), fleetChips = document.getElementById("fleetChips"), fleetMore = document.getElementById("fleetMore");
 document.getElementById("fleetClose").innerHTML = ICONS.close;
 document.getElementById("fleetPrev").innerHTML = ICONS.left; document.getElementById("fleetNext").innerHTML = ICONS.right;
 const cardSrc = b => blobPick(b.img || `data/fleet/card/${b.id}.webp`), fullSrc = (b, k) => blobPick(`data/fleet/4k/${b.id}-${k}.webp`);
@@ -1625,8 +1625,12 @@ function setFleetCat(cat) {
   ribbon.setItems(fleetItems());
   document.querySelector(".fleet__nav").classList.toggle("is-single", fleetList.length < 2);   // one boat: nothing to step through
 }
+let fleetSolo = "", fleetSub = "";
 function openFleet(cat = "all", brand = "") {
-  fleet.hidden = false; document.body.style.overflow = "hidden";
+  fleet.hidden = false; document.body.style.overflow = "hidden"; fleet.scrollTop = 0; fleetSolo = cat; fleetSub = brand;
+  // transfers: the request page sits right under the vans, in the same scroll
+  const withPage = cat === "transfer"; fleet.classList.toggle("fleet--scroll", withPage); fleetMore.hidden = !withPage;
+  if (withPage) transferPage.mount(fleetMore, +String(brand).replace(/\D/g, "") || 0);
   // the villa gallery warms up the tour: its index and first part start downloading while the visitor looks at the card
   if (cat === VILLA) prewarmVillaTour();   // the whole film starts streaming in, and the tour picks it up where it is
   { const [eb, tt] = cat === VILLA ? ["Villas privadas · Ibiza", "Nuestras villas"] : ["Barcos y yates · Ibiza", "Nuestra flota"];   // the gallery's own title
@@ -1653,11 +1657,13 @@ function openFleet(cat = "all", brand = "") {
     const SEC = { [JET]: "Motos de agua", [TOY]: "Juguetes acuáticos", [VILLA]: "Villas", coche: "Coches y motos", transfer: "Transfers" }[soloType];
     const kids = SVC_TREE.find(s => s.label === SEC)?.children || [];
     const groupOf = v => ({ "motos-seadoo": b => b.name.startsWith("Sea-Doo"), "motos-yamaha": b => b.name.startsWith("Yamaha"),
-      "juguetes-motor": b => TOY_GROUP.motor.includes(b.id), "juguetes-vuelo": b => TOY_GROUP.vuelo.includes(b.id) })[v] || (/-(all|ver|sin-licencia)$/.test(v) ? () => true : null);
-    const start = { "Sea-Doo": "motos-seadoo", Yamaha: "motos-yamaha", motor: "juguetes-motor", vuelo: "juguetes-vuelo" }[brand] || kids[0]?.value;
+      "juguetes-motor": b => TOY_GROUP.motor.includes(b.id), "juguetes-vuelo": b => TOY_GROUP.vuelo.includes(b.id) })[v]
+      || (/^transfer-\d+$/.test(v) ? b => b.pax >= +v.slice(9) : null) || (/-(all|ver|sin-licencia)$/.test(v) ? () => true : null);
+    const start = { "Sea-Doo": "motos-seadoo", Yamaha: "motos-yamaha", motor: "juguetes-motor", vuelo: "juguetes-vuelo" }[brand] || (kids.some(k => k.value === brand) ? brand : kids[0]?.value);
     const pick = v => { const f = groupOf(v); if (!f) return false;
       fleetChips.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.sub === v));
-      fleetList = fleetBase.filter(f); ribbon.setItems(fleetItems()); document.querySelector(".fleet__nav").classList.toggle("is-single", fleetList.length < 2);
+      fleetList = fleetBase.filter(f); ribbon.setItems(fleetItems()); fleetSub = v;
+      if (soloType === "transfer") transferPage.setPreset(+v.replace(/\D/g, "") || 0);   // the size chip also fills the group in the form document.querySelector(".fleet__nav").classList.toggle("is-single", fleetList.length < 2);
       const on = fleetChips.querySelector(`[data-sub="${v}"]`); if (on) fleetChips.scrollTo({ left: on.offsetLeft - (fleetChips.clientWidth - on.offsetWidth) / 2, behavior: "smooth" }); return true; };
     if (soloType !== VILLA) { fleetChips.closest(".fleet").querySelector(".fleet__top .eyebrow").textContent = `${t("Nuestra flota")} · Ibiza`; document.getElementById("fleetTitle").textContent = t(SEC); }
     fleetChips.hidden = kids.length < 2;
@@ -1739,7 +1745,7 @@ document.getElementById("fleetNext").addEventListener("click", () => ribbon.next
 document.getElementById("fleetClose").addEventListener("click", closeFleet);
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !fleet.hidden) closeFleet(); });
 document.addEventListener("click", e => { const b = e.target.closest("[data-fleet]"); if (b) { e.preventDefault(); openFleet(b.dataset.fleet); } });
-document.addEventListener("langchange", () => { if (!fleet.hidden) openFleet(fleetCat); if (boatNow) openBoat(boatNow); });
+document.addEventListener("langchange", () => { if (!fleet.hidden) openFleet(fleetSolo || fleetCat, fleetSub); if (boatNow) openBoat(boatNow); });
 
 
 /* ---------------- itinerary changes: admin edits create them, the client's bell announces them ---------------- */
@@ -2413,12 +2419,20 @@ document.addEventListener("click", e => { if (!e.target.closest("[data-goto-club
   (window.requestIdleCallback || (f => setTimeout(f, 600)))(warm, { timeout: 2500 }); }
 /* Transfers: why a private driver in Ibiza, and the request form (from, to, day, time, group, luggage, return) */
 const transferPage = initTransferPage({ onSend: ({ text, from, people }) => {
-  select("transfers", true); track("transfer_request", { people });
+  closeFleet(); select("transfers", true); track("transfer_request", { people });
   if (openWA(text, "transfer")) return;
   document.getElementById("f-notes").value = text;
   setTimeout(() => scrollToEl(document.getElementById("contacto")), 120);
 } });
-document.addEventListener("click", e => { if (e.target.closest("[data-transfer-page]")) { e.preventDefault(); track("transfer_open", {}); transferPage.open(); } });
+/* the same request form on the home page, under the services */
+const transferHome = initTransferPage({ compact: true, onSend: ({ text, people }) => {
+  select("transfers", true); track("transfer_request", { people, place: "home" });
+  if (openWA(text, "transfer")) return;
+  document.getElementById("f-notes").value = text;
+  setTimeout(() => scrollToEl(document.getElementById("contacto")), 120);
+} });
+{ const h = document.getElementById("trHome"); if (h) transferHome.mount(h); }
+document.addEventListener("click", e => { if (e.target.closest("[data-transfer-page]")) { e.preventDefault(); track("transfer_open", {}); openFleet("transfer"); requestAnimationFrame(() => requestAnimationFrame(() => transferPage.scrollToForm())); } });
 /* Alta cocina: the private chef's page, from the card ("Conocer a la chef") or the menu */
 const chefPage = initChefPage({ onBook: ({ kind, text }) => {
   select("dining", true); track("chef_book", { kind });
