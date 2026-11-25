@@ -209,19 +209,19 @@ const L2 = {
 const L3 = {
   es: { cal: "Calendario de fiestas 2027", calSub: "Toca tu primera noche y después la última. Los días con punto ya tienen line-up oficial.", prev: "Mes anterior", next: "Mes siguiente",
         legEv: "Line-up anunciado", legSel: "Tus noches", notify: "Avísame cuando salga el line-up", notifyOn: "Aviso activado: te lo enseñamos aquí en cuanto se anuncie", notifyOff: "Quitar aviso",
-        ics: "Añadir a mi calendario", fresh: n => `${n} ${n === 1 ? "line-up nuevo" : "line-ups nuevos"} en tus noches`, see: "Ver", icsTitle: "Noche en Ibiza", icsNote: "Line-up y mesas: Mey Society" },
+        ics: "Añadir a mi calendario", icsPick: "Primero elige tus noches en el calendario", icsDone: "Listo: revisa tu calendario", fresh: n => `${n} ${n === 1 ? "line-up nuevo" : "line-ups nuevos"} en tus noches`, see: "Ver", icsTitle: "Noche en Ibiza", icsNote: "Line-up y mesas: Mey Society" },
   en: { cal: "2027 party calendar", calSub: "Tap your first night, then your last. Days with a dot already have an official line-up.", prev: "Previous month", next: "Next month",
         legEv: "Line-up announced", legSel: "Your nights", notify: "Tell me when the line-up drops", notifyOn: "Alert on: we'll show it here the moment it's announced", notifyOff: "Turn alert off",
-        ics: "Add to my calendar", fresh: n => `${n} new ${n === 1 ? "line-up" : "line-ups"} on your nights`, see: "See", icsTitle: "Night in Ibiza", icsNote: "Line-up and tables: Mey Society" },
+        ics: "Add to my calendar", icsPick: "First pick your nights on the calendar", icsDone: "Done: check your calendar", fresh: n => `${n} new ${n === 1 ? "line-up" : "line-ups"} on your nights`, see: "See", icsTitle: "Night in Ibiza", icsNote: "Line-up and tables: Mey Society" },
   it: { cal: "Calendario feste 2027", calSub: "Tocca la prima notte e poi l'ultima. I giorni con il punto hanno già il line-up ufficiale.", prev: "Mese precedente", next: "Mese successivo",
         legEv: "Line-up annunciato", legSel: "Le tue notti", notify: "Avvisami quando esce il line-up", notifyOn: "Avviso attivo: te lo mostriamo qui appena viene annunciato", notifyOff: "Togli avviso",
-        ics: "Aggiungi al mio calendario", fresh: n => `${n} ${n === 1 ? "nuovo line-up" : "nuovi line-up"} nelle tue notti`, see: "Vedi", icsTitle: "Notte a Ibiza", icsNote: "Line-up e tavoli: Mey Society" },
+        ics: "Aggiungi al mio calendario", icsPick: "Prima scegli le tue notti nel calendario", icsDone: "Fatto: controlla il tuo calendario", fresh: n => `${n} ${n === 1 ? "nuovo line-up" : "nuovi line-up"} nelle tue notti`, see: "Vedi", icsTitle: "Notte a Ibiza", icsNote: "Line-up e tavoli: Mey Society" },
   fr: { cal: "Calendrier des fêtes 2027", calSub: "Touchez votre première nuit, puis la dernière. Les jours avec un point ont déjà leur line-up officiel.", prev: "Mois précédent", next: "Mois suivant",
         legEv: "Line-up annoncé", legSel: "Vos nuits", notify: "Prévenez-moi à la sortie du line-up", notifyOn: "Alerte activée : nous l'affichons ici dès son annonce", notifyOff: "Retirer l'alerte",
-        ics: "Ajouter à mon calendrier", fresh: n => `${n} ${n === 1 ? "nouveau line-up" : "nouveaux line-ups"} sur vos nuits`, see: "Voir", icsTitle: "Nuit à Ibiza", icsNote: "Line-up et tables : Mey Society" },
+        ics: "Ajouter à mon calendrier", icsPick: "Choisissez d'abord vos nuits dans le calendrier", icsDone: "C'est fait : vérifiez votre calendrier", fresh: n => `${n} ${n === 1 ? "nouveau line-up" : "nouveaux line-ups"} sur vos nuits`, see: "Voir", icsTitle: "Nuit à Ibiza", icsNote: "Line-up et tables : Mey Society" },
   de: { cal: "Partykalender 2027", calSub: "Tippe auf deine erste Nacht, dann auf die letzte. Tage mit Punkt haben schon ein offizielles Line-up.", prev: "Vorheriger Monat", next: "Nächster Monat",
         legEv: "Line-up bekannt", legSel: "Deine Nächte", notify: "Sag mir, wenn das Line-up erscheint", notifyOn: "Alarm aktiv: Wir zeigen es dir hier, sobald es bekannt ist", notifyOff: "Alarm entfernen",
-        ics: "Zu meinem Kalender", fresh: n => `${n} ${n === 1 ? "neues Line-up" : "neue Line-ups"} in deinen Nächten`, see: "Ansehen", icsTitle: "Nacht auf Ibiza", icsNote: "Line-up und Tische: Mey Society" },
+        ics: "Zu meinem Kalender", icsPick: "Wähle zuerst deine Nächte im Kalender", icsDone: "Fertig: schau in deinen Kalender", fresh: n => `${n} ${n === 1 ? "neues Line-up" : "neue Line-ups"} in deinen Nächten`, see: "Ansehen", icsTitle: "Nacht auf Ibiza", icsNote: "Line-up und Tische: Mey Society" },
 };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const KEY = "mey-agenda";
@@ -341,7 +341,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     }
     $(".ag__grid").innerHTML = h;
     const nb = $(".ag__notify"); nb.setAttribute("aria-pressed", st.alert); nb.querySelector("span").textContent = st.alert ? t.notifyOn : t.notify; nb.title = st.alert ? t.notifyOff : "";
-    $(".ag__ics span").textContent = t.ics; $(".ag__ics").disabled = !st.from;
+    if (!$(".ag__ics").dataset.msg) $(".ag__ics span").textContent = t.ics; $(".ag__ics").classList.toggle("is-idle", !st.from);
     const fresh = st.alert ? matching().filter(e => !st.seen.has(evKey(e))) : [], fb = $(".ag__fresh");
     fb.hidden = !fresh.length; if (fresh.length) { fb.querySelector("span").textContent = t.fresh(fresh.length); fb.querySelector("button").textContent = t.see; }
   }
@@ -357,8 +357,19 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
       else add(x + "-night", x, `${t.icsTitle}${st.clubs.size ? " · " + [...st.clubs].join(" / ") : ""}`, `${tx().tba} — ${t.icsNote}`);
     }
     lines.push("END:VCALENDAR");
-    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([lines.join("\r\n")], { type: "text/calendar" })); a.download = "mey-society-ibiza-2027.ics";
-    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    saveIcs(lines.join("\r\n"), "mey-society-ibiza-2027.ics").then(ok => ok && flashIcs(t.icsDone));
+  }
+  // a short message on the button itself (no dates yet, or added)
+  function flashIcs(text) { const b = $(".ag__ics"), sp = b.querySelector("span"); b.dataset.msg = "1"; sp.textContent = text; clearTimeout(b._t); b._t = setTimeout(() => { delete b.dataset.msg; sp.textContent = tx3().ics; }, 2600); }
+  /* the calendar file reaches the visitor's calendar on every device: inside claude.ai through the viewer's own
+     download prompt; on iPhone/iPad by opening the file, which Safari hands straight to Calendar ("Add all");
+     elsewhere as a download that the phone or computer opens with its calendar app */
+  async function saveIcs(text, filename) {
+    const dl = window.claude?.use ? await Promise.race([window.claude.use("downloads").catch(() => null), new Promise(r => setTimeout(() => r(null), 2500))]) : null;
+    if (dl) { try { await dl.save({ filename, data: new Blob([text], { type: "text/calendar" }) }); return true; } catch (err) { if (err?.code === "declined") return false; } }
+    if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) { location.href = URL.createObjectURL(new Blob([text], { type: "text/calendar;charset=utf-8" })); return true; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "text/calendar;charset=utf-8" })); a.download = filename;
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); return true;
   }
   root.addEventListener("click", e => {
     const nv = e.target.closest("[data-nav]"); if (nv) { month = shiftM(month, +nv.dataset.nav); paintCal(); return; }
@@ -402,7 +413,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     if (a === "day") { clubs.filter(v => v.type === "dayclub").forEach(v => st.clubs.add(v.name)); keep(); paint(); $(".ag__panel--nights").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if (a === "clear") { st.clubs.clear(); keep(); paint(); return; }
     if (a === "notify") { st.alert = !st.alert; if (st.alert) matching().forEach(x => st.seen.add(evKey(x))); keep(); paint(); navigator.vibrate?.(8); return; }
-    if (a === "ics") { ics(); return; }
+    if (a === "ics") { if (!st.from) { flashIcs(tx3().icsPick); $(".ag__grid").scrollIntoView({ behavior: "smooth", block: "center" }); $(".ag__grid").classList.remove("is-nudge"); void $(".ag__grid").offsetWidth; $(".ag__grid").classList.add("is-nudge"); return; } ics(); return; }
     if (a === "fresh") { matching().forEach(x => st.seen.add(evKey(x))); keep(); paint(); $(".ag__panel--list").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if (a) onSend?.({ kind: a, text: message(a), from: st.from, to: st.to || st.from, clubs: [...st.clubs] });
   });

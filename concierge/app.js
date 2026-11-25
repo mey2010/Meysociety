@@ -1440,10 +1440,7 @@ const EXAMPLES = [
     steps: [["10:30", "Salida en barco", "botafoch", "boat"], ["12:00", "Baño en Cala d'Hort", "hort", "wave"], ["13:30", "Comida a bordo", "savina", "dish"], ["20:00", "Cena frente a Es Vedrà", "hort", "dish"]] },
   { name: "Grupo de Daniel", who: "Cumpleaños · 8 personas", pack: "Night Edition", day: "Día 2 · Noche", glyph: "star", accent: "171 80 219", ini: "D",
     touches: [["users", "Furgoneta de 8 plazas toda la noche"], ["chef", "Tarta sorpresa en la mesa VIP"]],
-    steps: [["17:00", "Beach club", "bossa", "sun"], ["20:30", "Chef privado en la villa", "cubells", "dish"], ["23:30", "Mesa VIP", "bossa", "star"], ["04:00", "Chófer de vuelta", "cubells", "car"]] },
-  { name: "Familia Weber", who: "Familia · 5 personas", pack: "Completo", day: "Día 1 · Llegada", glyph: "plane", accent: "120 199 228", ini: "W",
-    touches: [["car", "Sillas infantiles en el transfer"], ["home", "Nevera llena antes de llegar"]],
-    steps: [["14:30", "Transfer privado", "airport", "car"], ["16:00", "Check-in en la villa", "cubells", "home"], ["17:30", "Piscina lista y toallas", "cubells", "sun"], ["21:00", "Menú infantil del chef", "cubells", "dish"]] },
+    steps: [["17:00", "Beach club", "bossa", "sun"], ["20:30", "Chef privado en la villa", "cubells", "dish"], ["23:30", "Mesa VIP", "bossa", "star"], ["04:00", "Chófer de vuelta", "cubells", "car"]] }
 ];
 const exRoot = document.getElementById("examples");
 exRoot.innerHTML = EXAMPLES.map((x, k) => `<article class="ex__item">
@@ -1649,7 +1646,7 @@ function fleetBack(b) {
   return `<div class="rb__top"><span class="rb__eb">${esc(t(CAT_LABEL[b.type]))}</span><h4 class="rb__name">${esc(b.name)}</h4></div>
     <ul class="rb__specs${villa ? " rb__specs--one" : ""}">${facts.map(([k, v]) => `<li><small>${k ? esc(t(k)) : "&nbsp;"}</small><b>${esc(v)}</b></li>`).join("")}</ul>
     <div class="rb__acts">${villa ? `<button class="btn btn--primary btn--sm" type="button" data-rb="see">${t("Ver")}</button>`
-      : `<button class="btn btn--glass btn--onDark btn--sm" type="button" data-rb="see">${t("Ver fotos")}</button><button class="btn btn--primary btn--sm" type="button" data-rb="ask">${t("Disponibilidad")}</button>`}</div>`;
+      : `<button class="btn btn--primary btn--sm" type="button" data-rb="see">${t("Ver fotos")}</button>`}</div>`;
 }
 const paxText = b => b.pax ? `${t("Hasta")} ${b.pax} ${t("personas")}` : "";
 function renderFleetInfo(b, i) {

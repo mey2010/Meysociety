@@ -692,7 +692,7 @@ select option { color: #0d0a38; }
 
 /* ---------------- home: itinerary examples ---------------- */
 #ejemplos .sec__head .lede { color: var(--on-dark-soft); }
-.ex { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(18px, 2.4vw, 28px); align-items: start; }
+.ex { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 980px; margin-inline: auto; gap: clamp(18px, 2.4vw, 28px); align-items: start; }
 .ex__item { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .ex__who { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .ex__who h3 { margin: 0; font: 400 24px/1.1 var(--serif); color: #fff; }
@@ -3055,3 +3055,14 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
 .ag__pick:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 .ag__fcard[aria-pressed="true"] .ag__pick { background: var(--violet); box-shadow: inset 0 0 0 2px var(--violet), 0 8px 22px -6px rgb(171 80 219 / .9); }
 .tk .tk__meta { padding-right: 54px; }
+
+/* calendar: the hint line centred whatever the page's justified text does; the "add to calendar" button always works */
+.ag .ag__calhead .ag__calsub { text-align: center !important; text-align-last: center; hyphens: none; -webkit-hyphens: none; }
+.ag__ics.is-idle { opacity: .7; }
+.ag__grid.is-nudge { animation: ag-nudge .7s ease; }
+@keyframes ag-nudge { 0%, 100% { transform: none; } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+/* the turn never shows both faces at once: Safari ignores backface-visibility when the photo inside has its own 3D
+   transform (the parallax), so each face is switched off explicitly as the card passes 90° */
+.ribbon__card.is-turned .ribbon__face { visibility: hidden; }
+.ribbon__card:not(.is-turned) .ribbon__back { visibility: hidden; }
+.rb__acts .btn { flex: 1; }

@@ -145,7 +145,7 @@ export const FLEET = [
   { id: "jetsurf", type: "juguete", name: "Jetsurf", crew: "Con instrucciones o monitor", incl: ["Tabla de surf a motor", "Sin necesidad de olas ni de viento", "Para todos los niveles"], photos: 4 },
   { id: "radinn", type: "juguete", name: "Radinn", crew: "Con instrucciones o monitor", incl: ["Jetboard eléctrica", "Velocidad sin olas ni viento", "Te lo llevamos a tu barco"], photos: 4 },
   { id: "scubajet", type: "juguete", name: "Scubajet", crew: "Con instrucciones", incl: ["Propulsor eléctrico para snorkel y buceo", "Sin emisiones", "Ligero y fácil de usar"], photos: 4 },
-  { id: "flyboard", type: "juguete", name: "Flyboard", crew: "Con monitor", incl: ["Vuela sobre el agua impulsado por una moto acuática", "En tu barco, en Ibiza o Formentera", "Sesiones por persona o evento privado"], photos: 4 },
+  { id: "flyboard", type: "juguete", name: "Flyboard", crew: "Con monitor", incl: ["Vuela sobre el agua impulsado por una moto acuática", "En tu barco, en Ibiza o Formentera", "Sesiones por persona o evento privado"], photos: 4, drop: [2] },
   { id: "hoverboard", type: "juguete", name: "Hoverboard", crew: "Con monitor", incl: ["Tabla voladora de propulsión acuática", "En tu barco, en Ibiza o Formentera", "Sesiones por persona"], photos: 4 },
   { id: "flyride", type: "juguete", name: "Flyride", crew: "Con monitor", incl: ["Asiento volador de propulsión acuática", "Para quien quiere volar sin hacer equilibrios", "En tu barco, en Ibiza o Formentera"], photos: 4 },
   { id: "wakeboard", type: "juguete", name: "Wakeboard", crew: "Remolcado por tu barco", incl: ["Tabla, fijaciones y cabo", "Entre el snowboard y el esquí acuático", "Para tu día de barco"], photos: 4 },

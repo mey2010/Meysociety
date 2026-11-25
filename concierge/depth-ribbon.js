@@ -172,7 +172,7 @@ export function createDepthRibbon(root, opts = {}) {
       fx.vf += (KF * (fx.tf - fx.f) - DF * fx.vf) * h; fx.f += fx.vf * h; rem -= h; }
     if (c) {
       c._flip.style.transform = `rotateX(${fx.rx.toFixed(2)}deg) rotateY(${(fx.ry + fx.f * 180).toFixed(2)}deg)`;
-      if (c._img) c._img.style.transform = `translate3d(${(-fx.ry * .9).toFixed(1)}px, ${(fx.rx * .9).toFixed(1)}px, 0) scale(1.06)`;
+      if (c._img) c._img.style.transform = fx.f > .02 ? "" : `translate3d(${(-fx.ry * .9).toFixed(1)}px, ${(fx.rx * .9).toFixed(1)}px, 0) scale(1.06)`;   // no parallax while it turns
       if (c._glare) { c._glare.style.opacity = Math.min(1, (Math.abs(fx.rx) + Math.abs(fx.ry)) / TILT).toFixed(2); c._glare.style.background = `radial-gradient(circle at ${fx.gx}% ${fx.gy}%, rgb(255 255 255 / .32), transparent 55%)`; }
       c.classList.toggle("is-turned", fx.f > .5);
     }
