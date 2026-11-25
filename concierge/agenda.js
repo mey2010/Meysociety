@@ -41,7 +41,8 @@ function ticketCards(row, labels) {
     front.append(bg, Object.assign(document.createElement("span"), { className: "tk__shade" }), txt, glare); if (arrow) front.append(arrow);
     el.prepend(front); el.classList.add("tk");
     let back = null;
-    if (el.dataset.club) {
+    if (el.dataset.club) { const sel = document.createElement("span"); sel.className = "tk__sel"; front.append(sel); }
+    if (false) {
       back = document.createElement("span"); back.className = "tk__side tk__back"; back.setAttribute("aria-hidden", "true");
       back.innerHTML = `<span class="tk__qr">${qr(hash(el.dataset.club))}</span><span class="tk__club"></span><span class="tk__seat"><span><i></i><b>2027</b></span><span><i></i><b>VIP</b></span><span><i></i><b>18+</b></span></span><span class="tk__hint"></span>`;
       el.append(back);
@@ -49,7 +50,7 @@ function ticketCards(row, labels) {
     return { el, bg, txt, glare, back, rx: S(0, 220, 18), ry: S(0, 220, 18), f: S(0, 170, 15), g: S(0, 300, 26), lift: S(1, 300, 18), hover: false, nx: 0, ny: 0, vis: false, ph: Math.random() * 6 };
   });
 
-  const paintLabels = () => cards.forEach(c => { if (!c.back) return; const L = labels();
+  const paintLabels = () => cards.forEach(c => { const L = labels(), sel = c.el.querySelector(".tk__sel"); if (sel) sel.textContent = String(L.hint).split("·")[0].trim(); if (!c.back) return;
     c.back.querySelector(".tk__club").textContent = c.el.dataset.club;
     const seat = c.back.querySelectorAll(".tk__seat i"); seat[0].textContent = L.season; seat[1].textContent = L.access; seat[2].textContent = L.age;
     c.back.querySelector(".tk__hint").textContent = L.hint; });
@@ -61,7 +62,7 @@ function ticketCards(row, labels) {
   function loop(now) {
     raf = 0; const dt = Math.min(.033, (now - last) / 1000); last = now; clock += dt; let busy = false;
     for (const c of cards) {
-      const flipT = c.el.getAttribute("aria-pressed") === "true" ? 180 : 0; c.f.t = flipT;
+      c.f.t = 0;   // no turning over: a picked club keeps its face, with a ring and a badge
       if (c.hover) { c.rx.t = -c.ny * TILT; c.ry.t = c.nx * TILT; c.g.t = 1; }
       else if (c.vis && !REDUCED) { c.rx.t = Math.sin(clock * .9 + c.ph) * 3; c.ry.t = Math.cos(clock * .7 + c.ph) * 5; c.g.t = .22; busy = true; }
       else { c.rx.t = c.ry.t = 0; c.g.t = 0; }
@@ -94,13 +95,34 @@ function ticketCards(row, labels) {
   const io = new IntersectionObserver(es => { es.forEach(e => { const c = cards.find(x => x.el === e.target); if (c) { c.vis = e.isIntersecting; c.el.classList.toggle("is-vis", c.vis); } }); kick(); }, { threshold: .05 });
   cards.forEach(c => io.observe(c.el));
 
+  /* the row moves like the fleet's ribbon: the card in the middle faces you, the ones beside it turn away and step
+     back, mirrored on both sides; it snaps card by card onto the centre. Driven by the row's own native scroll. */
+  const lis = [...row.children]; let fanning = false, cfRaf = 0;
+  const gap = () => parseFloat(getComputedStyle(row).columnGap) || 14;
+  // card width from the row's full width (a % basis would shrink with the side padding that centres the first card)
+  const centre = () => { const W = row.clientWidth; if (!W) return;
+    const w = Math.round(matchMedia("(max-width: 760px)").matches ? W * .7 : Math.min(290, Math.max(230, W * .24))), p = Math.max(0, Math.round((W - w) / 2));
+    lis.forEach(li => { li.style.flexBasis = w + "px"; }); row.style.paddingInline = p + "px"; row.style.scrollPaddingInline = p + "px"; };
+  function pose(li) {
+    const w = li.offsetWidth || 1, d = (li.offsetLeft + w / 2 - row.scrollLeft - row.clientWidth / 2) / (w + gap());
+    const k = Math.min(Math.abs(d), 2.4), kk = Math.min(k, 1), sg = Math.sign(d);
+    const pull = row.clientWidth < 600 ? .3 : .08;   // on a phone the neighbours slide in under the middle card, so both sides show
+    return { t: `perspective(1200px) translate3d(${(-sg * (kk * w * pull + Math.max(0, k - 1) * w * (.14 + pull))).toFixed(1)}px, 0, ${(-(kk * 120 + Math.max(0, k - 1) * 70)).toFixed(1)}px) rotateY(${(-sg * kk * 32).toFixed(2)}deg)`,
+      o: (1 - Math.min(k, 2) * .16).toFixed(3), z: String(100 - Math.round(k * 10)) };
+  }
+  function cover() { cfRaf = 0; if (fanning || REDUCED) return; for (const li of lis) { const q = pose(li); li.style.transform = q.t; li.style.opacity = q.o; li.style.zIndex = q.z; } }
+  if (!REDUCED) {
+    row.classList.add("is-cover"); centre(); cover();
+    row.addEventListener("scroll", () => { if (!cfRaf) cfRaf = requestAnimationFrame(cover); }, { passive: true });
+    let lastW = 0; new ResizeObserver(() => { if (row.clientWidth === lastW) return; lastW = row.clientWidth; centre(); cover(); }).observe(row);
+  }
   // Fan Cards entrance: the first time the row comes into view the cards start stacked under the first one, a
   // little turned, and fan out into their places one after another (a spring with a small overshoot)
   if (!REDUCED) {
-    const lis = [...row.children];
     lis.forEach((li, i) => { li.style.transform = `translate3d(0, 40px, 0) rotate(${(i % 2 ? 1 : -1) * 4}deg)`; li.style.opacity = "0"; });
+    fanning = true;
     const fanIo = new IntersectionObserver(es => {
-      if (!es.some(e => e.isIntersecting)) return; fanIo.disconnect();
+      if (!es.some(e => e.isIntersecting)) return; fanIo.disconnect(); centre();
       const x0 = lis[0].offsetLeft;
       lis.forEach((li, i) => {
         const dx = x0 - li.offsetLeft, d = Math.min(i, 5);
@@ -110,14 +132,14 @@ function ticketCards(row, labels) {
       row.offsetWidth;   // the stacked pose is drawn before the fan starts
       requestAnimationFrame(() => lis.forEach((li, i) => {
         li.style.transition = `transform 820ms cubic-bezier(.2, 1.28, .38, 1) ${120 + i * 70}ms`;
-        li.style.transform = "none";
-        li.addEventListener("transitionend", () => { li.style.transition = li.style.transform = li.style.zIndex = ""; }, { once: true });
+        li.style.transform = pose(li).t; li.style.opacity = pose(li).o;
+        li.addEventListener("transitionend", () => { li.style.transition = ""; if (i === lis.length - 1) { fanning = false; cover(); } }, { once: true });
       }));
     }, { threshold: .25 });
     fanIo.observe(row);
   }
   kick();
-  return { relabel: paintLabels };
+  return { relabel: paintLabels, step: dir => { const w = (lis[0]?.offsetWidth || 0) + gap(); row.scrollBy({ left: dir * w, behavior: "smooth" }); } };
 }
 
 /* Official line-ups, added as the clubs announce them. One entry per party night:
@@ -272,7 +294,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
   const tickets = ticketCards(root.querySelector(".ag__feat"), () => (L2[getLang()] || L2.es).tk);
   { const row = root.querySelector(".ag__feat"), navs = root.querySelectorAll(".ag__fnav");
     const sync = () => { navs[0].disabled = row.scrollLeft < 8; navs[1].disabled = row.scrollLeft + row.clientWidth > row.scrollWidth - 8; };
-    navs.forEach(b => b.addEventListener("click", () => row.scrollBy({ left: +b.dataset.dir * row.clientWidth * .8, behavior: "smooth" })));
+    navs.forEach(b => b.addEventListener("click", () => tickets.step(+b.dataset.dir)));
     row.addEventListener("scroll", sync, { passive: true }); requestAnimationFrame(sync); }
   const inFrom = $('[data-f="from"]'), inTo = $('[data-f="to"]');
 

@@ -7,37 +7,41 @@ import { pick } from "./fleet-blob.js";
 
 /* stills taken from the excursion film, upscaled ×2: the full file for the photo viewer, the -m file on the page */
 const PH = n => pick(`data/formentera/fx-${n}-m.webp`), PHF = n => pick(`data/formentera/fx-${n}.webp`);
-const REEL = ["slide", "snorkel", "paddle", "swim", "illetes", "shore", "party", "sunset"];
+const REEL = ["clip1", "slide", "clip2", "swim", "illetes", "sunset"];
+/* the reel's two films (upscaled ×4 with AI, 1080×1920): they play only while their card is the one in view */
+const CLIP = { clip1: "data/formentera/fx-clip1.mp4", clip2: "data/formentera/fx-clip2.mp4" };
+const isClip = n => n in CLIP;
+const FILM = pick("data/formentera/fx-film.mp4");
 const SEC_IMG = ["breakfast", "party", "slide", "illetes", null, null];       // photo heading each chapter
 const PLAN_IMG = ["aerial", "paddle", "illetes", "shore", "swim", "sunset", "dj"];
 const X = {
   es: { stats: [["12", "h", "de experiencia todo incluido"], ["6", "h", "libres en Formentera"], ["2", "", "paradas de baño en aguas cristalinas"], ["DJ", "", "en directo y open bar todo el día"]],
     reelH: "Así se vive el día", reelP: "Imágenes de la excursión. Desliza y elige tu momento favorito.",
-    cap: { slide: "Tobogán acuático directo al mar", snorkel: "Snorkel en aguas cristalinas", paddle: "Paddle surf sobre el turquesa", swim: "Baños en aguas transparentes", illetes: "Arena blanca y agua turquesa", shore: "Agua clara hasta la orilla", party: "Ambiente a bordo con DJ en directo", sunset: "Sunset party de vuelta a Ibiza", breakfast: "Desayuno buffet a bordo", aerial: "Fondeo en aguas turquesas", dj: "DJ en directo" },
+    cap: { clip1: "Rumbo a Formentera: embarque y aguas cristalinas", clip2: "Tobogán y paddle surf en el fondeo", slide: "Tobogán acuático directo al mar", snorkel: "Snorkel en aguas cristalinas", paddle: "Paddle surf sobre el turquesa", swim: "Baños en aguas transparentes", illetes: "Arena blanca y agua turquesa", shore: "Agua clara hasta la orilla", party: "Ambiente a bordo con DJ en directo", sunset: "Sunset party de vuelta a Ibiza", breakfast: "Desayuno buffet a bordo", aerial: "Fondeo en aguas turquesas", dj: "DJ en directo" },
     waterH: "Al agua", waterP: "Tobogán, paddle surf y equipo de snorkel incluidos: en cada parada el mar es tuyo.",
     sunH: "Sunset Party", sunP: "De vuelta a Ibiza, el sol cae sobre el mar mientras el DJ sube el ritmo. Cava, prosecco y la mejor luz del día.",
     bar: "12 h · todo incluido", book: "Reservar", open: "Ampliar foto" },
   en: { stats: [["12", "h", "all-inclusive experience"], ["6", "h", "free time in Formentera"], ["2", "", "swim stops in crystal-clear water"], ["DJ", "", "live, plus an open bar all day"]],
     reelH: "How the day feels", reelP: "Images from the excursion. Swipe and pick your favourite moment.",
-    cap: { slide: "A water slide straight into the sea", snorkel: "Snorkelling in crystal-clear water", paddle: "Paddle boarding on the turquoise", swim: "Swims in see-through water", illetes: "White sand and turquoise water", shore: "Clear water right to the shore", party: "Live DJ vibes on board", sunset: "Sunset party on the way back", breakfast: "Breakfast buffet on board", aerial: "Anchored in turquoise water", dj: "Live DJ" },
+    cap: { clip1: "Setting off for Formentera: boarding and crystal-clear water", clip2: "Water slide and paddle boarding at anchor", slide: "A water slide straight into the sea", snorkel: "Snorkelling in crystal-clear water", paddle: "Paddle boarding on the turquoise", swim: "Swims in see-through water", illetes: "White sand and turquoise water", shore: "Clear water right to the shore", party: "Live DJ vibes on board", sunset: "Sunset party on the way back", breakfast: "Breakfast buffet on board", aerial: "Anchored in turquoise water", dj: "Live DJ" },
     waterH: "Into the water", waterP: "Water slide, paddle boards and snorkelling gear included: at every stop the sea is yours.",
     sunH: "Sunset Party", sunP: "On the way back to Ibiza the sun sinks into the sea while the DJ lifts the tempo. Cava, prosecco and the best light of the day.",
     bar: "12 h · all inclusive", book: "Book", open: "Enlarge photo" },
   it: { stats: [["12", "h", "di esperienza all-inclusive"], ["6", "h", "di tempo libero a Formentera"], ["2", "", "soste per il bagno in acque cristalline"], ["DJ", "", "dal vivo e open bar tutto il giorno"]],
     reelH: "Come si vive la giornata", reelP: "Immagini dell'escursione. Scorri e scegli il tuo momento preferito.",
-    cap: { slide: "Scivolo acquatico dritto in mare", snorkel: "Snorkeling in acque cristalline", paddle: "Paddle board sul turchese", swim: "Bagni in acque trasparenti", illetes: "Sabbia bianca e acqua turchese", shore: "Acqua limpida fino a riva", party: "Atmosfera a bordo con DJ dal vivo", sunset: "Sunset party sulla via del ritorno", breakfast: "Colazione a buffet a bordo", aerial: "All'ancora in acque turchesi", dj: "DJ dal vivo" },
+    cap: { clip1: "Rotta su Formentera: imbarco e acque cristalline", clip2: "Scivolo e paddle board alla fonda", slide: "Scivolo acquatico dritto in mare", snorkel: "Snorkeling in acque cristalline", paddle: "Paddle board sul turchese", swim: "Bagni in acque trasparenti", illetes: "Sabbia bianca e acqua turchese", shore: "Acqua limpida fino a riva", party: "Atmosfera a bordo con DJ dal vivo", sunset: "Sunset party sulla via del ritorno", breakfast: "Colazione a buffet a bordo", aerial: "All'ancora in acque turchesi", dj: "DJ dal vivo" },
     waterH: "In acqua", waterP: "Scivolo, paddle board e attrezzatura da snorkeling inclusi: a ogni sosta il mare è tuo.",
     sunH: "Sunset Party", sunP: "Sulla via del ritorno a Ibiza il sole cala sul mare mentre il DJ alza il ritmo. Cava, prosecco e la luce più bella del giorno.",
     bar: "12 h · tutto incluso", book: "Prenota", open: "Ingrandisci foto" },
   fr: { stats: [["12", "h", "d'expérience tout compris"], ["6", "h", "de temps libre à Formentera"], ["2", "", "arrêts baignade en eaux cristallines"], ["DJ", "", "en live et open bar toute la journée"]],
     reelH: "La journée en images", reelP: "Images de l'excursion. Faites défiler et choisissez votre moment préféré.",
-    cap: { slide: "Toboggan aquatique direct dans la mer", snorkel: "Snorkeling en eaux cristallines", paddle: "Paddle sur le turquoise", swim: "Baignades en eaux transparentes", illetes: "Sable blanc et eau turquoise", shore: "Une eau claire jusqu'au rivage", party: "Ambiance à bord avec DJ en live", sunset: "Sunset party sur le retour", breakfast: "Petit-déjeuner buffet à bord", aerial: "Au mouillage en eaux turquoise", dj: "DJ en live" },
+    cap: { clip1: "Cap sur Formentera : embarquement et eaux cristallines", clip2: "Toboggan et paddle au mouillage", slide: "Toboggan aquatique direct dans la mer", snorkel: "Snorkeling en eaux cristallines", paddle: "Paddle sur le turquoise", swim: "Baignades en eaux transparentes", illetes: "Sable blanc et eau turquoise", shore: "Une eau claire jusqu'au rivage", party: "Ambiance à bord avec DJ en live", sunset: "Sunset party sur le retour", breakfast: "Petit-déjeuner buffet à bord", aerial: "Au mouillage en eaux turquoise", dj: "DJ en live" },
     waterH: "À l'eau", waterP: "Toboggan, paddle et équipement de snorkeling inclus : à chaque arrêt, la mer est à vous.",
     sunH: "Sunset Party", sunP: "Sur le retour vers Ibiza, le soleil plonge dans la mer pendant que le DJ monte le rythme. Cava, prosecco et la plus belle lumière de la journée.",
     bar: "12 h · tout compris", book: "Réserver", open: "Agrandir la photo" },
   de: { stats: [["12", "h", "All-inclusive-Erlebnis"], ["6", "h", "Freizeit auf Formentera"], ["2", "", "Badestopps in kristallklarem Wasser"], ["DJ", "", "live und Open Bar den ganzen Tag"]],
     reelH: "So fühlt sich der Tag an", reelP: "Bilder vom Ausflug. Wisch dich durch und finde deinen Lieblingsmoment.",
-    cap: { slide: "Wasserrutsche direkt ins Meer", snorkel: "Schnorcheln in kristallklarem Wasser", paddle: "Paddleboarden auf Türkis", swim: "Baden in glasklarem Wasser", illetes: "Weißer Sand und türkises Wasser", shore: "Klares Wasser bis zum Ufer", party: "Stimmung an Bord mit Live-DJ", sunset: "Sunset-Party auf der Rückfahrt", breakfast: "Frühstücksbuffet an Bord", aerial: "Vor Anker in türkisem Wasser", dj: "Live-DJ" },
+    cap: { clip1: "Kurs auf Formentera: Einschiffen und kristallklares Wasser", clip2: "Wasserrutsche und Paddleboarden vor Anker", slide: "Wasserrutsche direkt ins Meer", snorkel: "Schnorcheln in kristallklarem Wasser", paddle: "Paddleboarden auf Türkis", swim: "Baden in glasklarem Wasser", illetes: "Weißer Sand und türkises Wasser", shore: "Klares Wasser bis zum Ufer", party: "Stimmung an Bord mit Live-DJ", sunset: "Sunset-Party auf der Rückfahrt", breakfast: "Frühstücksbuffet an Bord", aerial: "Vor Anker in türkisem Wasser", dj: "Live-DJ" },
     waterH: "Ab ins Wasser", waterP: "Wasserrutsche, Paddleboards und Schnorchelausrüstung inklusive: an jedem Stopp gehört das Meer dir.",
     sunH: "Sunset-Party", sunP: "Auf der Rückfahrt nach Ibiza versinkt die Sonne im Meer, während der DJ das Tempo anzieht. Cava, Prosecco und das schönste Licht des Tages.",
     bar: "12 h · alles inklusive", book: "Buchen", open: "Foto vergrößern" },
@@ -172,6 +176,7 @@ export function initFormenteraTour({ onBook } = {}) {
   let root = null, video = null, lastFocus = null, scroller = null, raf = 0;
   const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const img = (n, alt, cls = "", sz = "100vw") => `<img class="${cls}" src="${PH(n)}" srcset="${PH(n)} 928w, ${PHF(n)} 1856w" sizes="${sz}" alt="${esc(alt)}" loading="lazy" decoding="async" width="928" height="1664" draggable="false">`;
+  const clipEl = n => `<video class="fx__clip" data-src="${pick(CLIP[n])}" poster="${PH(n)}" muted loop playsinline preload="none" width="1080" height="1920" aria-hidden="true"></video><span class="fx__play" aria-hidden="true"></span>`;
   const zoom = (n, cap, inner, cls = "") => `<button type="button" class="fx__zoom ${cls}" data-fx-full="${n}" aria-label="${esc(cap)}">${inner}</button>`;
   const build = () => {
     const tx = T[getLang()] || T.es, x = X[getLang()] || X.es;
@@ -191,7 +196,7 @@ export function initFormenteraTour({ onBook } = {}) {
       </section>`;
     const reel = `<section class="fx__reelwrap" aria-label="${esc(x.reelH)}">
         <div class="fx__reelhead"><h3>${esc(x.reelH)}</h3><p>${esc(x.reelP)}</p></div>
-        <div class="fx__reel">${REEL.map((n, k) => zoom(n, x.cap[n], img(n, x.cap[n], "", "(min-width: 900px) 250px, 72vw") + `<span class="fx__cap"><em>${String(k + 1).padStart(2, "0")}</em>${esc(x.cap[n])}</span>`, "fx__card")).join("")}</div>
+        <div class="fx__reel">${REEL.map((n, k) => zoom(n, x.cap[n], (isClip(n) ? clipEl(n) : img(n, x.cap[n], "", "(min-width: 900px) 250px, 72vw")) + `<span class="fx__cap"><em>${String(k + 1).padStart(2, "0")}</em>${esc(x.cap[n])}</span>`, "fx__card")).join("")}</div>
         <div class="fx__dots" aria-hidden="true">${REEL.map(() => "<i></i>").join("")}</div>
       </section>`;
     const sunset = `<section class="fx__sun">${zoom("sunset", x.cap.sunset, img("sunset", x.cap.sunset, "fx__par", "(min-width: 900px) 600px, 100vw"))}<div class="fx__suntx"><h3>${esc(x.sunH)}</h3><p>${esc(x.sunP)}</p></div></section>`;
@@ -233,7 +238,10 @@ export function initFormenteraTour({ onBook } = {}) {
     root.querySelectorAll(".fx__sec, .fx__end, .fx__stats, .fx__reelwrap, .fx__sun, .fx__intro, .fx__plan li").forEach(s => io.observe(s));
     const reel = root.querySelector(".fx__reel"), dots = [...root.querySelectorAll(".fx__dots i")], cards = [...reel.children];
     reelIo = new IntersectionObserver(es => es.forEach(en => {
-      const k = cards.indexOf(en.target); en.target.classList.toggle("is-on", en.intersectionRatio > .6); dots[k]?.classList.toggle("is-on", en.intersectionRatio > .6);
+      const k = cards.indexOf(en.target), on = en.intersectionRatio > .6; en.target.classList.toggle("is-on", on); dots[k]?.classList.toggle("is-on", on);
+      const v = en.target.querySelector("video"); if (!v) return;
+      if (en.isIntersecting && !v.src) { v.src = v.dataset.src; v.preload = "auto"; }
+      if (on && !REDUCED) v.play().catch(() => {}); else v.pause();
     }), { root: reel, threshold: [0, .6, 1] });
     cards.forEach(c => reelIo.observe(c));
     parEls = [...root.querySelectorAll(".fx__par")]; planEl = root.querySelector(".fx__plan");
@@ -256,7 +264,10 @@ export function initFormenteraTour({ onBook } = {}) {
   let lbList = [], lbK = 0;
   const lbShow = k => {
     const lb = root.querySelector(".fx__lb"), x = X[getLang()] || X.es; lbK = (k + lbList.length) % lbList.length;
-    const n = lbList[lbK], im = lb.querySelector("img");
+    const n = lbList[lbK], im = lb.querySelector("img"), lv = lb.querySelector("video");
+    lv.hidden = !isClip(n); im.hidden = isClip(n);
+    if (isClip(n)) { lv.poster = PH(n); lv.src = pick(CLIP[n]); lv.play().catch(() => {}); lb.querySelector("figcaption").textContent = x.cap[n]; return; }
+    lv.pause(); lv.removeAttribute("src");
     im.removeAttribute("srcset"); im.src = PH(n); im.alt = x.cap[n]; const full = new Image(); full.onload = () => { if (lbList[lbK] === n) im.src = full.src; }; full.src = PHF(n);
     lb.querySelector("figcaption").textContent = x.cap[n];
   };
@@ -265,7 +276,7 @@ export function initFormenteraTour({ onBook } = {}) {
     root.querySelector(".fx__lb").hidden = false; lbShow(lbList.indexOf(n));
     root.querySelector(".fx__lbx").focus({ preventScroll: true });
   };
-  const lbClose = () => { const lb = root.querySelector(".fx__lb"); if (!lb.hidden) { lb.hidden = true; return true; } return false; };
+  const lbClose = () => { const lb = root.querySelector(".fx__lb"); if (!lb.hidden) { lb.hidden = true; lb.querySelector("video").pause(); return true; } return false; };
 
   const create = () => {
     root = document.createElement("div"); root.className = "fx"; root.hidden = true;
@@ -275,7 +286,7 @@ export function initFormenteraTour({ onBook } = {}) {
       <div class="fx__scroll"><div class="fx__content"></div></div>
       <div class="fx__bar"><span class="fx__bartx"></span><button type="button" class="btn btn--primary fx__book fx__barbtn"></button></div>
       <button type="button" class="fx__x"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-      <div class="fx__lb" role="dialog" aria-modal="true" hidden><figure><img alt="" decoding="async"><figcaption></figcaption></figure>
+      <div class="fx__lb" role="dialog" aria-modal="true" hidden><figure><img alt="" decoding="async"><video muted loop playsinline controls hidden></video><figcaption></figcaption></figure>
         <button type="button" class="fx__lbnav fx__lbprev" aria-label="‹">${chev("M15 5l-7 7 7 7")}</button><button type="button" class="fx__lbnav fx__lbnext" aria-label="›">${chev("M9 5l7 7-7 7")}</button>
         <button type="button" class="fx__x fx__lbx" aria-label="×">${chev("M6 6l12 12M18 6L6 18")}</button></div>`;
     document.body.appendChild(root);
@@ -300,12 +311,18 @@ export function initFormenteraTour({ onBook } = {}) {
     });
     document.addEventListener("langchange", () => { if (root) build(); });
   };
+  /* start buffering the film before the page opens (on approach, or the moment a finger touches the card),
+     so it is already playing while the first lines are read */
+  function warm() {
+    if (!root) create();
+    if (!video.src) { video.preload = "auto"; video.src = FILM; video.load(); }
+  }
   function open() {
     if (!root) create();
     build(); lastFocus = document.activeElement;
     root.hidden = false; document.documentElement.classList.add("fx-open");
     scroller.scrollTop = 0; root.querySelector(".fx__lb").hidden = true; onScroll();
-    if (!video.src) { video.src = "data/formentera/fx-film.mp4"; video.load(); }
+    warm();
     video.play().catch(() => {});
     requestAnimationFrame(() => root.querySelector(".fx__x").focus({ preventScroll: true }));
   }
@@ -314,5 +331,5 @@ export function initFormenteraTour({ onBook } = {}) {
     root.hidden = true; video.pause(); document.documentElement.classList.remove("fx-open");
     lastFocus?.focus?.({ preventScroll: true });
   }
-  return { open, close };
+  return { open, close, warm };
 }

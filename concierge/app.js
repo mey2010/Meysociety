@@ -391,19 +391,24 @@ function logoLoader(px = 130) {
   // the back of the finished coin: the same face, ring, relief letters and bezel, turned round, with a coloured edge
   // between both sides (only once it is built: while it assembles the parts are seen apart)
   const S0 = px, BZ = -.15 * S0, bk = (src, z, c = "") => `<img class="asm__bk ${c}" src="${src}" alt="" draggable="false" style="transform: translateZ(${z.toFixed(2)}px) rotateY(180deg)">`;
-  const BACK = Array.from({ length: 12 }, (_, i) => `<span class="asm__bk asm__edge" style="transform: translateZ(${(BZ + (.018 * S0 - BZ) * (i + .5) / 12).toFixed(2)}px)"></span>`).join("")
-    + bk(ART.face, BZ) + bk(ART.ring, BZ - .032 * S0) + [0, 1, 2, 3].map(j => bk(ART.letters, BZ - .05 * S0 - j * .007 * S0, "asm__let--side")).join("")
-    + bk(ART.letters, BZ - .078 * S0, "asm__let--top") + bk(ART.bezel, BZ - .038 * S0);
-  box.innerHTML = `<span class="asm__shadow"></span><div class="asm__cam">
-    <span class="asm__p asm__plate"></span>${[0, 1, 2].map(i => `<span class="asm__p asm__screw" style="--a:${90 + i * 120}deg"></span>`).join("")}
+  /* the coin is built as a mirror: every part in front of the screwed plate has a twin behind it, at the same distance
+     and turned round, so both stacks assemble together onto the plate in the middle and the logo is the same on both
+     faces. Once built, a coloured edge closes the rim between the two rings. */
+  const ZP = -.075, ZR = .018, EA = (2 * ZP - ZR) * S0, EB = ZR * S0;
+  const BACK = Array.from({ length: 14 }, (_, i) => `<span class="asm__bk asm__edge" style="transform: translateZ(${(EA + (EB - EA) * (i + .5) / 14).toFixed(2)}px)"></span>`).join("");
+  const twin = html => html.replace(/class="asm__p /g, 'class="asm__p asm__mir ');
+  const STACK = `${[0, 1, 2].map(i => `<span class="asm__p asm__screw" style="--a:${90 + i * 120}deg"></span>`).join("")}
     ${im("asm__panel", ART.panel)}${im("asm__face", ART.face)}${im("asm__ring", ART.ring)}
     ${[0, 1, 2, 3].map(() => im("asm__let asm__let--side", ART.letters)).join("")}${im("asm__let asm__let--top", ART.letters)}
-    ${im("asm__bezel", ART.bezel)}${BACK}</div><span class="asm__sweep"></span>`;
+    ${im("asm__bezel", ART.bezel)}`;
+  box.innerHTML = `<span class="asm__shadow"></span><div class="asm__cam">
+    <span class="asm__p asm__plate"></span>${STACK}${twin(STACK)}${BACK}</div><span class="asm__sweep"></span>`;
   const cam = box.querySelector(".asm__cam"), S = px;
   const P = [...cam.querySelectorAll(".asm__p")].map(el => {
     const c = el.classList, k = c.contains("asm__plate") ? 0 : c.contains("asm__screw") ? 1 : c.contains("asm__panel") ? 2 : c.contains("asm__face") ? 3 : c.contains("asm__ring") ? 4 : c.contains("asm__let") ? 5 : c.contains("asm__bezel") ? 6 : 7;
-    return { el, k, side: c.contains("asm__let--side"), top: c.contains("asm__let--top") };
+    return { el, k, side: c.contains("asm__let--side"), top: c.contains("asm__let--top"), mir: c.contains("asm__mir") };
   });
+  P.forEach(p => { p.j = p.top ? 4 : p.side ? P.filter(o => o.side && o.mir === p.mir).indexOf(p) : 0; });
   /* choreography, per part (plate, screws, panel, face, ring, letters, bezel):
      HOME: seated depth (px/size)   OUT: where it waits in the exploded view, along the axis (logo widths)
      DX/DY: a sideways offset it glides in from (an arc, never a straight push)   ROT: the turn it unwinds as it comes
@@ -435,10 +440,12 @@ function logoLoader(px = 130) {
       const k = p.k; if (k === 7) return;
       const lin = clamp((q - START[k]) / DUR), e = smoother(lin), f = e, off = 1 - e;   // the same gentle ease in and out for every part
       let z = (OUT[k] + (HOME[k] - OUT[k]) * f) * S, extra = "";
-      if (p.side || p.top) { const j = p.top ? 4 : P.filter(o => o.side).indexOf(p); z += j * .007 * S; }
-      if (k === 1) extra = ` rotate(${p.el.style.getPropertyValue("--a")}) translateY(${(-.31 * S).toFixed(1)}px) rotateZ(${((1 - lin) * 1080).toFixed(0)}deg)`;   // the screws drive home
+      if (p.side || p.top) z += p.j * .007 * S;
+      const m = p.mir ? -1 : 1, a = parseFloat(p.el.style.getPropertyValue("--a")) || 0;
+      if (p.mir) z = 2 * ZP * S - z;   // the twin: the same distance on the other side of the plate
+      if (k === 1) extra = ` rotate(${m * a}deg) translateY(${(-.31 * S).toFixed(1)}px) rotateZ(${((1 - lin) * 1080 * m).toFixed(0)}deg)`;   // the screws drive home
       const arc = 0;   // a gentle lift over the middle of the travel
-      p.el.style.transform = `translate3d(${(DX[k] * S * off).toFixed(2)}px, ${(DY[k] * S * off - arc * (DY[k] < 0 ? 1 : -1) * (k === 1 ? 0 : 1)).toFixed(2)}px, ${z.toFixed(2)}px) rotateY(${(TILT[k] * off).toFixed(2)}deg) rotateX(${(TILT[k] * .45 * off).toFixed(2)}deg) rotateZ(${(ROT[k] * off).toFixed(2)}deg)${extra}`;
+      p.el.style.transform = `translate3d(${(DX[k] * S * off).toFixed(2)}px, ${(DY[k] * S * off - arc * (DY[k] < 0 ? 1 : -1) * (k === 1 ? 0 : 1)).toFixed(2)}px, ${z.toFixed(2)}px) ${p.mir ? "rotateY(180deg) " : ""}rotateZ(${(ROT[k] * off * m).toFixed(2)}deg)${extra}`;
       if (k !== 1) { zsum += z; zn++; }
       p.el.style.opacity = clamp((now - readyAt - k * 55) / 420).toFixed(3);   // the parts appear one after the other, already apart
       // depth of field on the parts still travelling, and a glint of light the moment each one seats
@@ -446,7 +453,7 @@ function logoLoader(px = 130) {
       const glow = landed.has(p.el) ? Math.exp(-(now - landed.get(p.el)) / 220) : 0, blur = (1 - lin) * Math.abs(OUT[k]) * 1.1;
       p.el.style.filter = p.side ? "" : [blur > .05 ? `blur(${blur.toFixed(2)}px)` : "", glow > .02 ? `brightness(${(1 + glow * .45).toFixed(3)})` : ""].join(" ").trim();
     });
-    mid = doneAt ? mid + (-.06 * S - mid) * .08 : (zn ? zsum / zn : 0);   // built: turn about the middle of the whole coin
+    mid = ZP * S;   // the plate is the middle of the coin: it turns about it, before and after it is built
     if (q >= 1 && !doneAt) { doneAt = now; box.classList.add("is-built"); }
     requestAnimationFrame(frame);
   })(t0);
@@ -1626,6 +1633,17 @@ const BOATS = FLEET.filter(b => !SOLO.includes(b.type)), JETS = FLEET.filter(b =
 const typeIcon = ty => ty === VILLA ? ICONS.villa : ty === JET || ty === TOY ? ICONS.jetski : ty === "coche" ? ICONS.car : ty === "transfer" ? ICONS.van : ICONS.boat;
 let ribbon = null, fleetCat = "all", fleetBase = BOATS, fleetList = BOATS;
 const fleetItems = () => fleetList.map(b => ({ ...b, src: cardSrc(b), title: t(b.name), tag: t(CAT_LABEL[b.type]), whole: b.type === "moto-agua" || b.type === TOY || b.type === "transfer" }));   // jet skis are cut-outs: shown whole, not cropped
+/* the back of a fleet card: what it is, the few facts that matter, and the next step */
+function fleetBack(b) {
+  const esc = v => String(v).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const facts = [["Eslora", b.len], ["Personas", b.pax], ["Motor", b.extra], ["Camarotes", b.cabins && t(b.cabins)], ["Salida", b.port && t(b.port)], [!SOLO.includes(b.type) ? "Tripulación" : "Modalidad", b.crew && t(b.crew)]].filter(([, v]) => v).slice(0, 4);
+  if (facts.length < 3 && b.incl) b.incl.slice(0, 4 - facts.length).forEach((x, k) => facts.push([k ? "" : "Incluye", t(x)]));
+  const villa = b.type === VILLA; if (villa) facts.splice(0, facts.length, ["Incluye", t(b.crew || "")]);
+  return `<div class="rb__top"><span class="rb__eb">${esc(t(CAT_LABEL[b.type]))}</span><h4 class="rb__name">${esc(b.name)}</h4></div>
+    <ul class="rb__specs${villa ? " rb__specs--one" : ""}">${facts.map(([k, v]) => `<li><small>${k ? esc(t(k)) : "&nbsp;"}</small><b>${esc(v)}</b></li>`).join("")}</ul>
+    <div class="rb__acts">${villa ? `<button class="btn btn--primary btn--sm" type="button" data-rb="see">${t("Ver")}</button>`
+      : `<button class="btn btn--glass btn--onDark btn--sm" type="button" data-rb="see">${t("Ver fotos")}</button><button class="btn btn--primary btn--sm" type="button" data-rb="ask">${t("Disponibilidad")}</button>`}</div>`;
+}
 const paxText = b => b.pax ? `${t("Hasta")} ${b.pax} ${t("personas")}` : "";
 function renderFleetInfo(b, i) {
   if (!b) return;
@@ -1666,8 +1684,11 @@ function openFleet(cat = "all", brand = "") {
   if (!ribbon) ribbon = createDepthRibbon(document.getElementById("fleetRibbon").appendChild(document.createElement("div")), {
     items: [], label: t("Nuestra flota"),
     onChange: (b, i) => renderFleetInfo(fleetList[i], i),
-    onItemClick: (b, i) => openBoat(fleetList[i]),   // tapping the boat in front opens its sheet
+    onItemClick: (b, i) => openBoat(fleetList[i]),
+    back: fleetBack,   // tapping the card in front turns it over: the details, and the way on (photos, availability, the villa's page)
   });
+  document.getElementById("fleetRibbon").onclick = e => { const btn = e.target.closest("[data-rb]"); if (!btn) return; e.stopPropagation();
+    const b = fleetList[+btn.closest(".ribbon__card").dataset.i]; if (btn.dataset.rb === "ask") askFleet(b); else openBoat(b); };
   setFleetCat(cat);
   /* a single-kind gallery (jet skis, toys, villas, cars, transfers) shows the same sub-options as its menu, on top,
      like the boats' tabs: the ones that are a group of this gallery filter it in place, the others go where the menu goes */
@@ -2485,6 +2506,14 @@ const chefPage = initChefPage({ onBook: ({ kind, text }) => {
   setTimeout(() => scrollToEl(document.getElementById("contacto")), 120);
 } });
 document.addEventListener("click", e => { if (e.target.closest("[data-chef-page]")) { e.preventDefault(); track("chef_open", {}); chefPage.open(); } });
+/* the excursion film starts buffering before it is needed: on a computer when its card comes near,
+   on a phone the moment a finger lands on the card (no data spent on visitors who only scroll past) */
+{ const fxCards = document.querySelectorAll("[data-fx-tour]");
+  document.addEventListener("pointerdown", e => { if (e.target.closest("[data-fx-tour]")) fxTour.warm(); }, { passive: true });
+  if (!matchMedia("(pointer: coarse)").matches && fxCards.length) {
+    const fxIo = new IntersectionObserver(es => { if (es.some(en => en.isIntersecting)) { fxIo.disconnect(); setTimeout(() => fxTour.warm(), 400); } }, { rootMargin: "600px 0px" });
+    fxCards.forEach(c => fxIo.observe(c));
+  } }
 document.addEventListener("click", e => { if (e.target.closest("[data-fx-tour]")) { e.preventDefault(); track("formentera_open", {}); fxTour.open(); } });
 
 /* the plan or the agenda request goes to the concierge: straight into WhatsApp when the number is set, otherwise the

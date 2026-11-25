@@ -800,15 +800,42 @@ button.sm-panel-item { text-align: right; padding: 0; }
 .ribbon[data-dragging] { cursor: grabbing; }
 .ribbon__band { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; filter: blur(.3px); }
 .ribbon__stage { position: absolute; inset: 0; transform-style: preserve-3d; }
-.ribbon__card { position: absolute; left: 50%; top: 50%; padding: 0; border: 0; border-radius: 20px; overflow: hidden; cursor: pointer; background: #0d0a38; will-change: transform, opacity;
-  box-shadow: 0 30px 60px -24px rgb(0 0 0 / .8), inset 0 0 0 1px rgb(255 255 255 / .12); -webkit-tap-highlight-color: transparent; }
+.ribbon__card { position: absolute; left: 50%; top: 50%; padding: 0; border: 0; border-radius: 20px; cursor: pointer; will-change: transform, opacity; -webkit-tap-highlight-color: transparent; outline: none; }
+/* inside each card: float > flip > two faces. The faces carry the rounding and the clip (a clip on the card itself would flatten the turn) */
+.ribbon__float, .ribbon__flip { position: absolute; inset: 0; transform-style: preserve-3d; }
+.ribbon__float { perspective: 1100px; }
+.ribbon__card[data-front] .ribbon__float { animation: ribbon-float 6s ease-in-out infinite; }
+@keyframes ribbon-float { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, -6px, 0); } }
+.ribbon__face, .ribbon__back { position: absolute; inset: 0; border-radius: 20px; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  box-shadow: 0 30px 60px -24px rgb(0 0 0 / .8), inset 0 0 0 1px rgb(255 255 255 / .12); }
+.ribbon__face { background: #0d0a38; }
 .ribbon__card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-.ribbon__card::after { content: ""; position: absolute; inset: 0; background: #0b0930; opacity: var(--dim, 0); pointer-events: none; }
+.ribbon__glare { position: absolute; inset: 0; opacity: 0; pointer-events: none; mix-blend-mode: soft-light; }
+/* a small "turn" hint on the card in front */
+.ribbon__turn { position: absolute; right: 12px; top: 12px; width: 30px; height: 30px; border-radius: 50%; background: rgb(13 10 56 / .6); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .28); opacity: 0; transition: opacity .4s ease; }
+.ribbon__turn::before { content: ""; position: absolute; inset: 8px; border: 1.6px solid #fff; border-left-color: transparent; border-radius: 50%; }
+.ribbon__turn::after { content: ""; position: absolute; left: 7px; top: 8px; border: 4px solid transparent; border-bottom-color: #fff; transform: rotate(-30deg); }
+.ribbon__card[data-front] .ribbon__turn { opacity: 1; }
+/* the back: the details, laid out like the stub of a ticket */
+.ribbon__back { transform: rotateY(180deg); display: grid; grid-template-rows: auto 1fr auto; gap: 8px; padding: clamp(12px, 4.4%, 22px); text-align: left; color: #fff; cursor: default;
+  background: radial-gradient(130% 100% at 0% 0%, #3a2fa0 0%, #16114f 45%, #0b0930 100%); pointer-events: none; }
+.ribbon__card.is-turned .ribbon__back { pointer-events: auto; }
+.ribbon__back::before { content: ""; position: absolute; left: 0; right: 0; bottom: calc(clamp(34px, 15%, 46px) + clamp(12px, 4.4%, 22px) + 6px); border-top: 1.5px dashed rgb(255 255 255 / .18); }
+.rb__top { display: grid; gap: 2px; }
+.rb__eb { font: 600 10.5px/1.2 var(--sans); letter-spacing: .16em; text-transform: uppercase; color: #9ff0ff; }
+.rb__name { margin: 0; font: 650 clamp(16px, 4.6vw, 22px)/1.1 var(--sans); letter-spacing: -.02em; }
+.rb__specs { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; align-content: start; }
+.rb__specs li { display: grid; gap: 1px; min-width: 0; text-align: left; }
+.rb__specs small { font: 500 10px/1.2 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: rgb(255 255 255 / .6); }
+.rb__specs b { text-align: left; hyphens: none; font: 600 13px/1.25 var(--sans); overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }
+.rb__acts { display: flex; gap: 8px; }
+.rb__acts .btn { flex: 1; min-height: clamp(34px, 15%, 46px); padding-block: 0; font-size: 13px; }
+.ribbon__card[aria-pressed="true"] .ribbon__float { animation: none; }
 .ribbon__shine { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / .18) 50%, transparent 65%); opacity: 0; pointer-events: none; }
 
 .ribbon__card[data-front] .ribbon__shine { animation: ribbon-shine 2.6s ease-in-out .3s 1 both; }
 .ribbon__tag { position: absolute; left: 14px; top: 14px; padding: 6px 11px; border-radius: 99px; font: 600 12px var(--sans); color: #fff; background: rgb(13 10 56 / .74); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .25); }
-.ribbon__card:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+.ribbon__card:focus-visible .ribbon__face { outline: 2px solid var(--cyan); outline-offset: 3px; }
 .ribbon__live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 @keyframes ribbon-shine { 0% { opacity: 0; transform: translateX(-60%); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateX(60%); } }
 .fleet__info { display: grid; justify-items: center; text-align: center; gap: 6px; min-height: 104px; }
@@ -1236,6 +1263,7 @@ html[data-theme="dark"] .stack__body { background: linear-gradient(180deg, rgb(2
 @media (prefers-reduced-motion: reduce) { .signal .ch.pass { animation: none; } }
 /* the focused fleet card hands its neon outline on gently while the ribbon glides */
 .ribbon__card img { opacity: 0; transition: opacity 450ms ease; }
+.ribbon__card[data-front] img { will-change: transform; }
 .ribbon__card img.is-in { opacity: 1; }
 
 /* ---- body: the coin has real thickness (a stack of discs forms its edge), a bevelled rim in the
@@ -1964,7 +1992,7 @@ html.is-jumping, html.is-jumping.snap-stack { scroll-snap-type: none !important;
 
 /* jet skis are cut-out photos: the whole craft is shown inside its card, centred with a margin, never cropped */
 .ribbon__card--whole img { object-fit: contain; padding: 15% 6% 8%; box-sizing: border-box; }
-.ribbon__card--whole { background: radial-gradient(120% 90% at 50% 60%, #2a2580 0%, #0d0a38 70%); }
+.ribbon__card--whole .ribbon__face { background: radial-gradient(120% 90% at 50% 60%, #2a2580 0%, #0d0a38 70%); }
 .boat--whole .boat__main { background: radial-gradient(120% 90% at 50% 60%, #2a2580 0%, #0d0a38 70%); }
 .boat--whole .boat__main img { object-fit: contain; padding: 4% 6%; box-sizing: border-box; }
 
@@ -2107,6 +2135,12 @@ html.fx-open { overflow: hidden; }
 .fx__card.is-on { transform: none; }
 .fx__card img { transform: scale(1.02); transition: transform 9s linear; }
 .fx__card.is-on img { transform: scale(1.12); }
+.fx__clip { display: block; width: 100%; height: 100%; object-fit: cover; background: #0a2a3a; }
+/* a small "live" mark on the film cards: a pulsing play glyph, top right */
+.fx__play { position: absolute; top: 14px; right: 14px; z-index: 1; width: 30px; height: 30px; border-radius: 50%; background: rgb(0 0 0 / .35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .35); }
+.fx__play::before { content: ""; position: absolute; left: 12px; top: 9px; border-style: solid; border-width: 6px 0 6px 9px; border-color: transparent transparent transparent #fff; }
+.fx__card.is-on .fx__play { animation: fx-live 2.4s ease-in-out infinite; }
+@keyframes fx-live { 50% { box-shadow: inset 0 0 0 1px rgb(255 255 255 / .35), 0 0 0 6px rgb(159 240 255 / .18); } }
 .fx__card::after { content: ""; position: absolute; inset: 45% 0 0; background: linear-gradient(transparent, rgb(2 12 30 / .82)); pointer-events: none; }
 .fx__cap { position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 1; display: grid; gap: 4px; font: 600 18px/1.2 var(--sans); letter-spacing: -.01em; text-align: left !important; }
 .fx__cap em { font: 500 11px/1 var(--sans); letter-spacing: .18em; color: #9ff0ff; font-style: normal; }
@@ -2166,6 +2200,8 @@ html.fx-open { overflow: hidden; }
 .fx__lb { position: absolute; inset: 0; z-index: 5; background: rgb(2 8 20 / .94); display: grid; place-items: center; animation: fx-fade .3s ease; }
 .fx__lb[hidden] { display: none; }
 .fx__lb figure { margin: 0; display: grid; gap: 12px; justify-items: center; }
+.fx__lb video { max-width: 100vw; max-height: calc(100svh - 120px); width: auto; height: auto; border-radius: 14px; background: #000; }
+.fx__lb video[hidden], .fx__lb img[hidden] { display: none; }
 .fx__lb img { max-width: 100vw; max-height: calc(100svh - 120px); width: auto; height: auto; border-radius: 14px; object-fit: contain; }
 .fx__lb figcaption { font-size: 14px; color: rgb(255 255 255 / .85); padding-inline: 20px; text-align: center; }
 .fx__lbnav { position: absolute; top: 50%; translate: 0 -50%; width: 46px; height: 46px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; color: #fff;
@@ -2991,3 +3027,20 @@ img.asm__bk.asm__let--top { filter: drop-shadow(-.5px -.6px 0 rgb(255 255 255 / 
 
 .tk__seat { gap: 14px; }
 .tk__seat i { font-size: 9.5px; letter-spacing: .04em; white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) { .ribbon__card[data-front] .ribbon__float { animation: none; } }
+
+/* clubs: a coverflow like the fleet ribbon (the middle card faces you, snapping card by card); a picked club keeps
+   its face, with a violet ring and a badge, never turned over */
+.ag__feat.is-cover { position: relative; }
+.ag__feat.is-cover > li { scroll-snap-align: center; will-change: transform; }
+.tk__sel { position: absolute; left: 14px; top: 14px; z-index: 2; padding: 6px 11px; border-radius: 99px; font: 600 12px/1 var(--sans); color: #fff; background: var(--violet);
+  box-shadow: 0 6px 16px -6px rgb(171 80 219 / .9); opacity: 0; transform: translateY(-4px) scale(.96); transition: opacity .3s ease, transform .4s cubic-bezier(.2, 1.3, .4, 1); pointer-events: none; }
+.tk[aria-pressed="true"] .tk__sel { opacity: 1; transform: none; }
+.tk[aria-pressed="true"] .tk__front { box-shadow: 0 0 0 3px var(--violet), 0 24px 44px -26px rgb(171 80 219 / .9); }
+
+/* the mirrored half of the logo: seen through while the parts are apart (both stacks assemble at once), then only
+   from behind once the coin is closed, so each face shows its own side */
+img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility: visible; }
+.asm.is-built img.asm__p.asm__mir { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.asm__plate { backface-visibility: visible; }

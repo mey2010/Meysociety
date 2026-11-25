@@ -6,7 +6,8 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const SPRING = 46, DAMP = 2 * Math.sqrt(SPRING);
 
 export function createDepthRibbon(root, opts = {}) {
-  const o = { items: [], onChange: null, onItemClick: null, autoplay: 4.5, label: "Galería", ...opts };
+  const o = { items: [], onChange: null, onItemClick: null, back: null, autoplay: 4.5, label: "Galería", ...opts };
+  const fine = matchMedia("(pointer: fine)").matches;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   root.classList.add("ribbon"); root.tabIndex = 0;
   root.setAttribute("role", "region"); root.setAttribute("aria-roledescription", "carousel"); root.setAttribute("aria-label", o.label);
@@ -32,9 +33,11 @@ export function createDepthRibbon(root, opts = {}) {
   function build(list) {
     items = list; N = items.length; stage.replaceChildren(); st.active = -1;
     cards = items.map((it, i) => {
-      const c = document.createElement("button"); c.type = "button"; c.className = "ribbon__card" + (it.whole ? " ribbon__card--whole" : ""); c.dataset.i = i;
+      const c = document.createElement("div"); c.setAttribute("role", "button"); c.className = "ribbon__card" + (it.whole ? " ribbon__card--whole" : ""); c.dataset.i = i;
       c.setAttribute("aria-label", `${it.title}, ${i + 1} / ${N}`);
-      c.innerHTML = `<img data-src="${it.src}" alt="" draggable="false" decoding="async"><span class="ribbon__shine"></span><span class="ribbon__tag">${it.tag || ""}</span>`;
+      // float (CSS) > flip (tilt + turn, driven by a spring) > the two faces: the photo, and the details behind it
+      c.innerHTML = `<div class="ribbon__float"><div class="ribbon__flip"><div class="ribbon__face"><img class="ribbon__img" data-src="${it.src}" alt="" draggable="false" decoding="async"><span class="ribbon__shine"></span><span class="ribbon__glare"></span><span class="ribbon__tag">${it.tag || ""}</span>${o.back ? '<span class="ribbon__turn" aria-hidden="true"></span>' : ""}</div>${o.back ? `<div class="ribbon__back" aria-hidden="true">${o.back(it, i)}</div>` : ""}</div></div>`;
+      c._flip = c.querySelector(".ribbon__flip"); c._img = c.querySelector(".ribbon__img"); c._glare = c.querySelector(".ribbon__glare");
       c._last = {};
       stage.appendChild(c); return c;
     });
@@ -85,13 +88,13 @@ export function createDepthRibbon(root, opts = {}) {
       const pe = op > .25 ? "auto" : "none"; if (L.pe !== pe) { c.style.pointerEvents = pe; L.pe = pe; }
       const ti = Math.round(u) === 0 ? 0 : -1; if (L.ti !== ti) { c.tabIndex = ti; L.ti = ti; }
       // photos are fetched and decoded off-screen a few cards ahead, then faded in: never an empty card, never a pop
-      if (uu > -2 && uu < 11) { const im = c.firstElementChild; if (im && !im._req && im.dataset.src) {
+      if (uu > -2 && uu < 11) { const im = c._img; if (im && !im._req && im.dataset.src) {
         im._req = true; const pre = new Image(); pre.decoding = "async"; pre.src = im.dataset.src;
         (pre.decode ? pre.decode() : Promise.resolve()).catch(() => {}).then(() => { im.src = im.dataset.src; im.classList.add("is-in"); });
       } }
     });
     const a = ((Math.round(st.pos) % N) + N) % N;
-    if (a !== st.active) { st.active = a; cards.forEach((c, i) => c.toggleAttribute("data-front", i === a)); live.textContent = `${items[a].title}, ${a + 1} / ${N}`; o.onChange?.(items[a], a); }
+    if (a !== st.active) { settle(); st.active = a; cards.forEach((c, i) => c.toggleAttribute("data-front", i === a)); fx.card = cards[a]; live.textContent = `${items[a].title}, ${a + 1} / ${N}`; o.onChange?.(items[a], a); }
   }
   function frame(now) {
     raf = 0; const dt = st.last ? Math.min((now - st.last) / 1000, .1) : 1 / 60; st.last = now;
@@ -99,7 +102,7 @@ export function createDepthRibbon(root, opts = {}) {
     if (st.enter < 1) { const k = clamp((now - st.enterAt) / 480, 0, 1); st.enter = 1 - Math.pow(1 - k, 3); busy = true; }
     if (N < 2) { st.pos = st.target = 0; st.vel = 0; }   // one boat: held still in front
     if (!st.drag) {
-      const cruise = o.autoplay && N >= 4 && !reduced && !st.hover && now > st.idleAt;
+      const cruise = o.autoplay && N >= 4 && !reduced && !st.hover && !turned && now > st.idleAt;
       if (cruise) {
         // autoplay is one continuous glide along the ribbon (no stop-and-go steps); it eases in from rest
         const v = 1 / o.autoplay; st.vel += (v - st.vel) * (1 - Math.exp(-dt / .9)); st.pos += st.vel * dt; st.target = st.pos; st.cruising = true; busy = true;
@@ -130,23 +133,71 @@ export function createDepthRibbon(root, opts = {}) {
   });
   const up = e => {
     const d = st.drag; if (!d || d.id !== e.pointerId) return; st.drag = null; delete root.dataset.dragging;
-    if (!d.moved) { const c = e.target.closest?.(".ribbon__card"); if (c) { const i = +c.dataset.i; if (i === st.active && Math.abs(st.pos - Math.round(st.pos)) < .35) o.onItemClick?.(items[i], i); else goTo(i); } return; }
+    if (!d.moved) { const c = e.target.closest?.(".ribbon__card"); press(null); if (c) { const i = +c.dataset.i;
+        if (e.target.closest("a, button")) return;   // a button on the back of the card: its own click does the rest
+        const still = Math.abs(st.pos - Math.round(st.pos)) < .35;
+        if (i === st.active && o.back) { goTo(i); turn(!turned); }   // even mid-glide: it settles on this card and turns it
+        else if (i === st.active && still) o.onItemClick?.(items[i], i); else goTo(i); } return; }
+    press(null);
     const a = d.samples[0], b = d.samples[d.samples.length - 1], v = a && b && b.t > a.t ? (b.p - a.p) / ((b.t - a.t) / 1000) : 0;
     // a light swipe is enough: once it has moved a little, it carries on to the next card (or further with a flick)
     const start = Math.round(d.pos), delta = st.pos + clamp(v, -8, 8) * .34 - start, steps = Math.sign(delta) * Math.max(Math.abs(st.pos - d.pos) > .08 || Math.abs(v) > .6 ? 1 : 0, Math.round(Math.abs(delta)));
     st.target = N < 2 ? 0 : start + steps; st.vel = N < 2 ? 0 : v * .5; st.idleAt = performance.now() + 6000; wake();
   };
   root.addEventListener("pointerup", up); root.addEventListener("pointercancel", up);
-  root.addEventListener("click", e => { if (e.detail === 0) { const c = e.target.closest?.(".ribbon__card"); if (c) { const i = +c.dataset.i; i === st.active ? o.onItemClick?.(items[i], i) : goTo(i); } } }); // keyboard activation
+  const activate = c => { const i = +c.dataset.i; if (i !== st.active) return goTo(i); if (o.back) turn(!turned); else o.onItemClick?.(items[i], i); };
+  root.addEventListener("click", e => { if (e.detail === 0 && !e.target.closest("a, button")) { const c = e.target.closest?.(".ribbon__card"); if (c) activate(c); } }); // keyboard activation
   let wheelLock = 0;
   root.addEventListener("wheel", e => { e.preventDefault(); const now = performance.now(); if (now < wheelLock) return; const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY; if (Math.abs(d) < 4) return; by(Math.sign(d)); wheelLock = now + 520; }, { passive: false });
-  root.addEventListener("keydown", e => { if (e.key === "ArrowRight" || e.key === "ArrowDown") by(1); else if (e.key === "ArrowLeft" || e.key === "ArrowUp") by(-1); else return; e.preventDefault(); });
+  root.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && !e.target.closest("a, button")) { const c = cards[st.active]; if (c) { e.preventDefault(); activate(c); } return; }
+    if (e.key === "Escape" && turned) { e.stopPropagation(); turn(false); return; }
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") by(1); else if (e.key === "ArrowLeft" || e.key === "ArrowUp") by(-1); else return; e.preventDefault(); });
   root.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") st.hover = true; });
-  root.addEventListener("pointerleave", () => { st.hover = false; st.idleAt = performance.now() + 2500; wake(); });
+  root.addEventListener("pointerleave", () => { press(null); st.hover = false; st.idleAt = performance.now() + 2500; wake(); });
   new ResizeObserver(() => { measure(); wake(); }).observe(root);
   new IntersectionObserver(([en]) => { visible = en.isIntersecting; if (visible) wake(); else { cancelAnimationFrame(raf); raf = 0; st.last = 0; } }).observe(root);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) wake(); });
 
+  /* the card in front moves like a held ticket: it tilts toward the pointer (or the finger), the photo shifts a
+     little the other way, a soft glare follows, and a tap turns it over to show the details. One spring drives it all. */
+  const fx = { card: null, rx: 0, ry: 0, vx: 0, vy: 0, tx: 0, ty: 0, f: 0, vf: 0, tf: 0, gx: 50, gy: 30, raf: 0, last: 0 };
+  let turned = false;
+  const TILT = 9, K = 170, D = 2 * Math.sqrt(170) * .72, KF = 95, DF = 2 * Math.sqrt(95) * .8;
+  function fxFrame(now) {
+    fx.raf = 0; const dt = fx.last ? Math.min((now - fx.last) / 1000, .05) : 1 / 60; fx.last = now; const c = fx.card;
+    let rem = dt; while (rem > 0) { const h = Math.min(rem, 1 / 240);
+      fx.vx += (K * (fx.tx - fx.rx) - D * fx.vx) * h; fx.rx += fx.vx * h; fx.vy += (K * (fx.ty - fx.ry) - D * fx.vy) * h; fx.ry += fx.vy * h;
+      fx.vf += (KF * (fx.tf - fx.f) - DF * fx.vf) * h; fx.f += fx.vf * h; rem -= h; }
+    if (c) {
+      c._flip.style.transform = `rotateX(${fx.rx.toFixed(2)}deg) rotateY(${(fx.ry + fx.f * 180).toFixed(2)}deg)`;
+      if (c._img) c._img.style.transform = `translate3d(${(-fx.ry * .9).toFixed(1)}px, ${(fx.rx * .9).toFixed(1)}px, 0) scale(1.06)`;
+      if (c._glare) { c._glare.style.opacity = Math.min(1, (Math.abs(fx.rx) + Math.abs(fx.ry)) / TILT).toFixed(2); c._glare.style.background = `radial-gradient(circle at ${fx.gx}% ${fx.gy}%, rgb(255 255 255 / .32), transparent 55%)`; }
+      c.classList.toggle("is-turned", fx.f > .5);
+    }
+    const busy = Math.abs(fx.tx - fx.rx) + Math.abs(fx.ty - fx.ry) + Math.abs(fx.vx) + Math.abs(fx.vy) + Math.abs(fx.tf - fx.f) * 60 + Math.abs(fx.vf) > .01;
+    if (busy) fx.raf = requestAnimationFrame(fxFrame); else fx.last = 0;
+  }
+  const fxWake = () => { if (!fx.raf && !reduced) fx.raf = requestAnimationFrame(fxFrame); else if (reduced && fx.card) { fx.f = fx.tf; fx.card._flip.style.transform = fx.f ? "rotateY(180deg)" : ""; fx.card.classList.toggle("is-turned", !!fx.f); } };
+  function aim(e) {   // tilt toward a point on the front card
+    const c = fx.card; if (!c || reduced) return; const r = c.getBoundingClientRect(); if (!r.width) return;
+    const px = clamp((e.clientX - r.left) / r.width, 0, 1), py = clamp((e.clientY - r.top) / r.height, 0, 1);
+    fx.ty = (px - .5) * 2 * TILT; fx.tx = -(py - .5) * 2 * TILT * .8; fx.gx = Math.round(px * 100); fx.gy = Math.round(py * 100); fxWake();
+  }
+  function press(e) { if (!e) { fx.tx = fx.ty = 0; fxWake(); return; } aim(e); }
+  function settle() {   // the card leaving the front is put back flat at once; the next one starts from rest
+    const c = fx.card; if (c) { c._flip.style.transform = ""; if (c._img) c._img.style.transform = ""; if (c._glare) c._glare.style.opacity = 0; c.classList.remove("is-turned"); c.removeAttribute("aria-pressed"); c.querySelector(".ribbon__back")?.setAttribute("aria-hidden", "true"); }
+    turned = false; Object.assign(fx, { rx: 0, ry: 0, vx: 0, vy: 0, tx: 0, ty: 0, f: 0, vf: 0, tf: 0 });
+  }
+  function turn(on) {
+    turned = on && !!o.back; fx.tf = turned ? 1 : 0; const c = fx.card;
+    if (c) { c.querySelector(".ribbon__back")?.setAttribute("aria-hidden", String(!turned)); c.setAttribute("aria-pressed", String(turned)); }
+    if (!turned) st.idleAt = performance.now() + 2500;
+    fxWake(); wake();
+  }
+  root.addEventListener("pointermove", e => { if (st.drag?.moved) return; if (e.pointerType === "mouse" ? e.target.closest?.(".ribbon__card[data-front]") : st.drag) aim(e); else if (e.pointerType === "mouse") press(null); });
+  root.addEventListener("pointerdown", e => { if (e.pointerType !== "mouse" && e.target.closest?.(".ribbon__card[data-front]")) aim(e); });
+  document.addEventListener("pointerdown", e => { if (turned && !root.contains(e.target)) turn(false); }, true);
+
   build(o.items);
-  return { setItems: build, goTo, next: () => by(1), prev: () => by(-1), get active() { return st.active; } };
+  return { flip: turn, get turned() { return turned; }, setItems: build, goTo, next: () => by(1), prev: () => by(-1), get active() { return st.active; } };
 }
