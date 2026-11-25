@@ -88,7 +88,7 @@ export function createDepthRibbon(root, opts = {}) {
       const pe = op > .25 ? "auto" : "none"; if (L.pe !== pe) { c.style.pointerEvents = pe; L.pe = pe; }
       const ti = Math.round(u) === 0 ? 0 : -1; if (L.ti !== ti) { c.tabIndex = ti; L.ti = ti; }
       // photos are fetched and decoded off-screen a few cards ahead, then faded in: never an empty card, never a pop
-      if (uu > -2 && uu < 11) { const im = c._img; if (im && !im._req && im.dataset.src) {
+      if (uu > -2 && uu < 5) { const im = c._img; if (im && !im._req && im.dataset.src) {
         im._req = true; const pre = new Image(); pre.decoding = "async"; pre.src = im.dataset.src;
         (pre.decode ? pre.decode() : Promise.resolve()).catch(() => {}).then(() => { im.src = im.dataset.src; im.classList.add("is-in"); });
       } }
@@ -107,7 +107,9 @@ export function createDepthRibbon(root, opts = {}) {
         // autoplay is one continuous glide along the ribbon (no stop-and-go steps); it eases in from rest
         const v = 1 / o.autoplay; st.vel += (v - st.vel) * (1 - Math.exp(-dt / .9)); st.pos += st.vel * dt; st.target = st.pos; st.cruising = true; busy = true;
       } else {
-        if (st.cruising) { st.cruising = false; st.target = Math.ceil(st.pos + st.vel * .5 - .02); } // when it is stopped, it glides on to the next card
+        // when it is stopped it glides on to the next card; but under the pointer it settles on the nearest one, so the
+        // card the visitor is about to click never slides away from under the cursor
+        if (st.cruising) { st.cruising = false; st.target = st.hover ? Math.round(st.pos) : Math.ceil(st.pos + st.vel * .5 - .02); }
         let rem = dt; while (rem > 0) { const h = Math.min(rem, 1 / 240); st.vel += (SPRING * (st.target - st.pos) - DAMP * st.vel) * h; st.pos += st.vel * h; rem -= h; }
         if (Math.abs(st.target - st.pos) < .0005 && Math.abs(st.vel) < .001) { st.pos = st.target; st.vel = 0; } else busy = true;
       }

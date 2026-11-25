@@ -29,8 +29,8 @@ const hash = s => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 233280, 7
 function ticketCards(row, labels) {
   const cards = [...row.querySelectorAll(".ag__fcard")].map((el, i) => {
     // front: photo layer, shade, text layer, glare; back: the stub (only for a club, which can be picked)
-    const img = el.querySelector("img"); if (img && i < 5) img.loading = "eager";   // the first cards are seen as they fan out
-    const name = el.querySelector(".ag__fname"), sub = el.querySelector(".ag__fsub"), arrow = el.querySelector(".ag__arrow");
+    const img = el.querySelector("img"); if (img && i < 2) img.fetchPriority = "low";
+    const name = el.querySelector(".ag__fname"), sub = el.querySelector(".ag__fsub"), arrow = el.querySelector(".ag__arrow, .ag__pick");
     const front = document.createElement("span"); front.className = "tk__side tk__front";
     const bg = document.createElement("span"); bg.className = "tk__layer tk__bg"; if (img) bg.append(img);
     const txt = document.createElement("span"); txt.className = "tk__layer tk__txt";
@@ -82,10 +82,10 @@ function ticketCards(row, labels) {
     const at = e => { const r = c.el.getBoundingClientRect(); c.nx = Math.max(-1, Math.min(1, (e.clientX - r.left) / r.width * 2 - 1)); c.ny = Math.max(-1, Math.min(1, (e.clientY - r.top) / r.height * 2 - 1));
       c.glare.style.setProperty("--gx", ((c.nx + 1) * 50).toFixed(1) + "%"); c.glare.style.setProperty("--gy", ((c.ny + 1) * 50).toFixed(1) + "%"); };
     if (FINE) {
-      c.el.addEventListener("pointermove", e => { at(e); c.hover = true; kick(); });
+      c.el.addEventListener("pointermove", e => { if (e.target.closest(".ag__pick")) return; at(e); c.hover = true; kick(); });
       c.el.addEventListener("pointerleave", () => { c.hover = false; kick(); });
     }
-    c.el.addEventListener("pointerdown", e => { c.lift.t = .97; if (!FINE) { at(e); c.hover = true; } kick(); });
+    c.el.addEventListener("pointerdown", e => { if (e.target.closest(".ag__pick")) { c.el.dataset.pickDown = String(performance.now()); return; } delete c.el.dataset.pickDown; c.lift.t = .97; if (!FINE) { at(e); c.hover = true; } kick(); });
     const up = () => { c.lift.t = 1; if (!FINE) c.hover = false; kick(); };
     c.el.addEventListener("pointerup", up); c.el.addEventListener("pointercancel", up);
     // picked or unpicked (by a tap here, or from anywhere else): flip with a little bounce
@@ -200,11 +200,11 @@ const L = {
   },
 };
 const L2 = {
-  es: { clear: "Quitar todos", done: "Listo", go: "Ver mis noches", vip: "Mesas VIP", vipSub: "Pide la tuya en un mensaje", day: "Day clubs", daySub: "Fiestas de día y piscina", feat: "Toca para elegir", tk: { season: "Temporada", access: "Acceso", age: "Edad", hint: "En tu selección · toca para quitar" } },
-  en: { clear: "Clear all", done: "Done", go: "See my nights", vip: "VIP tables", vipSub: "Ask for yours in one message", day: "Day clubs", daySub: "Daytime and pool parties", feat: "Tap to pick", tk: { season: "Season", access: "Access", age: "Age", hint: "In your picks · tap to remove" } },
-  it: { clear: "Togli tutti", done: "Fatto", go: "Vedi le mie notti", vip: "Tavoli VIP", vipSub: "Chiedi il tuo in un messaggio", day: "Day club", daySub: "Feste di giorno e in piscina", feat: "Tocca per scegliere", tk: { season: "Stagione", access: "Accesso", age: "Età", hint: "Nella tua selezione · tocca per togliere" } },
-  fr: { clear: "Tout retirer", done: "Terminé", go: "Voir mes nuits", vip: "Tables VIP", vipSub: "Demandez la vôtre en un message", day: "Day clubs", daySub: "Fêtes de jour et pool parties", feat: "Touchez pour choisir", tk: { season: "Saison", access: "Accès", age: "Âge", hint: "Dans votre sélection · touchez pour retirer" } },
-  de: { clear: "Alle entfernen", done: "Fertig", go: "Meine Nächte ansehen", vip: "VIP-Tische", vipSub: "Frag deinen mit einer Nachricht an", day: "Day Clubs", daySub: "Tages- und Poolpartys", feat: "Zum Auswählen tippen", tk: { season: "Saison", access: "Zugang", age: "Alter", hint: "In deiner Auswahl · zum Entfernen tippen" } },
+  es: { clear: "Quitar todos", done: "Listo", go: "Ver mis noches", vip: "Mesas VIP", vipSub: "Pide la tuya en un mensaje", day: "Day clubs", daySub: "Fiestas de día y piscina", feat: "Pulsa ✓ para elegir", tk: { season: "Temporada", access: "Acceso", age: "Edad", hint: "En tu selección · toca para quitar" } },
+  en: { clear: "Clear all", done: "Done", go: "See my nights", vip: "VIP tables", vipSub: "Ask for yours in one message", day: "Day clubs", daySub: "Daytime and pool parties", feat: "Tap ✓ to pick", tk: { season: "Season", access: "Access", age: "Age", hint: "In your picks · tap to remove" } },
+  it: { clear: "Togli tutti", done: "Fatto", go: "Vedi le mie notti", vip: "Tavoli VIP", vipSub: "Chiedi il tuo in un messaggio", day: "Day club", daySub: "Feste di giorno e in piscina", feat: "Tocca ✓ per scegliere", tk: { season: "Stagione", access: "Accesso", age: "Età", hint: "Nella tua selezione · tocca per togliere" } },
+  fr: { clear: "Tout retirer", done: "Terminé", go: "Voir mes nuits", vip: "Tables VIP", vipSub: "Demandez la vôtre en un message", day: "Day clubs", daySub: "Fêtes de jour et pool parties", feat: "Touchez ✓ pour choisir", tk: { season: "Saison", access: "Accès", age: "Âge", hint: "Dans votre sélection · touchez pour retirer" } },
+  de: { clear: "Alle entfernen", done: "Fertig", go: "Meine Nächte ansehen", vip: "VIP-Tische", vipSub: "Frag deinen mit einer Nachricht an", day: "Day Clubs", daySub: "Tages- und Poolpartys", feat: "Tippe ✓ zum Auswählen", tk: { season: "Saison", access: "Zugang", age: "Alter", hint: "In deiner Auswahl · zum Entfernen tippen" } },
 };
 const L3 = {
   es: { cal: "Calendario de fiestas 2027", calSub: "Toca tu primera noche y después la última. Los días con punto ya tienen line-up oficial.", prev: "Mes anterior", next: "Mes siguiente",
@@ -274,7 +274,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
       <p class="ag__hint"></p>
     <div class="ag__featwrap"><button type="button" class="ag__fnav" data-dir="-1" aria-label="‹" disabled>‹</button>
     <ul class="ag__feat" role="list">${FEAT.map(f => `<li><button type="button" class="ag__fcard" ${f.club ? `data-club="${esc(f.club)}" aria-pressed="false"` : `data-act="${f.act}"`}>
-      <img src="${f.img}" alt="${f.club ? esc(f.club) + " Ibiza" : ""}" loading="lazy" decoding="async"><span class="ag__fname">${f.club ? esc(f.club) : ""}</span><span class="ag__fsub"></span><span class="ag__arrow" aria-hidden="true"></span></button></li>`).join("")}</ul>
+      <img src="${f.img}" alt="${f.club ? esc(f.club) + " Ibiza" : ""}" loading="lazy" decoding="async"><span class="ag__fname">${f.club ? esc(f.club) : ""}</span><span class="ag__fsub"></span>${f.club ? `<span class="ag__pick" role="checkbox" tabindex="0" aria-checked="false" aria-label="${esc(f.club)}"></span>` : '<span class="ag__arrow" aria-hidden="true"></span>'}</button></li>`).join("")}</ul>
     <button type="button" class="ag__fnav" data-dir="1" aria-label="›">›</button></div>
     </div>
     <div class="ag__panel ag__cal">
@@ -378,7 +378,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
       const a = c.dataset.act; if (a) { c.querySelector(".ag__fname").textContent = a === "table" ? X.vip : X.day; c.querySelector(".ag__fsub").textContent = a === "table" ? X.vipSub : X.daySub; }
       else c.querySelector(".ag__fsub").textContent = X.feat;
     });
-    root.querySelectorAll("[data-club]").forEach(b => b.setAttribute("aria-pressed", st.clubs.has(b.dataset.club)));
+    root.querySelectorAll("[data-club]").forEach(b => { const on = st.clubs.has(b.dataset.club); b.setAttribute("aria-pressed", on); b.querySelector(".ag__pick")?.setAttribute("aria-checked", on); });
     tickets.relabel();
     inFrom.value = st.from; inTo.value = st.to; inFrom.min = today; inTo.min = st.from || today;
     paintNights(); paintCal();
@@ -393,7 +393,9 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     keep(); paint();
   });
   root.addEventListener("click", e => {
-    const c = e.target.closest("[data-club]");
+    const c = e.target.closest("[data-club]"), down = c && +c.dataset.pickDown, tick = e.target.closest(".ag__pick") || (down && performance.now() - down < 900);
+    if (c) delete c.dataset.pickDown;
+    if (c && !tick && e.detail !== 0) return;   // a tap on the card itself: just the 3D move
     if (c) { const n = c.dataset.club; st.clubs.has(n) ? st.clubs.delete(n) : st.clubs.add(n); keep(); paint(); navigator.vibrate?.(4); return; }
     const a = e.target.closest("[data-act]")?.dataset.act;
     if (a === "go") { $(".ag__panel--nights").scrollIntoView({ behavior: "smooth", block: "start" }); if (!st.from) inFrom.showPicker?.(); return; }
@@ -404,6 +406,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
     if (a === "fresh") { matching().forEach(x => st.seen.add(evKey(x))); keep(); paint(); $(".ag__panel--list").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if (a) onSend?.({ kind: a, text: message(a), from: st.from, to: st.to || st.from, clubs: [...st.clubs] });
   });
+  root.addEventListener("keydown", e => { const k = e.target.closest?.(".ag__pick"); if (k && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); e.stopPropagation(); k.click(); } });
   root.addEventListener("dblclick", e => { const c = e.target.closest(".ag__club"); if (c) onVenue?.(clubs.find(v => v.name === c.dataset.club)); });
   document.addEventListener("langchange", paint);
   paint();

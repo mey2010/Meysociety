@@ -120,7 +120,8 @@ export function createCircularCarousel(root, opts = {}) {
   videos.forEach(v => {
     const poster = list[v.index].poster;
     if (poster) { const im = new Image(); im.onload = () => paintVideo(v, im); im.src = poster; }
-    const loop = () => { if (!v.video.paused && v.video.readyState >= 2) paintVideo(v, v.video); v.raf = v.video.requestVideoFrameCallback ? v.video.requestVideoFrameCallback(loop) : requestAnimationFrame(loop); };
+    // while the page itself is being scrolled the video holds its frame: the scroll gets the whole frame budget
+    const loop = () => { if (!v.video.paused && v.video.readyState >= 2 && performance.now() - (window.__scrolledAt || 0) > 160) paintVideo(v, v.video); v.raf = v.video.requestVideoFrameCallback ? v.video.requestVideoFrameCallback(loop) : requestAnimationFrame(loop); };
     v.video.addEventListener("playing", () => { if (!v.looping) { v.looping = true; loop(); } }, { once: true });
   });
 

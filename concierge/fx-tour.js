@@ -329,6 +329,8 @@ export function initFormenteraTour({ onBook } = {}) {
   function close() {
     if (!root || root.hidden) return;
     root.hidden = true; video.pause(); document.documentElement.classList.remove("fx-open");
+    // the reel's films are let go on close (their decoded frames are memory a phone needs back)
+    root.querySelectorAll(".fx__reel video, .fx__lb video").forEach(v => { v.pause(); if (v.getAttribute("src")) { v.removeAttribute("src"); v.load(); } });
     lastFocus?.focus?.({ preventScroll: true });
   }
   return { open, close, warm };

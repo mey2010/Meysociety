@@ -103,7 +103,8 @@ const SM = (() => {
     document.querySelectorAll("section").forEach(s => gio.observe(s));
   };
   let banded = null;
-  const band = () => { const b = scrollY > 40; if (b !== banded) { banded = b; root.classList.toggle("sm-scrolled", b); } };
+  const bandEl = root.querySelector(".sm-band");
+  const band = () => { const b = scrollY > 40; if (b !== banded) { banded = b; (bandEl || root).classList.toggle(bandEl ? "is-on" : "sm-scrolled", b); } };
   let bandTick = false;
   addEventListener("scroll", () => { if (bandTick) return; bandTick = true; requestAnimationFrame(() => { bandTick = false; band(); }); }, { passive: true });
   { let rz = 0; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(watchGround, 200); }); }
@@ -429,8 +430,8 @@ function logoLoader(px = 130) {
     // nothing moves until every part has arrived (inside claude.ai some come from the asset store a beat later)
     if (!readyAt) { if (imgs.every(i => i.complete && i.naturalWidth) || now - t0 > 2500) readyAt = now; else { requestAnimationFrame(frame); return; } }
     const host = box.parentElement, want = host ? parseFloat(host.style.getPropertyValue("--p")) || 0 : 0;
-    { const goal = Math.min(want, (now - readyAt) / 1700), dt = Math.min(50, now - (frame.last || now)); frame.last = now;   // a steady pace: never jumps ahead when the page arrives in bursts
-      shown = Math.min(goal, shown + Math.max(0, goal - shown) * .08 + dt / 2600, shown + dt / 900); } if (want >= 1 && shown > .995) shown = 1;
+    { const goal = Math.min(want, (now - readyAt) / 1200), dt = Math.min(50, now - (frame.last || now)); frame.last = now;   // a steady pace: never jumps ahead when the page arrives in bursts
+      shown = Math.min(goal, shown + Math.max(0, goal - shown) * .1 + dt / 1800, shown + dt / 650); } if (want >= 1 && shown > .995) shown = 1;
     const q = shown, cq = smoother(q), life = (now - t0) / 1000, calm = 1 - cq;
     // camera: a slow crane from a high three-quarter view down to face-on, with a breath of hand-held drift that dies away
     const ry = -64 * calm + box.__spin, rx = 18 * calm, roll = -6 * calm;   // one smooth camera move, no shake
@@ -471,8 +472,10 @@ const TURN = 1400; window.__logoLoader = logoLoader;
   const parts = [document.fonts?.ready || Promise.resolve(), ...imgs.map(im => im.complete ? Promise.resolve() : new Promise(ok => { im.addEventListener("load", ok, { once: true }); im.addEventListener("error", ok, { once: true }); }))];
   let got = 0; parts.forEach(pr => pr.then(() => { got++; target = Math.max(target, .1 + .8 * got / parts.length); }));
   const finish = () => { if (done) return; done = true; target = 1; };
+  // the first screen is what matters: fonts and the photos in view (the rest of the page keeps loading behind)
+  Promise.all(parts).then(finish);
   (document.readyState === "complete" ? Promise.resolve() : new Promise(ok => addEventListener("load", ok, { once: true }))).then(finish);
-  setTimeout(finish, 6000);
+  setTimeout(finish, 3500);
   // the hand-off: the finished logo leaves the loading screen and flies, with one turn, to where the page's own logo
   // rests; the white behind it melts away on the way, so the page is simply there when it lands. No second page.
   function land() {
@@ -480,7 +483,7 @@ const TURN = 1400; window.__logoLoader = logoLoader;
     const to = fl?.getBoundingClientRect(), from = logo?.getBoundingClientRect();
     if (!fl || !logo || !to?.width || REDUCED) { splash.classList.add("is-out"); fl?.classList.add("is-handed"); setTimeout(end, 650); return; }
     const dx = to.left + to.width / 2 - (from.left + from.width / 2), dy = to.top + to.height / 2 - (from.top + from.height / 2), k = to.width / from.width;
-    const DUR = 1150, t1 = performance.now(), io = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    const DUR = 900, t1 = performance.now(), io = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
     splash.classList.add("is-landing");
     (function step(now) {
       const t = Math.min(1, (now - t1) / DUR), e = io(t), lift = Math.sin(Math.PI * t) * Math.min(90, Math.abs(dy) * .35 + 30);
@@ -493,9 +496,9 @@ const TURN = 1400; window.__logoLoader = logoLoader;
   (function tick(now) {
     // the build keeps moving while the page loads (pushed on by what has really arrived, never standing still) and
     // the last part only seats when the page is ready; never faster than a short, readable sequence (~1.6 s)
-    { const t = now - t0, creep = .92 * (1 - Math.exp(-t / 900)); shown = done ? Math.min(1, shown + Math.max((1 - shown) * .18, .025)) : Math.max(shown + .0008, Math.min(.95, Math.max(creep, target * .95))); shown = Math.min(done ? 1 : .97, shown, t / 1600); }
+    { const t = now - t0, creep = .92 * (1 - Math.exp(-t / 900)); shown = done ? Math.min(1, shown + Math.max((1 - shown) * .18, .025)) : Math.max(shown + .0008, Math.min(.95, Math.max(creep, target * .95))); shown = Math.min(done ? 1 : .97, shown, t / 1100); }
     splash.style.setProperty("--p", shown.toFixed(3));
-    if (done && shown >= 1 && (!logo || logo.classList.contains("is-built") || now - t0 > 7000)) { splash.style.setProperty("--p", 1); setTimeout(land, 380); return; }
+    if (done && shown >= 1 && (!logo || logo.classList.contains("is-built") || now - t0 > 7000)) { splash.style.setProperty("--p", 1); setTimeout(land, 180); return; }
     requestAnimationFrame(tick);
   })(t0);
 }
@@ -583,8 +586,11 @@ const TURN = 1400; window.__logoLoader = logoLoader;
      of the page altogether, so a phone has one less full-screen layer to keep painted while scrolling fast */
   const root = document.documentElement; let past = null;
   const vis = () => post({ type: "visible", visible: !document.hidden && !root.classList.contains("is-covered") && !past });
-  const checkPast = () => { const p = scrollY > innerHeight * 1.05; if (p !== past) { past = p; root.classList.toggle("past-intro", p); vis(); } };
-  addEventListener("scroll", checkPast, { passive: true }); checkPast();
+  // the dot canvas is hidden on its own (a class on <html> restyled the whole page in one frame mid-scroll)
+  const drapes = document.getElementsByClassName("drape"), touchMQ = matchMedia("(pointer: coarse), (hover: none)");
+  const checkPast = () => { const p = scrollY > innerHeight * 1.05; if (p !== past) { past = p; for (const d of drapes) d.style.visibility = p && touchMQ.matches ? "hidden" : ""; vis(); } };
+  // read once per frame, not on every scroll event: reading scrollY inside the event forced a layout each time
+  let pastTick = false; addEventListener("scroll", () => { if (!pastTick) { pastTick = true; requestAnimationFrame(() => { pastTick = false; checkPast(); }); } }, { passive: true }); checkPast();
   document.addEventListener("visibilitychange", vis); document.addEventListener("coverchange", vis);
 }
 
@@ -602,11 +608,14 @@ const TURN = 1400; window.__logoLoader = logoLoader;
    and the ones underneath shrink and fade away
    ===================================================================== */
 {
+  const TINT = {"data/services/villa-privada.webp": "rgb(54 53 78)", "data/services/yates.webp": "rgb(108 111 111)", "data/services/formentera.webp": "rgb(157 168 171)", "data/services/moto-de-agua.webp": "rgb(34 34 35)", "data/services/juguetes.webp": "rgb(127 158 176)", "data/services/coches.webp": "rgb(113 112 110)", "data/services/transfers.webp": "rgb(91 94 105)", "data/services/dining.webp": "rgb(161 145 135)", "data/services/beach.webp": "rgb(110 100 87)", "data/services/dj.webp": "rgb(29 27 54)", "data/services/clubs.webp": "rgb(33 62 81)"};
   const cards = [...document.querySelectorAll(".stack__card")];
   cards.forEach((c, i) => c.style.setProperty("--i", i));
   // every service photo is fetched and decoded in the background as soon as the first screen has loaded, so
   // a card is already painted while it slides in (not when it stops)
-  { const warm = () => cards.forEach(c => c.querySelectorAll("img").forEach(im => { im.loading = "eager"; im.decode?.().catch(() => {}); }));
+  // on a phone only the first few: the rest are decoded just ahead of the reader (all eleven at once is ~70 MB of
+  // bitmaps, enough for the Claude app's web view to give up with "algo ha salido mal")
+  { const warm = () => cards.slice(0, matchMedia("(pointer: coarse)").matches ? 3 : cards.length).forEach(c => c.querySelectorAll("img").forEach(im => { im.loading = "eager"; im.decode?.().catch(() => {}); }));
     const later = () => (window.requestIdleCallback || (f => setTimeout(f, 300)))(warm, { timeout: 2500 });
     document.readyState === "complete" ? later() : addEventListener("load", later, { once: true }); }
   document.querySelectorAll(".stack__card [data-svc]").forEach(b => b.addEventListener("click", e => {
@@ -620,10 +629,8 @@ const TURN = 1400; window.__logoLoader = logoLoader;
     /* each card's own background is the average colour of its photo: if a phone is a beat late drawing a card on a
        very fast flick, what shows for that instant is the photo's own tone, never a dark flash */
     cards.forEach(c => { const im = c.querySelector(".stack__media > img:not(.stack__media-bg)") || c.querySelector("img"); if (!im) return;
-      const tint = () => { try { const cv = document.createElement("canvas"); cv.width = cv.height = 6; const g = cv.getContext("2d", { willReadFrequently: true }); g.drawImage(im, 0, 0, 6, 6);
-        const d = g.getImageData(0, 0, 6, 6).data; let r = 0, gg = 0, bb = 0; for (let k = 0; k < d.length; k += 4) { r += d[k]; gg += d[k + 1]; bb += d[k + 2]; } const n = d.length / 4;
-        cv.width = cv.height = 0; c.style.backgroundColor = `rgb(${r / n | 0} ${gg / n | 0} ${bb / n | 0})`; c.querySelector(".stack__media")?.style.setProperty("background-color", c.style.backgroundColor); } catch {} };
-      im.complete && im.naturalWidth ? tint() : im.addEventListener("load", tint, { once: true }); });
+      // the average colours are measured once, offline (sampling them in the browser decoded every full photo at start-up)
+      const tone = TINT[im.getAttribute("src")]; if (tone) { c.style.backgroundColor = tone; c.querySelector(".stack__media")?.style.setProperty("background-color", tone); } });
     const veils = cards.map(c => { const v = document.createElement("span"); v.className = "stack__veil"; v.setAttribute("aria-hidden", "true"); c.appendChild(v); return v; });
     const last = cards.map(() => ({ s: "1", o: "", v: "" }));
     // one transform per card: the stack's scale plus the 3D tilt of the paused card (written straight to

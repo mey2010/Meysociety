@@ -84,11 +84,18 @@ function coastBand(M) {
   if (M.band) return M.band;
   const { w, h, g } = M, a = new Float32Array(w * h), b = new Float32Array(w * h);
   for (let i = 0; i < a.length; i++) a[i] = g[i] > .5 ? 1 : 0;
-  const R = 6, pass = (src, dst, dx, dy) => {
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      let s = 0, n = 0; for (let k = -R; k <= R; k++) { const xx = x + k * dx, yy = y + k * dy; if (xx >= 0 && yy >= 0 && xx < w && yy < h) { s += src[yy * w + xx]; n++; } }
-      dst[y * w + x] = s / n; } };
-  pass(a, b, 1, 0); pass(b, a, 0, 1); pass(a, b, 1, 0); pass(b, a, 0, 1);
+  // a running-sum box blur: the same average over the same window (edges included), but each pixel costs two
+  // additions instead of thirteen
+  const R = 6, pass = (src, dst, dx) => {
+    const L = dx ? w : h, M = dx ? h : w, st = dx ? 1 : w, ln = dx ? w : 1;
+    for (let m = 0; m < M; m++) {
+      const o = m * ln; let s = 0, n = 0;
+      for (let k = 0; k <= R && k < L; k++) { s += src[o + k * st]; n++; }
+      for (let x = 0; x < L; x++) {
+        dst[o + x * st] = s / n;
+        const add = x + R + 1, rem = x - R; if (add < L) { s += src[o + add * st]; n++; } if (rem >= 0) { s -= src[o + rem * st]; n--; }
+      } } };
+  pass(a, b, 1); pass(b, a, 0); pass(a, b, 1); pass(b, a, 0);
   const c = document.createElement("canvas"); c.width = w; c.height = h; const cx = c.getContext("2d"), im = cx.createImageData(w, h);
   for (let i = 0; i < a.length; i++) { const v = Math.max(g[i] > .5 ? 1 : 0, Math.min(1, a[i] * 3.2)); im.data[i * 4] = im.data[i * 4 + 1] = im.data[i * 4 + 2] = v * 255; im.data[i * 4 + 3] = 255; }
   cx.putImageData(im, 0, 0);
