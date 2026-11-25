@@ -36,9 +36,12 @@ function ticketCards(row, labels) {
     const txt = document.createElement("span"); txt.className = "tk__layer tk__txt";
     const meta = document.createElement("span"); meta.className = "tk__meta";
     const no = document.createElement("b"); no.textContent = `No. ${String(i + 1).padStart(4, "0")}`;
-    meta.append(sub, no); txt.append(name, meta);
+    // a club card: the "tap ✓ to pick" hint sits top right, the name at the bottom with its number
+    if (el.dataset.club) { sub.classList.add("tk__hint-top"); meta.append(no); } else meta.append(sub, no);
+    txt.append(name, meta);
     const glare = document.createElement("span"); glare.className = "tk__glare";
     front.append(bg, Object.assign(document.createElement("span"), { className: "tk__shade" }), txt, glare); if (arrow) front.append(arrow);
+    if (el.dataset.club) front.append(sub);
     el.prepend(front); el.classList.add("tk");
     let back = null;
     if (el.dataset.club) { const sel = document.createElement("span"); sel.className = "tk__sel"; front.append(sel); }
@@ -232,6 +235,7 @@ const CLUB_CARDS = [
   { club: "Hï Ibiza", img: "data/clubs/hi-ibiza.webp" },
   { club: "Pacha", img: "data/clubs/pacha.webp" },
   { club: "Amnesia", img: "data/clubs/amnesia.webp" },
+  { club: "Cova Santa", img: "data/photos/cova-santa.jpg" },
   { club: "DC10", img: "data/clubs/dc10.webp" },
   { club: "O Beach", img: "data/clubs/o-beach.webp" },
   { club: "Ibiza Rocks", img: "data/clubs/ibiza-rocks.webp" },
@@ -243,7 +247,6 @@ const CLUB_CARDS = [
   { club: "Bora Bora Ibiza", img: "data/clubs/bora-bora.webp" },
   { club: "Eden", img: "data/clubs/eden.webp" },
   { club: "Es Paradis", img: "data/clubs/es-paradis.webp" },
-  { club: "Cova Santa", img: "data/photos/cova-santa.jpg" },
 ];
 
 export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {

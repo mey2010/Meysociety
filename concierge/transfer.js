@@ -127,23 +127,36 @@ const T = {
   },
 };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+/* what the transfer includes, as a floating panel that ticks itself off line by line: a ring draws round each
+   circle, it fills green with a small burst, the line lights up, the counter and the bar keep pace, and when the
+   last one lands the whole panel glows "all included" */
+function checklist(t, x) {
+  const items = [...t.netTags, ...t.plus]; if (items.length > 1) items.push(items.splice(items.length - 2, 1)[0]);   // the 24 h line goes last
+  const n = items.length, e = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  return `<div class="trc" style="--n:${n}"><div class="trc__in">
+    <div class="trc__head"><span class="trc__label">${e(t.plusH)}</span><span class="trc__count" aria-hidden="true"><b>0</b>/${n}</span></div>
+    <div class="trc__bar" aria-hidden="true"><i></i></div>
+    <ul class="trc__list">${items.map((v, k) => `<li style="--i:${k}"><span class="trc__tick" aria-hidden="true"><svg viewBox="0 0 28 28"><circle class="trc__ring" cx="14" cy="14" r="11.5"/><circle class="trc__fill" cx="14" cy="14" r="11.5"/><path d="M8.8 14.4l3.6 3.6 7-7.6"/></svg><i class="trc__burst"></i></span><span class="trc__txt">${e(v)}</span></li>`).join("")}</ul>
+    <p class="trc__done"><span>${e(x.allIn || "Todo incluido")}</span></p>
+  </div></div>`;
+}
 const sizeFor = (pax, bags) => { const load = pax + Math.max(0, bags - pax) * .5; return load <= 7 ? 7 : load <= 8 ? 8 : load <= 18 ? 18 : 0; };
 
 /* extra copy for the page as it sits under the vehicles: a promise strip, how it works, and the jump to the form */
 const X = {
-  es: { trust: ["Precio cerrado antes de reservar", "Seguimiento de tu vuelo", "Chófer con tu nombre en llegadas", "Disponible 24 h"],
+  es: { allIn: "Todo incluido, sin sorpresas", trust: ["Precio cerrado antes de reservar", "Seguimiento de tu vuelo", "Chófer con tu nombre en llegadas", "Disponible 24 h"],
     howH: "Así de fácil", steps: [["Cuéntanos el trayecto", "Recogida, destino, día y cuántos sois. Lo que no sepas aún, déjalo en blanco."], ["Te confirmamos vehículo y precio", "Te respondemos con el vehículo que encaja con tu grupo y un precio cerrado, sin sorpresas."], ["Tu chófer te espera", "Puntual, con tu nombre, el equipaje a bordo y directo a tu destino."]],
     jump: "Pedir mi transfer", closing: "Aterriza, sal del club o vuelve de cenar sin pensar en cómo llegar: de eso nos ocupamos nosotros." },
-  en: { trust: ["Fixed price before you book", "Flight tracking", "Driver with your name at arrivals", "Available 24 h"],
+  en: { allIn: "All included, no surprises", trust: ["Fixed price before you book", "Flight tracking", "Driver with your name at arrivals", "Available 24 h"],
     howH: "As easy as this", steps: [["Tell us the trip", "Pick-up, destination, day and how many you are. Leave blank whatever you don't know yet."], ["We confirm vehicle and price", "We reply with the vehicle that fits your group and a fixed price, no surprises."], ["Your driver is waiting", "On time, with your name, luggage on board and straight to your destination."]],
     jump: "Request my transfer", closing: "Land, leave the club or head home from dinner without thinking about how to get there: we take care of that." },
-  it: { trust: ["Prezzo chiuso prima di prenotare", "Monitoraggio del volo", "Autista con il tuo nome agli arrivi", "Disponibile 24 h"],
+  it: { allIn: "Tutto incluso, senza sorprese", trust: ["Prezzo chiuso prima di prenotare", "Monitoraggio del volo", "Autista con il tuo nome agli arrivi", "Disponibile 24 h"],
     howH: "Facile così", steps: [["Raccontaci il tragitto", "Partenza, destinazione, giorno e quanti siete. Ciò che non sai ancora, lascialo vuoto."], ["Ti confermiamo veicolo e prezzo", "Ti rispondiamo con il veicolo adatto al tuo gruppo e un prezzo chiuso, senza sorprese."], ["Il tuo autista ti aspetta", "Puntuale, con il tuo nome, i bagagli a bordo e dritto a destinazione."]],
     jump: "Richiedi il mio transfer", closing: "Atterra, esci dal club o torna da cena senza pensare a come arrivare: a questo pensiamo noi." },
-  fr: { trust: ["Prix fixe avant de réserver", "Suivi de votre vol", "Chauffeur avec votre nom à l'arrivée", "Disponible 24 h/24"],
+  fr: { allIn: "Tout compris, sans surprise", trust: ["Prix fixe avant de réserver", "Suivi de votre vol", "Chauffeur avec votre nom à l'arrivée", "Disponible 24 h/24"],
     howH: "Aussi simple que ça", steps: [["Dites-nous le trajet", "Prise en charge, destination, jour et nombre de personnes. Ce que vous ne savez pas encore, laissez-le vide."], ["Nous confirmons véhicule et prix", "Nous répondons avec le véhicule adapté à votre groupe et un prix fixe, sans surprise."], ["Votre chauffeur vous attend", "À l'heure, avec votre nom, les bagages à bord et direct à destination."]],
     jump: "Demander mon transfert", closing: "Atterrissez, sortez du club ou rentrez du dîner sans penser au trajet : on s'en occupe." },
-  de: { trust: ["Festpreis vor der Buchung", "Flugverfolgung", "Fahrer mit Namensschild bei der Ankunft", "Rund um die Uhr"],
+  de: { allIn: "Alles inklusive, ohne Überraschungen", trust: ["Festpreis vor der Buchung", "Flugverfolgung", "Fahrer mit Namensschild bei der Ankunft", "Rund um die Uhr"],
     howH: "So einfach geht's", steps: [["Sag uns die Strecke", "Abholung, Ziel, Tag und wie viele ihr seid. Was du noch nicht weißt, lass einfach frei."], ["Wir bestätigen Fahrzeug und Preis", "Wir antworten mit dem passenden Fahrzeug für deine Gruppe und einem Festpreis, ohne Überraschungen."], ["Dein Fahrer wartet", "Pünktlich, mit deinem Namen, Gepäck an Bord und direkt ans Ziel."]],
     jump: "Meinen Transfer anfragen", closing: "Lande, verlass den Club oder komm vom Dinner zurück, ohne an den Weg zu denken: Darum kümmern wir uns." },
 };
@@ -182,7 +195,7 @@ export function initTransferPage({ onSend, compact = false } = {}) {
         <p class="eyebrow eyebrow--light">${esc(t.kicker)}</p>
         <h2 class="display display--md">${esc(t.formH)}</h2>
         <p class="tr__lead">${esc(t.formP)}</p>
-        <ul class="tr__check">${[...t.netTags, ...t.plus].map((v, k) => `<li style="--i:${k}"><span class="tr__tick" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M7.2 12.4l3.2 3.2 6.4-7"/></svg></span><span>${esc(v)}</span></li>`).join("")}</ul>
+        ${checklist(t, x)}
       </header>
       <section class="tr__sec tr__formsec" id="${uid}Form">${form}<p class="tr__closing">${esc(x.closing)}</p></section>
       </div>` : `
@@ -191,7 +204,7 @@ export function initTransferPage({ onSend, compact = false } = {}) {
         <p class="tr__kicker">${esc(t.kicker)}</p>
         <h2 class="tr__title">${esc(t.title[0])} <em>${esc(t.title[1])}</em></h2>
         <p class="tr__lead">${esc(t.lead)}</p>
-        <ul class="tr__check">${[...t.netTags, ...t.plus].map((v, k) => `<li style="--i:${k}"><span class="tr__tick" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M7.2 12.4l3.2 3.2 6.4-7"/></svg></span><span>${esc(v)}</span></li>`).join("")}</ul>
+        ${checklist(t, x)}
         <a class="btn btn--primary tr__jump" href="#${uid}Form">${esc(x.jump)}</a>
       </header>
       <section class="tr__sec"><h3>${esc(t.whyH)}</h3>
@@ -207,9 +220,17 @@ export function initTransferPage({ onSend, compact = false } = {}) {
     const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { en.target.classList.add("is-in"); io.unobserve(en.target); } }), { root: root.closest(".fleet") || null, threshold: .12 });
     root.querySelectorAll(".tr__sec, .tr__hero").forEach(el => io.observe(el));
     // the checklist ticks itself line by line when the list is really in view
-    const ck = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { en.target.classList.add("is-in"); ck.unobserve(en.target); } }), { root: root.closest(".fleet") || null, threshold: .35 });
-    root.querySelectorAll(".tr__check").forEach(el => ck.observe(el));
+    const ck = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { runChecklist(en.target); ck.unobserve(en.target); } }), { root: root.closest(".fleet") || null, threshold: .3 });
+    root.querySelectorAll(".trc").forEach(el => ck.observe(el));
   };
+  function runChecklist(box) {
+    const n = +getComputedStyle(box).getPropertyValue("--n") || box.querySelectorAll("li").length, b = box.querySelector(".trc__count b");
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { box.classList.add("is-in", "is-done"); b.textContent = n; return; }
+    box.classList.add("is-in");
+    // the same rhythm as the CSS: the first tick lands at 0.75 s, then one every 0.32 s
+    for (let k = 1; k <= n; k++) setTimeout(() => { b.textContent = k; box.style.setProperty("--p", k / n); }, 750 + (k - 1) * 320 + 260);
+    setTimeout(() => box.classList.add("is-done"), 750 + (n - 1) * 320 + 700);
+  }
   function suggest() {
     const t = tx(), f = root.querySelector("form"), pax = +f.pax.value || 1, bags = +f.bags.value || 0;
     const fit = sizeFor(pax, bags), n = fit && preset >= fit ? preset : fit;   // the size picked in the menu, unless the group has outgrown it

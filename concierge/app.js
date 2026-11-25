@@ -823,8 +823,8 @@ const SVC_TREE = [
     { value: "juguetes-motor", label: "Tablas a motor y eFoil", icon: "boat" }, { value: "juguetes-vuelo", label: "Vuelo sobre el agua", icon: "star" } ] },
   { label: "Transfers", svc: "transfers", children: [
     { value: "transfer-all", label: "Ver toda la flota", icon: "van" },
-    { value: "transfer-7", label: "Up to 7 pers.", icon: "users" }, { value: "transfer-8", label: "Up to 8 pers.", icon: "van" },
-    { value: "transfer-18", label: "Up to 18 pers.", icon: "bus" } ] },
+    { value: "transfer-7", label: "Up to 7", icon: "users" }, { value: "transfer-8", label: "Up to 8", icon: "van" },
+    { value: "transfer-18", label: "Up to 18", icon: "bus" }, { value: "transfer-pedir", label: "Pide tu transfer", icon: "pin" } ] },
   { label: "Clubs", svc: "noche", children: [
     { value: "clubs-vip", label: "Mesas VIP", icon: "star" }, { value: "clubs-guestlist", label: "Guestlist", icon: "users" } ] },
   { label: "Chefs", value: "chefs", svc: "dining", icon: "chef" },
@@ -842,6 +842,7 @@ const SVC_OPTS = {
     if (value === "chefs") { SM.set(false); setTimeout(() => chefPage.open(), 300); return; }   // the private chef's page   // straight into the excursion page
     if (value.startsWith("juguetes-")) { const g = value.slice(9); SM.set(false); setTimeout(() => openFleet(TOY, g === "all" ? "" : g), 260); return; }   // the water toys' gallery
     if (value === "transfer-all") { SM.set(false); setTimeout(() => openFleet("transfer"), 260); return; }
+    if (value === "transfer-pedir") { SM.set(false); setTimeout(() => { openFleet("transfer"); toTransferInfo(); }, 300); return; }   // straight to the request page under the vans
     if (value.startsWith("transfer-")) { SM.set(false); setTimeout(() => openFleet("transfer", value), 300); return; }   // the transfer vans, with the group size already chosen
     if (value === "coches-all") { SM.set(false); setTimeout(() => openFleet("coche"), 260); return; }   // the cars' gallery
     if (value === "villas-ver") { SM.set(false); setTimeout(() => openFleet(VILLA), 260); return; }   // the villas' gallery
@@ -1705,7 +1706,7 @@ function openFleet(cat = "all", brand = "") {
     const kids = SVC_TREE.find(s => s.label === SEC)?.children || [];
     const groupOf = v => ({ "motos-seadoo": b => b.name.startsWith("Sea-Doo"), "motos-yamaha": b => b.name.startsWith("Yamaha"),
       "juguetes-motor": b => TOY_GROUP.motor.includes(b.id), "juguetes-vuelo": b => TOY_GROUP.vuelo.includes(b.id) })[v]
-      || (/^transfer-\d+$/.test(v) ? b => b.pax >= +v.slice(9) : null) || (/-(all|ver|sin-licencia)$/.test(v) ? () => true : null);
+      || (/^transfer-\d+$/.test(v) ? (n => b => n === 7 ? b.pax >= 7 && b.pax <= 8 : b.pax >= n)(+v.slice(9)) : null) || (/-(all|ver|sin-licencia)$/.test(v) ? () => true : null);
     const start = { "Sea-Doo": "motos-seadoo", Yamaha: "motos-yamaha", motor: "juguetes-motor", vuelo: "juguetes-vuelo" }[brand] || (kids.some(k => k.value === brand) ? brand : kids[0]?.value);
     const pick = v => { const f = groupOf(v); if (!f) return false;
       fleetChips.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.sub === v));
@@ -1715,11 +1716,13 @@ function openFleet(cat = "all", brand = "") {
     if (soloType !== VILLA) { fleetChips.closest(".fleet").querySelector(".fleet__top .eyebrow").textContent = `${t("Nuestra flota")} · Ibiza`; document.getElementById("fleetTitle").textContent = t(SEC); }
     fleetChips.hidden = kids.length < 2;
     fleetChips.innerHTML = kids.map(k => { const f = groupOf(k.value); return `<button type="button" data-sub="${k.value}" aria-pressed="false">${t(k.label)}${f ? ` <small>${fleetBase.filter(f).length}</small>` : ""}</button>`; }).join("");
-    fleetChips.onclick = e => { const b = e.target.closest("button[data-sub]"); if (!b) return; e.stopImmediatePropagation(); if (!pick(b.dataset.sub)) { closeFleet(); goMenu(b.dataset.sub); } };
+    fleetChips.onclick = e => { const b = e.target.closest("button[data-sub]"); if (!b) return; e.stopImmediatePropagation(); if (b.dataset.sub === "transfer-pedir") return toTransferInfo(); if (!pick(b.dataset.sub)) { closeFleet(); goMenu(b.dataset.sub); } };
     pick(start);
   } else fleetChips.onclick = null;
   requestAnimationFrame(() => document.querySelector("#fleetRibbon .ribbon").focus({ preventScroll: true }));
 }
+// the explanation and the form under the transfer vans, scrolled to inside the fleet panel
+function toTransferInfo() { requestAnimationFrame(() => setTimeout(() => { if (fleetMore.hidden) return; fleet.scrollTo({ top: fleetMore.offsetTop - 8, behavior: "smooth" }); }, 450)); }
 function closeFleet() { fleet.hidden = true; document.body.style.overflow = ""; }
 function askFleet(b) {
   if (openWA([b.name, t(CAT_LABEL[b.type]), b.len, b.pax ? paxText(b) : ""].filter(Boolean).join(" · "), "flota")) return;

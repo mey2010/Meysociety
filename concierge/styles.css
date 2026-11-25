@@ -3089,3 +3089,74 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
 /* "Ver fotos" from a card opens the photos alone: the sheet behind them is not drawn */
 .boat.is-photos > .boat__card { visibility: hidden; }
 .boat.is-photos { background: #05041a; }
+
+/* club card: the pick hint as a small pill top right (the name and number stay at the bottom) */
+.tk .ag__fsub.tk__hint-top { position: absolute; top: 14px; right: 14px; z-index: 2; max-width: 58%; padding: 6px 11px; border-radius: 99px; font: 600 11.5px/1.2 var(--sans); color: #fff; text-align: right;
+  background: rgb(8 6 36 / .5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .22); pointer-events: none; }
+.tk[aria-pressed="true"] .tk__hint-top { opacity: 0; }
+.tk .tk__meta { justify-content: flex-start; }
+
+/* ---------- transfer checklist: a floating panel that ticks itself off ----------
+   Border: a slow-turning light (violet, cyan, green) round the rounded panel. On view the panel rises out of a blur,
+   then each line in turn: a ring is drawn round its circle, the circle fills green with a small burst, the tick is
+   drawn, the line lights up with a sweep; the counter and the bar keep pace. When the last line lands the panel
+   glows green once and "all included" appears; from then on it floats gently. */
+@property --trc-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.trc { --d0: .75s; --step: .32s; position: relative; max-width: 560px; margin: 24px auto 4px; padding: 1.5px; border-radius: 28px; text-align: left;
+  background: conic-gradient(from var(--trc-a), rgb(171 80 219 / .9), rgb(120 199 228 / .9), rgb(34 197 94 / .9), rgb(171 80 219 / .2) 70%, rgb(171 80 219 / .9));
+  box-shadow: 0 30px 70px -28px rgb(4 3 24 / .9), 0 0 0 1px rgb(255 255 255 / .04);
+  opacity: 0; transform: translateY(26px) scale(.96); filter: blur(8px);
+  transition: opacity .7s ease, transform .9s cubic-bezier(.2, 1.1, .3, 1), filter .7s ease, box-shadow .8s ease; animation: trc-spin 6s linear infinite; }
+@keyframes trc-spin { to { --trc-a: 360deg; } }
+.trc.is-in { opacity: 1; transform: none; filter: none; }
+.trc.is-done { animation: trc-spin 6s linear infinite, trc-float 6s ease-in-out 1s infinite; box-shadow: 0 34px 80px -30px rgb(4 3 24 / .95), 0 0 46px -8px rgb(34 197 94 / .45); }
+@keyframes trc-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.trc__in { position: relative; overflow: hidden; border-radius: 26.5px; padding: 20px 20px 18px; background: linear-gradient(160deg, rgb(28 24 92 / .96), rgb(12 10 46 / .97) 60%); }
+.trc__in::before { content: ""; position: absolute; inset: -40% -10% auto; height: 70%; background: radial-gradient(60% 60% at 50% 50%, rgb(120 199 228 / .18), transparent 70%); pointer-events: none; }
+.trc__head { position: relative; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.trc__label { font: 600 11.5px/1.2 var(--sans); letter-spacing: .18em; text-transform: uppercase; color: #9ff0ff; }
+.trc__count { font: 600 14px/1 var(--sans); color: rgb(255 255 255 / .55); font-variant-numeric: tabular-nums; }
+.trc__count b { font-size: 22px; color: #fff; font-weight: 700; display: inline-block; min-width: 1.2ch; text-align: right; }
+.trc__bar { position: relative; height: 4px; border-radius: 4px; background: rgb(255 255 255 / .1); overflow: hidden; margin-bottom: 14px; }
+.trc__bar i { position: absolute; inset: 0 auto 0 0; width: calc(var(--p, 0) * 100%); border-radius: inherit; background: linear-gradient(90deg, #78c7e4, #22c55e); box-shadow: 0 0 12px rgb(34 197 94 / .7); transition: width .3s cubic-bezier(.2, .8, .2, 1); }
+.trc__list { position: relative; list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.trc__list li { --t: calc(var(--d0) + var(--i) * var(--step)); position: relative; display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: 12px; padding: 7px 8px; border-radius: 12px; overflow: hidden; }
+.trc__txt { font-size: 15px; line-height: 1.4; color: #fff; text-align: left !important; hyphens: none; -webkit-hyphens: none; opacity: .38; transform: translateX(-6px); transition: opacity .4s ease, transform .5s cubic-bezier(.2, 1.2, .3, 1); }
+/* the sweep of light across the line as it is ticked */
+.trc__list li::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 20%, rgb(34 197 94 / .16) 45%, rgb(255 255 255 / .1) 52%, transparent 75%); transform: translateX(-110%); pointer-events: none; }
+.trc__tick { position: relative; width: 28px; height: 28px; }
+.trc__tick svg { position: relative; z-index: 1; width: 28px; height: 28px; display: block; overflow: visible; }
+.trc__ring { fill: none; stroke: rgb(255 255 255 / .22); stroke-width: 1.6; }
+.trc__fill { fill: #22c55e; transform-origin: 14px 14px; transform: scale(0); }
+.trc__tick path { fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 20; stroke-dashoffset: 20; }
+.trc__burst { position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px; border-radius: 50%; opacity: 0;
+  box-shadow: 0 -16px #22c55e, 11px -11px #9ff0ff, 16px 0 #22c55e, 11px 11px #c856e6, 0 16px #22c55e, -11px 11px #9ff0ff, -16px 0 #22c55e, -11px -11px #c856e6; }
+.trc__done { position: relative; margin: 0; height: 0; opacity: 0; overflow: hidden; text-align: center !important; transition: height .5s cubic-bezier(.2, .8, .2, 1), opacity .5s ease, margin .5s ease; }
+.trc__done span { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 99px; font: 700 13.5px/1.2 var(--sans); letter-spacing: .02em; color: #062b16;
+  background: linear-gradient(100deg, #22c55e, #86efac 45%, #22c55e 60%); background-size: 220% 100%; box-shadow: 0 10px 26px -10px rgb(34 197 94 / .9); }
+/* the sequence, line by line */
+.trc.is-in .trc__ring { stroke: #22c55e; stroke-dasharray: 72.3; stroke-dashoffset: 72.3; animation: trc-draw .3s ease-out var(--t) forwards; }
+.trc.is-in .trc__fill { animation: trc-pop .42s cubic-bezier(.2, 1.6, .4, 1) calc(var(--t) + .2s) forwards; }
+.trc.is-in .trc__tick path { animation: trc-tick .3s ease-out calc(var(--t) + .32s) forwards; }
+.trc.is-in .trc__burst { animation: trc-burst .55s ease-out calc(var(--t) + .24s) forwards; }
+.trc.is-in .trc__txt { opacity: 1; transform: none; transition-delay: calc(var(--t) + .22s); }
+.trc.is-in .trc__list li::after { animation: trc-sweep .7s ease-out calc(var(--t) + .2s) forwards; }
+.trc.is-done .trc__done { height: 50px; margin-top: 12px; opacity: 1; }
+.trc.is-done .trc__done span { animation: trc-shine 2.4s ease-in-out .4s infinite; }
+@keyframes trc-draw { to { stroke-dashoffset: 0; } }
+@keyframes trc-pop { 0% { transform: scale(0); } 70% { transform: scale(1.18); } 100% { transform: scale(1); } }
+@keyframes trc-tick { to { stroke-dashoffset: 0; } }
+@keyframes trc-burst { 0% { opacity: 0; transform: scale(.3); } 25% { opacity: 1; } 100% { opacity: 0; transform: scale(1.25); } }
+@keyframes trc-sweep { to { transform: translateX(110%); } }
+@keyframes trc-shine { 0%, 100% { background-position: 100% 0; } 50% { background-position: 0 0; } }
+/* light page variant (the home page section) keeps the dark glass panel: it reads as a floating object on both */
+@media (max-width: 520px) { .trc { margin-inline: 0; } .trc__in { padding: 18px 14px 16px; } .trc__txt { font-size: 14.5px; } }
+@media (prefers-reduced-motion: reduce) {
+  .trc, .trc.is-done { animation: none; transition: none; opacity: 1; transform: none; filter: none; }
+  .trc .trc__ring, .trc .trc__fill, .trc .trc__tick path, .trc .trc__burst, .trc .trc__list li::after, .trc__done span { animation: none !important; }
+  .trc .trc__fill { transform: scale(1); } .trc .trc__tick path { stroke-dashoffset: 0; } .trc .trc__ring { stroke: #22c55e; }
+}
+/* transfer page: the closing line centred; the three steps read left-aligned, not justified */
+.tr .tr__closing { text-align: center !important; text-align-last: center; }
+.tr .tr__steps p, .tr .tr__steps b { text-align: left !important; text-align-last: left; hyphens: none; -webkit-hyphens: none; }
+.trc .trc__done { display: flex; justify-content: center; align-items: center; }
