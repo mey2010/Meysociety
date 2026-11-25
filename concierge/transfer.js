@@ -3,6 +3,7 @@
    luggage are filled in, the right vehicle size is suggested (up to 7, 8 or 18 people). The request goes straight to
    the concierge (WhatsApp when set, otherwise the contact form) with everything the fleet needs to quote. */
 import { getLang } from "./i18n.js";
+import { FLEET } from "./fleet-data.js";
 
 const T = {
   es: {
@@ -16,7 +17,7 @@ const T = {
       ["Cena en el norte, fiesta en el sur", "Nadie quiere ser el conductor esa noche. Un mismo chófer os lleva, espera y os trae de vuelta."],
     ],
     netH: "Siempre hay una van para ti",
-    net: "No dependo de una sola flota. Trabajo con una red de conductores privados de la isla conectados entre sí en tiempo real: cuando me escribes, sé al momento qué vehículo está libre a la hora que lo necesitas y te lo confirmo. Temporada alta, domingo de closing o las 5 de la mañana: te encuentro el que encaja con tu grupo.", netTags: ["Red de conductores conectada en tiempo real", "Confirmación rápida", "El vehículo justo para tu grupo"],
+    net: "No dependo de una sola flota. Trabajo con una red de conductores privados de la isla conectados entre sí en tiempo real: cuando me escribes, sé al momento qué vehículo está libre a la hora que lo necesitas y te lo confirmo. Temporada alta, domingo de closing o las 5 de la mañana:", netEnd: "Te encuentro el vehículo que encaja contigo", netTags: ["Red de conductores conectada en tiempo real", "Confirmación rápida", "El vehículo justo para tu grupo"],
     plusH: "Lo que incluye",
     plus: ["Recogida con tu nombre en el aeropuerto o el puerto", "Seguimiento de tu vuelo: si se retrasa, te esperamos", "Vehículos de alta gama con aire acondicionado", "Espacio para el equipaje de todo el grupo", "Disponible las 24 horas, también para noches de club", "Precio cerrado antes de reservar, sin sorpresas"],
     formH: "Pide tu transfer",
@@ -24,7 +25,7 @@ const T = {
     from: "Recogida", to: "Destino", date: "Día", time: "Hora", pax: "Personas", bags: "Maletas grandes", flight: "Nº de vuelo o barco (opcional)", ret: "También la vuelta", rdate: "Día de vuelta", rtime: "Hora de vuelta", kids: "Sillas infantiles", notes: "Algo más (paradas, horas de espera…)", name: "Tu nombre",
     phFrom: "Aeropuerto de Ibiza, tu villa, un club…", phTo: "Tu hotel, villa, restaurante…",
     places: ["Aeropuerto de Ibiza", "Puerto de Ibiza", "Marina Botafoch", "Marina Ibiza", "Sant Antoni", "Santa Eulària", "Platja d'en Bossa", "Ushuaïa Ibiza", "Hï Ibiza", "Pacha", "Amnesia", "[UNVRS]", "DC10"],
-    sug: n => `Te recomendamos un vehículo de ${n}`, sugMany: "Para un grupo así coordinamos varios vehículos",
+    sug: n => `Te recomiendo una ${n}`, sugMany: "Para un grupo así coordinamos varios vehículos",
     sizes: { 7: "hasta 7 personas", 8: "hasta 8 personas", 18: "hasta 18 personas" },
     send: "Enviar solicitud", close: "Cerrar", need: "Indica al menos recogida, destino y día",
     msg: "Hola Mey Society, quiero un transfer privado", yes: "sí",
@@ -40,7 +41,7 @@ const T = {
       ["Dinner in the north, party in the south", "Nobody wants to drive that night. One driver takes you, waits and brings you back."],
     ],
     netH: "There's always a van for you",
-    net: "I don't rely on a single fleet. I work with a network of the island's private drivers, connected in real time: when you message me, I know at once which vehicle is free at the time you need it and I confirm it. High season, a closing Sunday or 5 a.m.: I find the one that fits your group.", netTags: ["Driver network connected in real time", "Fast confirmation", "The right vehicle for your group"],
+    net: "I don't rely on a single fleet. I work with a network of the island's private drivers, connected in real time: when you message me, I know at once which vehicle is free at the time you need it and I confirm it. High season, a closing Sunday or 5 a.m.:", netEnd: "I find the vehicle that fits you", netTags: ["Driver network connected in real time", "Fast confirmation", "The right vehicle for your group"],
     plusH: "What's included",
     plus: ["Meet and greet with your name at the airport or port", "Flight tracking: if it's late, we wait", "High-end, air-conditioned vehicles", "Room for the whole group's luggage", "Available 24 hours, club nights included", "Fixed price before you book, no surprises"],
     formH: "Request your transfer",
@@ -48,7 +49,7 @@ const T = {
     from: "Pick-up", to: "Destination", date: "Day", time: "Time", pax: "People", bags: "Large suitcases", flight: "Flight or ferry number (optional)", ret: "Return trip too", rdate: "Return day", rtime: "Return time", kids: "Child seats", notes: "Anything else (stops, waiting time…)", name: "Your name",
     phFrom: "Ibiza Airport, your villa, a club…", phTo: "Your hotel, villa, restaurant…",
     places: ["Ibiza Airport", "Ibiza Port", "Marina Botafoch", "Marina Ibiza", "Sant Antoni", "Santa Eulària", "Platja d'en Bossa", "Ushuaïa Ibiza", "Hï Ibiza", "Pacha", "Amnesia", "[UNVRS]", "DC10"],
-    sug: n => `We suggest a vehicle for ${n}`, sugMany: "For a group this size we coordinate several vehicles",
+    sug: n => `I recommend a ${n}`, sugMany: "For a group this size we coordinate several vehicles",
     sizes: { 7: "up to 7 people", 8: "up to 8 people", 18: "up to 18 people" },
     send: "Send request", close: "Close", need: "Please add at least pick-up, destination and day",
     msg: "Hi Mey Society, I'd like a private transfer", yes: "yes",
@@ -64,7 +65,7 @@ const T = {
       ["Cena al nord, festa al sud", "Nessuno vuole guidare quella sera. Un solo autista vi porta, aspetta e vi riporta."],
     ],
     netH: "C'è sempre un van per te",
-    net: "Non dipendo da una sola flotta. Lavoro con una rete di autisti privati dell'isola collegati tra loro in tempo reale: quando mi scrivi, so subito quale veicolo è libero all'ora che ti serve e te lo confermo. Alta stagione, domenica di closing o le 5 del mattino: trovo quello giusto per il tuo gruppo.", netTags: ["Rete di autisti collegata in tempo reale", "Conferma rapida", "Il veicolo giusto per il tuo gruppo"],
+    net: "Non dipendo da una sola flotta. Lavoro con una rete di autisti privati dell'isola collegati tra loro in tempo reale: quando mi scrivi, so subito quale veicolo è libero all'ora che ti serve e te lo confermo. Alta stagione, domenica di closing o le 5 del mattino:", netEnd: "Ti trovo il veicolo giusto per te", netTags: ["Rete di autisti collegata in tempo reale", "Conferma rapida", "Il veicolo giusto per il tuo gruppo"],
     plusH: "Cosa include",
     plus: ["Accoglienza con il tuo nome in aeroporto o al porto", "Monitoraggio del volo: se ritarda, ti aspettiamo", "Veicoli di alta gamma con aria condizionata", "Spazio per i bagagli di tutto il gruppo", "Disponibile 24 ore, anche per le notti in club", "Prezzo chiuso prima di prenotare, senza sorprese"],
     formH: "Richiedi il tuo transfer",
@@ -72,7 +73,7 @@ const T = {
     from: "Partenza", to: "Destinazione", date: "Giorno", time: "Ora", pax: "Persone", bags: "Valigie grandi", flight: "Numero di volo o traghetto (facoltativo)", ret: "Anche il ritorno", rdate: "Giorno del ritorno", rtime: "Ora del ritorno", kids: "Seggiolini per bambini", notes: "Altro (fermate, attese…)", name: "Il tuo nome",
     phFrom: "Aeroporto di Ibiza, la tua villa, un club…", phTo: "Il tuo hotel, villa, ristorante…",
     places: ["Aeroporto di Ibiza", "Porto di Ibiza", "Marina Botafoch", "Marina Ibiza", "Sant Antoni", "Santa Eulària", "Platja d'en Bossa", "Ushuaïa Ibiza", "Hï Ibiza", "Pacha", "Amnesia", "[UNVRS]", "DC10"],
-    sug: n => `Ti consigliamo un veicolo fino a ${n}`, sugMany: "Per un gruppo così coordiniamo più veicoli",
+    sug: n => `Ti consiglio una ${n}`, sugMany: "Per un gruppo così coordiniamo più veicoli",
     sizes: { 7: "7 persone", 8: "8 persone", 18: "18 persone" },
     send: "Invia richiesta", close: "Chiudi", need: "Indica almeno partenza, destinazione e giorno",
     msg: "Ciao Mey Society, vorrei un transfer privato", yes: "sì",
@@ -88,7 +89,7 @@ const T = {
       ["Dîner au nord, fête au sud", "Personne ne veut conduire ce soir-là. Un seul chauffeur vous emmène, attend et vous ramène."],
     ],
     netH: "Il y a toujours un van pour vous",
-    net: "Je ne dépends pas d'une seule flotte. Je travaille avec un réseau de chauffeurs privés de l'île connectés en temps réel : quand vous m'écrivez, je sais aussitôt quel véhicule est libre à l'heure voulue et je vous le confirme. Haute saison, dimanche de closing ou 5 h du matin : je trouve celui qui convient à votre groupe.", netTags: ["Réseau de chauffeurs connecté en temps réel", "Confirmation rapide", "Le bon véhicule pour votre groupe"],
+    net: "Je ne dépends pas d'une seule flotte. Je travaille avec un réseau de chauffeurs privés de l'île connectés en temps réel : quand vous m'écrivez, je sais aussitôt quel véhicule est libre à l'heure voulue et je vous le confirme. Haute saison, dimanche de closing ou 5 h du matin :", netEnd: "Je vous trouve le véhicule qui vous correspond", netTags: ["Réseau de chauffeurs connecté en temps réel", "Confirmation rapide", "Le bon véhicule pour votre groupe"],
     plusH: "Ce qui est inclus",
     plus: ["Accueil avec votre nom à l'aéroport ou au port", "Suivi du vol : s'il a du retard, on vous attend", "Véhicules haut de gamme climatisés", "De la place pour les bagages de tout le groupe", "Disponible 24 h/24, soirées en club comprises", "Prix fixé avant de réserver, sans surprise"],
     formH: "Demandez votre transfert",
@@ -96,7 +97,7 @@ const T = {
     from: "Prise en charge", to: "Destination", date: "Jour", time: "Heure", pax: "Personnes", bags: "Grandes valises", flight: "N° de vol ou de ferry (facultatif)", ret: "Le retour aussi", rdate: "Jour du retour", rtime: "Heure du retour", kids: "Sièges enfants", notes: "Autre chose (arrêts, attente…)", name: "Votre nom",
     phFrom: "Aéroport d'Ibiza, votre villa, un club…", phTo: "Votre hôtel, villa, restaurant…",
     places: ["Aéroport d'Ibiza", "Port d'Ibiza", "Marina Botafoch", "Marina Ibiza", "Sant Antoni", "Santa Eulària", "Platja d'en Bossa", "Ushuaïa Ibiza", "Hï Ibiza", "Pacha", "Amnesia", "[UNVRS]", "DC10"],
-    sug: n => `Nous vous conseillons un véhicule ${n}`, sugMany: "Pour un groupe de cette taille, nous coordonnons plusieurs véhicules",
+    sug: n => `Je vous recommande un ${n}`, sugMany: "Pour un groupe de cette taille, nous coordonnons plusieurs véhicules",
     sizes: { 7: "jusqu'à 7 personnes", 8: "jusqu'à 8 personnes", 18: "jusqu'à 18 personnes" },
     send: "Envoyer la demande", close: "Fermer", need: "Indiquez au moins la prise en charge, la destination et le jour",
     msg: "Bonjour Mey Society, je souhaite un transfert privé", yes: "oui",
@@ -112,7 +113,7 @@ const T = {
       ["Dinner im Norden, Party im Süden", "Niemand will an dem Abend fahren. Ein Fahrer bringt euch hin, wartet und fährt euch zurück."],
     ],
     netH: "Es gibt immer einen Van für dich",
-    net: "Ich hänge nicht an einer einzigen Flotte. Ich arbeite mit einem Netzwerk privater Fahrer der Insel, in Echtzeit verbunden: Wenn du mir schreibst, weiß ich sofort, welches Fahrzeug zu deiner Uhrzeit frei ist, und bestätige es dir. Hochsaison, Closing-Sonntag oder 5 Uhr morgens: Ich finde das passende für deine Gruppe.", netTags: ["Fahrernetzwerk in Echtzeit verbunden", "Schnelle Bestätigung", "Das richtige Fahrzeug für deine Gruppe"],
+    net: "Ich hänge nicht an einer einzigen Flotte. Ich arbeite mit einem Netzwerk privater Fahrer der Insel, in Echtzeit verbunden: Wenn du mir schreibst, weiß ich sofort, welches Fahrzeug zu deiner Uhrzeit frei ist, und bestätige es dir. Hochsaison, Closing-Sonntag oder 5 Uhr morgens:", netEnd: "Ich finde das Fahrzeug, das zu dir passt", netTags: ["Fahrernetzwerk in Echtzeit verbunden", "Schnelle Bestätigung", "Das richtige Fahrzeug für deine Gruppe"],
     plusH: "Was dabei ist",
     plus: ["Abholung mit Namensschild am Flughafen oder Hafen", "Flugverfolgung: Bei Verspätung warten wir", "Hochwertige, klimatisierte Fahrzeuge", "Platz für das Gepäck der ganzen Gruppe", "Rund um die Uhr, auch in Clubnächten", "Festpreis vor der Buchung, ohne Überraschungen"],
     formH: "Transfer anfragen",
@@ -120,7 +121,7 @@ const T = {
     from: "Abholung", to: "Ziel", date: "Tag", time: "Uhrzeit", pax: "Personen", bags: "Große Koffer", flight: "Flug- oder Fährnummer (optional)", ret: "Auch die Rückfahrt", rdate: "Tag der Rückfahrt", rtime: "Uhrzeit der Rückfahrt", kids: "Kindersitze", notes: "Sonst noch etwas (Stopps, Wartezeit…)", name: "Dein Name",
     phFrom: "Flughafen Ibiza, deine Villa, ein Club…", phTo: "Dein Hotel, Villa, Restaurant…",
     places: ["Flughafen Ibiza", "Hafen Ibiza", "Marina Botafoch", "Marina Ibiza", "Sant Antoni", "Santa Eulària", "Platja d'en Bossa", "Ushuaïa Ibiza", "Hï Ibiza", "Pacha", "Amnesia", "[UNVRS]", "DC10"],
-    sug: n => `Wir empfehlen ein Fahrzeug für ${n}`, sugMany: "Für eine so große Gruppe koordinieren wir mehrere Fahrzeuge",
+    sug: n => `Ich empfehle dir einen ${n}`, sugMany: "Für eine so große Gruppe koordinieren wir mehrere Fahrzeuge",
     sizes: { 7: "bis zu 7 Personen", 8: "bis zu 8 Personen", 18: "bis zu 18 Personen" },
     send: "Anfrage senden", close: "Schließen", need: "Bitte mindestens Abholung, Ziel und Tag angeben",
     msg: "Hallo Mey Society, ich möchte einen privaten Transfer", yes: "ja",
@@ -224,7 +225,7 @@ export function initTransferPage({ onSend, compact = false } = {}) {
       </header>
       <section class="tr__sec"><h3>${esc(t.whyH)}</h3>
         ${situations(t, x, uid)}</section>
-      <section class="tr__sec tr__net"><h3>${esc(t.netH)}</h3><p class="tr__p">${esc(t.net)}</p></section>
+      <section class="tr__sec tr__net"><h3>${esc(t.netH)}</h3><p class="tr__p tr__netp">${esc(t.net)}</p>${t.netEnd ? `<p class="tr__netend">${esc(t.netEnd)}</p>` : ""}</section>
       <section class="tr__sec"><h3>${esc(x.howH)}</h3>
         <ol class="tr__steps">${x.steps.map(([h, p], k) => `<li><span>${k + 1}</span><div><b>${esc(h)}</b><p>${esc(p)}</p></div></li>`).join("")}</ol></section>
       <section class="tr__sec tr__formsec" id="${uid}Form"><h3>${esc(t.formH)}</h3><p class="tr__p">${esc(t.formP)}</p>
@@ -249,7 +250,9 @@ export function initTransferPage({ onSend, compact = false } = {}) {
   function suggest() {
     const t = tx(), f = root.querySelector("form"), pax = +f.pax.value || 1, bags = +f.bags.value || 0;
     const fit = sizeFor(pax, bags), n = fit && preset >= fit ? preset : fit;   // the size picked in the menu, unless the group has outgrown it
-    root.querySelector(".tr__sug").innerHTML = `<i aria-hidden="true"></i>${esc(n ? t.sug(t.sizes[n]) : t.sugMany)}`;
+    // the actual vehicle: the smallest of ours that takes the group (and its bags)
+    const van = n && FLEET.filter(v => v.type === "transfer" && v.pax >= n).sort((x, y) => x.pax - y.pax)[0];
+    root.querySelector(".tr__sug").innerHTML = `<i aria-hidden="true"></i>${esc(van ? t.sug(van.name) : n ? t.sug(t.sizes[n]) : t.sugMany)}`;
     return n;
   }
   const wire = () => {
