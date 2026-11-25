@@ -2989,10 +2989,5 @@ img.asm__bk.asm__let--top { filter: drop-shadow(-.5px -.6px 0 rgb(255 255 255 / 
 .ag__feat > li { transition: none; }
 @media (prefers-reduced-motion: reduce) { .ag__fcard.tk { transform: none !important; } .tk__back { display: none; } .tk[aria-pressed="true"] .tk__front { box-shadow: 0 0 0 3px var(--violet); } }
 
-/* ---------- the tagline decodes letter by letter (Scramble Text) ---------- */
-.intro__sub.scramble { font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 500; letter-spacing: -.01em; white-space: pre-wrap; }
-.scramble .c { opacity: .42; }
-.scramble .c.ok { opacity: 1; }
-.scramble .caret { display: inline-block; width: .56em; height: 1.08em; margin-left: .12em; vertical-align: -.18em; border-radius: 2px; background: currentColor; transition: opacity .2s; }
 .tk__seat { gap: 14px; }
 .tk__seat i { font-size: 9.5px; letter-spacing: .04em; white-space: nowrap; }
