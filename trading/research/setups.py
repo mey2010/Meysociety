@@ -501,3 +501,30 @@ CATALOG.update({
     "asia_breakout_wide": ("Ruptura asiática solo a favor de la tendencia diaria, stop ancho", "tendencia",
                            asia_breakout_wide, [15], {"tp_mult": [1.5, 2.5], "trend_n": [20, 50]}),
 })
+
+
+def tsmom_daily(b, lookback=20, atr_mult=1.5):
+    """Momentum de serie temporal: cada día, a la apertura asiática (23:00 UTC), ponerse del lado
+    del retorno de los últimos N días; stop a atr_mult x ATR diario; cerrar a las 20:45 del día siguiente.
+    El "día" se corta a las 23:00 UTC (desplazando 1 hora) para no usar ningún dato de la vela de entrada."""
+    sh = b.copy()
+    sh.index = sh.index + pd.Timedelta(hours=1)   # 23:00 UTC pasa a ser 00:00 del día de trading siguiente
+    dd = pd.DataFrame({"h": sh.h.resample("1D").max(), "l": sh.l.resample("1D").min(),
+                       "c": sh.c.resample("1D").last()}).dropna()
+    dd["tf"] = 1440
+    datr = atr(dd).shift()                         # solo días de trading ya cerrados
+    ret = (dd.c / dd.c.shift(lookback) - 1).shift()
+    first = (b.index.hour == 23) & (b.index.minute == 0)
+    i = np.where(first)[0]
+    key = (b.index[i] + pd.Timedelta(hours=1)).normalize()  # día de trading que empieza en esa vela
+    r = ret.reindex(key).values
+    a = datr.reindex(key).values
+    ok = np.isfinite(r) & np.isfinite(a) & (r != 0)
+    i, r, a = i[ok], r[ok], a[ok]
+    s = np.sign(r).astype(int)
+    px = b.o.values[i]
+    return _orders(b.index[i], s, MARKET, 0, px - s * atr_mult * a, px + s * 10 * atr_mult * a, 1, 21 * 60 + 45) if len(i) else None
+
+
+CATALOG["tsmom_daily"] = ("Cada día, del lado del retorno de los últimos N días (momentum), stop a 1,5 ATR diario",
+                          "tendencia", tsmom_daily, [15], {"lookback": [20, 60], "atr_mult": [1.0, 1.5, 2.0]})
