@@ -1692,7 +1692,9 @@ function openFleet(cat = "all", brand = "") {
     back: fleetBack,   // tapping the card in front turns it over: the details, and the way on (photos, availability, the villa's page)
   });
   document.getElementById("fleetRibbon").onclick = e => { const btn = e.target.closest("[data-rb]"); if (!btn) return; e.stopPropagation();
-    const b = fleetList[+btn.closest(".ribbon__card").dataset.i]; if (btn.dataset.rb === "ask") askFleet(b); else openBoat(b); };
+    const b = fleetList[+btn.closest(".ribbon__card").dataset.i]; if (btn.dataset.rb === "ask") return askFleet(b);
+    if (b.type === VILLA) return openBoat(b);
+    openBoat(b); sheet.dataset.fsOnly = "1"; boatFull(true); };   // "Ver fotos": straight into the full-screen photos; closing them comes back here
   setFleetCat(cat);
   /* a single-kind gallery (jet skis, toys, villas, cars, transfers) shows the same sub-options as its menu, on top,
      like the boats' tabs: the ones that are a group of this gallery filter it in place, the others go where the menu goes */
@@ -1750,7 +1752,8 @@ function showShot(k) {
 }
 const EXPAND = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>';
 function boatFull(on) {
-  const fs = sheet.querySelector(".boat__fs"); if (!fs) return; fs.hidden = !on; sheet.classList.toggle("is-full", on);
+  if (!on && sheet.dataset.fsOnly) { delete sheet.dataset.fsOnly; sheet.classList.remove("is-photos"); return closeBoat(); }
+  const fs = sheet.querySelector(".boat__fs"); if (!fs) return; fs.hidden = !on; sheet.classList.toggle("is-full", on); sheet.classList.toggle("is-photos", on && !!sheet.dataset.fsOnly);
   if (on) { const im = fs.querySelector("img"); im.src = fullSrc(boatNow, shot); fs.querySelector(".boat__fsx").focus({ preventScroll: true }); }
 }
 function openBoat(b) {
@@ -1790,7 +1793,7 @@ function openBoat(b) {
   sheet.hidden = false; showShot(0);
   requestAnimationFrame(() => sheet.querySelector(".boat__close").focus());
 }
-function closeBoat() { if (sheet.hidden) return; sheet.hidden = true; sheet.classList.remove("is-full"); boatNow = null; }
+function closeBoat() { if (sheet.hidden) return; sheet.hidden = true; delete sheet.dataset.fsOnly; sheet.classList.remove("is-photos"); sheet.classList.remove("is-full"); boatNow = null; }
 sheet.addEventListener("click", e => {
   if (e.target.closest("[data-full-close]") || e.target.classList.contains("boat__fs")) return boatFull(false);
   if (e.target.closest("[data-full]") || (e.target.classList.contains("boat__pic") && !matchMedia("(pointer: coarse)").matches)) return boatFull(true);

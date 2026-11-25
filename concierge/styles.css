@@ -3066,3 +3066,26 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
 .ribbon__card.is-turned .ribbon__face { visibility: hidden; }
 .ribbon__card:not(.is-turned) .ribbon__back { visibility: hidden; }
 .rb__acts .btn { flex: 1; }
+
+/* transfer: what you get, as a checklist that completes line by line, each line ticked in green */
+.tr__check { list-style: none; margin: 18px auto 0; padding: 0; display: grid; gap: 11px; max-width: 520px; text-align: left; }
+.tr__check li { display: grid; grid-template-columns: 26px 1fr; align-items: start; gap: 12px; font-size: 15px; line-height: 1.4; color: inherit; text-align: left !important; hyphens: none;
+  opacity: .38; transform: translateX(-6px); transition: opacity .45s ease, transform .45s cubic-bezier(.2, .8, .2, 1); transition-delay: calc(var(--i) * 140ms + 150ms); }
+.tr__tick svg { width: 24px; height: 24px; display: block; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.tr__tick circle { stroke: currentColor; stroke-width: 1.6; opacity: .35; fill: transparent; transition: fill .35s ease, stroke .35s ease, opacity .35s ease; transition-delay: calc(var(--i) * 140ms + 250ms); }
+.tr__tick path { stroke: #fff; stroke-width: 2.4; stroke-dasharray: 16; stroke-dashoffset: 16; transition: stroke-dashoffset .4s ease; transition-delay: calc(var(--i) * 140ms + 420ms); }
+.tr__check.is-in li { opacity: 1; transform: none; }
+.tr__check.is-in .tr__tick circle { fill: #22c55e; stroke: #22c55e; opacity: 1; }
+.tr__check.is-in .tr__tick path { stroke-dashoffset: 0; }
+@media (prefers-reduced-motion: reduce) { .tr__check li, .tr__tick circle, .tr__tick path { transition: none; } }
+
+/* back of a fleet card: everything centred, the button compact */
+.ribbon__back { text-align: center; justify-items: center; }
+.rb__top { justify-items: center; text-align: center; }
+.rb__specs { justify-self: stretch; justify-items: center; text-align: center; }
+.rb__specs li, .rb__specs b { text-align: center !important; justify-items: center; }
+.rb__acts { justify-content: center; width: 100%; }
+.rb__acts .btn { flex: 0 0 auto; min-width: 0; padding-inline: 22px; min-height: 36px; font-size: 13px; }
+/* "Ver fotos" from a card opens the photos alone: the sheet behind them is not drawn */
+.boat.is-photos > .boat__card { visibility: hidden; }
+.boat.is-photos { background: #05041a; }

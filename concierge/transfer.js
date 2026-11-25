@@ -182,7 +182,7 @@ export function initTransferPage({ onSend, compact = false } = {}) {
         <p class="eyebrow eyebrow--light">${esc(t.kicker)}</p>
         <h2 class="display display--md">${esc(t.formH)}</h2>
         <p class="tr__lead">${esc(t.formP)}</p>
-        <ul class="tr__trust">${x.trust.map(v => `<li>${esc(v)}</li>`).join("")}</ul>
+        <ul class="tr__check">${[...t.netTags, ...t.plus].map((v, k) => `<li style="--i:${k}"><span class="tr__tick" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M7.2 12.4l3.2 3.2 6.4-7"/></svg></span><span>${esc(v)}</span></li>`).join("")}</ul>
       </header>
       <section class="tr__sec tr__formsec" id="${uid}Form">${form}<p class="tr__closing">${esc(x.closing)}</p></section>
       </div>` : `
@@ -191,15 +191,12 @@ export function initTransferPage({ onSend, compact = false } = {}) {
         <p class="tr__kicker">${esc(t.kicker)}</p>
         <h2 class="tr__title">${esc(t.title[0])} <em>${esc(t.title[1])}</em></h2>
         <p class="tr__lead">${esc(t.lead)}</p>
-        <ul class="tr__trust">${x.trust.map(v => `<li>${esc(v)}</li>`).join("")}</ul>
+        <ul class="tr__check">${[...t.netTags, ...t.plus].map((v, k) => `<li style="--i:${k}"><span class="tr__tick" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M7.2 12.4l3.2 3.2 6.4-7"/></svg></span><span>${esc(v)}</span></li>`).join("")}</ul>
         <a class="btn btn--primary tr__jump" href="#${uid}Form">${esc(x.jump)}</a>
       </header>
       <section class="tr__sec"><h3>${esc(t.whyH)}</h3>
         <ul class="tr__cases">${t.cases.map(([h, p], k) => `<li><span class="tr__no">${String(k + 1).padStart(2, "0")}</span><b>${esc(h)}</b><p>${esc(p)}</p></li>`).join("")}</ul></section>
-      <section class="tr__sec tr__net"><h3>${esc(t.netH)}</h3><p class="tr__p">${esc(t.net)}</p>
-        <ul class="tr__tags">${t.netTags.map(v => `<li><i aria-hidden="true"></i><span>${esc(v)}</span></li>`).join("")}</ul></section>
-      <section class="tr__sec"><h3>${esc(t.plusH)}</h3>
-        <ul class="tr__plus">${t.plus.map(v => `<li>${esc(v)}</li>`).join("")}</ul></section>
+      <section class="tr__sec tr__net"><h3>${esc(t.netH)}</h3><p class="tr__p">${esc(t.net)}</p></section>
       <section class="tr__sec"><h3>${esc(x.howH)}</h3>
         <ol class="tr__steps">${x.steps.map(([h, p], k) => `<li><span>${k + 1}</span><div><b>${esc(h)}</b><p>${esc(p)}</p></div></li>`).join("")}</ol></section>
       <section class="tr__sec tr__formsec" id="${uid}Form"><h3>${esc(t.formH)}</h3><p class="tr__p">${esc(t.formP)}</p>
@@ -209,6 +206,9 @@ export function initTransferPage({ onSend, compact = false } = {}) {
     suggest();
     const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { en.target.classList.add("is-in"); io.unobserve(en.target); } }), { root: root.closest(".fleet") || null, threshold: .12 });
     root.querySelectorAll(".tr__sec, .tr__hero").forEach(el => io.observe(el));
+    // the checklist ticks itself line by line when the list is really in view
+    const ck = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { en.target.classList.add("is-in"); ck.unobserve(en.target); } }), { root: root.closest(".fleet") || null, threshold: .35 });
+    root.querySelectorAll(".tr__check").forEach(el => ck.observe(el));
   };
   function suggest() {
     const t = tx(), f = root.querySelector("form"), pax = +f.pax.value || 1, bags = +f.bags.value || 0;
