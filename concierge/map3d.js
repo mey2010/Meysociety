@@ -142,7 +142,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   scene.add(new THREE.HemisphereLight("#dcecff", "#6a5236", 1.15));
   // golden-hour sun from the west-south-west: long shadows carve the relief
   const sun = new THREE.DirectionalLight("#ffe2b8", 3.4); sun.position.set(-36, 22, 14); sun.target.position.set(0, 0, 0);
-  sun.castShadow = true; sun.shadow.mapSize.set(small ? 2048 : 4096, small ? 2048 : 4096);
+  sun.castShadow = true; sun.shadow.mapSize.set(small ? 1536 : 4096, small ? 1536 : 4096);
   Object.assign(sun.shadow.camera, { left: -34, right: 34, top: 34, bottom: -34, near: 1, far: 120 }); sun.shadow.bias = -.0004; sun.shadow.normalBias = .02;
   scene.add(sun, sun.target);
 
@@ -160,7 +160,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
   try { await ortho.image.decode?.(); } catch {} // decoded off the main thread, not at upload time
   prog.build = .25; report(); await nextFrame();
   ortho.colorSpace = THREE.SRGBColorSpace; ortho.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
-  const nrm = await normalTexture(H, .62);
+  const nrm = await normalTexture(H, small ? .45 : .62);   // a phone sees the island ~600 px wide: half the relief texture is plenty
   // each big texture goes to the graphics card in its own moment, not all together on the first frame
   try { renderer.initTexture(ortho); await yieldNow(); renderer.initTexture(nrm); await yieldNow(); } catch {}
   prog.build = .6; report(); await nextFrame();
@@ -169,7 +169,7 @@ export async function initMap3D(el, { venues, onPick, onList, onEmpty, onProgres
 
   // ---- terrain ----
   {
-    const NX = small ? 560 : 900, NZ = Math.round(NX * (B.z - A.z) / (B.x - A.x));
+    const NX = small ? 420 : 900, NZ = Math.round(NX * (B.z - A.z) / (B.x - A.x));
     const g = new THREE.PlaneGeometry(B.x - A.x, B.z - A.z, NX - 1, NZ - 1).rotateX(-Math.PI / 2);
     g.translate((A.x + B.x) / 2, 0, (A.z + B.z) / 2);
     const pos = g.attributes.position;

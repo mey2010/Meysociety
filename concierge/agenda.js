@@ -227,10 +227,10 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;",
 const KEY = "mey-agenda";
 /* one card per club: the user's own photos where there are, otherwise freely licensed photos (credited on the card) */
 const CLUB_CARDS = [
+  { club: "[UNVRS]", img: "data/services/clubs.webp" },
   { club: "Ushuaïa Ibiza", img: "data/clubs/ushuaia.webp" },
   { club: "Hï Ibiza", img: "data/clubs/hi-ibiza.webp" },
   { club: "Pacha", img: "data/clubs/pacha.webp" },
-  { club: "[UNVRS]", img: "data/reviews/unvrs-noche.webp" },
   { club: "Amnesia", img: "data/clubs/amnesia.webp" },
   { club: "DC10", img: "data/clubs/dc10.webp" },
   { club: "O Beach", img: "data/clubs/o-beach.webp" },
@@ -243,6 +243,7 @@ const CLUB_CARDS = [
   { club: "Bora Bora Ibiza", img: "data/clubs/bora-bora.webp" },
   { club: "Eden", img: "data/clubs/eden.webp" },
   { club: "Es Paradis", img: "data/clubs/es-paradis.webp" },
+  { club: "Cova Santa", img: "data/photos/cova-santa.jpg" },
 ];
 
 export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
@@ -258,7 +259,7 @@ export function initAgenda(root, { venues = [], onSend, onVenue } = {}) {
   // the photo cards on top: the clubs we have real photos of, then two quick ways in (VIP tables, day clubs)
   const FEAT = [
     ...CLUB_CARDS.filter(c => clubs.some(v => v.name === c.club)),
-    { act: "table", img: "data/services/clubs.webp", key: "vip" },
+    { act: "table", img: "data/reviews/unvrs-noche.webp", key: "vip" },
   ];
   const PASTEL = ["#e4defe", "#d9ecfa", "#f1dcfb", "#dcdffe"];   // the logo's violet, cyan, magenta and royal blue, as pastels
   root.innerHTML = `<div class="wrap ag">

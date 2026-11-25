@@ -189,9 +189,11 @@ function startMap() {
     if (near || performance.now() - (window.__scrolledAt || 0) > 260) startMap(); else setTimeout(calm, 120); };
   new IntersectionObserver((es, io) => { if (!armed && es.some(e => e.isIntersecting)) { armed = true; io.disconnect(); calm(); } }, { rootMargin: "3000px 0px" }).observe(mapEl); }
 // warm the map up in the background, but only during a pause: never while the visitor is scrolling
-// (not on phones: there the map is only built when the visitor gets near it, so the first screen keeps its memory)
-if (!matchMedia("(pointer: coarse)").matches) { const later = () => performance.now() - (window.__scrolledAt || 0) < 400 ? setTimeout(later, 600) : startMap();
-  (window.requestIdleCallback || (f => setTimeout(f, 2500)))(() => setTimeout(later, 1500), { timeout: 4000 }); }
+// phones too now (the map is built lighter there): it is ready long before the visitor scrolls to it, instead of
+// being built right as they arrive (a freeze and, inside the Claude app, sometimes a reload back to the loading logo)
+{ const coarse = matchMedia("(pointer: coarse)").matches, quiet = coarse ? 700 : 400;
+  const later = () => performance.now() - (window.__scrolledAt || 0) < quiet ? setTimeout(later, 500) : startMap();
+  (window.requestIdleCallback || (f => setTimeout(f, 2500)))(() => setTimeout(later, coarse ? 2500 : 1500), { timeout: 4000 }); }
 /* "Ver clubs" / "Ver beach clubs" on the service cards: straight to the map, showing only that kind of place */
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-map-only]"); if (!b) return; e.preventDefault();
