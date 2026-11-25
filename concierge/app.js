@@ -1706,7 +1706,7 @@ function openFleet(cat = "all", brand = "") {
     const kids = SVC_TREE.find(s => s.label === SEC)?.children || [];
     const groupOf = v => ({ "motos-seadoo": b => b.name.startsWith("Sea-Doo"), "motos-yamaha": b => b.name.startsWith("Yamaha"),
       "juguetes-motor": b => TOY_GROUP.motor.includes(b.id), "juguetes-vuelo": b => TOY_GROUP.vuelo.includes(b.id) })[v]
-      || (/^transfer-\d+$/.test(v) ? (n => b => n === 7 ? b.pax >= 7 && b.pax <= 8 : b.pax >= n)(+v.slice(9)) : null) || (/-(all|ver|sin-licencia)$/.test(v) ? () => true : null);
+      || (/^transfer-\d+$/.test(v) ? (n => b => b.pax === n)(+v.slice(9)) : null) || (/-(all|ver|sin-licencia)$/.test(v) ? () => true : null);
     const start = { "Sea-Doo": "motos-seadoo", Yamaha: "motos-yamaha", motor: "juguetes-motor", vuelo: "juguetes-vuelo" }[brand] || (kids.some(k => k.value === brand) ? brand : kids[0]?.value);
     const pick = v => { const f = groupOf(v); if (!f) return false;
       fleetChips.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.sub === v));

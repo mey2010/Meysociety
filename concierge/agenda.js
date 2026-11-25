@@ -59,7 +59,7 @@ function ticketCards(row, labels, info) {
     if (w) { if (!club) w.hidden = true; else { const h = CLUB_HOURS[club];
       w.querySelector(".tk__area").textContent = (info?.(club)?.area) || "Ibiza";
       const hs = w.querySelector(".tk__hours"); hs.textContent = h ? `${h[2] ? L[h[2]] + " · " : ""}${h[1] ? h[0] + " – " + h[1] : L.from + " " + h[0]}` : L.byEvent;
-      const us = w.querySelector(".tk__usual"); us.textContent = h ? L.usual : ""; us.hidden = !h; } } if (sel) sel.textContent = String(L.hint).split("·")[0].trim(); if (!c.back) return;
+      const us = w.querySelector(".tk__usual"); us.textContent = ""; us.hidden = true; } } if (sel) sel.textContent = String(L.hint).split("·")[0].trim(); if (!c.back) return;
     c.back.querySelector(".tk__club").textContent = c.el.dataset.club;
     const seat = c.back.querySelectorAll(".tk__seat i"); seat[0].textContent = L.season; seat[1].textContent = L.access; seat[2].textContent = L.age;
     c.back.querySelector(".tk__hint").textContent = L.hint; });
