@@ -11,8 +11,8 @@ const T = {
     lead: "En verano la isla se llena y los taxis no dan abasto: colas en el aeropuerto, esperas a la salida de los clubs y cenas que empiezan tarde porque nadie viene a buscarte. Con un chófer privado, tu coche ya te está esperando.",
     whyH: "¿Te suena alguna de estas situaciones?",
     cases: [
-      ["Aterrizas a la 1:00", "Seis amigos, ocho maletas y una cola de taxis que no avanza. O un conductor con tu nombre en la puerta de llegadas y la nevera con agua fría."],
-      ["Sales del club a las 6:00", "Miles de personas buscando lo mismo que tú a la vez. Tu furgoneta está aparcada fuera y te deja en la puerta de la villa."],
+      ["Aterrizas a la 1:00", "6 amigos, 8 maletas y sin taxi disponible. Un conductor con tu nombre en la puerta."],
+      ["Sales del club a las 6:00", "Miles de personas esperando en una cola de taxi que no avanza. Tu transfer está aparcado fuera y te deja en la puerta del alojamiento."],
       ["Cena en el norte, fiesta en el sur", "Nadie quiere ser el conductor esa noche. Un mismo chófer os lleva, espera y os trae de vuelta."],
     ],
     netH: "Siempre hay una van para ti",
@@ -35,8 +35,8 @@ const T = {
     lead: "In summer the island fills up and taxis can't keep up: queues at the airport, long waits outside the clubs and dinners that start late because nobody came to pick you up. With a private driver, your car is already waiting.",
     whyH: "Sound familiar?",
     cases: [
-      ["You land at 1 a.m.", "Six friends, eight suitcases and a taxi queue that won't move. Or a driver with your name at arrivals and cold water in the fridge."],
-      ["You leave the club at 6 a.m.", "Thousands of people looking for the same thing at the same time. Your van is parked outside and drops you at the villa door."],
+      ["You land at 1 a.m.", "6 friends, 8 suitcases and no taxi available. A driver with your name at the door."],
+      ["You leave the club at 6 a.m.", "Thousands of people waiting in a taxi queue that won't move. Your transfer is parked outside and drops you at your door."],
       ["Dinner in the north, party in the south", "Nobody wants to drive that night. One driver takes you, waits and brings you back."],
     ],
     netH: "There's always a van for you",
@@ -59,8 +59,8 @@ const T = {
     lead: "D'estate l'isola si riempie e i taxi non bastano: code all'aeroporto, attese all'uscita dei club e cene che iniziano tardi perché nessuno è venuto a prenderti. Con un autista privato, la tua auto ti sta già aspettando.",
     whyH: "Ti suona familiare?",
     cases: [
-      ["Atterri all'1:00", "Sei amici, otto valigie e una coda di taxi che non si muove. Oppure un autista con il tuo nome agli arrivi e acqua fresca in frigo."],
-      ["Esci dal club alle 6:00", "Migliaia di persone cercano la stessa cosa nello stesso momento. Il tuo van è parcheggiato fuori e ti lascia alla porta della villa."],
+      ["Atterri all'1:00", "6 amici, 8 valigie e nessun taxi disponibile. Un autista con il tuo nome alla porta."],
+      ["Esci dal club alle 6:00", "Migliaia di persone in coda per un taxi che non arriva. Il tuo transfer è parcheggiato fuori e ti lascia alla porta del tuo alloggio."],
       ["Cena al nord, festa al sud", "Nessuno vuole guidare quella sera. Un solo autista vi porta, aspetta e vi riporta."],
     ],
     netH: "C'è sempre un van per te",
@@ -83,8 +83,8 @@ const T = {
     lead: "L'été, l'île se remplit et les taxis ne suivent pas : files à l'aéroport, attentes à la sortie des clubs et dîners qui commencent tard parce que personne n'est venu vous chercher. Avec un chauffeur privé, votre voiture vous attend déjà.",
     whyH: "Ça vous parle ?",
     cases: [
-      ["Vous atterrissez à 1 h", "Six amis, huit valises et une file de taxis qui n'avance pas. Ou un chauffeur avec votre nom aux arrivées et de l'eau fraîche."],
-      ["Vous sortez du club à 6 h", "Des milliers de personnes cherchent la même chose au même moment. Votre van est garé devant et vous dépose à la porte de la villa."],
+      ["Vous atterrissez à 1 h", "6 amis, 8 valises et aucun taxi disponible. Un chauffeur avec votre nom à la porte."],
+      ["Vous sortez du club à 6 h", "Des milliers de personnes dans une file de taxis qui n'avance pas. Votre transfert est garé devant et vous dépose à la porte de votre logement."],
       ["Dîner au nord, fête au sud", "Personne ne veut conduire ce soir-là. Un seul chauffeur vous emmène, attend et vous ramène."],
     ],
     netH: "Il y a toujours un van pour vous",
@@ -107,8 +107,8 @@ const T = {
     lead: "Im Sommer ist die Insel voll und die Taxis kommen nicht hinterher: Schlangen am Flughafen, Warten vor den Clubs und Dinner, die spät beginnen, weil dich niemand abgeholt hat. Mit einem privaten Fahrer wartet dein Wagen schon.",
     whyH: "Kommt dir bekannt vor?",
     cases: [
-      ["Landung um 1 Uhr", "Sechs Freunde, acht Koffer und eine Taxischlange, die sich nicht bewegt. Oder ein Fahrer mit deinem Namen in der Ankunftshalle und kaltem Wasser im Kühlschrank."],
-      ["Um 6 Uhr aus dem Club", "Tausende suchen gleichzeitig dasselbe. Dein Van parkt vor der Tür und bringt dich bis vor die Villa."],
+      ["Landung um 1 Uhr", "6 Freunde, 8 Koffer und kein Taxi frei. Ein Fahrer mit deinem Namen an der Tür."],
+      ["Um 6 Uhr aus dem Club", "Tausende warten in einer Taxischlange, die sich nicht bewegt. Dein Transfer parkt draußen und bringt dich bis vor deine Unterkunft."],
       ["Dinner im Norden, Party im Süden", "Niemand will an dem Abend fahren. Ein Fahrer bringt euch hin, wartet und fährt euch zurück."],
     ],
     netH: "Es gibt immer einen Van für dich",
@@ -143,8 +143,7 @@ function situations(t, x, uid) {
     <div class="trs__top"><span class="trs__no">${String(k + 1).padStart(2, "0")}</span><span class="trs__ico" aria-hidden="true"><svg viewBox="0 0 24 24">${SIT_ICON[k] || SIT_ICON[0]}</svg></span></div>
     <b class="trs__h">${e(h)}</b>
     <div class="trs__row trs__row--bad"><span class="trs__tag"><i aria-hidden="true">✕</i>${e(x.own || "")}</span><p><span class="trs__strike">${e(bad)}</span></p></div>
-    <div class="trs__row trs__row--good"><span class="trs__tag"><i aria-hidden="true">✓</i>${e(x.with || "")}</span><p>${e(good)}</p></div>
-    <a class="trs__cta" href="#${uid}Form">${e(x.jump)}<span aria-hidden="true">→</span></a></li>`; }).join("")}</ol>`;
+    <div class="trs__row trs__row--good"><span class="trs__tag"><i aria-hidden="true">✓</i>${e(x.with || "")}</span><p>${e(good)}</p></div></li>`; }).join("")}</ol>`;
 }
 function checklist(t, x) {
   const items = [...t.netTags, ...t.plus]; if (items.length > 1) items.push(items.splice(items.length - 2, 1)[0]);   // the 24 h line goes last
