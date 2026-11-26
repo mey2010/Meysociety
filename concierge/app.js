@@ -179,8 +179,8 @@ function startMap() {
     onProgress: p => { pct.textContent = p; loader.setAttribute("aria-valuenow", p); mapTarget = Math.max(mapTarget, p / 100); },
   })).then(m => {
     map3dReal = m; window.__map3d = m; mapQueue.splice(0).forEach(([k, a]) => m[k](...a));
-    pct.textContent = 100; mapTarget = 1; mapReady = true;
-  }).catch(err => { console.error(err); loader.classList.add("is-error"); });
+    pct.textContent = 100; mapTarget = 1; mapReady = true; window.__mapBuilt?.();
+  }).catch(err => { console.error(err); loader.classList.add("is-error"); window.__mapBuilt?.(); });
 }
 /* the map is built (and its first picture sent to the GPU) a few screens ahead, at a moment the visitor is not
    scrolling, so a fast swipe never runs into it; once it is right there it starts regardless */
@@ -472,12 +472,17 @@ const TURN = 1400; window.__logoLoader = logoLoader;
   let shown = 0, target = .08, done = false; const t0 = performance.now();
   const imgs = [...document.querySelectorAll("img")].filter(im => { const r = im.getBoundingClientRect(); return r.top < innerHeight * 1.2 && r.width > 0; }).slice(0, 10);
   const parts = [document.fonts?.ready || Promise.resolve(), ...imgs.map(im => im.complete ? Promise.resolve() : new Promise(ok => { im.addEventListener("load", ok, { once: true }); im.addEventListener("error", ok, { once: true }); }))];
+  /* The 3D map sits right under the first screen. Building it takes a second of the phone's full attention (a frozen
+     page), so it is built here, behind the loading logo, where nobody can scroll yet: never later, mid-scroll, with
+     its own loading logo showing in the middle of the page. */
+  parts.push(new Promise(ok => { window.__mapBuilt = ok; setTimeout(ok, 6500); }));
+  setTimeout(() => startMap(), 0);
   let got = 0; parts.forEach(pr => pr.then(() => { got++; target = Math.max(target, .1 + .8 * got / parts.length); }));
   const finish = () => { if (done) return; done = true; target = 1; };
   // the first screen is what matters: fonts and the photos in view (the rest of the page keeps loading behind)
   Promise.all(parts).then(finish);
-  (document.readyState === "complete" ? Promise.resolve() : new Promise(ok => addEventListener("load", ok, { once: true }))).then(finish);
-  setTimeout(finish, 3500);
+  // (the window "load" alone no longer ends it: the map has to be built too)
+  setTimeout(finish, 7000);   // the map included: a safety cap, normally reached much sooner
   // the hand-off: the finished logo leaves the loading screen and flies, with one turn, to where the page's own logo
   // rests; the white behind it melts away on the way, so the page is simply there when it lands. No second page.
   function land() {
@@ -617,7 +622,8 @@ const TURN = 1400; window.__logoLoader = logoLoader;
   // a card is already painted while it slides in (not when it stops)
   // on a phone only the first few: the rest are decoded just ahead of the reader (all eleven at once is ~70 MB of
   // bitmaps, enough for the Claude app's web view to give up with "algo ha salido mal")
-  { const warm = () => cards.slice(0, matchMedia("(pointer: coarse)").matches ? 3 : cards.length).forEach(c => c.querySelectorAll("img").forEach(im => { im.loading = "eager"; im.decode?.().catch(() => {}); }));
+  { const warm = () => [].slice(0, matchMedia("(pointer: coarse)").matches ? 3 : cards.length)   // off: the ribbon fetches and decodes its own photos (decoding the hidden source cards too doubled the memory)
+   .forEach(c => c.querySelectorAll("img").forEach(im => { im.loading = "eager"; im.decode?.().catch(() => {}); }));
     const later = () => (window.requestIdleCallback || (f => setTimeout(f, 300)))(warm, { timeout: 2500 });
     document.readyState === "complete" ? later() : addEventListener("load", later, { once: true }); }
   document.querySelectorAll(".stack__card [data-svc]").forEach(b => b.addEventListener("click", e => {
@@ -1096,9 +1102,9 @@ document.addEventListener("click", e => {
   else if (h.startsWith("mailto:")) track("contact_click", { method: "email", place: "enlace" });
 }, { capture: true, passive: true });
 const LOADED_AT = performance.now();
-const CHOICES = { yates: "Barco", motos: "Moto de agua", coches: "Coche", moto: "Moto", villas: "Villa", vip: "Mesas VIP en clubs", transfers: "Transfer", dining: "Chef privado", dj: "DJ", formentera: "Formentera Experience" };
+const CHOICES = { yates: "Barco", motos: "Moto de agua", coches: "Coche", moto: "Moto", villas: "Villa", vip: "Mesas VIP en clubs", transfers: "Transfer", dining: "Chef privado", dj: "DJ", formentera: "Formentera Experience", juguetes: "Juguetes acuáticos" };
 // the services that unlock the guestlist gifts (every one in the list, club VIP tables included)
-const GIFT_SVC = new Set(["yates", "motos", "moto", "coches", "villas", "vip", "dining", "transfers", "dj", "formentera"]);
+const GIFT_SVC = new Set(["yates", "motos", "moto", "coches", "villas", "vip", "dining", "transfers", "dj", "formentera", "juguetes"]);
 const giftCount = () => [...chosen].filter(c => GIFT_SVC.has(c)).length;
 const chips = document.getElementById("chips"), chosen = new Set();
 for (const [id, n] of Object.entries(CHOICES)) chips.insertAdjacentHTML("beforeend", `<button type="button" class="chip" data-c="${id}" aria-pressed="false">${n}</button>`);
@@ -1122,7 +1128,7 @@ function paintLadder() {
       ${LADDER.map((s, i) => `<span class="ladder__step${k >= s.n ? " is-on" : ""}" style="left:${(i + 1) / 3 * 100}%"><b>${s.n}${s.n === 3 ? "+" : ""}</b></span>`).join("")}</div>
     <ol class="ladder__list">${LADDER.map(s => `<li class="${k >= s.n ? "is-on" : ""}"><span>${s.n}${s.n === 3 ? "+" : ""} ${t(s.n === 1 ? "servicio" : "servicios")}</span>${t(s.short)}</li>`).join("")}</ol>
     <p class="ladder__msg">${head}${more ? `<br><span>${more}</span>` : ""}</p>
-    <p class="ladder__fine">${t("Cuentan barco, moto de agua, moto, coche, villa, chef, transfer, mesa VIP, DJ y Formentera Experience.")} ${t("Regalos de cortesía, sujetos a disponibilidad del club. Guestlist solo para mayores de 18.")} <a href="legal/terminos.html#guestlists" target="_blank" rel="noopener">${t("Ver condiciones")}</a></p>`;
+    <p class="ladder__fine">${t("Cuentan barco, moto de agua, juguete acuático, moto, coche, villa, chef, transfer, mesa VIP, DJ y Formentera Experience.")} ${t("Regalos de cortesía, sujetos a disponibilidad del club. Guestlist solo para mayores de 18.")} <a href="legal/terminos.html#guestlists" target="_blank" rel="noopener">${t("Ver condiciones")}</a></p>`;
   if (got && ladderEl.dataset.got !== String(got.n)) { ladderEl.classList.remove("is-pop"); void ladderEl.offsetWidth; ladderEl.classList.add("is-pop"); }
   ladderEl.dataset.got = got ? got.n : "";
 }
@@ -1770,7 +1776,7 @@ function toTransferInfo() { requestAnimationFrame(() => setTimeout(() => { if (f
 function closeFleet() { fleet.hidden = true; document.body.style.overflow = ""; }
 function askFleet(b) {
   if (openWA([b.name, t(CAT_LABEL[b.type]), b.len, b.pax ? paxText(b) : ""].filter(Boolean).join(" · "), "flota")) return;
-  closeBoat(); closeFleet(); select({ [JET]: "motos", [TOY]: "motos", [VILLA]: "villas", coche: "coches", transfer: "transfers" }[b.type] || "yates", true);
+  closeBoat(); closeFleet(); select({ [JET]: "motos", [TOY]: "juguetes", [VILLA]: "villas", coche: "coches", transfer: "transfers" }[b.type] || "yates", true);
   document.getElementById("f-notes").value = `${t("Me interesa")}: ${b.name}${b.len ? " · " + b.len : ""} (${t(CAT_LABEL[b.type])}).`;
   scrollToEl(document.getElementById("contacto"));
 }
@@ -2062,7 +2068,7 @@ const routeZoom = (() => {
 /* ---------------- service cards: show every photo whole ---------------- */
 document.querySelectorAll(".stack__card").forEach(card => {
   const media = card.querySelector(".stack__media"), img = media?.querySelector("img"), body = card.querySelector(".stack__body");
-  if (!img || !body) return;
+  if (!img || !body || card.closest(".stack--src")) return;   // the services ribbon shows its own photos: the hidden source cards are never laid out again
   if (!media.classList.contains("stack__media--product")) {
     // the backdrop is a tiny pre-blurred copy taken from one shared sprite (all seven in one small file): the
     // browser just scales it up, nothing to blur on every frame
