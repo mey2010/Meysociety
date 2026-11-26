@@ -633,44 +633,54 @@ const TURN = 1400; window.__logoLoader = logoLoader;
     const wrap = document.createElement("div"); wrap.className = "stack__wrap"; row.before(wrap); wrap.append(row);
     const navs = [-1, 1].map(d => { const b = document.createElement("button"); b.type = "button"; b.className = "stack__nav"; b.dataset.dir = d; b.setAttribute("aria-label", d < 0 ? "‹" : "›"); b.textContent = d < 0 ? "‹" : "›"; wrap.append(b); return b; });
     const gap = () => parseFloat(getComputedStyle(row).columnGap) || 16;
-    const centre = () => { const W = row.clientWidth; if (!W) return;
+    /* every size is measured once (on resize), never during the scroll: each frame only reads scrollLeft and
+       writes transforms, so the browser never has to recompute the layout while the finger is moving */
+    let W = 0, cw = 1, step = 1, left = [], last = cards.map(() => ({ t: "", o: "", z: "" }));
+    const centre = () => { W = row.clientWidth; if (!W) return;
       const w = Math.round(W < 760 ? W * .8 : Math.min(400, Math.max(320, W * .3))), p = Math.max(0, Math.round((W - w) / 2));
-      cards.forEach(c => { c.style.flexBasis = w + "px"; c.style.width = w + "px"; }); row.style.paddingInline = p + "px"; row.style.scrollPaddingInline = p + "px"; };
-    const pose = c => {
-      const w = c.offsetWidth || 1, d = (c.offsetLeft + w / 2 - row.scrollLeft - row.clientWidth / 2) / (w + gap());
-      const k = Math.min(Math.abs(d), 2.4), kk = Math.min(k, 1), sg = Math.sign(d), pull = row.clientWidth < 600 ? .3 : .08;
+      cards.forEach(c => { c.style.flexBasis = w + "px"; c.style.width = w + "px"; }); row.style.paddingInline = p + "px"; row.style.scrollPaddingInline = p + "px";
+      cw = w; step = w + gap(); left = cards.map(c => c.offsetLeft); };
+    const pose = (i, sl) => {
+      const w = cw, d = (left[i] + w / 2 - sl - W / 2) / step;
+      const k = Math.min(Math.abs(d), 2.4), kk = Math.min(k, 1), sg = Math.sign(d), pull = W < 600 ? .3 : .08;
       return { t: `perspective(1200px) translate3d(${(-sg * (kk * w * pull + Math.max(0, k - 1) * w * (.14 + pull))).toFixed(1)}px, 0, ${(-(kk * 120 + Math.max(0, k - 1) * 70)).toFixed(1)}px) rotateY(${(-sg * kk * 32).toFixed(2)}deg)`,
         o: (1 - Math.min(k, 2) * .16).toFixed(3), z: String(100 - Math.round(k * 10)), d };
     };
-    let fanning = false, raf = 0;
-    const cover = () => { raf = 0; if (fanning) return; let mid = 0, best = 9;
-      cards.forEach((c, i) => { const q = pose(c); c.style.transform = q.t; c.style.opacity = q.o; c.style.zIndex = q.z; if (Math.abs(q.d) < best) { best = Math.abs(q.d); mid = i; } });
-      cards.forEach((c, i) => c.classList.toggle("is-front", i === mid));
-      // the photos of the cards around the middle one are fetched and decoded before they get there
-      [mid - 1, mid, mid + 1, mid + 2].forEach(j => cards[j]?.querySelectorAll("img").forEach(im => { if (im.loading !== "eager") { im.loading = "eager"; im.decode?.().catch(() => {}); } }));
-      navs[0].disabled = row.scrollLeft < 4; navs[1].disabled = row.scrollLeft > row.scrollWidth - row.clientWidth - 4; };
+    let fanning = false, raf = 0, mid = -1;
+    const warmAround = m => [m + 1, m + 2, m - 1].forEach(j => cards[j]?.querySelectorAll("img").forEach(im => { if (im.dataset.warm) return; im.dataset.warm = 1; im.loading = "eager"; im.decode?.().catch(() => {}); }));
+    const cover = () => { raf = 0; if (fanning) return; const sl = row.scrollLeft; let m = 0, best = 9;
+      cards.forEach((c, i) => { const q = pose(i, sl), L = last[i];
+        if (Math.abs(q.d) < best) { best = Math.abs(q.d); m = i; }
+        if (L.t !== q.t) { L.t = q.t; c.style.transform = q.t; }
+        if (L.o !== q.o) { L.o = q.o; c.style.opacity = q.o; }
+        if (L.z !== q.z) { L.z = q.z; c.style.zIndex = q.z; } });
+      if (m !== mid) { mid = m; navs[0].disabled = m === 0; navs[1].disabled = m === cards.length - 1; }
+    };
+    // the next photos are decoded once the row comes to rest, never in the middle of a swipe
+    let idle = 0; const settle = () => { clearTimeout(idle); idle = setTimeout(() => warmAround(mid), 140); };
     const kick = () => { if (!raf) raf = requestAnimationFrame(cover); };
     if (!REDUCED) {
       centre(); cover();
-      row.addEventListener("scroll", kick, { passive: true });
-      let lastW = 0; new ResizeObserver(() => { if (row.clientWidth === lastW) return; lastW = row.clientWidth; centre(); cover(); }).observe(row);
-      navs.forEach(b => b.addEventListener("click", () => row.scrollBy({ left: +b.dataset.dir * ((cards[0].offsetWidth || 0) + gap()), behavior: "smooth" })));
+      row.addEventListener("scroll", () => { kick(); settle(); }, { passive: true });
+      let lastW = 0; new ResizeObserver(() => { if (row.clientWidth === lastW) return; lastW = row.clientWidth; centre(); last.forEach(L => L.t = L.o = L.z = ""); cover(); }).observe(row);
+      warmAround(0);
+      navs.forEach(b => b.addEventListener("click", () => row.scrollBy({ left: +b.dataset.dir * step, behavior: "smooth" })));
       // Fan Cards entrance, as the clubs: piled under the first card, a little turned, then out into their places
       cards.forEach((c, i) => { c.style.transform = `translate3d(0, 40px, 0) rotate(${(i % 2 ? 1 : -1) * 4}deg)`; c.style.opacity = "0"; });
       fanning = true;
       const fanIo = new IntersectionObserver(es => {
         if (!es.some(e => e.isIntersecting)) return; fanIo.disconnect(); centre();
-        const x0 = cards[0].offsetLeft;
-        cards.forEach((c, i) => { const dx = x0 - c.offsetLeft, d = Math.min(i, 5);
+        const x0 = left[0];
+        cards.forEach((c, i) => { const dx = x0 - left[i], d = Math.min(i, 5);
           c.style.transition = "none"; c.style.zIndex = String(50 - i);
           c.style.transform = `translate3d(${dx + d * 10}px, ${d * 8}px, 0) rotate(${d * -4 + 2}deg) scale(${1 - d * .03})`; c.style.opacity = "1"; });
         row.offsetWidth;
         requestAnimationFrame(() => cards.forEach((c, i) => {
-          const q = pose(c); c.style.transition = `transform 820ms cubic-bezier(.2, 1.28, .38, 1) ${120 + i * 70}ms, opacity 500ms ease ${120 + i * 70}ms`;
+          const q = pose(i, row.scrollLeft); c.style.transition = `transform 820ms cubic-bezier(.2, 1.28, .38, 1) ${120 + i * 70}ms, opacity 500ms ease ${120 + i * 70}ms`;
           c.style.transform = q.t; c.style.opacity = q.o;
-          c.addEventListener("transitionend", () => { c.style.transition = ""; if (i === cards.length - 1) { fanning = false; cover(); } }, { once: true });
+          c.addEventListener("transitionend", () => { c.style.transition = ""; if (i === cards.length - 1) { fanning = false; last.forEach(L => L.t = L.o = L.z = ""); cover(); } }, { once: true });
         }));
-        setTimeout(() => { if (fanning) { fanning = false; cards.forEach(c => c.style.transition = ""); cover(); } }, 2600);   // never stuck mid-fan
+        setTimeout(() => { if (fanning) { fanning = false; cards.forEach(c => c.style.transition = ""); last.forEach(L => L.t = L.o = L.z = ""); cover(); } }, 2600);   // never stuck mid-fan
       }, { threshold: .2 });
       fanIo.observe(row);
     }

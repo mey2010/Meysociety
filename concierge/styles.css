@@ -3241,10 +3241,9 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
   padding-top: 18px; padding-bottom: 34px; margin-inline: calc(50% - 50vw); perspective: none; }
 .stack.stack--cover::-webkit-scrollbar { display: none; }
 .stack.stack--cover::after { content: none; }
-.stack--cover > .stack__card { position: relative; top: auto !important; flex: 0 0 auto; margin: 0 !important; scroll-snap-align: center; scroll-snap-stop: always;
+.stack--cover > .stack__card { position: relative; top: auto !important; flex: 0 0 auto; margin: 0 !important; scroll-snap-align: center;
   height: min(68svh, 600px); min-height: 0; border-radius: 26px; will-change: transform; transition: none;
   box-shadow: 0 30px 56px -30px rgb(13 10 56 / .85), inset 0 0 0 1px rgb(255 255 255 / .1); }
-.stack--cover > .stack__card.is-front { box-shadow: 0 34px 60px -28px rgb(13 10 56 / .9), inset 0 0 0 1px rgb(255 255 255 / .16); }
 /* one layout everywhere: the photo on top, the glass panel at the bottom (the wide-screen side panel would not fit a card) */
 .stack--cover .stack__body { left: 12px; right: 12px; bottom: 12px; top: auto; width: auto; gap: 8px; padding: 16px 16px 18px; border-radius: 20px; align-content: end; }
 .stack--cover .stack__body h3 { font-size: clamp(26px, 2.4vw, 32px); }
@@ -3264,3 +3263,6 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
 .stack__nav:disabled { opacity: 0; pointer-events: none; }
 @media (hover: none) { .stack__nav { display: none; } }
 @media (prefers-reduced-motion: reduce) { .stack.stack--cover > .stack__card { transform: none !important; opacity: 1 !important; } }
+/* smooth swipe: one GPU layer per card, nothing inside the card repaints while the row moves */
+.stack--cover > .stack__card { backface-visibility: hidden; -webkit-backface-visibility: hidden; contain: layout paint style; }
+.stack.stack--cover { -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; }
