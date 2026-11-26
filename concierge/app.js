@@ -671,7 +671,7 @@ const TURN = 1400; window.__logoLoader = logoLoader;
            the front one, or still more than a screen below, is not drawn at all; on iPhone too many large layers at
            once run out of tile memory and come up as black areas. */
         const level = Math.min(Math.round(k * 2) / 2, 4), s = (1 - level * .05).toFixed(3);
-        const far = tops[i] - sy > vh * 3, buried = k >= 6, live = !far && !buried;   // ready three screens ahead: a fast flick never reaches a card before it is drawn
+        const far = tops[i] - sy > vh * 1.6, buried = k >= 2.5, live = !far && !buried;   // only the front card, the one under it and the one arriving keep a GPU layer: more at once ran an iPhone out of tile memory and painted black patches between cards   // ready three screens ahead: a fast flick never reaches a card before it is drawn
         const L = last[i];
         if (L.s !== s) { L.s = s; paintCard(i); }
         if (L.live !== live) { L.live = live; c.classList.toggle("is-live", live); }   // never hidden: the deep cards just stop having their own GPU layer (their thin edges in the deck stay drawn, no pop when scrolling back)
