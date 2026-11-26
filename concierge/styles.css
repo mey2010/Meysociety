@@ -3219,3 +3219,17 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
 .tk__hours { white-space: nowrap; font-weight: 600; color: rgb(255 255 255 / .9); }
 .tk__usual { font: 500 10px/1.2 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: rgb(255 255 255 / .55); }
 .tk__usual[hidden] { display: none; }
+
+/* back of a fleet card without a button (boats, transfers, jet skis, cars, toys): the details sit centred in the card */
+.ribbon__back:not(:has(.rb__acts)) { grid-template-rows: auto auto; align-content: center; gap: 14px; }
+.ribbon__back:not(:has(.rb__acts))::before { display: none; }
+.ribbon__back .rb__specs { text-align: center; text-align-last: center; }
+
+/* transfers: gloss black. The car's blacks are deepened and a slow sheen of light runs across the paintwork */
+.ribbon__card--gloss .ribbon__img { filter: contrast(1.1) brightness(.96) saturate(.85); }
+.ribbon__card--gloss .ribbon__face::after { content: ""; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+  background: linear-gradient(105deg, transparent 38%, rgb(255 255 255 / .0) 42%, rgb(255 255 255 / .22) 49%, rgb(180 200 255 / .12) 52%, transparent 60%);
+  background-size: 260% 100%; background-position: 130% 0; animation: rb-gloss 4.8s cubic-bezier(.45, .05, .25, 1) infinite; }
+.ribbon__card--gloss:not([data-front]) .ribbon__face::after { animation: none; opacity: 0; }
+@keyframes rb-gloss { 0%, 35% { background-position: 130% 0; } 75%, 100% { background-position: -30% 0; } }
+@media (prefers-reduced-motion: reduce) { .ribbon__card--gloss .ribbon__face::after { animation: none; opacity: 0; } }

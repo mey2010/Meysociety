@@ -33,7 +33,7 @@ export function createDepthRibbon(root, opts = {}) {
   function build(list) {
     items = list; N = items.length; stage.replaceChildren(); st.active = -1;
     cards = items.map((it, i) => {
-      const c = document.createElement("div"); c.setAttribute("role", "button"); c.className = "ribbon__card" + (it.whole ? " ribbon__card--whole" : ""); c.dataset.i = i;
+      const c = document.createElement("div"); c.setAttribute("role", "button"); c.className = "ribbon__card" + (it.whole ? " ribbon__card--whole" : "") + (it.gloss ? " ribbon__card--gloss" : ""); c.dataset.i = i;
       c.setAttribute("aria-label", `${it.title}, ${i + 1} / ${N}`);
       // float (CSS) > flip (tilt + turn, driven by a spring) > the two faces: the photo, and the details behind it
       c.innerHTML = `<div class="ribbon__float"><div class="ribbon__flip"><div class="ribbon__face"><img class="ribbon__img" data-src="${it.src}" alt="" draggable="false" decoding="async"><span class="ribbon__shine"></span><span class="ribbon__glare"></span><span class="ribbon__tag">${it.tag || ""}</span>${o.back ? '<span class="ribbon__turn" aria-hidden="true"></span>' : ""}</div>${o.back ? `<div class="ribbon__back" aria-hidden="true">${o.back(it, i)}</div>` : ""}</div></div>`;

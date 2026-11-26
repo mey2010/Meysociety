@@ -186,6 +186,8 @@ const D = {
   "Ver todos los juguetes": ["See all the toys", "Vedi tutti i giochi", "Voir tous les jouets", "Alle Spielzeuge ansehen"],
   "Tablas a motor y eFoil": ["Motor boards and eFoil", "Tavole a motore ed eFoil", "Planches à moteur et eFoil", "Motorboards und eFoil"],
   "Vuelo sobre el agua": ["Flying over the water", "Volare sull'acqua", "Voler sur l'eau", "Fliegen über dem Wasser"],
+  "Up to 4": ["Up to 4", "Fino a 4", "Jusqu'à 4", "Bis 4"],
+  "Berlina ejecutiva": ["Executive saloon", "Berlina executive", "Berline exécutive", "Business-Limousine"],
   "Up to 7": ["Up to 7", "Fino a 7", "Jusqu'à 7", "Bis 7"],
   "Pide tu transfer": ["Request your transfer", "Richiedi il tuo transfer", "Demandez votre transfert", "Fordere deinen Transfer an"],
   "Up to 8": ["Up to 8", "Fino a 8", "Jusqu'à 8", "Bis 8"],

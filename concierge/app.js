@@ -823,7 +823,7 @@ const SVC_TREE = [
     { value: "juguetes-motor", label: "Tablas a motor y eFoil", icon: "boat" }, { value: "juguetes-vuelo", label: "Vuelo sobre el agua", icon: "star" } ] },
   { label: "Transfers", svc: "transfers", children: [
     { value: "transfer-all", label: "Ver toda la flota", icon: "van" },
-    { value: "transfer-7", label: "Up to 7", icon: "users" }, { value: "transfer-8", label: "Up to 8", icon: "van" },
+    { value: "transfer-4", label: "Up to 4", icon: "car" }, { value: "transfer-7", label: "Up to 7", icon: "users" }, { value: "transfer-8", label: "Up to 8", icon: "van" },
     { value: "transfer-18", label: "Up to 18", icon: "bus" }, { value: "transfer-pedir", label: "Pide tu transfer", icon: "pin" } ] },
   { label: "Clubs", svc: "noche", children: [
     { value: "clubs-vip", label: "Mesas VIP", icon: "star" }, { value: "clubs-guestlist", label: "Guestlist", icon: "users" } ] },
@@ -1639,17 +1639,16 @@ const JET = "moto-agua", TOY = "juguete", VILLA = "villa", SOLO = [JET, TOY, VIL
 const BOATS = FLEET.filter(b => !SOLO.includes(b.type)), JETS = FLEET.filter(b => b.type === JET);
 const typeIcon = ty => ty === VILLA ? ICONS.villa : ty === JET || ty === TOY ? ICONS.jetski : ty === "coche" ? ICONS.car : ty === "transfer" ? ICONS.van : ICONS.boat;
 let ribbon = null, fleetCat = "all", fleetBase = BOATS, fleetList = BOATS;
-const fleetItems = () => fleetList.map(b => ({ ...b, src: cardSrc(b), title: t(b.name), tag: t(CAT_LABEL[b.type]), whole: b.type === "moto-agua" || b.type === TOY || b.type === "transfer" }));   // jet skis are cut-outs: shown whole, not cropped
+const fleetItems = () => fleetList.map(b => ({ ...b, src: cardSrc(b), title: t(b.name), tag: t(CAT_LABEL[b.type]), whole: b.type === "moto-agua" || b.type === TOY || b.type === "transfer", gloss: b.type === "transfer" }));   // jet skis are cut-outs: shown whole, not cropped
 /* the back of a fleet card: what it is, the few facts that matter, and the next step */
 function fleetBack(b) {
   const esc = v => String(v).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const facts = [["Eslora", b.len], ["Personas", b.pax], ["Motor", b.extra], ["Camarotes", b.cabins && t(b.cabins)], ["Salida", b.port && t(b.port)], [!SOLO.includes(b.type) ? "Tripulación" : "Modalidad", b.crew && t(b.crew)]].filter(([, v]) => v).slice(0, 4);
-  if (facts.length < 3 && b.incl) b.incl.slice(0, 4 - facts.length).forEach((x, k) => facts.push([k ? "" : "Incluye", t(x)]));
+  if (facts.length < 3 && b.incl) b.incl.filter(x => !/^Up to \d+$/.test(x)).slice(0, 4 - facts.length).forEach((x, k) => facts.push([k ? "" : "Incluye", t(x)]));
   const villa = b.type === VILLA; if (villa) facts.splice(0, facts.length, ["Incluye", t(b.crew || "")]);
   return `<div class="rb__top"><span class="rb__eb">${esc(t(CAT_LABEL[b.type]))}</span><h4 class="rb__name">${esc(b.name)}</h4></div>
     <ul class="rb__specs${villa ? " rb__specs--one" : ""}">${facts.map(([k, v]) => `<li><small>${k ? esc(t(k)) : "&nbsp;"}</small><b>${esc(v)}</b></li>`).join("")}</ul>
-    <div class="rb__acts">${villa ? `<button class="btn btn--primary btn--sm" type="button" data-rb="see">${t("Ver")}</button>`
-      : `<button class="btn btn--primary btn--sm" type="button" data-rb="see">${t("Ver fotos")}</button>`}</div>`;
+    ${villa ? `<div class="rb__acts"><button class="btn btn--primary btn--sm" type="button" data-rb="see">${t("Ver")}</button></div>` : ""}`;
 }
 const paxText = b => b.pax ? `${t("Hasta")} ${b.pax} ${t("personas")}` : "";
 function renderFleetInfo(b, i) {

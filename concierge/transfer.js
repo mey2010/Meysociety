@@ -26,7 +26,7 @@ const T = {
     phFrom: "Aeropuerto de Ibiza, tu villa, un club…", phTo: "Tu hotel, villa, restaurante…",
     places: ["Aeropuerto de Ibiza", "Puerto de Ibiza", "Marina Botafoch", "Marina Ibiza", "Sant Antoni", "Santa Eulària", "Platja d'en Bossa", "Ushuaïa Ibiza", "Hï Ibiza", "Pacha", "Amnesia", "[UNVRS]", "DC10"],
     sug: n => `Te recomiendo una ${n}`, sugMany: "Para un grupo así coordinamos varios vehículos",
-    sizes: { 7: "hasta 7 personas", 8: "hasta 8 personas", 18: "hasta 18 personas" },
+    sizes: { 4: "hasta 4 personas", 7: "hasta 7 personas", 8: "hasta 8 personas", 18: "hasta 18 personas" },
     send: "Enviar solicitud", close: "Cerrar", need: "Indica al menos recogida, destino y día",
     msg: "Hola Mey Society, quiero un transfer privado", yes: "sí",
   },
@@ -50,7 +50,7 @@ const T = {
     phFrom: "Ibiza Airport, your villa, a club…", phTo: "Your hotel, villa, restaurant…",
     places: ["Ibiza Airport", "Ibiza Port", "Marina Botafoch", "Marina Ibiza", "Sant Antoni", "Santa Eulària", "Platja d'en Bossa", "Ushuaïa Ibiza", "Hï Ibiza", "Pacha", "Amnesia", "[UNVRS]", "DC10"],
     sug: n => `I recommend a ${n}`, sugMany: "For a group this size we coordinate several vehicles",
-    sizes: { 7: "up to 7 people", 8: "up to 8 people", 18: "up to 18 people" },
+    sizes: { 4: "up to 4 people", 7: "up to 7 people", 8: "up to 8 people", 18: "up to 18 people" },
     send: "Send request", close: "Close", need: "Please add at least pick-up, destination and day",
     msg: "Hi Mey Society, I'd like a private transfer", yes: "yes",
   },
@@ -74,7 +74,7 @@ const T = {
     phFrom: "Aeroporto di Ibiza, la tua villa, un club…", phTo: "Il tuo hotel, villa, ristorante…",
     places: ["Aeroporto di Ibiza", "Porto di Ibiza", "Marina Botafoch", "Marina Ibiza", "Sant Antoni", "Santa Eulària", "Platja d'en Bossa", "Ushuaïa Ibiza", "Hï Ibiza", "Pacha", "Amnesia", "[UNVRS]", "DC10"],
     sug: n => `Ti consiglio una ${n}`, sugMany: "Per un gruppo così coordiniamo più veicoli",
-    sizes: { 7: "7 persone", 8: "8 persone", 18: "18 persone" },
+    sizes: { 4: "4 persone", 7: "7 persone", 8: "8 persone", 18: "18 persone" },
     send: "Invia richiesta", close: "Chiudi", need: "Indica almeno partenza, destinazione e giorno",
     msg: "Ciao Mey Society, vorrei un transfer privato", yes: "sì",
   },
@@ -98,7 +98,7 @@ const T = {
     phFrom: "Aéroport d'Ibiza, votre villa, un club…", phTo: "Votre hôtel, villa, restaurant…",
     places: ["Aéroport d'Ibiza", "Port d'Ibiza", "Marina Botafoch", "Marina Ibiza", "Sant Antoni", "Santa Eulària", "Platja d'en Bossa", "Ushuaïa Ibiza", "Hï Ibiza", "Pacha", "Amnesia", "[UNVRS]", "DC10"],
     sug: n => `Je vous recommande un ${n}`, sugMany: "Pour un groupe de cette taille, nous coordonnons plusieurs véhicules",
-    sizes: { 7: "jusqu'à 7 personnes", 8: "jusqu'à 8 personnes", 18: "jusqu'à 18 personnes" },
+    sizes: { 4: "jusqu'à 4 personnes", 7: "jusqu'à 7 personnes", 8: "jusqu'à 8 personnes", 18: "jusqu'à 18 personnes" },
     send: "Envoyer la demande", close: "Fermer", need: "Indiquez au moins la prise en charge, la destination et le jour",
     msg: "Bonjour Mey Society, je souhaite un transfert privé", yes: "oui",
   },
@@ -122,7 +122,7 @@ const T = {
     phFrom: "Flughafen Ibiza, deine Villa, ein Club…", phTo: "Dein Hotel, Villa, Restaurant…",
     places: ["Flughafen Ibiza", "Hafen Ibiza", "Marina Botafoch", "Marina Ibiza", "Sant Antoni", "Santa Eulària", "Platja d'en Bossa", "Ushuaïa Ibiza", "Hï Ibiza", "Pacha", "Amnesia", "[UNVRS]", "DC10"],
     sug: n => `Ich empfehle dir einen ${n}`, sugMany: "Für eine so große Gruppe koordinieren wir mehrere Fahrzeuge",
-    sizes: { 7: "bis zu 7 Personen", 8: "bis zu 8 Personen", 18: "bis zu 18 Personen" },
+    sizes: { 4: "bis zu 4 Personen", 7: "bis zu 7 Personen", 8: "bis zu 8 Personen", 18: "bis zu 18 Personen" },
     send: "Anfrage senden", close: "Schließen", need: "Bitte mindestens Abholung, Ziel und Tag angeben",
     msg: "Hallo Mey Society, ich möchte einen privaten Transfer", yes: "ja",
   },
@@ -156,7 +156,7 @@ function checklist(t, x) {
     <p class="trc__done"><span>${e(x.allIn || "Todo incluido")}</span></p>
   </div></div>`;
 }
-const sizeFor = (pax, bags) => { const load = pax + Math.max(0, bags - pax) * .5; return load <= 7 ? 7 : load <= 8 ? 8 : load <= 18 ? 18 : 0; };
+const sizeFor = (pax, bags) => { const load = pax + Math.max(0, bags - pax) * .5; return load <= 4 && bags <= 4 ? 4 : load <= 7 ? 7 : load <= 8 ? 8 : load <= 18 ? 18 : 0; };
 
 /* extra copy for the page as it sits under the vehicles: a promise strip, how it works, and the jump to the form */
 const X = {
@@ -273,13 +273,13 @@ export function initTransferPage({ onSend, compact = false } = {}) {
   };
   /* draws the page into host (once per language), with the group size chosen in the menu or the chips */
   function mount(host, size = 0) {
-    preset = [7, 8, 18].includes(size) ? size : 0;
+    preset = [4, 7, 8, 18].includes(size) ? size : 0;
     if (!root || root.parentElement !== host) { root?.remove(); root = document.createElement("div"); root.className = "tr"; host.appendChild(root); wire(); }
     if (root.dataset.lang !== getLang()) { root.dataset.lang = getLang(); build(); }
     setPreset(preset);
   }
   function setPreset(size) {
-    preset = [7, 8, 18].includes(size) ? size : 0;
+    preset = [4, 7, 8, 18].includes(size) ? size : 0;
     if (!root) return; const f = root.querySelector("form");
     if (preset) f.pax.value = preset;
     suggest();
