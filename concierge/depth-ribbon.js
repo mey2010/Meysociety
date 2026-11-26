@@ -46,7 +46,7 @@ export function createDepthRibbon(root, opts = {}) {
   }
   function measure() {
     const r = root.getBoundingClientRect(); W = r.width; H = r.height; if (!W || !H) return;
-    cw = Math.min(560, W * (W < 700 ? .78 : .44)); ch = cw * .75; P = Math.max(900, cw * 2.6);
+    cw = Math.min(o.maxW || 560, W * (W < 700 ? (o.phone || .78) : (o.wide || .44))); ch = cw * .75; P = Math.max(900, cw * 2.6);
     dpr = Math.min(2, devicePixelRatio || 1); canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
     stage.style.perspective = P + "px";
     cards.forEach(c => { c.style.width = cw + "px"; c.style.height = ch + "px"; c.style.marginLeft = -cw / 2 + "px"; c.style.marginTop = -ch / 2 + "px"; });
@@ -202,5 +202,5 @@ export function createDepthRibbon(root, opts = {}) {
   document.addEventListener("pointerdown", e => { if (turned && !root.contains(e.target)) turn(false); }, true);
 
   build(o.items);
-  return { flip: turn, get turned() { return turned; }, setItems: build, goTo, next: () => by(1), prev: () => by(-1), get active() { return st.active; } };
+  return { flip: turn, get turned() { return turned; }, get size() { return { w: cw, h: ch }; }, get moving() { return Math.abs(st.target - st.pos) > .02 || Math.abs(st.vel) > .02 || !!st.drag?.moved; }, setItems: build, goTo, next: () => by(1), prev: () => by(-1), get active() { return st.active; } };
 }

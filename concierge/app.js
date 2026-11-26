@@ -640,19 +640,33 @@ const TURN = 1400; window.__logoLoader = logoLoader;
       const h = c.querySelector("h3")?.textContent.trim() || "", p = (c.querySelector(".stack__body > p:not(.stack__place)")?.innerHTML || "").replace(/<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
       const btns = c.querySelector(".stack__btns")?.innerHTML || [...c.querySelectorAll(".stack__body > .btn")].map(b => b.outerHTML).join("");
       return { src: im?.getAttribute("src") || "", title: h, whole: !!c.querySelector(".stack__media--product"),
-        html: `<h3 class="svc-ribbon__h">${esc(h)}</h3><p class="svc-ribbon__p">${p.replace(/&(?!amp;|lt;|gt;|quot;|#)/g, "&amp;")}</p><div class="svc-ribbon__btns">${btns}</div>` };
+        info: `<h3 class="svc-ribbon__h">${esc(h)}</h3><p class="svc-ribbon__p">${p.replace(/&(?!amp;|lt;|gt;|quot;|#)/g, "&amp;")}</p><div class="svc-ribbon__btns">${btns}</div>` };
     });
-    const rib = createDepthRibbon(host.appendChild(document.createElement("div")), { items: [], label: document.querySelector("#servicios h2")?.textContent || "Servicios", autoplay: 5.5, wheelX: true });
-    rib.setItems(items());
-    // a booking button on a card works as on the original card
-    host.addEventListener("click", e => { const b = e.target.closest("[data-svc]"); if (!b) return;
-      select(b.dataset.svc, true); if (openWA(b.closest(".ribbon__card")?.querySelector("h3")?.textContent.trim(), "tarjeta_" + b.dataset.svc)) e.preventDefault(); });
+    /* the title and buttons are a flat layer laid over the card in front (not inside the turning 3D card): a tap on a
+       button always lands, on any phone. It fades out while the ribbon moves and back in when it settles. */
+    const over = document.createElement("div"); over.className = "svc-ribbon__over";
+    let shown = -1;
+    const place = () => { const { w, h } = rib.size; over.style.width = w + "px"; over.style.height = h + "px"; };
+    const show = i => { if (i === shown && !over.classList.contains("is-off")) return; shown = i; const it = list[i]; if (!it) return;
+      over.innerHTML = `<div class="svc-ribbon__info">${it.info}</div>`; place(); over.classList.remove("is-off"); };
+    let list = items();
+    const rib = createDepthRibbon(host.appendChild(document.createElement("div")), { items: [], label: document.querySelector("#servicios h2")?.textContent || "Servicios", autoplay: 0, wheelX: true,
+      phone: .9, wide: .5, maxW: 700, onChange: (it, i) => { over.classList.add("is-off"); clearTimeout(over._t); over._t = setTimeout(function wait() { if (rib.moving) { over._t = setTimeout(wait, 90); return; } show(rib.active); }, 120); } });
+    host.append(over);
+    rib.setItems(list);
+    addEventListener("resize", place, { passive: true });
+    // while the finger drags the ribbon the layer steps aside; it comes back on the card that settles in front
+    { let t = 0; const watch = () => { if (rib.moving) { over.classList.add("is-off"); clearTimeout(t); t = setTimeout(function w() { if (rib.moving) { t = setTimeout(w, 90); return; } show(rib.active); }, 120); } };
+      host.addEventListener("pointermove", watch, { passive: true }); host.addEventListener("pointerup", watch, { passive: true }); }
+    // a booking button works as on the original card
+    over.addEventListener("click", e => { const b = e.target.closest("[data-svc]"); if (!b) return;
+      select(b.dataset.svc, true); if (openWA(list[shown]?.title, "tarjeta_" + b.dataset.svc)) e.preventDefault(); });
     // arrows (on screens with a mouse), like the fleet
     const nav = document.createElement("div"); nav.className = "svc-ribbon__nav";
     nav.innerHTML = `<button type="button" class="stack__nav" data-dir="-1" aria-label="‹">‹</button><button type="button" class="stack__nav" data-dir="1" aria-label="›">›</button>`;
     host.after(nav); nav.addEventListener("click", e => { const b = e.target.closest("[data-dir]"); if (b) (+b.dataset.dir < 0 ? rib.prev() : rib.next()); });
     // the language switch rewrites the hidden cards: the ribbon follows
-    document.addEventListener("langchange", () => setTimeout(() => { const a = rib.active; rib.setItems(items()); if (a > 0) rib.goTo(a); }, 0));
+    document.addEventListener("langchange", () => setTimeout(() => { const a = rib.active; list = items(); rib.setItems(list); shown = -1; if (a > 0) rib.goTo(a); else show(0); }, 0));
   }
   if (!REDUCED && !SVC_COVER) {
     let ticking = false, stuck = [], tops = [];

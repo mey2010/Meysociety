@@ -3287,8 +3287,8 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
 
 /* ---------- services on the winding 3D ribbon (the fleet's Depth Ribbon) ---------- */
 .stack.stack--src { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; padding: 0; margin: 0; }
-.svc-ribbon { position: relative; height: clamp(340px, 62vw, 620px); margin: 8px calc(50% - 50vw) 0; }
-@media (max-width: 700px) { .svc-ribbon { height: clamp(330px, 92vw, 420px); } }
+.svc-ribbon { position: relative; height: clamp(420px, 48vw, 720px); margin: 8px calc(50% - 50vw) 0; }
+@media (max-width: 700px) { .svc-ribbon { height: clamp(380px, 104vw, 480px); } }
 .svc-ribbon .ribbon__card { border-radius: 22px; }
 .svc-ribbon .ribbon__face { border-radius: 22px; box-shadow: 0 30px 60px -30px rgb(13 10 56 / .8); }
 .ribbon__over { position: absolute; inset: auto 0 0 0; z-index: 3; display: grid; justify-items: center; gap: 6px; padding: 40px 14px 14px; text-align: center;
@@ -3304,3 +3304,13 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
 .svc-ribbon__nav { position: relative; display: flex; justify-content: center; gap: 12px; margin-top: 10px; }
 .svc-ribbon__nav .stack__nav { position: static; }
 @media (hover: none) { .svc-ribbon__nav { display: none; } }
+
+/* the info layer over the front card: flat (2D), so its buttons are always tappable */
+.svc-ribbon__over { position: absolute; left: 50%; top: 50%; z-index: 5; transform: translate(-50%, -50%); border-radius: 22px; pointer-events: none; display: flex; align-items: flex-end;
+  transition: opacity .32s ease, transform .45s cubic-bezier(.2, .9, .3, 1); }
+.svc-ribbon__over.is-off { opacity: 0; transform: translate(-50%, calc(-50% + 10px)); }
+.svc-ribbon__info { width: 100%; display: grid; justify-items: center; gap: 6px; padding: 46px 16px 16px; text-align: center; border-radius: 0 0 22px 22px;
+  background: linear-gradient(180deg, rgb(8 6 36 / 0), rgb(8 6 36 / .55) 38%, rgb(8 6 36 / .9)); }
+.svc-ribbon__over:not(.is-off) .svc-ribbon__btns { pointer-events: auto; }
+.svc-ribbon__btns .btn { position: relative; z-index: 1; }
+@media (max-width: 700px) { .svc-ribbon__info { padding: 34px 10px 12px; gap: 4px; } }
