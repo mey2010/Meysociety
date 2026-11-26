@@ -209,7 +209,7 @@ export function initTransferPage({ onSend, compact = false } = {}) {
       <header class="tr__hero tr__hero--home">
         <p class="eyebrow eyebrow--light">${esc(t.kicker)}</p>
         <h2 class="display display--md">${esc(t.formH)}</h2>
-        <p class="tr__lead">${esc(t.formP)}</p>
+        <p class="tr__lead tr__netp">${esc(t.net)}</p>${t.netEnd ? `<p class="tr__netend">${esc(t.netEnd)}</p>` : ""}
         ${checklist(t, x)}
       </header>
       <section class="tr__sec tr__formsec" id="${uid}Form">${form}<p class="tr__closing">${esc(x.closing)}</p></section>
@@ -218,13 +218,12 @@ export function initTransferPage({ onSend, compact = false } = {}) {
       <header class="tr__hero">
         <p class="tr__kicker">${esc(t.kicker)}</p>
         <h2 class="tr__title">${esc(t.title[0])} <em>${esc(t.title[1])}</em></h2>
-        <p class="tr__lead">${esc(t.lead)}</p>
+        <p class="tr__lead tr__netp">${esc(t.net)}</p>${t.netEnd ? `<p class="tr__netend">${esc(t.netEnd)}</p>` : ""}
         ${checklist(t, x)}
         <a class="btn btn--primary tr__jump" href="#${uid}Form">${esc(x.jump)}</a>
       </header>
       <section class="tr__sec"><h3>${esc(t.whyH)}</h3>
         ${situations(t, x, uid)}</section>
-      <section class="tr__sec tr__net"><h3>${esc(t.netH)}</h3><p class="tr__p tr__netp">${esc(t.net)}</p>${t.netEnd ? `<p class="tr__netend">${esc(t.netEnd)}</p>` : ""}</section>
       <section class="tr__sec"><h3>${esc(x.howH)}</h3>
         <ol class="tr__steps">${x.steps.map(([h, p], k) => `<li><span>${k + 1}</span><div><b>${esc(h)}</b><p>${esc(p)}</p></div></li>`).join("")}</ol></section>
       <section class="tr__sec tr__formsec" id="${uid}Form"><h3>${esc(t.formH)}</h3><p class="tr__p">${esc(t.formP)}</p>

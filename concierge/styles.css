@@ -3231,3 +3231,6 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
 .ribbon__card--gloss:not([data-front]) .ribbon__face::after { animation: none; opacity: 0; }
 @keyframes rb-gloss { 0%, 35% { background-position: 130% 0; } 75%, 100% { background-position: -30% 0; } }
 @media (prefers-reduced-motion: reduce) { .ribbon__card--gloss .ribbon__face::after { animation: none; opacity: 0; } }
+/* transfers hero: the network paragraph is the lead now, with its closing line just above "Lo que incluye" */
+.tr .tr__lead.tr__netp { text-align: justify !important; text-align-last: left; hyphens: auto; -webkit-hyphens: auto; word-spacing: -.02em; text-wrap: pretty; max-width: 560px; margin: 0 auto 14px; }
+.tr__hero .tr__netend { margin-bottom: 6px; }
