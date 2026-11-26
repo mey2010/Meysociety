@@ -646,7 +646,7 @@ const TURN = 1400; window.__logoLoader = logoLoader;
     const stack = cards[0].parentElement; let holdW = 0, snapY = [];
     const snaps = cards.map(() => { const n = document.createElement("i"); n.className = "stack__snap"; n.setAttribute("aria-hidden", "true"); stack.appendChild(n); return n; });
     function measure() {
-      if (innerWidth !== holdW) { holdW = innerWidth; stack.style.setProperty("--hold", Math.round(document.documentElement.clientHeight * (innerWidth <= 900 ? .12 : .16)) + "px"); }
+      if (innerWidth !== holdW) { holdW = innerWidth; stack.style.setProperty("--hold", "0px"); }   // no reading pause: the cards follow the scroll in one continuous movement
       const hold = parseFloat(stack.style.getPropertyValue("--hold")) || 0;
       stuck = cards.map(c => parseFloat(getComputedStyle(c).top) || 0);
       // natural (un-stuck) position of each card: read once with sticky switched off for the measurement
