@@ -637,7 +637,7 @@ const TURN = 1400; window.__logoLoader = logoLoader;
        writes transforms, so the browser never has to recompute the layout while the finger is moving */
     let W = 0, cw = 1, step = 1, left = [], last = cards.map(() => ({ t: "", o: "", z: "" }));
     const centre = () => { W = row.clientWidth; if (!W) return;
-      const w = Math.round(W < 760 ? W * .8 : Math.min(400, Math.max(320, W * .3))), p = Math.max(0, Math.round((W - w) / 2));
+      const w = Math.round(W < 760 ? W * .72 : Math.min(300, Math.max(240, W * .24))), p = Math.max(0, Math.round((W - w) / 2));   // the clubs' card size
       cards.forEach(c => { c.style.flexBasis = w + "px"; c.style.width = w + "px"; }); row.style.paddingInline = p + "px"; row.style.scrollPaddingInline = p + "px";
       cw = w; step = w + gap(); left = cards.map(c => c.offsetLeft); };
     const pose = (i, sl) => {

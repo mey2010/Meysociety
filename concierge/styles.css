@@ -3266,3 +3266,21 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
 /* smooth swipe: one GPU layer per card, nothing inside the card repaints while the row moves */
 .stack--cover > .stack__card { backface-visibility: hidden; -webkit-backface-visibility: hidden; contain: layout paint style; }
 .stack.stack--cover { -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; }
+
+/* ---------- service cards the size and shape of the club cards: 4:5, rounded, the photo fills the card and the
+   title, line and buttons float on the photo itself ---------- */
+.stack--cover > .stack__card { height: auto; aspect-ratio: 4 / 5; border-radius: 26px; overflow: hidden; }
+.stack--cover .stack__media-bg { display: none; }
+.stack--cover .stack__media:not(.stack__media--product) > img:not(.stack__media-bg) { inset: 0; top: 0; left: 0; width: 100%; height: 100%; border-radius: 0; object-fit: cover; filter: none; }
+.stack--cover .stack__media::after { content: ""; position: absolute; inset: 0; z-index: 2; background: linear-gradient(180deg, rgb(13 10 56 / 0) 34%, rgb(13 10 56 / .45) 60%, rgb(8 6 36 / .92)); }
+.stack--cover .stack__media--product { display: grid; place-items: center; padding: 0 0 34%; background: radial-gradient(120% 90% at 50% 30%, #3a2a8f, #0d0a38 72%); }
+.stack--cover .stack__media--product > img { position: relative; max-width: 86%; max-height: 62%; inset: auto; }
+.stack--cover .stack__body { left: 0; right: 0; bottom: 0; top: auto; width: auto; padding: 0 14px 16px; gap: 6px; border-radius: 0; background: none; box-shadow: none; }
+.stack--cover .stack__body h3 { font-size: clamp(22px, 6.4vw, 28px); line-height: 1; text-shadow: 0 2px 14px rgb(0 0 0 / .45); }
+.stack--cover .stack__body > p:not(.stack__place) { font-size: 12.5px; line-height: 1.4; color: rgb(255 255 255 / .86); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 8px rgb(0 0 0 / .5); }
+.stack--cover .stack__body > .btn, .stack--cover .stack__btns { margin-top: 6px; }
+.stack--cover .stack__btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.stack--cover .stack__body .btn { --h: 34px; height: 34px; padding: 0 13px; font-size: 12.5px; border-radius: 99px; box-shadow: 0 10px 22px -10px rgb(0 0 0 / .7); }
+.stack--cover .stack__body .btn--glass { color: #fff; background: rgb(255 255 255 / .18); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .38), 0 10px 22px -10px rgb(0 0 0 / .7); -webkit-backdrop-filter: none; backdrop-filter: none; }
+.stack--cover .stack__place { display: none; }
+@media (min-width: 761px) { .stack--cover .stack__body h3 { font-size: 26px; } }
