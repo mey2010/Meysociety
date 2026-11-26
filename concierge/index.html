@@ -130,6 +130,54 @@
   </section>
 
 
+  <!-- ============ HERO: the island, point by point ============ -->
+  <section class="hero" id="mapa" aria-label="Mapa de Ibiza">
+    <div class="hero__copy">
+      <p class="eyebrow eyebrow--light">Concierge privado · Ibiza</p>
+      <h2 class="display">Ibiza,<br><em>sin límites.</em></h2>
+      <p class="lede">Detrás de cada momento único hay alguien que sabe cómo conseguirlo. Utilizo mis contactos y capacidad de negociación para encontrar las mejores oportunidades y condiciones que favorezcan tus intereses. Desde la primera reserva hasta el último día de estancia, seré tu asesor, encargado de resolver y gestionar todo lo que necesites.</p>
+      <a class="btn btn--primary btn--lg" href="#contacto">Diseña tu estancia</a>
+      <div class="filters" role="group" aria-label="Mostrar en el mapa">
+        <button type="button" class="filter" data-kind="dayclub" aria-pressed="true"><i class="dot dot--dayclub"></i>Dayclubs <b data-count="dayclub"></b></button>
+        <button type="button" class="filter" data-kind="club" aria-pressed="true"><i class="dot dot--club"></i>Nightclubs <b data-count="club"></b></button>
+        <button type="button" class="filter" data-kind="beachclub" aria-pressed="true"><i class="dot dot--beachclub"></i>Beach clubs <b data-count="beachclub"></b></button>
+        <button type="button" class="filter" data-kind="beach" aria-pressed="true"><i class="dot dot--beach"></i>Playas <b data-count="beach"></b></button>
+        <button type="button" class="filter" data-kind="restaurant" aria-pressed="true"><i class="dot dot--restaurant"></i>Restaurantes <b data-count="restaurant"></b></button>
+        <button type="button" class="filter" data-kind="sunset" aria-pressed="true"><i class="dot dot--sunset"></i>Atardeceres <b data-count="sunset"></b></button>
+      </div>
+    </div>
+    <div class="map map3d" id="map" aria-label="Mapa 3D de Ibiza y Formentera con clubs, beach clubs y playas">
+      <div class="pick" id="pickList" role="dialog" aria-label="Elige un lugar" hidden></div>
+      <div class="map__zoom" role="group" aria-label="Zoom">
+        <button type="button" data-zoom="in" aria-label="Acercar">+</button>
+        <button type="button" data-zoom="out" aria-label="Alejar">−</button>
+        <button type="button" data-zoom="reset" aria-label="Ver toda la isla">⤢</button>
+      </div>
+      <div class="map__areas" role="group" aria-label="Ir a una zona">
+        <button type="button" data-area="sur">Sur</button>
+        <button type="button" data-area="bossa">Playa d'en Bossa</button>
+        <button type="button" data-area="eivissa">Eivissa</button>
+        <button type="button" data-area="oeste">Oeste</button>
+        <button type="button" data-area="santantoni">Sant Antoni</button>
+        <button type="button" data-area="formentera">Formentera</button>
+      </div>
+      <div class="pop" id="pop" role="dialog" aria-modal="false" aria-labelledby="popTitle" hidden>
+        <button class="pop__x" type="button" aria-label="Cerrar">×</button>
+        <figure class="pop__img"><img id="popImg" alt=""></figure>
+        <div class="pop__body">
+          <p class="pop__kind" id="popKind"></p>
+          <h3 id="popTitle"></h3>
+          <p class="pop__info" id="popInfo"></p>
+          <p class="pop__sun" id="popSun" hidden></p>
+          <ul class="pop__tags" id="popTags"></ul>
+          <p class="pop__coord" id="popCoord"></p>
+          <button class="btn btn--primary" type="button" id="popBook">Reservar con Mey Society</button>
+          <p class="pop__fine">Sujeto a disponibilidad de cada sala.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ SERVICES: cards stack and fade as you scroll ============ -->
   <section class="sec sec--drape" id="servicios">
     <div class="wrap">
@@ -238,54 +286,6 @@
             <div class="stack__btns"><button class="btn btn--glass btn--onDark" type="button" data-goto-clubs>Ver clubs</button><a class="btn btn--primary" href="#contacto" data-svc="noche">Consultar clubs y VIP</a></div>
           </div>
         </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ HERO: the island, point by point ============ -->
-  <section class="hero" id="mapa" aria-label="Mapa de Ibiza">
-    <div class="hero__copy">
-      <p class="eyebrow eyebrow--light">Concierge privado · Ibiza</p>
-      <h2 class="display">Ibiza,<br><em>sin límites.</em></h2>
-      <p class="lede">Detrás de cada momento único hay alguien que sabe cómo conseguirlo. Utilizo mis contactos y capacidad de negociación para encontrar las mejores oportunidades y condiciones que favorezcan tus intereses. Desde la primera reserva hasta el último día de estancia, seré tu asesor, encargado de resolver y gestionar todo lo que necesites.</p>
-      <a class="btn btn--primary btn--lg" href="#contacto">Diseña tu estancia</a>
-      <div class="filters" role="group" aria-label="Mostrar en el mapa">
-        <button type="button" class="filter" data-kind="dayclub" aria-pressed="true"><i class="dot dot--dayclub"></i>Dayclubs <b data-count="dayclub"></b></button>
-        <button type="button" class="filter" data-kind="club" aria-pressed="true"><i class="dot dot--club"></i>Nightclubs <b data-count="club"></b></button>
-        <button type="button" class="filter" data-kind="beachclub" aria-pressed="true"><i class="dot dot--beachclub"></i>Beach clubs <b data-count="beachclub"></b></button>
-        <button type="button" class="filter" data-kind="beach" aria-pressed="true"><i class="dot dot--beach"></i>Playas <b data-count="beach"></b></button>
-        <button type="button" class="filter" data-kind="restaurant" aria-pressed="true"><i class="dot dot--restaurant"></i>Restaurantes <b data-count="restaurant"></b></button>
-        <button type="button" class="filter" data-kind="sunset" aria-pressed="true"><i class="dot dot--sunset"></i>Atardeceres <b data-count="sunset"></b></button>
-      </div>
-    </div>
-    <div class="map map3d" id="map" aria-label="Mapa 3D de Ibiza y Formentera con clubs, beach clubs y playas">
-      <div class="pick" id="pickList" role="dialog" aria-label="Elige un lugar" hidden></div>
-      <div class="map__zoom" role="group" aria-label="Zoom">
-        <button type="button" data-zoom="in" aria-label="Acercar">+</button>
-        <button type="button" data-zoom="out" aria-label="Alejar">−</button>
-        <button type="button" data-zoom="reset" aria-label="Ver toda la isla">⤢</button>
-      </div>
-      <div class="map__areas" role="group" aria-label="Ir a una zona">
-        <button type="button" data-area="sur">Sur</button>
-        <button type="button" data-area="bossa">Playa d'en Bossa</button>
-        <button type="button" data-area="eivissa">Eivissa</button>
-        <button type="button" data-area="oeste">Oeste</button>
-        <button type="button" data-area="santantoni">Sant Antoni</button>
-        <button type="button" data-area="formentera">Formentera</button>
-      </div>
-      <div class="pop" id="pop" role="dialog" aria-modal="false" aria-labelledby="popTitle" hidden>
-        <button class="pop__x" type="button" aria-label="Cerrar">×</button>
-        <figure class="pop__img"><img id="popImg" alt=""></figure>
-        <div class="pop__body">
-          <p class="pop__kind" id="popKind"></p>
-          <h3 id="popTitle"></h3>
-          <p class="pop__info" id="popInfo"></p>
-          <p class="pop__sun" id="popSun" hidden></p>
-          <ul class="pop__tags" id="popTags"></ul>
-          <p class="pop__coord" id="popCoord"></p>
-          <button class="btn btn--primary" type="button" id="popBook">Reservar con Mey Society</button>
-          <p class="pop__fine">Sujeto a disponibilidad de cada sala.</p>
-        </div>
       </div>
     </div>
   </section>

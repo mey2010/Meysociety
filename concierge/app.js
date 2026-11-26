@@ -185,8 +185,8 @@ function startMap() {
 /* the map is built (and its first picture sent to the GPU) a few screens ahead, at a moment the visitor is not
    scrolling, so a fast swipe never runs into it; once it is right there it starts regardless */
 { let armed = false;
-  const calm = () => { if (mapStarted) return; const r = mapEl.getBoundingClientRect(), near = r.top < innerHeight * 1.2 && r.bottom > -innerHeight * .2;
-    if (near || performance.now() - (window.__scrolledAt || 0) > 260) startMap(); else setTimeout(calm, 120); };
+  const calm = () => { if (mapStarted) return; const r = mapEl.getBoundingClientRect(), near = r.top < innerHeight * .6 && r.bottom > 0;
+    if (near || (performance.now() > 4000 && performance.now() - (window.__scrolledAt || 0) > 260)) startMap(); else setTimeout(calm, 120); };   // the map now sits right after the intro: it never competes with the opening logo
   new IntersectionObserver((es, io) => { if (!armed && es.some(e => e.isIntersecting)) { armed = true; io.disconnect(); calm(); } }, { rootMargin: "3000px 0px" }).observe(mapEl); }
 // warm the map up in the background, but only during a pause: never while the visitor is scrolling
 // phones too now (the map is built lighter there): it is ready long before the visitor scrolls to it, instead of
