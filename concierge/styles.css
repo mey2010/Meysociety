@@ -3217,8 +3217,6 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
   background: linear-gradient(100deg, #fff, #9ff0ff 50%, #86efac); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .tk__where, .tk__where * { hyphens: none !important; -webkit-hyphens: none !important; text-align: left !important; }
 .tk__hours { white-space: nowrap; font-weight: 600; color: rgb(255 255 255 / .9); }
-.tk__usual { font: 500 10px/1.2 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: rgb(255 255 255 / .55); }
-.tk__usual[hidden] { display: none; }
 
 /* back of a fleet card without a button (boats, transfers, jet skis, cars, toys): the details sit centred in the card */
 .ribbon__back:not(:has(.rb__acts)) { grid-template-rows: auto auto; align-content: center; gap: 14px; }

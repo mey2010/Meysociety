@@ -35,8 +35,8 @@ function ticketCards(row, labels, info) {
     const bg = document.createElement("span"); bg.className = "tk__layer tk__bg"; if (img) bg.append(img);
     const txt = document.createElement("span"); txt.className = "tk__layer tk__txt";
     const meta = document.createElement("span"); meta.className = "tk__meta";
-    // where the club is, and below it its usual hours (instead of a ticket number)
-    const no = document.createElement("span"); no.className = "tk__where"; no.innerHTML = '<b class="tk__area"></b><small class="tk__hours"></small><small class="tk__usual"></small>';
+    // where the club is, and below it its hours (instead of a ticket number)
+    const no = document.createElement("span"); no.className = "tk__where"; no.innerHTML = '<b class="tk__area"></b><small class="tk__hours"></small>';
     // a club card: the "tap ✓ to pick" hint sits top right, the name at the bottom with its number
     if (el.dataset.club) { sub.classList.add("tk__hint-top"); meta.append(no); } else meta.append(sub, no);
     txt.append(name, meta);
@@ -58,8 +58,7 @@ function ticketCards(row, labels, info) {
     const club = c.el.dataset.club, w = c.el.querySelector(".tk__where");
     if (w) { if (!club) w.hidden = true; else { const h = CLUB_HOURS[club];
       w.querySelector(".tk__area").textContent = (info?.(club)?.area) || "Ibiza";
-      const hs = w.querySelector(".tk__hours"); hs.textContent = h ? `${h[2] ? L[h[2]] + " · " : ""}${h[1] ? h[0] + " – " + h[1] : L.from + " " + h[0]}` : L.byEvent;
-      const us = w.querySelector(".tk__usual"); us.textContent = ""; us.hidden = true; } } if (sel) sel.textContent = String(L.hint).split("·")[0].trim(); if (!c.back) return;
+      const hs = w.querySelector(".tk__hours"); hs.textContent = h ? `${h[2] ? L[h[2]] + " · " : ""}${h[1] ? h[0] + " – " + h[1] : L.from + " " + h[0]}` : L.byEvent; } } if (sel) sel.textContent = String(L.hint).split("·")[0].trim(); if (!c.back) return;
     c.back.querySelector(".tk__club").textContent = c.el.dataset.club;
     const seat = c.back.querySelectorAll(".tk__seat i"); seat[0].textContent = L.season; seat[1].textContent = L.access; seat[2].textContent = L.age;
     c.back.querySelector(".tk__hint").textContent = L.hint; });
@@ -209,11 +208,11 @@ const L = {
   },
 };
 const L2 = {
-  es: { clear: "Quitar todos", done: "Listo", go: "Ver mis noches", vip: "Mesas VIP", vipSub: "Pide la tuya en un mensaje", day: "Day clubs", daySub: "Fiestas de día y piscina", feat: "Pulsa ✓ para elegir", tk: { from: "Desde las", usual: "horario habitual", byEvent: "Horario según evento", mon: "Lunes", tue: "Martes", season: "Temporada", access: "Acceso", age: "Edad", hint: "En tu selección · toca para quitar" } },
-  en: { clear: "Clear all", done: "Done", go: "See my nights", vip: "VIP tables", vipSub: "Ask for yours in one message", day: "Day clubs", daySub: "Daytime and pool parties", feat: "Tap ✓ to pick", tk: { from: "From", usual: "usual hours", byEvent: "Hours depend on the event", mon: "Mondays", tue: "Tuesdays", season: "Season", access: "Access", age: "Age", hint: "In your picks · tap to remove" } },
-  it: { clear: "Togli tutti", done: "Fatto", go: "Vedi le mie notti", vip: "Tavoli VIP", vipSub: "Chiedi il tuo in un messaggio", day: "Day club", daySub: "Feste di giorno e in piscina", feat: "Tocca ✓ per scegliere", tk: { from: "Dalle", usual: "orario abituale", byEvent: "Orario secondo l'evento", mon: "Lunedì", tue: "Martedì", season: "Stagione", access: "Accesso", age: "Età", hint: "Nella tua selezione · tocca per togliere" } },
-  fr: { clear: "Tout retirer", done: "Terminé", go: "Voir mes nuits", vip: "Tables VIP", vipSub: "Demandez la vôtre en un message", day: "Day clubs", daySub: "Fêtes de jour et pool parties", feat: "Touchez ✓ pour choisir", tk: { from: "Dès", usual: "horaires habituels", byEvent: "Horaires selon l'événement", mon: "Lundi", tue: "Mardi", season: "Saison", access: "Accès", age: "Âge", hint: "Dans votre sélection · touchez pour retirer" } },
-  de: { clear: "Alle entfernen", done: "Fertig", go: "Meine Nächte ansehen", vip: "VIP-Tische", vipSub: "Frag deinen mit einer Nachricht an", day: "Day Clubs", daySub: "Tages- und Poolpartys", feat: "Tippe ✓ zum Auswählen", tk: { from: "Ab", usual: "übliche Zeiten", byEvent: "Zeiten je nach Event", mon: "Montags", tue: "Dienstags", season: "Saison", access: "Zugang", age: "Alter", hint: "In deiner Auswahl · zum Entfernen tippen" } },
+  es: { clear: "Quitar todos", done: "Listo", go: "Ver mis noches", vip: "Mesas VIP", vipSub: "Pide la tuya en un mensaje", day: "Day clubs", daySub: "Fiestas de día y piscina", feat: "Pulsa ✓ para elegir", tk: { from: "Desde las", byEvent: "Horario según evento", mon: "Lunes", monThu: "Lunes y jueves", tue: "Martes", season: "Temporada", access: "Acceso", age: "Edad", hint: "En tu selección · toca para quitar" } },
+  en: { clear: "Clear all", done: "Done", go: "See my nights", vip: "VIP tables", vipSub: "Ask for yours in one message", day: "Day clubs", daySub: "Daytime and pool parties", feat: "Tap ✓ to pick", tk: { from: "From", byEvent: "Hours depend on the event", mon: "Mondays", monThu: "Mondays & Thursdays", tue: "Tuesdays", season: "Season", access: "Access", age: "Age", hint: "In your picks · tap to remove" } },
+  it: { clear: "Togli tutti", done: "Fatto", go: "Vedi le mie notti", vip: "Tavoli VIP", vipSub: "Chiedi il tuo in un messaggio", day: "Day club", daySub: "Feste di giorno e in piscina", feat: "Tocca ✓ per scegliere", tk: { from: "Dalle", byEvent: "Orario secondo l'evento", mon: "Lunedì", monThu: "Lunedì e giovedì", tue: "Martedì", season: "Stagione", access: "Accesso", age: "Età", hint: "Nella tua selezione · tocca per togliere" } },
+  fr: { clear: "Tout retirer", done: "Terminé", go: "Voir mes nuits", vip: "Tables VIP", vipSub: "Demandez la vôtre en un message", day: "Day clubs", daySub: "Fêtes de jour et pool parties", feat: "Touchez ✓ pour choisir", tk: { from: "Dès", byEvent: "Horaires selon l'événement", mon: "Lundi", monThu: "Lundi et jeudi", tue: "Mardi", season: "Saison", access: "Accès", age: "Âge", hint: "Dans votre sélection · touchez pour retirer" } },
+  de: { clear: "Alle entfernen", done: "Fertig", go: "Meine Nächte ansehen", vip: "VIP-Tische", vipSub: "Frag deinen mit einer Nachricht an", day: "Day Clubs", daySub: "Tages- und Poolpartys", feat: "Tippe ✓ zum Auswählen", tk: { from: "Ab", byEvent: "Zeiten je nach Event", mon: "Montags", monThu: "Montags & donnerstags", tue: "Dienstags", season: "Saison", access: "Zugang", age: "Alter", hint: "In deiner Auswahl · zum Entfernen tippen" } },
 };
 const L3 = {
   es: { cal: "Calendario de fiestas 2027", calSub: "Toca tu primera noche y después la última. Los días con punto ya tienen line-up oficial.", prev: "Mes anterior", next: "Mes siguiente",
@@ -235,11 +234,10 @@ const L3 = {
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const KEY = "mey-agenda";
 /* one card per club: the user's own photos where there are, otherwise freely licensed photos (credited on the card) */
-/* usual season hours, from the clubs' own pages and the main ticket sellers (2025-26); they change by night, so the
-   card calls them "usual hours". Bora Bora has no reliable schedule: it says "depends on the event". */
+/* usual season hours, from the clubs' own pages and the main ticket sellers (2025-26); they change by night, so they are a guide only. Bora Bora has no reliable schedule: it says "depends on the event". */
 const CLUB_HOURS = {
   "[UNVRS]": ["23:30", ""], "Ushuaïa Ibiza": ["17:00", "23:00"], "Hï Ibiza": ["23:30", "06:30"], "Pacha": ["23:00", "06:00"], "Amnesia": ["23:00", "06:00"],
-  "Cova Santa": ["20:30", ""], "DC10": ["18:00", "", "mon"], "O Beach": ["13:00", "23:00"], "Ibiza Rocks": ["14:00", "21:00", "tue"], "Lío Ibiza": ["20:30", "06:00"],
+  "Cova Santa": ["20:30", ""], "DC10": ["18:00", "", "monThu"], "O Beach": ["13:00", "23:00"], "Ibiza Rocks": ["14:00", "21:00", "tue"], "Lío Ibiza": ["20:30", "06:00"],
   "Chinois Ibiza": ["23:30", "06:30"], "Tantra Ibiza": ["21:00", ""], "Swag Ibiza": ["00:00", "06:30"], "Destino Five Ibiza": ["12:00", ""], "Eden": ["00:00", "06:00"], "Es Paradis": ["00:00", "06:30"],
 };
 const CLUB_CARDS = [
