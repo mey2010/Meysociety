@@ -36,7 +36,7 @@ export function createDepthRibbon(root, opts = {}) {
       const c = document.createElement("div"); c.setAttribute("role", "button"); c.className = "ribbon__card" + (it.whole ? " ribbon__card--whole" : "") + (it.gloss ? " ribbon__card--gloss" : ""); c.dataset.i = i;
       c.setAttribute("aria-label", `${it.title}, ${i + 1} / ${N}`);
       // float (CSS) > flip (tilt + turn, driven by a spring) > the two faces: the photo, and the details behind it
-      c.innerHTML = `<div class="ribbon__float"><div class="ribbon__flip"><div class="ribbon__face"><img class="ribbon__img" data-src="${it.src}" alt="" draggable="false" decoding="async"><span class="ribbon__shine"></span><span class="ribbon__glare"></span><span class="ribbon__tag">${it.tag || ""}</span>${o.back ? '<span class="ribbon__turn" aria-hidden="true"></span>' : ""}</div>${o.back ? `<div class="ribbon__back" aria-hidden="true">${o.back(it, i)}</div>` : ""}</div></div>`;
+      c.innerHTML = `<div class="ribbon__float"><div class="ribbon__flip"><div class="ribbon__face"><img class="ribbon__img" data-src="${it.src}" alt="" draggable="false" decoding="async"><span class="ribbon__shine"></span><span class="ribbon__glare"></span>${it.tag ? `<span class="ribbon__tag">${it.tag}</span>` : (o.back ? '<span class="ribbon__tag"></span>' : "")}${it.html ? `<div class="ribbon__over">${it.html}</div>` : ""}${o.back ? '<span class="ribbon__turn" aria-hidden="true"></span>' : ""}</div>${o.back ? `<div class="ribbon__back" aria-hidden="true">${o.back(it, i)}</div>` : ""}</div></div>`;
       c._flip = c.querySelector(".ribbon__flip"); c._img = c.querySelector(".ribbon__img"); c._glare = c.querySelector(".ribbon__glare");
       c._last = {};
       stage.appendChild(c); return c;
@@ -150,7 +150,8 @@ export function createDepthRibbon(root, opts = {}) {
   const activate = c => { const i = +c.dataset.i; if (i !== st.active) return goTo(i); if (o.back) turn(!turned); else o.onItemClick?.(items[i], i); };
   root.addEventListener("click", e => { if (e.detail === 0 && !e.target.closest("a, button")) { const c = e.target.closest?.(".ribbon__card"); if (c) activate(c); } }); // keyboard activation
   let wheelLock = 0;
-  root.addEventListener("wheel", e => { e.preventDefault(); const now = performance.now(); if (now < wheelLock) return; const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY; if (Math.abs(d) < 4) return; by(Math.sign(d)); wheelLock = now + 520; }, { passive: false });
+  root.addEventListener("wheel", e => { if (o.wheelX && Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;   // on the page: a vertical wheel scrolls the page, only a sideways one moves the ribbon
+    e.preventDefault(); const now = performance.now(); if (now < wheelLock) return; const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY; if (Math.abs(d) < 4) return; by(Math.sign(d)); wheelLock = now + 520; }, { passive: false });
   root.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && !e.target.closest("a, button")) { const c = cards[st.active]; if (c) { e.preventDefault(); activate(c); } return; }
     if (e.key === "Escape" && turned) { e.stopPropagation(); turn(false); return; }
     if (e.key === "ArrowRight" || e.key === "ArrowDown") by(1); else if (e.key === "ArrowLeft" || e.key === "ArrowUp") by(-1); else return; e.preventDefault(); });

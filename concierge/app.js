@@ -629,61 +629,30 @@ const TURN = 1400; window.__logoLoader = logoLoader;
      card onto the centre, and the first time the row comes into view the cards fan out from a pile. */
   const SVC_COVER = true;
   if (SVC_COVER) {
-    const row = cards[0].parentElement; row.classList.add("stack--cover");
-    const wrap = document.createElement("div"); wrap.className = "stack__wrap"; row.before(wrap); wrap.append(row);
-    const navs = [-1, 1].map(d => { const b = document.createElement("button"); b.type = "button"; b.className = "stack__nav"; b.dataset.dir = d; b.setAttribute("aria-label", d < 0 ? "‹" : "›"); b.textContent = d < 0 ? "‹" : "›"; wrap.append(b); return b; });
-    const gap = () => parseFloat(getComputedStyle(row).columnGap) || 16;
-    /* every size is measured once (on resize), never during the scroll: each frame only reads scrollLeft and
-       writes transforms, so the browser never has to recompute the layout while the finger is moving */
-    let W = 0, cw = 1, step = 1, left = [], last = cards.map(() => ({ t: "", o: "", z: "" }));
-    const centre = () => { W = row.clientWidth; if (!W) return;
-      const w = Math.round(W < 760 ? W * .72 : Math.min(300, Math.max(240, W * .24))), p = Math.max(0, Math.round((W - w) / 2));   // the clubs' card size
-      cards.forEach(c => { c.style.flexBasis = w + "px"; c.style.width = w + "px"; }); row.style.paddingInline = p + "px"; row.style.scrollPaddingInline = p + "px";
-      cw = w; step = w + gap(); left = cards.map(c => c.offsetLeft); };
-    const pose = (i, sl) => {
-      const w = cw, d = (left[i] + w / 2 - sl - W / 2) / step;
-      const k = Math.min(Math.abs(d), 2.4), kk = Math.min(k, 1), sg = Math.sign(d), pull = W < 600 ? .3 : .08;
-      return { t: `perspective(1200px) translate3d(${(-sg * (kk * w * pull + Math.max(0, k - 1) * w * (.14 + pull))).toFixed(1)}px, 0, ${(-(kk * 120 + Math.max(0, k - 1) * 70)).toFixed(1)}px) rotateY(${(-sg * kk * 32).toFixed(2)}deg)`,
-        o: (1 - Math.min(k, 2) * .16).toFixed(3), z: String(100 - Math.round(k * 10)), d };
-    };
-    let fanning = false, raf = 0, mid = -1;
-    const warmAround = m => [m + 1, m + 2, m - 1].forEach(j => cards[j]?.querySelectorAll("img").forEach(im => { if (im.dataset.warm) return; im.dataset.warm = 1; im.loading = "eager"; im.decode?.().catch(() => {}); }));
-    const cover = () => { raf = 0; if (fanning) return; const sl = row.scrollLeft; let m = 0, best = 9;
-      cards.forEach((c, i) => { const q = pose(i, sl), L = last[i];
-        if (Math.abs(q.d) < best) { best = Math.abs(q.d); m = i; }
-        if (L.t !== q.t) { L.t = q.t; c.style.transform = q.t; }
-        if (L.o !== q.o) { L.o = q.o; c.style.opacity = q.o; }
-        if (L.z !== q.z) { L.z = q.z; c.style.zIndex = q.z; } });
-      if (m !== mid) { mid = m; navs[0].disabled = m === 0; navs[1].disabled = m === cards.length - 1; }
-    };
-    // the next photos are decoded once the row comes to rest, never in the middle of a swipe
-    let idle = 0; const settle = () => { clearTimeout(idle); idle = setTimeout(() => warmAround(mid), 140); };
-    const kick = () => { if (!raf) raf = requestAnimationFrame(cover); };
-    if (!REDUCED) {
-      centre(); cover();
-      row.addEventListener("scroll", () => { kick(); settle(); }, { passive: true });
-      let lastW = 0; new ResizeObserver(() => { if (row.clientWidth === lastW) return; lastW = row.clientWidth; centre(); last.forEach(L => L.t = L.o = L.z = ""); cover(); }).observe(row);
-      warmAround(0);
-      navs.forEach(b => b.addEventListener("click", () => row.scrollBy({ left: +b.dataset.dir * step, behavior: "smooth" })));
-      // Fan Cards entrance, as the clubs: piled under the first card, a little turned, then out into their places
-      cards.forEach((c, i) => { c.style.transform = `translate3d(0, 40px, 0) rotate(${(i % 2 ? 1 : -1) * 4}deg)`; c.style.opacity = "0"; });
-      fanning = true;
-      const fanIo = new IntersectionObserver(es => {
-        if (!es.some(e => e.isIntersecting)) return; fanIo.disconnect(); centre();
-        const x0 = left[0];
-        cards.forEach((c, i) => { const dx = x0 - left[i], d = Math.min(i, 5);
-          c.style.transition = "none"; c.style.zIndex = String(50 - i);
-          c.style.transform = `translate3d(${dx + d * 10}px, ${d * 8}px, 0) rotate(${d * -4 + 2}deg) scale(${1 - d * .03})`; c.style.opacity = "1"; });
-        row.offsetWidth;
-        requestAnimationFrame(() => cards.forEach((c, i) => {
-          const q = pose(i, row.scrollLeft); c.style.transition = `transform 820ms cubic-bezier(.2, 1.28, .38, 1) ${120 + i * 70}ms, opacity 500ms ease ${120 + i * 70}ms`;
-          c.style.transform = q.t; c.style.opacity = q.o;
-          c.addEventListener("transitionend", () => { c.style.transition = ""; if (i === cards.length - 1) { fanning = false; last.forEach(L => L.t = L.o = L.z = ""); cover(); } }, { once: true });
-        }));
-        setTimeout(() => { if (fanning) { fanning = false; cards.forEach(c => c.style.transition = ""); last.forEach(L => L.t = L.o = L.z = ""); cover(); } }, 2600);   // never stuck mid-fan
-      }, { threshold: .2 });
-      fanIo.observe(row);
-    }
+    /* The services ride the same winding 3D ribbon the boats had: the cards come from the back along a snake-like
+       path, the one in front faces you, and its title, line and buttons float on the photo itself. The original
+       cards stay in the page (text for search engines and screen readers) but out of sight. */
+    const stackEl = cards[0].parentElement, host = document.createElement("div");
+    host.className = "svc-ribbon"; stackEl.before(host); stackEl.classList.add("stack--src");
+    const esc = v => String(v).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const items = () => cards.map(c => {
+      const im = c.querySelector(".stack__media > img:not(.stack__media-bg)") || c.querySelector("img");
+      const h = c.querySelector("h3")?.textContent.trim() || "", p = (c.querySelector(".stack__body > p:not(.stack__place)")?.innerHTML || "").replace(/<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+      const btns = c.querySelector(".stack__btns")?.innerHTML || [...c.querySelectorAll(".stack__body > .btn")].map(b => b.outerHTML).join("");
+      return { src: im?.getAttribute("src") || "", title: h, whole: !!c.querySelector(".stack__media--product"),
+        html: `<h3 class="svc-ribbon__h">${esc(h)}</h3><p class="svc-ribbon__p">${p.replace(/&(?!amp;|lt;|gt;|quot;|#)/g, "&amp;")}</p><div class="svc-ribbon__btns">${btns}</div>` };
+    });
+    const rib = createDepthRibbon(host.appendChild(document.createElement("div")), { items: [], label: document.querySelector("#servicios h2")?.textContent || "Servicios", autoplay: 5.5, wheelX: true });
+    rib.setItems(items());
+    // a booking button on a card works as on the original card
+    host.addEventListener("click", e => { const b = e.target.closest("[data-svc]"); if (!b) return;
+      select(b.dataset.svc, true); if (openWA(b.closest(".ribbon__card")?.querySelector("h3")?.textContent.trim(), "tarjeta_" + b.dataset.svc)) e.preventDefault(); });
+    // arrows (on screens with a mouse), like the fleet
+    const nav = document.createElement("div"); nav.className = "svc-ribbon__nav";
+    nav.innerHTML = `<button type="button" class="stack__nav" data-dir="-1" aria-label="‹">‹</button><button type="button" class="stack__nav" data-dir="1" aria-label="›">›</button>`;
+    host.after(nav); nav.addEventListener("click", e => { const b = e.target.closest("[data-dir]"); if (b) (+b.dataset.dir < 0 ? rib.prev() : rib.next()); });
+    // the language switch rewrites the hidden cards: the ribbon follows
+    document.addEventListener("langchange", () => setTimeout(() => { const a = rib.active; rib.setItems(items()); if (a > 0) rib.goTo(a); }, 0));
   }
   if (!REDUCED && !SVC_COVER) {
     let ticking = false, stuck = [], tops = [];
