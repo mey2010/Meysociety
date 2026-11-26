@@ -646,13 +646,13 @@ const TURN = 1400; window.__logoLoader = logoLoader;
        button always lands, on any phone. It fades out while the ribbon moves and back in when it settles. */
     const over = document.createElement("div"); over.className = "svc-ribbon__over";
     let shown = -1;
-    const place = () => { const { w, h } = rib.size; over.style.width = w + "px"; over.style.height = h + "px"; };
+    const place = () => {};
     const show = i => { if (i === shown && !over.classList.contains("is-off")) return; shown = i; const it = list[i]; if (!it) return;
       over.innerHTML = `<div class="svc-ribbon__info">${it.info}</div>`; place(); over.classList.remove("is-off"); };
     let list = items();
     const rib = createDepthRibbon(host.appendChild(document.createElement("div")), { items: [], label: document.querySelector("#servicios h2")?.textContent || "Servicios", autoplay: 0, wheelX: true,
-      phone: .9, wide: .5, maxW: 700, onChange: (it, i) => { over.classList.add("is-off"); clearTimeout(over._t); over._t = setTimeout(function wait() { if (rib.moving) { over._t = setTimeout(wait, 90); return; } show(rib.active); }, 120); } });
-    host.append(over);
+      phone: .9, wide: .4, maxW: 560, onChange: (it, i) => { over.classList.add("is-off"); clearTimeout(over._t); over._t = setTimeout(function wait() { if (rib.moving) { over._t = setTimeout(wait, 90); return; } show(rib.active); }, 120); } });
+    host.after(over);   // under the ribbon, like the boats: the photo above, the title and buttons below it
     rib.setItems(list);
     addEventListener("resize", place, { passive: true });
     // while the finger drags the ribbon the layer steps aside; it comes back on the card that settles in front
@@ -664,7 +664,7 @@ const TURN = 1400; window.__logoLoader = logoLoader;
     // arrows (on screens with a mouse), like the fleet
     const nav = document.createElement("div"); nav.className = "svc-ribbon__nav";
     nav.innerHTML = `<button type="button" class="stack__nav" data-dir="-1" aria-label="‹">‹</button><button type="button" class="stack__nav" data-dir="1" aria-label="›">›</button>`;
-    host.after(nav); nav.addEventListener("click", e => { const b = e.target.closest("[data-dir]"); if (b) (+b.dataset.dir < 0 ? rib.prev() : rib.next()); });
+    over.after(nav); nav.addEventListener("click", e => { const b = e.target.closest("[data-dir]"); if (b) (+b.dataset.dir < 0 ? rib.prev() : rib.next()); });
     // the language switch rewrites the hidden cards: the ribbon follows
     document.addEventListener("langchange", () => setTimeout(() => { const a = rib.active; list = items(); rib.setItems(list); shown = -1; if (a > 0) rib.goTo(a); else show(0); }, 0));
   }
