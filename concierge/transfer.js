@@ -153,7 +153,6 @@ function checklist(t, x) {
     <div class="trc__head"><span class="trc__label">${e(t.plusH)}</span><span class="trc__count" aria-hidden="true"><b>0</b>/${n}</span></div>
     <div class="trc__bar" aria-hidden="true"><i></i></div>
     <ul class="trc__list">${items.map((v, k) => `<li style="--i:${k}"><span class="trc__tick" aria-hidden="true"><svg viewBox="0 0 28 28"><circle class="trc__ring" cx="14" cy="14" r="11.5"/><circle class="trc__fill" cx="14" cy="14" r="11.5"/><path d="M8.8 14.4l3.6 3.6 7-7.6"/></svg><i class="trc__burst"></i></span><span class="trc__txt">${e(v)}</span></li>`).join("")}</ul>
-    <p class="trc__done"><span>${e(x.allIn || "Todo incluido")}</span></p>
   </div></div>`;
 }
 const sizeFor = (pax, bags) => { const load = pax + Math.max(0, bags - pax) * .5; return load <= 4 && bags <= 4 ? 4 : load <= 7 ? 7 : load <= 8 ? 8 : load <= 18 ? 18 : 0; };

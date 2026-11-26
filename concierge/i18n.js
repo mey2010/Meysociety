@@ -665,6 +665,7 @@ const D = {
   "Restaurantes y chef": ["Restaurants & chef", "Ristoranti e chef", "Restaurants et chef", "Restaurants & Koch"],
   "Llegada": ["Arrival", "Arrivo", "Arrivée", "Ankunft"],
   "Salida": ["Departure", "Partenza", "Départ", "Abreise"],
+  "Ubicación": ["Location", "Posizione", "Emplacement", "Liegeplatz"],
   "Personas": ["Guests", "Persone", "Personnes", "Personen"],
   "Nombre": ["Name", "Nome", "Nom", "Name"],
   "Cuéntanos más": ["Tell us more", "Raccontaci di più", "Dites-nous en plus", "Erzähl uns mehr"],

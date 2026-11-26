@@ -1643,7 +1643,8 @@ const fleetItems = () => fleetList.map(b => ({ ...b, src: cardSrc(b), title: t(b
 /* the back of a fleet card: what it is, the few facts that matter, and the next step */
 function fleetBack(b) {
   const esc = v => String(v).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const facts = [["Eslora", b.len], ["Personas", b.pax], ["Motor", b.extra], ["Camarotes", b.cabins && t(b.cabins)], ["Salida", b.port && t(b.port)], [!SOLO.includes(b.type) ? "Tripulación" : "Modalidad", b.crew && t(b.crew)]].filter(([, v]) => v).slice(0, 4);
+  const facts = [["Eslora", b.len], ["Personas", b.pax], ["Motor", b.extra], ["Camarotes", b.cabins && t(b.cabins)], [!SOLO.includes(b.type) ? "Tripulación" : "Modalidad", b.crew && t(b.crew)]].filter(([, v]) => v).slice(0, b.port ? 3 : 4);
+  if (b.port) facts.push(["Ubicación", t(b.port)]);   // where the boat is moored: always one of the four
   if (facts.length < 3 && b.incl) b.incl.filter(x => !/^Up to \d+$/.test(x)).slice(0, 4 - facts.length).forEach((x, k) => facts.push([k ? "" : "Incluye", t(x)]));
   const villa = b.type === VILLA; if (villa) facts.splice(0, facts.length, ["Incluye", t(b.crew || "")]);
   return `<div class="rb__top"><span class="rb__eb">${esc(t(CAT_LABEL[b.type]))}</span><h4 class="rb__name">${esc(b.name)}</h4></div>
@@ -1654,7 +1655,7 @@ const paxText = b => b.pax ? `${t("Hasta")} ${b.pax} ${t("personas")}` : "";
 function renderFleetInfo(b, i) {
   if (!b) return;
   fleetInfo.innerHTML = `<h3>${b.name}</h3>
-    <ul class="fleet__specs"><li>${typeIcon(b.type)}${t(CAT_LABEL[b.type])}</li>${b.len ? `<li>${ICONS.ruler}${b.len}</li>` : ""}${b.pax ? `<li>${ICONS.users2}${paxText(b)}</li>` : ""}${b.crew ? `<li>${ICONS.helm}${t(b.crew)}</li>` : ""}</ul>
+    <ul class="fleet__specs"><li>${typeIcon(b.type)}${t(CAT_LABEL[b.type])}</li>${b.len ? `<li>${ICONS.ruler}${b.len}</li>` : ""}${b.pax ? `<li>${ICONS.users2}${paxText(b)}</li>` : ""}${b.crew ? `<li>${ICONS.helm}${t(b.crew)}</li>` : ""}${b.port ? `<li>${ICONS.pin}${t(b.port)}</li>` : ""}</ul>
     <div class="fleet__actions"><button class="btn btn--glass btn--onDark btn--sm" type="button" data-sheet>${t(b.type === VILLA ? "Ver la villa" : "Ver ficha")}</button><button class="btn btn--primary btn--sm" type="button" data-ask>${t("Pedir disponibilidad")}</button></div>`;
   fleetInfo.classList.remove("is-swap"); void fleetInfo.offsetWidth; fleetInfo.classList.add("is-swap");
   document.getElementById("fleetCount").textContent = `${String(i + 1).padStart(2, "0")} / ${String(fleetList.length).padStart(2, "0")}`;
@@ -1780,7 +1781,7 @@ function openBoat(b) {
       <p class="boat__note">${t(TYPE_NOTE[b.type] || "")}</p>
       <dl class="boat__specs">
         ${row("Eslora", b.len)}${row("Personas de día", b.pax ? String(b.pax) : "")}${row("Para dormir a bordo", b.night ? `${b.night} ${t("personas")}` : "")}
-        ${row("Camarotes", b.cabins && t(b.cabins))}${row("Tripulación", b.crew && t(b.crew))}${row("Salida", b.port && t(b.port))}${row("Motor", b.extra)}
+        ${row("Camarotes", b.cabins && t(b.cabins))}${row("Tripulación", b.crew && t(b.crew))}${row("Ubicación", b.port && t(b.port))}${row("Motor", b.extra)}
       </dl>
       ${b.incl ? `<p class="boat__h">${t("Incluye")}</p><ul class="boat__chips">${b.incl.map(x => `<li>${t(x)}</li>`).join("")}</ul>` : ""}
       ${b.toys ? `<p class="boat__h">${t("Extras disponibles")}</p><ul class="boat__chips boat__chips--soft">${b.toys.map(x => `<li>${t(x)}</li>`).join("")}</ul>` : ""}

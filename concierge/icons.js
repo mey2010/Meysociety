@@ -8,6 +8,7 @@ Object.assign(ICONS, {
   left: S('<path d="M15 6l-6 6 6 6"/>'),
   right: S('<path d="M9 6l6 6-6 6"/>'),
   ruler: S('<path d="M3 17 17 3l4 4L7 21z"/><path d="m7 13 2 2m1-5 2 2m1-5 2 2"/>'),
+  pin: S('<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>'),
   users2: S('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.5 3.3-5.5 6.5-5.5s5.9 2 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.8c1.6.8 2.7 2.6 3 5.2"/>'),
 });
 Object.assign(ICONS, {
