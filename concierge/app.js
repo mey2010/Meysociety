@@ -624,7 +624,58 @@ const TURN = 1400; window.__logoLoader = logoLoader;
     select(b.dataset.svc, true);
     if (openWA(b.closest(".stack__card").querySelector("h3")?.textContent.trim(), "tarjeta_" + b.dataset.svc)) e.preventDefault();
   }));
-  if (!REDUCED) {
+  /* The services move like the clubs: a horizontal coverflow driven by the row's own native scroll. The card in
+     the middle faces you, the ones beside it turn away and step back (mirrored on both sides), it snaps card by
+     card onto the centre, and the first time the row comes into view the cards fan out from a pile. */
+  const SVC_COVER = true;
+  if (SVC_COVER) {
+    const row = cards[0].parentElement; row.classList.add("stack--cover");
+    const wrap = document.createElement("div"); wrap.className = "stack__wrap"; row.before(wrap); wrap.append(row);
+    const navs = [-1, 1].map(d => { const b = document.createElement("button"); b.type = "button"; b.className = "stack__nav"; b.dataset.dir = d; b.setAttribute("aria-label", d < 0 ? "‹" : "›"); b.textContent = d < 0 ? "‹" : "›"; wrap.append(b); return b; });
+    const gap = () => parseFloat(getComputedStyle(row).columnGap) || 16;
+    const centre = () => { const W = row.clientWidth; if (!W) return;
+      const w = Math.round(W < 760 ? W * .8 : Math.min(400, Math.max(320, W * .3))), p = Math.max(0, Math.round((W - w) / 2));
+      cards.forEach(c => { c.style.flexBasis = w + "px"; c.style.width = w + "px"; }); row.style.paddingInline = p + "px"; row.style.scrollPaddingInline = p + "px"; };
+    const pose = c => {
+      const w = c.offsetWidth || 1, d = (c.offsetLeft + w / 2 - row.scrollLeft - row.clientWidth / 2) / (w + gap());
+      const k = Math.min(Math.abs(d), 2.4), kk = Math.min(k, 1), sg = Math.sign(d), pull = row.clientWidth < 600 ? .3 : .08;
+      return { t: `perspective(1200px) translate3d(${(-sg * (kk * w * pull + Math.max(0, k - 1) * w * (.14 + pull))).toFixed(1)}px, 0, ${(-(kk * 120 + Math.max(0, k - 1) * 70)).toFixed(1)}px) rotateY(${(-sg * kk * 32).toFixed(2)}deg)`,
+        o: (1 - Math.min(k, 2) * .16).toFixed(3), z: String(100 - Math.round(k * 10)), d };
+    };
+    let fanning = false, raf = 0;
+    const cover = () => { raf = 0; if (fanning) return; let mid = 0, best = 9;
+      cards.forEach((c, i) => { const q = pose(c); c.style.transform = q.t; c.style.opacity = q.o; c.style.zIndex = q.z; if (Math.abs(q.d) < best) { best = Math.abs(q.d); mid = i; } });
+      cards.forEach((c, i) => c.classList.toggle("is-front", i === mid));
+      // the photos of the cards around the middle one are fetched and decoded before they get there
+      [mid - 1, mid, mid + 1, mid + 2].forEach(j => cards[j]?.querySelectorAll("img").forEach(im => { if (im.loading !== "eager") { im.loading = "eager"; im.decode?.().catch(() => {}); } }));
+      navs[0].disabled = row.scrollLeft < 4; navs[1].disabled = row.scrollLeft > row.scrollWidth - row.clientWidth - 4; };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(cover); };
+    if (!REDUCED) {
+      centre(); cover();
+      row.addEventListener("scroll", kick, { passive: true });
+      let lastW = 0; new ResizeObserver(() => { if (row.clientWidth === lastW) return; lastW = row.clientWidth; centre(); cover(); }).observe(row);
+      navs.forEach(b => b.addEventListener("click", () => row.scrollBy({ left: +b.dataset.dir * ((cards[0].offsetWidth || 0) + gap()), behavior: "smooth" })));
+      // Fan Cards entrance, as the clubs: piled under the first card, a little turned, then out into their places
+      cards.forEach((c, i) => { c.style.transform = `translate3d(0, 40px, 0) rotate(${(i % 2 ? 1 : -1) * 4}deg)`; c.style.opacity = "0"; });
+      fanning = true;
+      const fanIo = new IntersectionObserver(es => {
+        if (!es.some(e => e.isIntersecting)) return; fanIo.disconnect(); centre();
+        const x0 = cards[0].offsetLeft;
+        cards.forEach((c, i) => { const dx = x0 - c.offsetLeft, d = Math.min(i, 5);
+          c.style.transition = "none"; c.style.zIndex = String(50 - i);
+          c.style.transform = `translate3d(${dx + d * 10}px, ${d * 8}px, 0) rotate(${d * -4 + 2}deg) scale(${1 - d * .03})`; c.style.opacity = "1"; });
+        row.offsetWidth;
+        requestAnimationFrame(() => cards.forEach((c, i) => {
+          const q = pose(c); c.style.transition = `transform 820ms cubic-bezier(.2, 1.28, .38, 1) ${120 + i * 70}ms, opacity 500ms ease ${120 + i * 70}ms`;
+          c.style.transform = q.t; c.style.opacity = q.o;
+          c.addEventListener("transitionend", () => { c.style.transition = ""; if (i === cards.length - 1) { fanning = false; cover(); } }, { once: true });
+        }));
+        setTimeout(() => { if (fanning) { fanning = false; cards.forEach(c => c.style.transition = ""); cover(); } }, 2600);   // never stuck mid-fan
+      }, { threshold: .2 });
+      fanIo.observe(row);
+    }
+  }
+  if (!REDUCED && !SVC_COVER) {
     let ticking = false, stuck = [], tops = [];
     // a dark veil per card stands in for the old brightness() filter: only its opacity changes, which the
     // compositor does on its own without repainting the card (photo, blurred backdrop and glass panel)

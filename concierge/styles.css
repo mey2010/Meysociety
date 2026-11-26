@@ -3234,3 +3234,33 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
 /* transfers hero: the network paragraph is the lead now, with its closing line just above "Lo que incluye" */
 .tr .tr__lead.tr__netp { text-align: justify !important; text-align-last: left; hyphens: auto; -webkit-hyphens: auto; word-spacing: -.02em; text-wrap: pretty; max-width: 560px; margin: 0 auto 14px; }
 .tr__hero .tr__netend { margin-bottom: 6px; }
+
+/* ---------- services as a coverflow, like the clubs (app.js SVC_COVER) ---------- */
+.stack__wrap { position: relative; }
+.stack.stack--cover { display: flex; gap: 16px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
+  padding-top: 18px; padding-bottom: 34px; margin-inline: calc(50% - 50vw); perspective: none; }
+.stack.stack--cover::-webkit-scrollbar { display: none; }
+.stack.stack--cover::after { content: none; }
+.stack--cover > .stack__card { position: relative; top: auto !important; flex: 0 0 auto; margin: 0 !important; scroll-snap-align: center; scroll-snap-stop: always;
+  height: min(68svh, 600px); min-height: 0; border-radius: 26px; will-change: transform; transition: none;
+  box-shadow: 0 30px 56px -30px rgb(13 10 56 / .85), inset 0 0 0 1px rgb(255 255 255 / .1); }
+.stack--cover > .stack__card.is-front { box-shadow: 0 34px 60px -28px rgb(13 10 56 / .9), inset 0 0 0 1px rgb(255 255 255 / .16); }
+/* one layout everywhere: the photo on top, the glass panel at the bottom (the wide-screen side panel would not fit a card) */
+.stack--cover .stack__body { left: 12px; right: 12px; bottom: 12px; top: auto; width: auto; gap: 8px; padding: 16px 16px 18px; border-radius: 20px; align-content: end; }
+.stack--cover .stack__body h3 { font-size: clamp(26px, 2.4vw, 32px); }
+.stack--cover .stack__body > p:not(.stack__place) { font-size: 14px; line-height: 1.5; }
+.stack--cover .stack__body ul { display: none; }
+.stack--cover .stack__btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.stack--cover .stack__body .btn { --h: 40px; padding: 0 16px; font-size: 14px; }
+.stack--cover .stack__media:not(.stack__media--product) { --m: 12px; }
+.stack--cover .stack__media:not(.stack__media--product) > img:not(.stack__media-bg) {
+  --side: min(100cqw - 2 * var(--m), 100cqh - var(--panel-h, 46cqh) - var(--m));
+  top: var(--m); left: calc(50cqw - var(--side) / 2); width: var(--side); height: var(--side); border-radius: 18px; }
+.stack--cover .stack__media::after { background: linear-gradient(180deg, transparent 55%, rgb(13 10 56 / .35)); }
+.stack--cover .stack__media--product img { max-width: 88%; max-height: 44%; }
+.stack__nav { position: absolute; top: calc(50% - 30px); z-index: 120; width: 46px; height: 46px; border: 0; border-radius: 50%; display: grid; place-items: center;
+  font: 400 26px/1 var(--serif); color: #1e24bb; background: #fff; cursor: pointer; box-shadow: 0 10px 24px -10px rgb(13 10 56 / .6); transition: opacity .25s ease; }
+.stack__nav[data-dir="-1"] { left: 0; } .stack__nav[data-dir="1"] { right: 0; }
+.stack__nav:disabled { opacity: 0; pointer-events: none; }
+@media (hover: none) { .stack__nav { display: none; } }
+@media (prefers-reduced-motion: reduce) { .stack.stack--cover > .stack__card { transform: none !important; opacity: 1 !important; } }
