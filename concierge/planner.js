@@ -1,4 +1,4 @@
-/* "Diseña tu semana en Ibiza": four quick steps (dates, group, style, must-haves) and the page draws a day-by-day
+/* "Diseña tu Ibiza": four quick steps (dates, group, style, must-haves) and the page draws a day-by-day
    plan built only from Mey Society's own services, each one a tap away, with the guestlists it unlocks. The plan goes
    to the concierge in one message. Nothing here is a price or a promise of availability: it is a proposal to confirm. */
 import { getLang } from "./i18n.js";
@@ -8,15 +8,15 @@ const L = {
     musicQ: "¿Qué música os gusta? (una o varias)", errMusic: "Elige al menos un tipo de música.",
     music: { techno: "Techno", techhouse: "Tech house", house: "House", afro: "Afro house", melodic: "Melodic techno", edm: "EDM", commercial: "Comercial y reggaeton", hiphop: "Hip hop y R&B", disco: "Disco y funk", any: "Nos vale todo" },
     clubT: n => `Noche en ${n} con mesa VIP`, clubD: (g, near) => `Su música va con lo vuestro: ${g}.${near ? " Queda cerca de vuestro plan de ese día." : ""} Te confirmamos la fiesta y el line-up de esa noche.`, djD: g => `Un DJ profesional de ${g} en tu villa o a bordo.`,
-    eyebrow: "Planificador", title: "Diseña tu semana en Ibiza.", lede: "Cinco preguntas y tienes tu viaje dibujado día a día. Lo afinamos juntos por WhatsApp.",
+    eyebrow: "Planificador", title: "Diseña tu Ibiza.", lede: "Cinco preguntas y tienes tu viaje dibujado día a día. Lo afinamos juntos por WhatsApp.",
     steps: ["Fechas", "Grupo", "Estilo", "Música", "Imprescindibles"], from: "Llegada", to: "Salida", people: "Personas", kids: "Viajamos con niños",
     styleQ: "¿Qué buscáis? (elige uno o varios)", mustQ: "¿Qué no puede faltar?",
     styles: { relax: "Relax y calas", party: "Fiesta", food: "Gastronomía", celeb: "Celebración", family: "Familia", sea: "Aventura en el mar" },
     musts: { villas: "Villa", yates: "Barco", formentera: "Formentera Experience", motos: "Motos de agua", vip: "Mesa VIP", dining: "Chef privado", dj: "DJ", coches: "Coche", transfers: "Transfer" },
     next: "Siguiente", back: "Atrás", make: "Crear mi plan", again: "Cambiar respuestas", send: "Enviar mi plan a Mey", see: "Ver",
     day: "Día", nights: n => `${n} ${n === 1 ? "noche" : "noches"}`, guests: n => `${n} ${n === 1 ? "persona" : "personas"}`,
-    gift: n => n === 1 ? "Este plan desbloquea 1 guestlist de cortesía" : `Este plan desbloquea ${n} guestlists de cortesía`,
-    giftFine: "Sujetas a disponibilidad del club. Mayores de 18.", note: "Es una propuesta: te confirmamos horarios y disponibilidad de cada servicio por escrito.",
+    gift: n => n === 1 ? "Este plan desbloquea 1 guestlist." : `Este plan desbloquea ${n} guestlists.`,
+    giftFine: "Sujetas a disponibilidad del club. Mayores de 18.", note: "Es una propuesta: modificable y optimizable a tu gusto. Te confirmamos horarios y disponibilidad de cada servicio por escrito.",
     errDates: "Elige tu llegada y tu salida.", errStyle: "Elige al menos un estilo.",
     slots: { m: "Mañana", a: "Tarde", e: "Atardecer", n: "Noche" },
     items: {
@@ -42,15 +42,15 @@ const L = {
     musicQ: "What music do you like? (one or more)", errMusic: "Choose at least one kind of music.",
     music: { techno: "Techno", techhouse: "Tech house", house: "House", afro: "Afro house", melodic: "Melodic techno", edm: "EDM", commercial: "Commercial & reggaeton", hiphop: "Hip hop & R&B", disco: "Disco & funk", any: "Anything goes" },
     clubT: n => `Night at ${n} with a VIP table`, clubD: (g, near) => `Its sound matches yours: ${g}.${near ? " It is close to that day's plan." : ""} We confirm the party and line-up for that night.`, djD: g => `A professional ${g} DJ at your villa or on board.`,
-    eyebrow: "Planner", title: "Design your week in Ibiza.", lede: "Five questions and your trip is drawn day by day. We fine-tune it together on WhatsApp.",
+    eyebrow: "Planner", title: "Design your Ibiza.", lede: "Five questions and your trip is drawn day by day. We fine-tune it together on WhatsApp.",
     steps: ["Dates", "Group", "Style", "Music", "Must-haves"], from: "Arrival", to: "Departure", people: "People", kids: "Travelling with children",
     styleQ: "What are you after? (pick one or more)", mustQ: "What can't be missing?",
     styles: { relax: "Relax & coves", party: "Party", food: "Food", celeb: "Celebration", family: "Family", sea: "Sea adventure" },
     musts: { villas: "Villa", yates: "Boat", formentera: "Formentera Experience", motos: "Jet skis", vip: "VIP table", dining: "Private chef", dj: "DJ", coches: "Car", transfers: "Transfer" },
     next: "Next", back: "Back", make: "Create my plan", again: "Change answers", send: "Send my plan to Mey", see: "See",
     day: "Day", nights: n => `${n} ${n === 1 ? "night" : "nights"}`, guests: n => `${n} ${n === 1 ? "person" : "people"}`,
-    gift: n => n === 1 ? "This plan unlocks 1 complimentary guestlist" : `This plan unlocks ${n} complimentary guestlists`,
-    giftFine: "Subject to club availability. 18+ only.", note: "This is a proposal: we confirm times and availability of each service in writing.",
+    gift: n => n === 1 ? "This plan unlocks 1 guestlist." : `This plan unlocks ${n} guestlists.`,
+    giftFine: "Subject to club availability. 18+ only.", note: "This is a proposal: you can change and fine-tune it to your taste. We confirm times and availability of each service in writing.",
     errDates: "Choose your arrival and departure.", errStyle: "Choose at least one style.",
     slots: { m: "Morning", a: "Afternoon", e: "Sunset", n: "Night" },
     items: {
@@ -76,15 +76,15 @@ const L = {
     musicQ: "Che musica vi piace? (una o più)", errMusic: "Scegli almeno un genere musicale.",
     music: { techno: "Techno", techhouse: "Tech house", house: "House", afro: "Afro house", melodic: "Melodic techno", edm: "EDM", commercial: "Commerciale e reggaeton", hiphop: "Hip hop e R&B", disco: "Disco e funk", any: "Ci va bene tutto" },
     clubT: n => `Serata al ${n} con tavolo VIP`, clubD: (g, near) => `La sua musica fa per voi: ${g}.${near ? " È vicino al vostro piano di quel giorno." : ""} Ti confermiamo la festa e il line-up della serata.`, djD: g => `Un DJ professionista di ${g} in villa o a bordo.`,
-    eyebrow: "Pianificatore", title: "Disegna la tua settimana a Ibiza.", lede: "Cinque domande e il tuo viaggio è pronto giorno per giorno. Lo perfezioniamo insieme su WhatsApp.",
+    eyebrow: "Pianificatore", title: "Disegna la tua Ibiza.", lede: "Cinque domande e il tuo viaggio è pronto giorno per giorno. Lo perfezioniamo insieme su WhatsApp.",
     steps: ["Date", "Gruppo", "Stile", "Musica", "Irrinunciabili"], from: "Arrivo", to: "Partenza", people: "Persone", kids: "Viaggiamo con bambini",
     styleQ: "Cosa cercate? (scegline uno o più)", mustQ: "Cosa non può mancare?",
     styles: { relax: "Relax e calette", party: "Festa", food: "Gastronomia", celeb: "Celebrazione", family: "Famiglia", sea: "Avventura in mare" },
     musts: { villas: "Villa", yates: "Barca", formentera: "Formentera Experience", motos: "Moto d'acqua", vip: "Tavolo VIP", dining: "Chef privato", dj: "DJ", coches: "Auto", transfers: "Transfer" },
     next: "Avanti", back: "Indietro", make: "Crea il mio piano", again: "Cambia risposte", send: "Invia il mio piano a Mey", see: "Vedi",
     day: "Giorno", nights: n => `${n} ${n === 1 ? "notte" : "notti"}`, guests: n => `${n} ${n === 1 ? "persona" : "persone"}`,
-    gift: n => n === 1 ? "Questo piano sblocca 1 guestlist di cortesia" : `Questo piano sblocca ${n} guestlist di cortesia`,
-    giftFine: "Soggette a disponibilità del club. Solo maggiorenni.", note: "È una proposta: ti confermiamo orari e disponibilità di ogni servizio per iscritto.",
+    gift: n => n === 1 ? "Questo piano sblocca 1 guestlist." : `Questo piano sblocca ${n} guestlist.`,
+    giftFine: "Soggette a disponibilità del club. Solo maggiorenni.", note: "È una proposta: modificabile e perfezionabile a tuo gusto. Ti confermiamo orari e disponibilità di ogni servizio per iscritto.",
     errDates: "Scegli arrivo e partenza.", errStyle: "Scegli almeno uno stile.",
     slots: { m: "Mattina", a: "Pomeriggio", e: "Tramonto", n: "Notte" },
     items: {
@@ -110,15 +110,15 @@ const L = {
     musicQ: "Quelle musique aimez-vous ? (une ou plusieurs)", errMusic: "Choisissez au moins un style de musique.",
     music: { techno: "Techno", techhouse: "Tech house", house: "House", afro: "Afro house", melodic: "Melodic techno", edm: "EDM", commercial: "Commercial et reggaeton", hiphop: "Hip-hop et R&B", disco: "Disco et funk", any: "Tout nous va" },
     clubT: n => `Soirée au ${n} avec table VIP`, clubD: (g, near) => `Sa musique vous correspond : ${g}.${near ? " Il est proche de votre programme du jour." : ""} Nous vous confirmons la fête et le line-up du soir.`, djD: g => `Un DJ professionnel ${g} à la villa ou à bord.`,
-    eyebrow: "Planificateur", title: "Dessinez votre semaine à Ibiza.", lede: "Cinq questions et votre voyage est tracé jour par jour. On l'affine ensemble sur WhatsApp.",
+    eyebrow: "Planificateur", title: "Dessinez votre Ibiza.", lede: "Cinq questions et votre voyage est tracé jour par jour. On l'affine ensemble sur WhatsApp.",
     steps: ["Dates", "Groupe", "Style", "Musique", "Indispensables"], from: "Arrivée", to: "Départ", people: "Personnes", kids: "Nous voyageons avec des enfants",
     styleQ: "Que cherchez-vous ? (un ou plusieurs)", mustQ: "Qu'est-ce qui ne peut pas manquer ?",
     styles: { relax: "Détente et criques", party: "Fête", food: "Gastronomie", celeb: "Célébration", family: "Famille", sea: "Aventure en mer" },
     musts: { villas: "Villa", yates: "Bateau", formentera: "Formentera Experience", motos: "Jet-ski", vip: "Table VIP", dining: "Chef privé", dj: "DJ", coches: "Voiture", transfers: "Transfert" },
     next: "Suivant", back: "Retour", make: "Créer mon plan", again: "Modifier mes réponses", send: "Envoyer mon plan à Mey", see: "Voir",
     day: "Jour", nights: n => `${n} ${n === 1 ? "nuit" : "nuits"}`, guests: n => `${n} ${n === 1 ? "personne" : "personnes"}`,
-    gift: n => n === 1 ? "Ce plan débloque 1 guestlist offerte" : `Ce plan débloque ${n} guestlists offertes`,
-    giftFine: "Selon disponibilité du club. Réservé aux plus de 18 ans.", note: "C'est une proposition : nous confirmons par écrit les horaires et la disponibilité de chaque service.",
+    gift: n => n === 1 ? "Ce plan débloque 1 guestlist." : `Ce plan débloque ${n} guestlists.`,
+    giftFine: "Selon disponibilité du club. Réservé aux plus de 18 ans.", note: "C'est une proposition : modifiable et ajustable à votre goût. Nous confirmons par écrit les horaires et la disponibilité de chaque service.",
     errDates: "Choisissez votre arrivée et votre départ.", errStyle: "Choisissez au moins un style.",
     slots: { m: "Matin", a: "Après-midi", e: "Coucher du soleil", n: "Nuit" },
     items: {
@@ -144,15 +144,15 @@ const L = {
     musicQ: "Welche Musik mögt ihr? (eine oder mehrere)", errMusic: "Wähle mindestens eine Musikrichtung.",
     music: { techno: "Techno", techhouse: "Tech house", house: "House", afro: "Afro house", melodic: "Melodic techno", edm: "EDM", commercial: "Charts & Reggaeton", hiphop: "Hip-Hop & R&B", disco: "Disco & Funk", any: "Uns ist alles recht" },
     clubT: n => `Nacht im ${n} mit VIP-Tisch`, clubD: (g, near) => `Die Musik passt zu euch: ${g}.${near ? " Liegt nah an eurem Tagesplan." : ""} Wir bestätigen dir die Party und das Line-up des Abends.`, djD: g => `Ein professioneller ${g}-DJ in deiner Villa oder an Bord.`,
-    eyebrow: "Planer", title: "Plane deine Woche auf Ibiza.", lede: "Fünf Fragen und deine Reise steht Tag für Tag. Den Feinschliff machen wir zusammen per WhatsApp.",
+    eyebrow: "Planer", title: "Gestalte dein Ibiza.", lede: "Fünf Fragen und deine Reise steht Tag für Tag. Den Feinschliff machen wir zusammen per WhatsApp.",
     steps: ["Daten", "Gruppe", "Stil", "Musik", "Must-haves"], from: "Ankunft", to: "Abreise", people: "Personen", kids: "Wir reisen mit Kindern",
     styleQ: "Was sucht ihr? (eins oder mehrere)", mustQ: "Was darf nicht fehlen?",
     styles: { relax: "Entspannung & Buchten", party: "Party", food: "Kulinarik", celeb: "Feier", family: "Familie", sea: "Abenteuer auf dem Meer" },
     musts: { villas: "Villa", yates: "Boot", formentera: "Formentera Experience", motos: "Jetski", vip: "VIP-Tisch", dining: "Privatkoch", dj: "DJ", coches: "Auto", transfers: "Transfer" },
     next: "Weiter", back: "Zurück", make: "Meinen Plan erstellen", again: "Antworten ändern", send: "Plan an Mey senden", see: "Ansehen",
     day: "Tag", nights: n => `${n} ${n === 1 ? "Nacht" : "Nächte"}`, guests: n => `${n} ${n === 1 ? "Person" : "Personen"}`,
-    gift: n => n === 1 ? "Dieser Plan schaltet 1 kostenlose Guestlist frei" : `Dieser Plan schaltet ${n} kostenlose Guestlists frei`,
-    giftFine: "Je nach Verfügbarkeit des Clubs. Ab 18.", note: "Das ist ein Vorschlag: Zeiten und Verfügbarkeit jedes Services bestätigen wir schriftlich.",
+    gift: n => n === 1 ? "Dieser Plan schaltet 1 Guestlist frei." : `Dieser Plan schaltet ${n} Guestlists frei.`,
+    giftFine: "Je nach Verfügbarkeit des Clubs. Ab 18.", note: "Das ist ein Vorschlag: änderbar und ganz nach deinem Geschmack anpassbar. Zeiten und Verfügbarkeit jedes Services bestätigen wir schriftlich.",
     errDates: "Wähle Ankunft und Abreise.", errStyle: "Wähle mindestens einen Stil.",
     slots: { m: "Morgen", a: "Nachmittag", e: "Sonnenuntergang", n: "Nacht" },
     items: {
@@ -480,7 +480,7 @@ export function initPlanner(root, { onGo, onSend, icons = {} } = {}) {
         <ol class="pl__days">${p.days.map((d, i) => `<li class="pl__day" style="--i:${i}">
           <header><b>${esc(t.day)} ${i + 1}</b><span>${esc(fmt(d.date))}</span></header>
           <ul>${d.items.map(it => `<li><span class="pl__slot">${esc(t.slots[it.slot] || "")}</span><div><strong>${esc(title(it))}</strong><p>${esc(desc(it))}</p></div>${it.go ? `<button type="button" class="pl__see" data-go="${it.go}">${esc(t.see)}</button>` : ""}</li>`).join("")}</ul></li>`).join("")}</ol>
-        ${p.gifts ? `<div class="pl__gift"><b>🎁 ${esc(t.gift(p.gifts))}</b><small>${esc(t.giftFine)}</small></div>` : ""}
+        ${p.gifts ? `<div class="pl__gift"><b>${esc(t.gift(p.gifts))}</b><small>${esc(t.giftFine)}</small></div>` : ""}
         <p class="pl__note">${esc(t.note)}</p>
         <div class="pl__actions"><button type="button" class="btn btn--primary" data-act="send">${esc(t.send)}</button><button type="button" class="btn pl__ghost" data-act="again">${esc(t.again)}</button></div></div>`;
     } else if (st.step === 0) {
