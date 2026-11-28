@@ -3402,3 +3402,5 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
 .svc-ribbon__btns { margin-top: 14px; gap: 12px; }
 .svc-ribbon__btns .btn { --h: 50px; height: 50px; padding: 0 26px; font-size: 15.5px; }
 @media (max-width: 700px) { .svc-ribbon__btns .btn { --h: 46px; height: 46px; padding: 0 20px; font-size: 14.5px; } }
+/* clubs: the row glides freely with the finger's momentum and only settles on a club once it stops (agenda.js) */
+.ag__feat.is-cover.is-glide { scroll-snap-type: none; }

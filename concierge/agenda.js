@@ -123,6 +123,21 @@ function ticketCards(row, labels, info) {
     row.classList.add("is-cover"); centre(); cover();
     row.addEventListener("scroll", () => { if (!cfRaf) cfRaf = requestAnimationFrame(cover); }, { passive: true });
     let lastW = 0; new ResizeObserver(() => { if (row.clientWidth === lastW) return; lastW = row.clientWidth; centre(); cover(); }).observe(row);
+    /* free glide: no card-by-card snapping while it moves, so a swipe carries on with the momentum of the finger (a
+       soft one moves a club, a strong one runs through several) and only when it comes to rest does it ease onto the
+       nearest club, centred */
+    row.classList.add("is-glide");
+    let down = false, settleT = 0;
+    const settle = () => { if (down) return; const mid = row.scrollLeft + row.clientWidth / 2; let best = null, bd = Infinity;
+      for (const li of lis) { const c = li.offsetLeft + li.offsetWidth / 2, d = Math.abs(c - mid); if (d < bd) { bd = d; best = c; } }
+      if (best != null && bd > 1) row.scrollTo({ left: best - row.clientWidth / 2, behavior: "smooth" }); };
+    const later = () => { clearTimeout(settleT); settleT = setTimeout(settle, 140); };
+    row.addEventListener("scroll", later, { passive: true });
+    row.addEventListener("touchstart", () => { down = true; clearTimeout(settleT); }, { passive: true });
+    row.addEventListener("touchend", () => { down = false; later(); }, { passive: true });
+    row.addEventListener("touchcancel", () => { down = false; later(); }, { passive: true });
+    row.addEventListener("pointerdown", e => { if (e.pointerType === "mouse") down = true; });
+    addEventListener("pointerup", e => { if (e.pointerType === "mouse" && down) { down = false; later(); } });
   }
   // Fan Cards entrance: the first time the row comes into view the cards start stacked under the first one, a
   // little turned, and fan out into their places one after another (a spring with a small overshoot)
