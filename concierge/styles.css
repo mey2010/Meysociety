@@ -3394,3 +3394,6 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
 .chef__open li i { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; color: var(--midnight); background: var(--cyan); }
 .chef__open li i svg { width: 14px; height: 14px; stroke-width: 2.6; }
 .chef__sec.chef__open { opacity: 0; transform: translateY(26px); } .chef__sec.chef__open.is-in { opacity: 1; transform: none; }
+/* services spiral: no outline around the cards */
+.infinite-spiral__item, .infinite-spiral__item[data-front] { border: 0; box-shadow: 0 18px 44px -16px rgb(13 10 56 / .55); }
+.svc-ribbon.infinite-spiral:focus-visible { outline: none; }
