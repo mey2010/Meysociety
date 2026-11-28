@@ -1,7 +1,7 @@
 /* Mey Society · Ibiza — illustrated island map, StaggeredMenu + BranchedMenu, services, client area. */
 import { ICONS } from "./icons.js";
 import { createCircularCarousel } from "./circular-carousel.js";
-import { createDepthRibbon } from "./depth-ribbon.js";
+import { createDepthRibbon, createInfiniteSpiral, attachPixelCard } from "./depth-ribbon.js";
 import { FLEET, FLEET_TYPES, TYPE_NOTE } from "./fleet-data.js";
 import { initVillaTour, readingStops, prewarmVillaTour } from "./villa-tour.js";
 import { initFormenteraTour } from "./fx-tour.js";
@@ -635,9 +635,8 @@ const TURN = 1400; window.__logoLoader = logoLoader;
      card onto the centre, and the first time the row comes into view the cards fan out from a pile. */
   const SVC_COVER = true;
   if (SVC_COVER) {
-    /* The services ride the same winding 3D ribbon the boats had: the cards come from the back along a snake-like
-       path, the one in front faces you, and its title, line and buttons float on the photo itself. The original
-       cards stay in the page (text for search engines and screen readers) but out of sight. */
+    /* The services climb a 3D spiral; the title, line and buttons of the card in front sit right under it. The
+       original cards stay in the page (text for search engines and screen readers) but out of sight. */
     const stackEl = cards[0].parentElement, host = document.createElement("div");
     host.className = "svc-ribbon"; stackEl.before(host); stackEl.classList.add("stack--src");
     const esc = v => String(v).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -648,31 +647,25 @@ const TURN = 1400; window.__logoLoader = logoLoader;
       return { src: im?.getAttribute("src") || "", title: h, whole: !!c.querySelector(".stack__media--product"),
         info: `<h3 class="svc-ribbon__h">${esc(h)}</h3><p class="svc-ribbon__p">${p.replace(/&(?!amp;|lt;|gt;|quot;|#)/g, "&amp;")}</p><div class="svc-ribbon__btns">${btns}</div>` };
     });
-    /* the title and buttons are a flat layer laid over the card in front (not inside the turning 3D card): a tap on a
-       button always lands, on any phone. It fades out while the ribbon moves and back in when it settles. */
+    /* the title and buttons are a flat block under the spiral (not inside a moving 3D card): a tap always lands. */
     const over = document.createElement("div"); over.className = "svc-ribbon__over";
     let shown = -1;
-    const place = () => {};
-    const show = i => { if (i === shown && !over.classList.contains("is-off")) return; shown = i; const it = list[i]; if (!it) return;
-      over.innerHTML = `<div class="svc-ribbon__info">${it.info}</div>`; place(); over.classList.remove("is-off"); };
+    const show = i => { if (i === shown) return; shown = i; const it = list[i]; if (!it) return;
+      over.innerHTML = `<div class="svc-ribbon__info">${it.info}</div>`; };
     let list = items();
-    const rib = createDepthRibbon(host.appendChild(document.createElement("div")), { items: [], label: document.querySelector("#servicios h2")?.textContent || "Servicios", autoplay: 0, wheelX: true,
-      phone: .9, wide: .4, maxW: 560, onChange: (it, i) => { over.classList.add("is-off"); clearTimeout(over._t); over._t = setTimeout(function wait() { if (rib.moving) { over._t = setTimeout(wait, 90); return; } show(rib.active); }, 120); } });
-    host.after(over);   // under the ribbon, like the boats: the photo above, the title and buttons below it
-    rib.setItems(list);
-    addEventListener("resize", place, { passive: true });
-    // while the finger drags the ribbon the layer steps aside; it comes back on the card that settles in front
-    { let t = 0; const watch = () => { if (rib.moving) { over.classList.add("is-off"); clearTimeout(t); t = setTimeout(function w() { if (rib.moving) { t = setTimeout(w, 90); return; } show(rib.active); }, 120); } };
-      host.addEventListener("pointermove", watch, { passive: true }); host.addEventListener("pointerup", watch, { passive: true }); }
+    /* the services climb an infinite spiral (React Bits' InfiniteSpiral): the page scroll and a sideways swipe turn it,
+       and the title, line and buttons below always belong to the card in front, swapped in the very frame it arrives */
+    const rib = createInfiniteSpiral(host, { items: list, onFront: i => show(i), onPick: i => show(i) });
+    host.after(over);
     // a booking button works as on the original card
     over.addEventListener("click", e => { const b = e.target.closest("[data-svc]"); if (!b) return;
       select(b.dataset.svc, true); if (openWA(list[shown]?.title, "tarjeta_" + b.dataset.svc)) e.preventDefault(); });
-    // arrows (on screens with a mouse), like the fleet
+    // arrows (on screens with a mouse)
     const nav = document.createElement("div"); nav.className = "svc-ribbon__nav";
     nav.innerHTML = `<button type="button" class="stack__nav" data-dir="-1" aria-label="‹">‹</button><button type="button" class="stack__nav" data-dir="1" aria-label="›">›</button>`;
     over.after(nav); nav.addEventListener("click", e => { const b = e.target.closest("[data-dir]"); if (b) (+b.dataset.dir < 0 ? rib.prev() : rib.next()); });
-    // the language switch rewrites the hidden cards: the ribbon follows
-    document.addEventListener("langchange", () => setTimeout(() => { const a = rib.active; list = items(); rib.setItems(list); shown = -1; if (a > 0) rib.goTo(a); else show(0); }, 0));
+    // the language switch rewrites the hidden cards: the spiral follows
+    document.addEventListener("langchange", () => setTimeout(() => { const a = Math.max(0, rib.active); list = items(); rib.setItems(list); shown = -1; rib.goTo(a); show(a); }, 0));
   }
   if (!REDUCED && !SVC_COVER) {
     let ticking = false, stuck = [], tops = [];
@@ -1742,7 +1735,8 @@ function openFleet(cat = "all", brand = "") {
     items: [], label: t("Nuestra flota"),
     onChange: (b, i) => renderFleetInfo(fleetList[i], i),
     onItemClick: (b, i) => openBoat(fleetList[i]),
-    back: fleetBack,   // tapping the card in front turns it over: the details, and the way on (photos, availability, the villa's page)
+    back: fleetBack, canTurn: (b, i) => ![JET, VILLA].includes(fleetList[i]?.type),   // jet skis and villas never turn over: a tap opens them
+    // tapping the card in front turns it over: the details, and the way on (photos, availability, the villa's page)
   });
   document.getElementById("fleetRibbon").onclick = e => { const btn = e.target.closest("[data-rb]"); if (!btn) return; e.stopPropagation();
     const b = fleetList[+btn.closest(".ribbon__card").dataset.i]; if (btn.dataset.rb === "ask") return askFleet(b);
@@ -2560,7 +2554,9 @@ const transferHome = initTransferPage({ compact: true, onSend: ({ text, people }
 } });
 { const h = document.getElementById("trHome"); if (h) transferHome.mount(h); }
 document.addEventListener("click", e => { if (e.target.closest("[data-transfer-page]")) { e.preventDefault(); track("transfer_open", {}); openFleet("transfer"); requestAnimationFrame(() => requestAnimationFrame(() => transferPage.scrollToForm())); } });
-/* Alta cocina: the private chef's page, from the card ("Conocer a la chef") or the menu */
+/* Paquetes a medida: every card carries PixelCard (React Bits) in the logo's blues and violet, staggered across the row */
+document.querySelectorAll("#paquetes .occ, #paquetes .sig").forEach((c, i) => attachPixelCard(c, { introDelay: (i % 4) * 140, opacity: c.classList.contains("sig") ? .3 : .45 }));
+/* Alta cocina: the private chef's page, from the card ("Conocer al chef") or the menu */
 const chefPage = initChefPage({ onBook: ({ kind, text }) => {
   select("dining", true); track("chef_book", { kind });
   if (openWA(text, "chef_privada")) return;
