@@ -256,23 +256,23 @@ export function initTransferPage({ onSend, compact = false } = {}) {
     return n;
   }
   // extra trips: the same essentials as the first one, as many as the client needs (another day, another time)
-  const tripHTML = (t, x, n) => `<fieldset class="tr__trip" data-trip><legend>${esc(x.trip(n))}</legend>
-      <button type="button" class="tr__rm" aria-label="${esc(x.rmTrip)}">×</button>
+  const tripHTML = (t, x, n) => `<div class="tr__trip" role="group" data-trip>
+      <div class="tr__tripTop tr__w2"><b class="tr__tripH">${esc(x.trip(n))}</b><button type="button" class="tr__rm" aria-label="${esc(x.rmTrip)}">×</button></div>
       <label class="tr__w2"><span>${esc(t.from)}</span><input data-k="from" list="${uid}Places" placeholder="${esc(t.phFrom)}" autocomplete="off"></label>
       <label class="tr__w2"><span>${esc(t.to)}</span><input data-k="to" list="${uid}Places" placeholder="${esc(t.phTo)}" autocomplete="off"></label>
       <label><span>${esc(t.date)}</span><input data-k="date" type="date" min="${today}"></label>
       <label><span>${esc(t.time)}</span><input data-k="time" type="time"></label>
       <label><span>${esc(t.pax)}</span><input data-k="pax" type="number" min="1" max="40" inputmode="numeric"></label>
       <label><span>${esc(t.flight.replace(/ \(.*\)/, ""))}</span><input data-k="flight" autocomplete="off"></label>
-    </fieldset>`;
-  const renumber = () => root.querySelectorAll(".tr__trip legend").forEach((l, k) => { l.textContent = xx().trip(k + 2); });
+    </div>`;
+  const renumber = () => root.querySelectorAll(".tr__trip").forEach((el, k) => { const h = el.querySelector(".tr__tripH"); h.textContent = xx().trip(k + 2); el.setAttribute("aria-label", h.textContent); });
   const wire = () => {
     root.addEventListener("input", e => { if (e.target.name === "pax" || e.target.name === "bags") suggest(); });
     root.addEventListener("change", e => { if (e.target.name === "ret") root.querySelectorAll(".tr__ret").forEach(l => l.hidden = !e.target.checked); });
     root.addEventListener("click", e => { if (e.target.closest(".tr__jump, .trs__cta")) { e.preventDefault(); scrollToForm(); } });
     root.addEventListener("click", e => {
       if (e.target.closest(".tr__add")) { const box = root.querySelector(".tr__trips"), n = box.children.length + 2;
-        box.insertAdjacentHTML("beforeend", tripHTML(tx(), xx(), n)); const fs = box.lastElementChild; fs.querySelector("[data-k=from]").focus({ preventScroll: true });
+        box.insertAdjacentHTML("beforeend", tripHTML(tx(), xx(), n)); const fs = box.lastElementChild; fs.setAttribute("aria-label", xx().trip(n)); fs.querySelector("[data-k=from]").focus({ preventScroll: true });
         fs.scrollIntoView({ behavior: "smooth", block: "nearest" }); return; }
       const rm = e.target.closest(".tr__rm"); if (rm) { rm.closest(".tr__trip").remove(); renumber(); } });
     root.addEventListener("submit", e => {
