@@ -139,25 +139,24 @@ function ticketCards(row, labels, info) {
     row.addEventListener("pointerdown", e => { if (e.pointerType === "mouse") down = true; });
     addEventListener("pointerup", e => { if (e.pointerType === "mouse" && down) { down = false; later(); } });
   }
-  // Fan Cards entrance: the first time the row comes into view the cards start stacked under the first one, a
-  // little turned, and fan out into their places one after another (a spring with a small overshoot)
+  // entrance: the first time the row comes into view each card glides in from the right straight into its own place
+  // in the coverflow, one after the other (nothing stacked under the first card, so nothing peeks out mid-way)
   if (!REDUCED) {
-    lis.forEach((li, i) => { li.style.transform = `translate3d(0, 40px, 0) rotate(${(i % 2 ? 1 : -1) * 4}deg)`; li.style.opacity = "0"; });
+    lis.forEach(li => { li.style.opacity = "0"; });
     fanning = true;
     const fanIo = new IntersectionObserver(es => {
       if (!es.some(e => e.isIntersecting)) return; fanIo.disconnect(); centre();
-      const x0 = lis[0].offsetLeft;
-      lis.forEach((li, i) => {
-        const dx = x0 - li.offsetLeft, d = Math.min(i, 5);
-        li.style.transition = "none"; li.style.zIndex = String(50 - i);
-        li.style.transform = `translate3d(${dx + d * 10}px, ${d * 8}px, 0) rotate(${d * -4 + 2}deg) scale(${1 - d * .03})`; li.style.opacity = "1";
-      });
-      row.offsetWidth;   // the stacked pose is drawn before the fan starts
-      requestAnimationFrame(() => lis.forEach((li, i) => {
-        li.style.transition = `transform 820ms cubic-bezier(.2, 1.28, .38, 1) ${120 + i * 70}ms`;
-        li.style.transform = pose(li).t; li.style.opacity = pose(li).o;
-        li.addEventListener("transitionend", () => { li.style.transition = ""; if (i === lis.length - 1) { fanning = false; cover(); } }, { once: true });
+      const mid = row.scrollLeft + row.clientWidth, shown = lis.filter(li => li.offsetLeft < mid + li.offsetWidth);
+      lis.forEach(li => { const q = pose(li); li.style.zIndex = q.z; li.style.transition = "none";
+        if (shown.includes(li)) { li.style.transform = `translate3d(70px, 0, 0) ${q.t}`; li.style.opacity = "0"; } else { li.style.transform = q.t; li.style.opacity = q.o; } });
+      row.offsetWidth;   // the start pose is drawn before the glide begins
+      let left = shown.length; const done = () => { if (--left <= 0) { fanning = false; lis.forEach(li => { li.style.transition = ""; }); cover(); } };
+      requestAnimationFrame(() => shown.forEach((li, i) => {
+        li.style.transition = `transform 700ms cubic-bezier(.22, 1, .36, 1) ${80 + i * 90}ms, opacity 500ms ease ${80 + i * 90}ms`;
+        const q = pose(li); li.style.transform = q.t; li.style.opacity = q.o;
+        li.addEventListener("transitionend", function te(e) { if (e.propertyName !== "transform") return; li.removeEventListener("transitionend", te); done(); });
       }));
+      setTimeout(() => { if (fanning) { left = 0; done(); } }, 1400);   // safety: never stay half-way
     }, { threshold: .25 });
     fanIo.observe(row);
   }

@@ -3404,3 +3404,24 @@ img.asm__p.asm__mir { backface-visibility: visible; -webkit-backface-visibility:
 @media (max-width: 700px) { .svc-ribbon__btns .btn { --h: 46px; height: 46px; padding: 0 20px; font-size: 14.5px; } }
 /* clubs: the row glides freely with the finger's momentum and only settles on a club once it stops (agenda.js) */
 .ag__feat.is-cover.is-glide { scroll-snap-type: none; }
+/* map zone buttons on phones: no sideways strip (it cut the buttons' shadows into a line and a pale block);
+   they wrap onto centred rows instead */
+@media (max-width: 900px) { .map__areas { overflow: visible; flex-wrap: wrap; justify-content: center; gap: 8px; } .map__areas button { flex: none; } }
+.pl .pl__lede { text-align: center !important; text-align-last: center; hyphens: none; -webkit-hyphens: none; margin-inline: auto; }
+.pl .sec__head { text-align: center; }
+/* transfers: extra trips (another day or time) inside the same request */
+.tr__trips { display: grid; gap: 12px; }
+.tr__trips:empty { display: none; }
+.tr__trip { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 18px 16px 16px; border: 0; border-radius: 18px;
+  background: rgb(120 199 228 / .08); box-shadow: inset 0 0 0 1px rgb(120 199 228 / .3); }
+.tr__trip legend { float: left; grid-column: 1 / -1; padding: 0; margin: 0 0 2px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--cyan); }
+.tr__trip legend + * { clear: both; }
+.tr__rm { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border: 0; border-radius: 50%; cursor: pointer; font-size: 20px; line-height: 1; color: #fff; background: rgb(255 255 255 / .12); }
+.tr__rm:hover { background: rgb(171 80 219 / .5); }
+.tr__addwrap { display: grid; justify-items: center; gap: 8px; text-align: center; }
+.tr__add { display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; border: 0; border-radius: 99px; cursor: pointer; font: 600 15px var(--sans); color: #fff;
+  background: transparent; box-shadow: inset 0 0 0 1.5px rgb(120 199 228 / .65); }
+.tr__add i { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font-style: normal; font-size: 18px; color: var(--midnight); background: var(--cyan); }
+.tr__add:hover { box-shadow: inset 0 0 0 1.5px var(--cyan); background: rgb(120 199 228 / .1); }
+.tr__addwrap small { max-width: 46ch; font-size: 13px; line-height: 1.45; opacity: .75; text-align: center; hyphens: none; }
+@media (max-width: 520px) { .tr__trip { grid-template-columns: 1fr 1fr; padding: 16px 12px 14px; } }

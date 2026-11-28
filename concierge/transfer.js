@@ -159,19 +159,19 @@ const sizeFor = (pax, bags) => { const load = pax + Math.max(0, bags - pax) * .5
 
 /* extra copy for the page as it sits under the vehicles: a promise strip, how it works, and the jump to the form */
 const X = {
-  es: { own: "Por tu cuenta", with: "Con Mey", allIn: "Todo incluido, sin sorpresas", trust: ["Precio cerrado antes de reservar", "Seguimiento de tu vuelo", "Chófer con tu nombre en llegadas", "Disponible 24 h"],
+  es: { addTrip: "Añadir otro trayecto", trip: n => `Trayecto ${n}`, rmTrip: "Quitar trayecto", tripsHint: "¿Necesitas el transfer otro día o a otra hora? Añade todos los trayectos y te los confirmamos juntos.", needTrip: "Completa recogida, destino y día de cada trayecto", own: "Por tu cuenta", with: "Con Mey", allIn: "Todo incluido, sin sorpresas", trust: ["Precio cerrado antes de reservar", "Seguimiento de tu vuelo", "Chófer con tu nombre en llegadas", "Disponible 24 h"],
     howH: "Así de fácil", steps: [["Cuéntanos el trayecto", "Recogida, destino, día y cuántos sois. Lo que no sepas aún, déjalo en blanco."], ["Te confirmamos vehículo y precio", "Te respondemos con el vehículo que encaja con tu grupo y un precio cerrado, sin sorpresas."], ["Tu chófer te espera", "Puntual, con tu nombre, el equipaje a bordo y directo a tu destino."]],
     jump: "Pedir mi transfer", closing: "Aterriza, sal del club o vuelve de cenar sin pensar en cómo llegar: de eso nos ocupamos nosotros." },
-  en: { own: "On your own", with: "With Mey", allIn: "All included, no surprises", trust: ["Fixed price before you book", "Flight tracking", "Driver with your name at arrivals", "Available 24 h"],
+  en: { addTrip: "Add another trip", trip: n => `Trip ${n}`, rmTrip: "Remove trip", tripsHint: "Need a transfer on another day or at another time? Add every trip and we confirm them together.", needTrip: "Please fill in pick-up, destination and day for each trip", own: "On your own", with: "With Mey", allIn: "All included, no surprises", trust: ["Fixed price before you book", "Flight tracking", "Driver with your name at arrivals", "Available 24 h"],
     howH: "As easy as this", steps: [["Tell us the trip", "Pick-up, destination, day and how many you are. Leave blank whatever you don't know yet."], ["We confirm vehicle and price", "We reply with the vehicle that fits your group and a fixed price, no surprises."], ["Your driver is waiting", "On time, with your name, luggage on board and straight to your destination."]],
     jump: "Request my transfer", closing: "Land, leave the club or head home from dinner without thinking about how to get there: we take care of that." },
-  it: { own: "Da solo", with: "Con Mey", allIn: "Tutto incluso, senza sorprese", trust: ["Prezzo chiuso prima di prenotare", "Monitoraggio del volo", "Autista con il tuo nome agli arrivi", "Disponibile 24 h"],
+  it: { addTrip: "Aggiungi un altro tragitto", trip: n => `Tragitto ${n}`, rmTrip: "Rimuovi tragitto", tripsHint: "Ti serve il transfer un altro giorno o a un'altra ora? Aggiungi tutti i tragitti e te li confermiamo insieme.", needTrip: "Completa partenza, destinazione e giorno di ogni tragitto", own: "Da solo", with: "Con Mey", allIn: "Tutto incluso, senza sorprese", trust: ["Prezzo chiuso prima di prenotare", "Monitoraggio del volo", "Autista con il tuo nome agli arrivi", "Disponibile 24 h"],
     howH: "Facile così", steps: [["Raccontaci il tragitto", "Partenza, destinazione, giorno e quanti siete. Ciò che non sai ancora, lascialo vuoto."], ["Ti confermiamo veicolo e prezzo", "Ti rispondiamo con il veicolo adatto al tuo gruppo e un prezzo chiuso, senza sorprese."], ["Il tuo autista ti aspetta", "Puntuale, con il tuo nome, i bagagli a bordo e dritto a destinazione."]],
     jump: "Richiedi il mio transfer", closing: "Atterra, esci dal club o torna da cena senza pensare a come arrivare: a questo pensiamo noi." },
-  fr: { own: "Seul", with: "Avec Mey", allIn: "Tout compris, sans surprise", trust: ["Prix fixe avant de réserver", "Suivi de votre vol", "Chauffeur avec votre nom à l'arrivée", "Disponible 24 h/24"],
+  fr: { addTrip: "Ajouter un autre trajet", trip: n => `Trajet ${n}`, rmTrip: "Supprimer le trajet", tripsHint: "Besoin d'un transfert un autre jour ou à une autre heure ? Ajoutez tous vos trajets, nous les confirmons ensemble.", needTrip: "Indiquez la prise en charge, la destination et le jour de chaque trajet", own: "Seul", with: "Avec Mey", allIn: "Tout compris, sans surprise", trust: ["Prix fixe avant de réserver", "Suivi de votre vol", "Chauffeur avec votre nom à l'arrivée", "Disponible 24 h/24"],
     howH: "Aussi simple que ça", steps: [["Dites-nous le trajet", "Prise en charge, destination, jour et nombre de personnes. Ce que vous ne savez pas encore, laissez-le vide."], ["Nous confirmons véhicule et prix", "Nous répondons avec le véhicule adapté à votre groupe et un prix fixe, sans surprise."], ["Votre chauffeur vous attend", "À l'heure, avec votre nom, les bagages à bord et direct à destination."]],
     jump: "Demander mon transfert", closing: "Atterrissez, sortez du club ou rentrez du dîner sans penser au trajet : on s'en occupe." },
-  de: { own: "Auf eigene Faust", with: "Mit Mey", allIn: "Alles inklusive, ohne Überraschungen", trust: ["Festpreis vor der Buchung", "Flugverfolgung", "Fahrer mit Namensschild bei der Ankunft", "Rund um die Uhr"],
+  de: { addTrip: "Weitere Fahrt hinzufügen", trip: n => `Fahrt ${n}`, rmTrip: "Fahrt entfernen", tripsHint: "Brauchst du den Transfer an einem anderen Tag oder zu einer anderen Zeit? Füge alle Fahrten hinzu, wir bestätigen sie zusammen.", needTrip: "Bitte Abholung, Ziel und Tag für jede Fahrt angeben", own: "Auf eigene Faust", with: "Mit Mey", allIn: "Alles inklusive, ohne Überraschungen", trust: ["Festpreis vor der Buchung", "Flugverfolgung", "Fahrer mit Namensschild bei der Ankunft", "Rund um die Uhr"],
     howH: "So einfach geht's", steps: [["Sag uns die Strecke", "Abholung, Ziel, Tag und wie viele ihr seid. Was du noch nicht weißt, lass einfach frei."], ["Wir bestätigen Fahrzeug und Preis", "Wir antworten mit dem passenden Fahrzeug für deine Gruppe und einem Festpreis, ohne Überraschungen."], ["Dein Fahrer wartet", "Pünktlich, mit deinem Namen, Gepäck an Bord und direkt ans Ziel."]],
     jump: "Meinen Transfer anfragen", closing: "Lande, verlass den Club oder komm vom Dinner zurück, ohne an den Weg zu denken: Darum kümmern wir uns." },
 };
@@ -197,6 +197,8 @@ export function initTransferPage({ onSend, compact = false } = {}) {
           <label class="tr__check tr__w2"><input name="ret" type="checkbox"><span>${esc(t.ret)}</span></label>
           <label class="tr__ret" hidden><span>${esc(t.rdate)}</span><input name="rdate" type="date" min="${today}"></label>
           <label class="tr__ret" hidden><span>${esc(t.rtime)}</span><input name="rtime" type="time"></label>
+          <div class="tr__trips tr__w2"></div>
+          <div class="tr__addwrap tr__w2"><button type="button" class="tr__add"><i aria-hidden="true">+</i>${esc(x.addTrip)}</button><small>${esc(x.tripsHint)}</small></div>
           <label><span>${esc(t.kids)}</span><input name="kids" type="number" min="0" max="6" value="0" inputmode="numeric"></label>
           <label><span>${esc(t.name)}</span><input name="name" autocomplete="name"></label>
           <label class="tr__w2"><span>${esc(t.notes)}</span><textarea name="notes" rows="2"></textarea></label>
@@ -253,19 +255,43 @@ export function initTransferPage({ onSend, compact = false } = {}) {
     root.querySelector(".tr__sug").innerHTML = `<i aria-hidden="true"></i>${esc(van ? t.sug(van.name) : n ? t.sug(t.sizes[n]) : t.sugMany)}`;
     return n;
   }
+  // extra trips: the same essentials as the first one, as many as the client needs (another day, another time)
+  const tripHTML = (t, x, n) => `<fieldset class="tr__trip" data-trip><legend>${esc(x.trip(n))}</legend>
+      <button type="button" class="tr__rm" aria-label="${esc(x.rmTrip)}">×</button>
+      <label class="tr__w2"><span>${esc(t.from)}</span><input data-k="from" list="${uid}Places" placeholder="${esc(t.phFrom)}" autocomplete="off"></label>
+      <label class="tr__w2"><span>${esc(t.to)}</span><input data-k="to" list="${uid}Places" placeholder="${esc(t.phTo)}" autocomplete="off"></label>
+      <label><span>${esc(t.date)}</span><input data-k="date" type="date" min="${today}"></label>
+      <label><span>${esc(t.time)}</span><input data-k="time" type="time"></label>
+      <label><span>${esc(t.pax)}</span><input data-k="pax" type="number" min="1" max="40" inputmode="numeric"></label>
+      <label><span>${esc(t.flight.replace(/ \(.*\)/, ""))}</span><input data-k="flight" autocomplete="off"></label>
+    </fieldset>`;
+  const renumber = () => root.querySelectorAll(".tr__trip legend").forEach((l, k) => { l.textContent = xx().trip(k + 2); });
   const wire = () => {
     root.addEventListener("input", e => { if (e.target.name === "pax" || e.target.name === "bags") suggest(); });
     root.addEventListener("change", e => { if (e.target.name === "ret") root.querySelectorAll(".tr__ret").forEach(l => l.hidden = !e.target.checked); });
     root.addEventListener("click", e => { if (e.target.closest(".tr__jump, .trs__cta")) { e.preventDefault(); scrollToForm(); } });
+    root.addEventListener("click", e => {
+      if (e.target.closest(".tr__add")) { const box = root.querySelector(".tr__trips"), n = box.children.length + 2;
+        box.insertAdjacentHTML("beforeend", tripHTML(tx(), xx(), n)); const fs = box.lastElementChild; fs.querySelector("[data-k=from]").focus({ preventScroll: true });
+        fs.scrollIntoView({ behavior: "smooth", block: "nearest" }); return; }
+      const rm = e.target.closest(".tr__rm"); if (rm) { rm.closest(".tr__trip").remove(); renumber(); } });
     root.addEventListener("submit", e => {
       e.preventDefault(); const t = tx(), f = e.target, v = k => (f[k].value || "").trim();
-      if (!v("from") || !v("to") || !v("date")) { root.querySelector(".tr__err").hidden = false; f[!v("from") ? "from" : !v("to") ? "to" : "date"].focus(); return; }
+      if (!v("from") || !v("to") || !v("date")) { const er = root.querySelector(".tr__err"); er.textContent = t.need; er.hidden = false; f[!v("from") ? "from" : !v("to") ? "to" : "date"].focus(); return; }
       const n = suggest();
       const lines = [t.msg, `${t.from}: ${v("from")}`, `${t.to}: ${v("to")}`, `${t.date}: ${v("date")}${v("time") ? " · " + v("time") : ""}`,
         `${t.pax}: ${v("pax")} · ${t.bags}: ${v("bags")}`, n ? t.sug(t.sizes[n]) : t.sugMany,
         v("flight") && `${t.flight.replace(/ \(.*\)/, "")}: ${v("flight")}`,
         f.ret.checked && `${t.ret}: ${t.yes}${v("rdate") ? " · " + v("rdate") : ""}${v("rtime") ? " · " + v("rtime") : ""}`,
         +v("kids") > 0 && `${t.kids}: ${v("kids")}`, v("notes") && `${t.notes.replace(/ \(.*\)/, "")}: ${v("notes")}`, v("name") && `${t.name}: ${v("name")}`].filter(Boolean);
+      // the extra trips, each one on its own block of the message
+      const trips = [...root.querySelectorAll(".tr__trip")].map(fs => { const g = k => (fs.querySelector(`[data-k=${k}]`).value || "").trim(); return { from: g("from"), to: g("to"), date: g("date"), time: g("time"), pax: g("pax"), flight: g("flight"), el: fs }; })
+        .filter(r => r.from || r.to || r.date || r.time);
+      const bad = trips.find(r => !r.from || !r.to || !r.date);
+      if (bad) { const er = root.querySelector(".tr__err"); er.textContent = xx().needTrip; er.hidden = false; bad.el.querySelector(`[data-k=${!bad.from ? "from" : !bad.to ? "to" : "date"}]`).focus(); return; }
+      if (trips.length) { lines.splice(1, 0, `— ${xx().trip(1)} —`);
+        trips.forEach((r, k) => lines.push("", `— ${xx().trip(k + 2)} —`, `${t.from}: ${r.from}`, `${t.to}: ${r.to}`, `${t.date}: ${r.date}${r.time ? " · " + r.time : ""}`,
+          ...(r.pax ? [`${t.pax}: ${r.pax}`] : []), ...(r.flight ? [`${t.flight.replace(/ \(.*\)/, "")}: ${r.flight}`] : []))); }
       onSend?.({ text: lines.join("\n"), from: v("date"), people: +v("pax") || 1 });
     });
   };
