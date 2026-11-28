@@ -214,13 +214,13 @@ export function createDepthRibbon(root, opts = {}) {
    (title, line, buttons) changes with the card, not after it. */
 export function createInfiniteSpiral(root, opts = {}) {
   const o = { items: [], speed: .55, radius: 190, cardWidth: 230, cardHeight: 230, verticalSpacing: 78, perspective: 1000,
-    cardsPerTurn: 7, cardRadius: 22, centerScale: 1.18, edgeFade: .3, edgeBlur: 5, scroll: true, onFront: null, onPick: null, ...opts };
+    cardsPerTurn: 7, cardRadius: 22, centerScale: 1.18, edgeFade: .3, edgeBlur: 5, scroll: true, autoplay: 0, onFront: null, onPick: null, ...opts };
   const clamp = (v, a, b) => Math.min(Math.max(v, a), b), mod = (v, d) => ((v % d) + d) % d;
   const sstep = (a, b, v) => { const x = clamp((v - a) / (b - a || 1), 0, 1); return x * x * (3 - 2 * x); };
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   root.classList.add("infinite-spiral"); root.style.perspective = o.perspective + "px";
   const stage = document.createElement("div"); stage.className = "infinite-spiral__stage"; stage.setAttribute("role", "list"); root.appendChild(stage);
-  let cards = [], N = 0, prog = 0, target = 0, front = -1, raf = 0, last = 0, visible = true, idleAt = 0, W = 1, H = 1;
+  let cards = [], N = 0, prog = 0, target = 0, front = -1, raf = 0, last = 0, visible = true, idleAt = 0, W = 1, H = 1, autoAt = 0, held = false, hover = false;
   const esc = v => String(v).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   function setItems(list) {
     stage.replaceChildren(); N = list.length; front = -1;
@@ -235,6 +235,8 @@ export function createInfiniteSpiral(root, opts = {}) {
     raf = 0; const dt = last ? Math.min((now - last) / 1000, .05) : 1 / 60; last = now;
     const dragging = !!drag?.moved;
     if (!dragging && now > idleAt) target += (Math.round(target) - target) * (1 - Math.exp(-dt * 6));   // settle square on a card
+    // on its own, the spiral glides to the next service every few seconds while nobody touches it
+    if (o.autoplay && !reduced && !drag && !held && N > 1) { if (!autoAt) autoAt = now + o.autoplay * 1000; else if (now >= autoAt) { target = Math.round(target) + 1; idleAt = 0; autoAt = now + o.autoplay * 1000; } } else autoAt = 0;
     prog += (target - prog) * (reduced ? 1 : 1 - Math.exp(-dt * (dragging ? 22 : 11)));
     if (N) {
       const half = N / 2, fit = Math.min(1, W / (o.cardWidth * 2.6), H / (o.cardHeight * 2.1)), rr = Math.min(o.radius, Math.max(72, W * .36)) * fit;
@@ -252,7 +254,7 @@ export function createInfiniteSpiral(root, opts = {}) {
       const f = mod(Math.round(prog), N);
       if (f !== front) { if (cards[front]) cards[front].removeAttribute("data-front"); front = f; cards[f].setAttribute("data-front", ""); o.onFront?.(f); }
     }
-    if (visible && (Math.abs(target - prog) > .0005 || Math.abs(Math.round(target) - target) > .0005 || drag)) raf = requestAnimationFrame(render); else last = 0;
+    if (visible && (o.autoplay && !reduced && !held && N > 1 || Math.abs(target - prog) > .0005 || Math.abs(Math.round(target) - target) > .0005 || drag)) raf = requestAnimationFrame(render); else last = 0;
   }
   const wake = () => { if (!raf && visible) raf = requestAnimationFrame(render); };
   new ResizeObserver(() => { measure(); wake(); }).observe(root);
@@ -260,7 +262,7 @@ export function createInfiniteSpiral(root, opts = {}) {
   // the page scroll turns the helix while it is on screen
   let lastY = scrollY;
   addEventListener("scroll", () => { const y = scrollY, d = y - lastY; lastY = y; if (!o.scroll || !visible || !d || drag?.moved) return;
-    target += clamp(d * (o.speed / .55) / Math.max(o.verticalSpacing * 2, 1), -1.5, 1.5); idleAt = performance.now() + 160; wake(); }, { passive: true });
+    target += clamp(d * (o.speed / .55) / Math.max(o.verticalSpacing * 2, 1), -1.5, 1.5); idleAt = performance.now() + 160; autoAt = performance.now() + 3000; wake(); }, { passive: true });
   // a sideways swipe on a phone (the page keeps its vertical scroll), any drag with a mouse
   let drag = null;
   root.addEventListener("pointerdown", e => { if (e.button !== 0) return; drag = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, touch: e.pointerType !== "mouse" }; });
@@ -268,16 +270,19 @@ export function createInfiniteSpiral(root, opts = {}) {
     const dx = e.clientX - d.x, dy = e.clientY - d.y;
     if (!d.moved) { if (Math.hypot(dx, dy) < 6) return; if (d.touch && Math.abs(dy) > Math.abs(dx)) { drag = null; return; } d.moved = true; root.dataset.dragging = ""; try { root.setPointerCapture(e.pointerId); } catch {} }
     const step = d.touch || Math.abs(dx) > Math.abs(dy) ? -dx / (o.cardWidth * .55) : -dy / Math.max(o.verticalSpacing, 1);
-    target += step; d.x = e.clientX; d.y = e.clientY; idleAt = performance.now() + 120; wake(); });
+    target += step; d.x = e.clientX; d.y = e.clientY; idleAt = performance.now() + 120; autoAt = performance.now() + 6000; wake(); });
   const end = e => { const d = drag; if (!d || d.id !== e.pointerId) return; drag = null; delete root.dataset.dragging; idleAt = 0;
     if (!d.moved) { const c = e.target.closest?.(".infinite-spiral__item"); if (c) { const i = +c.dataset.i; if (i === front) o.onPick?.(i); else goTo(i); } } wake(); };
+  root.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") hover = true; }); root.addEventListener("pointerleave", () => { hover = false; wake(); });
   root.addEventListener("pointerup", end); root.addEventListener("pointercancel", end);
   root.addEventListener("click", e => { if (root.dataset.dragging !== undefined) { e.preventDefault(); e.stopPropagation(); } }, true);
-  const goTo = i => { if (!N) return; const cur = Math.round(target), c = mod(cur, N); let d = i - c; if (d > N / 2) d -= N; if (d < -N / 2) d += N; target = cur + d; idleAt = 0; wake(); };
-  const by = d => { target = Math.round(target) + d; idleAt = 0; wake(); };
+  const goTo = i => { if (!N) return; const cur = Math.round(target), c = mod(cur, N); let d = i - c; if (d > N / 2) d -= N; if (d < -N / 2) d += N; target = cur + d; idleAt = 0; autoAt = performance.now() + 6000; wake(); };
+  const by = d => { target = Math.round(target) + d; idleAt = 0; autoAt = performance.now() + 6000; wake(); };
   root.tabIndex = 0; root.addEventListener("keydown", e => { const d = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key]; if (d) { e.preventDefault(); by(d); } });
   measure(); setItems(o.items);
-  return { setItems, goTo, next: () => by(1), prev: () => by(-1), get active() { return front; } };
+  // hold(true) pauses the glide (a finger or the mouse on the buttons below); any touch on the spiral restarts its count
+  const hold = v => { held = !!v; autoAt = 0; wake(); };
+  return { setItems, goTo, hold, next: () => by(1), prev: () => by(-1), get active() { return front; } };
 }
 
 /* PixelCard (React Bits), rewritten without React: a canvas of tiny pixels behind a card's content. On hover (or

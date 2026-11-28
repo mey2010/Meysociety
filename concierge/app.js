@@ -655,7 +655,10 @@ const TURN = 1400; window.__logoLoader = logoLoader;
     let list = items();
     /* the services climb an infinite spiral (React Bits' InfiniteSpiral): the page scroll and a sideways swipe turn it,
        and the title, line and buttons below always belong to the card in front, swapped in the very frame it arrives */
-    const rib = createInfiniteSpiral(host, { items: list, onFront: i => show(i), onPick: i => show(i) });
+    const rib = createInfiniteSpiral(host, { items: list, autoplay: 2.8, onFront: i => show(i), onPick: i => show(i) });
+    // the glide pauses while a finger or the mouse is on the title and buttons, so a tap always lands on the service shown
+    over.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") rib.hold(true); }); over.addEventListener("pointerleave", () => rib.hold(false));
+    over.addEventListener("pointerdown", () => { rib.hold(true); clearTimeout(over._h); over._h = setTimeout(() => rib.hold(false), 5000); });
     host.after(over);
     // a booking button works as on the original card
     over.addEventListener("click", e => { const b = e.target.closest("[data-svc]"); if (!b) return;
